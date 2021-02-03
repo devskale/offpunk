@@ -241,7 +241,7 @@ class GeminiClient(cmd.Cmd):
             os.makedirs(self.config_dir)
 
         self.no_cert_prompt = "\x1b[38;5;76m" + "AV-98" + "\x1b[38;5;255m" + "> " + "\x1b[0m"
-        self.cert_prompt = "\x1b[38;5;202m" + "AV-98" + "\x1b[38;5;255m" + "+cert> " + "\x1b[0m"
+        self.cert_prompt = "\x1b[38;5;202m" + "AV-98" + "\x1b[38;5;255m"
         self.prompt = self.no_cert_prompt
         self.gi = None
         self.history = []
@@ -1066,7 +1066,7 @@ you'll be able to transparently follow links to Gopherspace!""")
     def _activate_client_cert(self, certfile, keyfile):
         self.client_certs["active"] = (certfile, keyfile)
         self.active_cert_domains = []
-        self.prompt = self.cert_prompt
+        self.prompt = self.cert_prompt + "+" + os.path.basename(certfile).replace('.crt','') + "> " + "\x1b[0m"
         self._debug("Using ID {} / {}.".format(*self.client_certs["active"]))
 
     def _deactivate_client_cert(self):
