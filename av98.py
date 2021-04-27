@@ -269,7 +269,7 @@ class GeminiClient(cmd.Cmd):
         self.options = {
             "debug" : False,
             "ipv6" : True,
-            "timeout" : 10,
+            "timeout" : 600,
             "width" : 80,
             "auto_follow_redirects" : True,
             "gopher_proxy" : None,
