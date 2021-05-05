@@ -1,5 +1,8 @@
 # AV-98
 
+This is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98)
+by Solderpunk. He's not very active in maintaining it anymore.
+
 AV-98 is an experimental client for the
 [Gemini protocol](https://gemini.circumlunar.space).  It is derived from the
 [gopher client VF-1](https://github.com/solderpunk/VF-1) by the same author.
