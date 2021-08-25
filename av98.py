@@ -1309,9 +1309,15 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
                         self.waypoints.append(gi)
                     elif len(pair) == 2:
                         # Two endpoints for a range of indices
-                        for n in range(int(pair[0]), int(pair[1]) + 1):
-                            gi = self.lookup[n-1]
-                            self.waypoints.append(gi)
+                        if int(pair[0]) < int(pair[1]):
+                            for n in range(int(pair[0]), int(pair[1]) + 1):
+                                gi = self.lookup[n-1]
+                                self.waypoints.append(gi)
+                        else:
+                            for n in range(int(pair[0]), int(pair[1]) - 1, -1):
+                                gi = self.lookup[n-1]
+                                self.waypoints.append(gi)
+
                     else:
                         # Syntax error
                         print("Invalid use of range syntax %s, skipping" % index)
