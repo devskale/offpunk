@@ -8,6 +8,8 @@
 #  - <vee@vnsf.xyz>
 #  - Klaus Alexander Seistrup <klaus@seistrup.dk>
 #  - govynnus <govynnus@sdf.org>
+#  - Björn Wärmedal <bjorn.warmedal@gmail.com>
+#  - <jake@rmgr.dev>
 
 import argparse
 import cmd
