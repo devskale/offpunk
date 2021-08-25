@@ -51,7 +51,7 @@ try:
 except ModuleNotFoundError:
     _HAS_CRYPTOGRAPHY = False
 
-_VERSION = "1.0.2dev"
+_VERSION = "1.0.4dev"
 
 _MAX_REDIRECTS = 5
 _MAX_CACHE_SIZE = 10
@@ -274,6 +274,7 @@ class GeminiClient(cmd.Cmd):
             "auto_follow_redirects" : True,
             "gopher_proxy" : None,
             "tls_mode" : "tofu",
+            "http_proxy": None,
             "cache" : False
         }
 
@@ -316,8 +317,15 @@ class GeminiClient(cmd.Cmd):
 
         # Don't try to speak to servers running other protocols
         if gi.scheme in ("http", "https"):
-            webbrowser.open_new_tab(gi.url)
-            return
+            if not self.options.get("http_proxy",None):
+                webbrowser.open_new_tab(gi.url)
+                return
+            else:
+                print("Do you want to try to open this link with a http proxy?")
+                resp = input("(Y)/N ")
+                if resp.strip().lower() in ("n","no"):
+                    webbrowser.open_new_tab(gi.url)
+                    return
         elif gi.scheme == "gopher" and not self.options.get("gopher_proxy", None):
             print("""AV-98 does not speak Gopher natively.
 However, you can use `set gopher_proxy hostname:port` to tell it about a
@@ -543,7 +551,9 @@ you'll be able to transparently follow links to Gopherspace!""")
             # For Gopher requests, use the configured proxy
             host, port = self.options["gopher_proxy"].rsplit(":", 1)
             self._debug("Using gopher proxy: " + self.options["gopher_proxy"])
-
+        elif gi.scheme in ("http", "https"):
+            host, port = self.options["http_proxy"].rsplit(":",1)
+            self._debug("Using http proxy: " + self.options["http_proxy"])
         # Do DNS resolution
         addresses = self._get_addresses(host, port)
 
