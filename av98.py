@@ -129,16 +129,21 @@ standard_ports = {
 class GeminiItem():
 
     def __init__(self, url, name=""):
-        if "://" not in url:
+        if "://" not in url and ("./" not in url and url[0] != "/"):
             url = "gemini://" + url
         self.url = fix_ipv6_url(url)
         self.name = name
+        self.local = False
         parsed = urllib.parse.urlparse(self.url)
         self.scheme = parsed.scheme
         self.host = parsed.hostname
         self.port = parsed.port or standard_ports.get(self.scheme, 0)
         self.path = parsed.path
-
+        if  self.host == None:
+            h = self.url.split('/')
+            self.host = h[0:len(h)-1]
+            self.local = True
+            self.scheme = 'local'
     def root(self):
         return GeminiItem(self._derive_url("/"))
 
@@ -334,6 +339,17 @@ However, you can use `set gopher_proxy hostname:port` to tell it about a
 Gopher-to-Gemini proxy (such as a running Agena instance), in which case
 you'll be able to transparently follow links to Gopherspace!""")
             return
+        elif gi.local:
+            if os.path.exists(gi.path):
+                with open(gi.path,'r') as f:
+                    body = f.read()
+                    self._handle_gemtext(body,gi)
+                    self.gi = gi
+                    self._update_history(gi)
+                return
+            else:
+                print("Sorry, that file does not exist.")
+                return
         elif gi.scheme not in ("gemini", "gopher"):
             print("Sorry, no support for {} links.".format(gi.scheme))
             return
@@ -423,7 +439,7 @@ you'll be able to transparently follow links to Gopherspace!""")
                 self.client_certs.pop(gi.host)
 
         # Is this a local file?
-        if not gi.host:
+        if gi.local:
             address, f = None, open(gi.path, "rb")
         else:
             address, f = self._send_request(gi)
@@ -1211,9 +1227,7 @@ you'll be able to transparently follow links to Gopherspace!""")
             self._go_to_gi(gi)
         # or a local file
         elif os.path.exists(os.path.expanduser(line)):
-            gi = GeminiItem(None, None, os.path.expanduser(line),
-                            "1", line, False)
-            self._go_to_gi(gi)
+            self._go_to_gi(GeminiItem(line))
         # If this isn't a mark, treat it as a URL
         else:
             self._go_to_gi(GeminiItem(line))
