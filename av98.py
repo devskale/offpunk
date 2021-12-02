@@ -546,7 +546,9 @@ you'll be able to transparently follow links to Gopherspace!""")
             mode = "wb"
             encoding = None
         ## Write
+        ## This is a copy of the raw gemtext
         tmpf = tempfile.NamedTemporaryFile(mode, encoding=encoding, delete=False)
+        print("line 550: %s - %s - %s",tmpf.name,gi.url,mime)
         size = tmpf.write(body)
         tmpf.close()
         self.tmp_filename = tmpf.name
@@ -891,6 +893,8 @@ you'll be able to transparently follow links to Gopherspace!""")
         preformatted = False
         if self.idx_filename:
             os.unlink(self.idx_filename)
+        # this tempfile will contains a parsed version of the gemtext
+        # to display it. This is the output, not native gemtext.
         tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
         self.idx_filename = tmpf.name
         for line in body.splitlines():
