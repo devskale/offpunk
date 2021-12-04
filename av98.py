@@ -58,6 +58,7 @@ _VERSION = "1.0.4dev"
 _MAX_REDIRECTS = 5
 _MAX_CACHE_SIZE = 10
 _MAX_CACHE_AGE_SECS = 180
+_CACHE_PATH = "~/.local/"
 
 # Command abbreviations
 _ABBREVS = {
@@ -139,11 +140,20 @@ class GeminiItem():
         self.host = parsed.hostname
         self.port = parsed.port or standard_ports.get(self.scheme, 0)
         self.path = parsed.path
+        self.cache_path = None
         if  self.host == None:
             h = self.url.split('/')
             self.host = h[0:len(h)-1]
             self.local = True
             self.scheme = 'local'
+        else: 
+            #if not local, we create a local cache path.
+            self.cache_path = _CACHE_PATH + self.host + self.path
+            # FIXME : this is a gross hack to give a name to
+            # index files. This will break if the index is not
+            # index.gmi
+            if self.cache_path.endswith("/"):
+                self.cache_path += "index.gmi"
     def root(self):
         return GeminiItem(self._derive_url("/"))
 
@@ -548,7 +558,7 @@ you'll be able to transparently follow links to Gopherspace!""")
         ## Write
         ## This is a copy of the raw gemtext
         tmpf = tempfile.NamedTemporaryFile(mode, encoding=encoding, delete=False)
-        print("line 550: %s - %s - %s",tmpf.name,gi.url,mime)
+        print("line 550: ",gi.cache_path)
         size = tmpf.write(body)
         tmpf.close()
         self.tmp_filename = tmpf.name
