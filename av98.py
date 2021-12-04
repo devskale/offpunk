@@ -58,7 +58,8 @@ _VERSION = "1.0.4dev"
 _MAX_REDIRECTS = 5
 _MAX_CACHE_SIZE = 10
 _MAX_CACHE_AGE_SECS = 180
-_CACHE_PATH = "~/.local/"
+# TODO : use XDG spec for cache
+_CACHE_PATH = "~/.cache/av98/"
 
 # Command abbreviations
 _ABBREVS = {
