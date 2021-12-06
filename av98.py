@@ -149,7 +149,7 @@ class GeminiItem():
             self.scheme = 'local'
         else: 
             #if not local, we create a local cache path.
-            self.cache_path = _CACHE_PATH + self.host + self.path
+            self.cache_path = os.path.expanduser(_CACHE_PATH + self.host + self.path)
             # FIXME : this is a gross hack to give a name to
             # index files. This will break if the index is not
             # index.gmi
@@ -556,10 +556,15 @@ you'll be able to transparently follow links to Gopherspace!""")
         else:
             mode = "wb"
             encoding = None
-        ## Write
-        ## This is a copy of the raw gemtext
+        ## body is a copy of the raw gemtext
+        ## First, we create the permanent cache
+        cache_dir = os.path.dirname(gi.cache_path)
+        os.makedirs(cache_dir,exist_ok=True)
+        with open(gi.cache_path,'w') as file:
+            file.write(body)
+            file.close()
+        ## Tmpf is the temporary cache (historically, the only cache)
         tmpf = tempfile.NamedTemporaryFile(mode, encoding=encoding, delete=False)
-        print("line 550: ",gi.cache_path)
         size = tmpf.write(body)
         tmpf.close()
         self.tmp_filename = tmpf.name
