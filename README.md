@@ -4,13 +4,13 @@ This fork is an experiment by Ploum to add offline capabilities to AV-98.
 In AV-98, use the command "offline" to switch between offline/online.
 While offline, only content cached in .cache/av-98/ is accessed.
 
-FIXME: doesn’t handle MIME other than text/gemini
-FIXME: doesn’t handle accessing an URL without the ".gmi" file
+* FIXME: doesn’t handle MIME other than text/gemini
+* FIXME: doesn’t handle accessing an URL without the ".gmi" file
 (yes, this is a big issue).
 
-TODO: automatically populate the cache, not only while browsing.
-TODO: handle request done offline and retrieve them later
-TODO: know when to refresh the cache
+* TODO: automatically populate the cache, not only while browsing.
+* TODO: handle request done offline and retrieve them later
+* TODO: know when to refresh the cache
 
 This is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98)
 by Solderpunk. 
