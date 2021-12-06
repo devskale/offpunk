@@ -95,6 +95,7 @@ _MIME_HANDLERS = {
     "text/*":               "cat %s",
 }
 
+
 # monkey-patch Gemini support in urllib.parse
 # see https://github.com/python/cpython/blob/master/Lib/urllib/parse.py
 urllib.parse.uses_relative.append("gemini")
@@ -276,6 +277,7 @@ class GeminiClient(cmd.Cmd):
         self.tmp_filename = ""
         self.visited_hosts = set()
         self.waypoints = []
+        self.offline_only = False
 
         self.client_certs = {
             "active": None
@@ -1234,6 +1236,15 @@ you'll be able to transparently follow links to Gopherspace!""")
         for k, v in _ABBREVS.items():
             self.stdout.write("{:<7}  {}\n".format(k, v))
         self.stdout.write("\n")
+
+    def do_offline(self, *args):
+        """Use AV-98 offline by only accessing cached content"""
+        if self.offline_only:
+            self.offline_only = False
+            print("AV-98 is online and will access the network")
+        else:
+            self.offline_only = True
+            print("AV-98 is now offline and will only access cached content")
 
     ### Stuff for getting around
     def do_go(self, line):
