@@ -376,9 +376,28 @@ you'll be able to transparently follow links to Gopherspace!""")
         # Use cache, or hit the network if resource is not cached
         if check_cache and self.options["cache"] and self._is_cached(gi.url):
             mime, body, tmpfile = self._get_cached(gi.url)
+        elif self.offline_only:
+            print("Offline : only accessing cached content")
+            #FIXME : how do we know MIME for cached content?
+            mime = "text/gemini"
+            if os.path.exists(gi.cache_path):
+                with open(gi.cache_path,'r') as file:
+                    body = file.read()
+                    file.close()
+            else:
+                print("Error : content not cached")
+                return
+
         else:
             try:
                 gi, mime, body, tmpfile = self._fetch_over_network(gi)
+                ## We create the permanent cache for "text/gemini"
+                if mime == "text/gemini":
+                    cache_dir = os.path.dirname(gi.cache_path)
+                    os.makedirs(cache_dir,exist_ok=True)
+                    with open(gi.cache_path,'w') as file:
+                        file.write(body)
+                        file.close()
             except UserAbortException:
                 return
             except Exception as err:
@@ -404,6 +423,7 @@ you'll be able to transparently follow links to Gopherspace!""")
         if handle:
             if mime == "text/gemini":
                 self._handle_gemtext(body, gi)
+
             else:
                 cmd_str = self._get_handler_cmd(mime)
                 try:
@@ -419,7 +439,7 @@ you'll be able to transparently follow links to Gopherspace!""")
             self._update_history(gi)
 
     def _fetch_over_network(self, gi):
-
+        
         # Be careful with client certificates!
         # Are we crossing a domain boundary?
         if self.active_cert_domains and gi.host not in self.active_cert_domains:
@@ -559,12 +579,6 @@ you'll be able to transparently follow links to Gopherspace!""")
             mode = "wb"
             encoding = None
         ## body is a copy of the raw gemtext
-        ## First, we create the permanent cache
-        cache_dir = os.path.dirname(gi.cache_path)
-        os.makedirs(cache_dir,exist_ok=True)
-        with open(gi.cache_path,'w') as file:
-            file.write(body)
-            file.close()
         ## Tmpf is the temporary cache (historically, the only cache)
         tmpf = tempfile.NamedTemporaryFile(mode, encoding=encoding, delete=False)
         size = tmpf.write(body)
