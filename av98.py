@@ -153,9 +153,12 @@ class GeminiItem():
             self.cache_path = os.path.expanduser(_CACHE_PATH + self.host + self.path)
             # FIXME : this is a gross hack to give a name to
             # index files. This will break if the index is not
-            # index.gmi
+            # index.gmi. I don’t know how to know the real name
+            # of the file.
             if self.cache_path.endswith("/"):
                 self.cache_path += "index.gmi"
+            elif not self.cache_path.endswith(".gmi"):
+                self.cache_path += "/index.gmi"
     def root(self):
         return GeminiItem(self._derive_url("/"))
 
