@@ -5,8 +5,9 @@ In AV-98, use the command "offline" to switch between offline/online.
 While offline, only content cached in .cache/av-98/ is accessed.
 
 * FIXME: doesn’t handle MIME other than text/gemini
-* FIXME: doesn’t handle accessing an URL without the ".gmi" file
-(yes, this is a big issue).
+* FIXME: consider root file is always index.gmi
+* FIXME: bug with "submit" form, I don’t know why
+* FIXME: if a file exist where it should have been a folder, it fails (should instead remove the file)
 
 * TODO: automatically populate the cache, not only while browsing.
 * TODO: handle request done offline and retrieve them later
