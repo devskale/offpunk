@@ -1574,7 +1574,10 @@ Bookmarks are stored using the 'add' command."""
         with open(bm_file, "r") as fp:
             body = fp.read()
             gi = GeminiItem("localhost/" + bm_file)
-            self._handle_gemtext(body, gi, display = not args)
+            # We don’t display bookmarks if accessing directly one
+            # or if in sync_only
+            display = not ( args or self.sync_only) 
+            self._handle_gemtext(body, gi, display = display)
             if args:
                 # Use argument as a numeric index
                 self.default(line)
@@ -1690,10 +1693,11 @@ def main():
                 gc.cmdqueue.append(line)
 
     # Say hi
-    print("Welcome to AV-98!")
-    if args.restricted:
-        print("Restricted mode engaged!")
-    print("Enjoy your patrol through Geminispace...")
+    if not args.synconly:
+        print("Welcome to AV-98!")
+        if args.restricted:
+            print("Restricted mode engaged!")
+        print("Enjoy your patrol through Geminispace...")
 
     # Act on args
     if args.tls_cert:
@@ -1714,15 +1718,13 @@ def main():
     # Endless interpret loop
     if args.synconly:
         gc.onecmd("sync_only")
-        print("we are in synconly mode")
-        print("TODO : take urls in bm without bm command")
-        print("TODO : explore until depth N")
+        print("TODO : explore bms until depth N")
         gc.onecmd("bm")
-        print("t *")
         gc.onecmd("t *")
-        print("t")
-        gc.onecmd("t")
-        gc.onecmd("t")
+        while len(gc.waypoints) > 0:
+            gc.onecmd("t")
+            gc.onecmd("url")
+        gc.onecmd("blackbox")
     else:
         while True:
             try:
