@@ -426,9 +426,9 @@ you'll be able to transparently follow links to Gopherspace!""")
                 return
 
         # Pass file to handler, unless we were asked not to
-        if handle and not self.sync_only :
+        if handle :
             if mime == "text/gemini":
-                self._handle_gemtext(body, gi)
+                self._handle_gemtext(body, gi, display=not self.sync_only)
 
             else:
                 cmd_str = self._get_handler_cmd(mime)
@@ -491,7 +491,6 @@ you'll be able to transparently follow links to Gopherspace!""")
             raise RuntimeError("Received invalid header from server!")
         header = header.strip()
         self._debug("Response header: %s." % header)
-
         # Validate header
         status, meta = header.split(maxsplit=1)
         if len(meta) > 1024 or len(status) != 2 or not status.isnumeric():
@@ -505,12 +504,15 @@ you'll be able to transparently follow links to Gopherspace!""")
         # Handle non-SUCCESS headers, which don't have a response body
         # Inputs
         if status.startswith("1"):
-            print(meta)
-            if status == "11":
-                user_input = getpass.getpass("> ")
+            if self.sync_only:
+                return None
             else:
-                user_input = input("> ")
-            return self._fetch_over_network(gi.query(user_input))
+                print(meta)
+                if status == "11":
+                    user_input = getpass.getpass("> ")
+                else:
+                    user_input = input("> ")
+                return self._fetch_over_network(gi.query(user_input))
 
         # Redirects
         elif status.startswith("3"):
@@ -1720,10 +1722,20 @@ def main():
         gc.onecmd("sync_only")
         print("TODO : explore bms until depth N")
         gc.onecmd("bm")
-        gc.onecmd("t *")
+        #gc.onecmd("t *")
+        # only one URL fetched while debugging
+        gc.onecmd("t 1 2")
+        # root urls to explore with depth=1
+        nb_urls = len(gc.waypoints)
+        i = 0
         while len(gc.waypoints) > 0:
             gc.onecmd("t")
             gc.onecmd("url")
+            if i < nb_urls:
+                # FIXME : find when it crashes
+                print(i, "catching from url:")
+                #gc.onecmd("t *")
+            i += 1
         gc.onecmd("blackbox")
     else:
         while True:
