@@ -238,7 +238,7 @@ def restricted(inner):
 
 class GeminiClient(cmd.Cmd):
 
-    def __init__(self, restricted=False):
+    def __init__(self, restricted=False, synconly=False):
         cmd.Cmd.__init__(self)
 
         # Set umask so that nothing we create can be read by anybody else.
@@ -276,11 +276,14 @@ class GeminiClient(cmd.Cmd):
         self.page_index = 0
         self.permanent_redirects = {}
         self.previous_redirectors = set()
-        self.restricted = restricted
+        # Sync-only mode is restriced by design
+        self.restricted = restricted or synconly
+        self.synconly = synconly
         self.tmp_filename = ""
         self.visited_hosts = set()
         self.waypoints = []
         self.offline_only = False
+        self.sync_only = False
 
         self.client_certs = {
             "active": None
@@ -423,7 +426,7 @@ you'll be able to transparently follow links to Gopherspace!""")
                 return
 
         # Pass file to handler, unless we were asked not to
-        if handle:
+        if handle and not self.sync_only :
             if mime == "text/gemini":
                 self._handle_gemtext(body, gi)
 
@@ -1263,6 +1266,15 @@ you'll be able to transparently follow links to Gopherspace!""")
             self.offline_only = True
             print("AV-98 is now offline and will only access cached content")
 
+    def do_sync_only(self, *args):
+        """No output for non-interactive use"""
+        if self.sync_only:
+            self.sync_only = False
+            print("AV-98 will display output")
+        else:
+            self.sync_only = True
+            print("AV-98 is in non-interactive mode. No output")
+    
     ### Stuff for getting around
     def do_go(self, line):
         """Go to a gemini URL or marked item."""
@@ -1644,6 +1656,8 @@ def main():
     parser.add_argument('--tls-cert', metavar='FILE', help='TLS client certificate file')
     parser.add_argument('--tls-key', metavar='FILE', help='TLS client certificate private key file')
     parser.add_argument('--restricted', action="store_true", help='Disallow shell, add, and save commands')
+    parser.add_argument('--synconly', action='store_true', 
+                        help='run non-interactively to build cache')
     parser.add_argument('--version', action='store_true',
                         help='display version information and quit')
     parser.add_argument('url', metavar='URL', nargs='*',
@@ -1656,7 +1670,7 @@ def main():
         sys.exit()
 
     # Instantiate client
-    gc = GeminiClient(args.restricted)
+    gc = GeminiClient(restricted=args.restricted,synconly=args.synconly)
 
     # Process config file
     rcfile = os.path.join(gc.config_dir, "av98rc")
@@ -1698,11 +1712,23 @@ def main():
             gc.cmdqueue.append("tour")
 
     # Endless interpret loop
-    while True:
-        try:
-            gc.cmdloop()
-        except KeyboardInterrupt:
-            print("")
+    if args.synconly:
+        gc.onecmd("sync_only")
+        print("we are in synconly mode")
+        print("TODO : take urls in bm without bm command")
+        print("TODO : explore until depth N")
+        gc.onecmd("bm")
+        print("t *")
+        gc.onecmd("t *")
+        print("t")
+        gc.onecmd("t")
+        gc.onecmd("t")
+    else:
+        while True:
+            try:
+                gc.cmdloop()
+            except KeyboardInterrupt:
+                print("")
 
 if __name__ == '__main__':
     main()
