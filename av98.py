@@ -296,6 +296,7 @@ class GeminiClient(cmd.Cmd):
             "debug" : False,
             "ipv6" : True,
             "timeout" : 600,
+            "short_timeout" : 5,
             "width" : 80,
             "auto_follow_redirects" : True,
             "gopher_proxy" : None,
@@ -342,7 +343,7 @@ class GeminiClient(cmd.Cmd):
         and calling a handler program, and updating the history."""
 
         # Don't try to speak to servers running other protocols
-        if gi.scheme in ("http", "https"):
+        if gi.scheme in ("http", "https") and not self.sync_only:
             if not self.options.get("http_proxy",None):
                 webbrowser.open_new_tab(gi.url)
                 return
@@ -352,7 +353,8 @@ class GeminiClient(cmd.Cmd):
                 if resp.strip().lower() in ("n","no"):
                     webbrowser.open_new_tab(gi.url)
                     return
-        elif gi.scheme == "gopher" and not self.options.get("gopher_proxy", None):
+        elif gi.scheme == "gopher" and not self.options.get("gopher_proxy", None)\
+                                    and not self.sync_only:
             print("""AV-98 does not speak Gopher natively.
 However, you can use `set gopher_proxy hostname:port` to tell it about a
 Gopher-to-Gemini proxy (such as a running Agena instance), in which case
@@ -369,7 +371,7 @@ you'll be able to transparently follow links to Gopherspace!""")
             else:
                 print("Sorry, that file does not exist.")
                 return
-        elif gi.scheme not in ("gemini", "gopher"):
+        elif gi.scheme not in ("gemini", "gopher") and not self.sync_only:
             print("Sorry, no support for {} links.".format(gi.scheme))
             return
 
@@ -413,16 +415,19 @@ you'll be able to transparently follow links to Gopherspace!""")
                     print("ERROR: DNS error!")
                 elif isinstance(err, ConnectionRefusedError):
                     self.log["refused_connections"] += 1
-                    print("ERROR: Connection refused!")
+                    print("ERROR1: Connection refused!")
                 elif isinstance(err, ConnectionResetError):
                     self.log["reset_connections"] += 1
-                    print("ERROR: Connection reset!")
+                    print("ERROR2: Connection reset!")
                 elif isinstance(err, (TimeoutError, socket.timeout)):
                     self.log["timeouts"] += 1
-                    print("""ERROR: Connection timed out!
-    Slow internet connection?  Use 'set timeout' to be more patient.""")
+                    if not self.sync_only:
+                        print("""ERROR3: Connection timed out!
+        Slow internet connection?  Use 'set timeout' to be more patient.""")
                 else:
-                    print("ERROR: " + str(err))
+                    # we fail silently when sync_only
+                    if not self.sync_only:
+                        print("ERROR4: " + str(err))
                 return
 
         # Pass file to handler, unless we were asked not to
@@ -655,7 +660,11 @@ you'll be able to transparently follow links to Gopherspace!""")
         for address in addresses:
             self._debug("Connecting to: " + str(address[4]))
             s = socket.socket(address[0], address[1])
-            s.settimeout(self.options["timeout"])
+            if self.sync_only:
+                timeout = self.options["short_timeout"]
+            else:
+                timeout = self.options["timeout"]
+            s.settimeout(timeout)
             s = context.wrap_socket(s, server_hostname = gi.host)
             try:
                 s.connect(address[4])
@@ -1720,22 +1729,19 @@ def main():
     # Endless interpret loop
     if args.synconly:
         gc.onecmd("sync_only")
-        print("TODO : explore bms until depth N")
         gc.onecmd("bm")
-        #gc.onecmd("t *")
         # only one URL fetched while debugging
-        gc.onecmd("t 1 2")
-        # root urls to explore with depth=1
-        nb_urls = len(gc.waypoints)
-        i = 0
-        while len(gc.waypoints) > 0:
-            gc.onecmd("t")
-            gc.onecmd("url")
-            if i < nb_urls:
-                # FIXME : find when it crashes
-                print(i, "catching from url:")
-                #gc.onecmd("t *")
-            i += 1
+        #gc.onecmd("t 1")
+        original_lookup = gc.lookup
+        to_visit = gc.lookup
+        for j in original_lookup:
+            print("Caching: ",j.url)
+            gc.onecmd("go %s" %j.url)
+            # Depth = 1
+            temp_lookup = gc.lookup
+            for k in temp_lookup:
+                print("  -> ",k.url)
+                gc.onecmd("go %s" %k.url)
         gc.onecmd("blackbox")
     else:
         while True:
