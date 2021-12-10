@@ -264,6 +264,7 @@ class GeminiClient(cmd.Cmd):
 
         self.no_cert_prompt = "\x1b[38;5;76m" + "AV-98" + "\x1b[38;5;255m" + "> " + "\x1b[0m"
         self.cert_prompt = "\x1b[38;5;202m" + "AV-98" + "\x1b[38;5;255m"
+        self.offline_prompt = "\x1b[38;5;76m" + "OFF-98" + "\x1b[38;5;255m" + "> " + "\x1b[0m"
         self.prompt = self.no_cert_prompt
         self.gi = None
         self.history = []
@@ -1272,9 +1273,11 @@ you'll be able to transparently follow links to Gopherspace!""")
         """Use AV-98 offline by only accessing cached content"""
         if self.offline_only:
             self.offline_only = False
+            self.prompt = self.no_cert_prompt
             print("AV-98 is online and will access the network")
         else:
             self.offline_only = True
+            self.prompt = self.offline_prompt
             print("AV-98 is now offline and will only access cached content")
 
     def do_sync_only(self, *args):
