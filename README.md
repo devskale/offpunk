@@ -11,10 +11,9 @@ Use "av-98.py --synconly" to build a cache containing your bookmarks and all lin
 * FIXME: consider root file is always index.gmi
 * FIXME: if a file exists in the cache where it should have been a folder, it fails (should instead remove the file)
 * FIXME: certificates error are not handled in --synconly
+* FIXME: offline web browser use os.system because it’s the only one that understands the ">> file.txt"
 
 * TODO: handle request done offline and retrieve them later
-* TODO: add option for an offline HTTP browser
-* TODO: know when to refresh the cache instead of always downloading everything.
 
 This is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98)
 by Solderpunk. 

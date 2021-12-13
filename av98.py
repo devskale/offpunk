@@ -321,7 +321,8 @@ class GeminiClient(cmd.Cmd):
             "gopher_proxy" : None,
             "tls_mode" : "tofu",
             "http_proxy": None,
-            "cache" : False
+            "cache" : False,
+            "offline_web" : None
         }
 
         self.log = {
@@ -363,8 +364,14 @@ class GeminiClient(cmd.Cmd):
 
         # Don't try to speak to servers running other protocols
         if gi.scheme in ("http", "https") and not self.sync_only:
-            if not self.options.get("http_proxy",None):
+            if not self.options.get("http_proxy",None) and not self.offline_only:
                 webbrowser.open_new_tab(gi.url)
+                return
+            elif self.offline_only and self.options.get("offline_web"):
+                offline_browser = self.options.get("offline_web")
+                cmd = offline_browser % gi.url
+                #FIXME : subprocess doesn’t understand shell redirection
+                os.system(cmd)
                 return
             else:
                 print("Do you want to try to open this link with a http proxy?")
