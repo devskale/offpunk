@@ -25,6 +25,7 @@ import io
 import mimetypes
 import os
 import os.path
+import filecmp
 import random
 import shlex
 import shutil
@@ -159,6 +160,23 @@ class GeminiItem():
                 self.cache_path += "index.gmi"
             elif not self.cache_path.endswith(".gmi"):
                 self.cache_path += "/index.gmi"
+
+    def is_cache_valid(self):
+        # TODO: Try to be smart about when to update a cache
+        #
+        if self.cache_path:
+            if os.path.exists(self.cache_path):
+                #last_access = os.path.getatime(self.cache_path)
+                #last_modification = os.path.getmtime(self.cache_path)
+                #now = time.time()
+                return True
+            else:
+                #Cache has not been build
+                return False
+        else:
+            #There’s not even a cache!
+            return False
+
     def root(self):
         return GeminiItem(self._derive_url("/"))
 
@@ -384,6 +402,7 @@ you'll be able to transparently follow links to Gopherspace!""")
 
         # Use cache, or hit the network if resource is not cached
         if check_cache and self.options["cache"] and self._is_cached(gi.url):
+            print("original cache used ", gi.url)
             mime, body, tmpfile = self._get_cached(gi.url)
         elif self.offline_only:
             print("Offline : only accessing cached content")
@@ -404,35 +423,42 @@ you'll be able to transparently follow links to Gopherspace!""")
                 if mime == "text/gemini":
                     cache_dir = os.path.dirname(gi.cache_path)
                     os.makedirs(cache_dir,exist_ok=True)
-                    with open(gi.cache_path,'w') as file:
-                        file.write(body)
-                        file.close()
+                    # write cache only if content has been modified
+                    # in order to preserve the last modified date
+                    if not filecmp.cmp(gi.cache_path,tmpfile):
+                        with open(gi.cache_path,'w') as file:
+                            file.write(body)
+                            file.close()
             except UserAbortException:
                 return
             except Exception as err:
                 # Print an error message
+                print_error = True
                 if isinstance(err, socket.gaierror):
                     self.log["dns_failures"] += 1
-                    print("ERROR: DNS error!")
+                    if print_error:
+                        print("ERROR: DNS error!")
                 elif isinstance(err, ConnectionRefusedError):
                     self.log["refused_connections"] += 1
-                    print("ERROR1: Connection refused!")
+                    if print_error:
+                        print("ERROR1: Connection refused!")
                 elif isinstance(err, ConnectionResetError):
                     self.log["reset_connections"] += 1
-                    print("ERROR2: Connection reset!")
+                    if print_error:
+                        print("ERROR2: Connection reset!")
                 elif isinstance(err, (TimeoutError, socket.timeout)):
                     self.log["timeouts"] += 1
-                    if not self.sync_only:
+                    if print_error:
                         print("""ERROR3: Connection timed out!
         Slow internet connection?  Use 'set timeout' to be more patient.""")
                 else:
                     # we fail silently when sync_only
-                    if not self.sync_only:
+                    if print_error:
                         print("ERROR4: " + str(err))
                 return
 
         # Pass file to handler, unless we were asked not to
-        if handle :
+        if handle and not self.sync_only :
             if mime == "text/gemini":
                 self._handle_gemtext(body, gi, display=not self.sync_only)
 
@@ -1733,18 +1759,21 @@ def main():
     if args.synconly:
         gc.onecmd("sync_only")
         gc.onecmd("bm")
-        # only one URL fetched while debugging
-        #gc.onecmd("t 1")
+        #gc.onecmd("go rawtext.club/~ploum/")
         original_lookup = gc.lookup
-        to_visit = gc.lookup
         for j in original_lookup:
-            print("Caching: ",j.url)
+            print("Caching bookmark: ",j.url)
             gc.onecmd("go %s" %j.url)
             # Depth = 1
             temp_lookup = gc.lookup
+            #temp_lookup = []
             for k in temp_lookup:
-                print("  -> ",k.url)
-                gc.onecmd("go %s" %k.url)
+                if not k.is_cache_valid():
+                    #if not cached, we download
+                    #and add to offline tour
+                    #print("  -> ",k.url)
+                    gc.onecmd("go %s" %k.url)
+                    # TODO: add to offline tour
         gc.onecmd("blackbox")
     else:
         while True:
