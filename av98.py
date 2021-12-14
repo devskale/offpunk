@@ -412,7 +412,6 @@ you'll be able to transparently follow links to Gopherspace!""")
             print("original cache used ", gi.url)
             mime, body, tmpfile = self._get_cached(gi.url)
         elif self.offline_only:
-            print("Offline : only accessing cached content")
             #FIXME : how do we know MIME for cached content?
             mime = "text/gemini"
             if os.path.exists(gi.cache_path):
@@ -1686,6 +1685,13 @@ current gemini browsing session."""
                 certfile = os.path.join(self.config_dir, "transient_certs", cert+ext)
                 if os.path.exists(certfile):
                     os.remove(certfile)
+        # Saving the tour on file
+        tourfile = os.path.join(self.config_dir, "tour")
+        with open(tourfile,'w') as f:
+            for line in self.waypoints:
+                l = line.url+"\n"
+                f.write(l)
+            f.close
         print()
         print("Thank you for flying AV-98!")
         sys.exit()
@@ -1734,6 +1740,14 @@ def main():
                         print("Skipping rc command \"%s\" due to provided URLs." % line)
                     continue
                 gc.cmdqueue.append(line)
+    # Creating the tour
+    tourfile = os.path.join(gc.config_dir, "tour")
+    if os.path.exists(tourfile):
+        with open(tourfile, "r") as tf:
+            for line in tf:
+                line = line.strip()
+                tcmd = "t "+line
+                gc.cmdqueue.append(tcmd)
 
     # Say hi
     if not args.sync:
