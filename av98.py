@@ -303,6 +303,7 @@ class GeminiClient(cmd.Cmd):
         self.waypoints = []
         self.offline_only = False
         self.sync_only = False
+        self.tourfile = os.path.join(self.config_dir, "tour")
 
         self.client_certs = {
             "active": None
@@ -1686,8 +1687,7 @@ current gemini browsing session."""
                 if os.path.exists(certfile):
                     os.remove(certfile)
         # Saving the tour on file
-        tourfile = os.path.join(self.config_dir, "tour")
-        with open(tourfile,'w') as f:
+        with open(self.tourfile,'w') as f:
             for line in self.waypoints:
                 l = line.url+"\n"
                 f.write(l)
@@ -1741,9 +1741,8 @@ def main():
                     continue
                 gc.cmdqueue.append(line)
     # Creating the tour
-    tourfile = os.path.join(gc.config_dir, "tour")
-    if os.path.exists(tourfile):
-        with open(tourfile, "r") as tf:
+    if os.path.exists(gc.tourfile):
+        with open(gc.tourfile, "r") as tf:
             for line in tf:
                 line = line.strip()
                 tcmd = "t "+line
@@ -1797,7 +1796,12 @@ def main():
                     #and add to offline tour
                     print("  -> [%s/%s] "%(sec_count,sec_end),k.url,end='\r')
                     gc.onecmd("go %s" %k.url)
-                    # TODO: add to offline tour
+                    #we add to the next tour only if we managed to cache 
+                    #the ressource
+                    if k.is_cache_valid():
+                        with open(gc.tourfile,mode='a') as tf:
+                            line = k.url + "\n"
+                            tf.write(line)
         gc.onecmd("blackbox")
     else:
         while True:
