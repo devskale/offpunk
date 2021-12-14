@@ -304,6 +304,7 @@ class GeminiClient(cmd.Cmd):
         self.offline_only = False
         self.sync_only = False
         self.tourfile = os.path.join(self.config_dir, "tour")
+        self.syncfile = os.path.join(self.config_dir, "to_fetch")
 
         self.client_certs = {
             "active": None
@@ -420,7 +421,11 @@ you'll be able to transparently follow links to Gopherspace!""")
                     body = file.read()
                     file.close()
             else:
-                print("Error : content not cached")
+                print("Content not available, marked for syncing")
+                with open(self.syncfile,mode='a') as sf:
+                    line = gi.url + '\n'
+                    sf.write(line)
+                    sf.close()
                 return
 
         else:
@@ -1775,14 +1780,30 @@ def main():
     if args.sync:
         #TODO : synconly should run only every XX hours, no more
         gc.sync_only = True
+        # First we get ressources from syncfile
+        lines_lookup = []
+        if os.path.exists(gc.syncfile):
+            with open(gc.syncfile,mode='r') as sf:
+                lines_lookup += sf.readlines()
+                sf.close()
+                # let’s empty the file
+                open(gc.syncfile,mode='w').close()
+        ## Also get ressources in the tour
+        if os.path.exists(gc.tourfile):
+            with open(gc.tourfile,mode='r') as tf:
+                lines_lookup += tf.readlines()
+                tf.close
         gc.onecmd("bm")
         #gc.onecmd("go rawtext.club/~ploum/")
-        original_lookup = gc.lookup
+        original_lookup = []
+        for l in lines_lookup:
+            original_lookup.append(GeminiItem(l))
+        original_lookup += gc.lookup
         count = 0
         end = len(original_lookup)
         for j in original_lookup:
             count += 1
-            print("[%s/%s] Get bookmark "%(count,end),j.url)
+            print("[%s/%s] Fetch "%(count,end),j.url)
             gc.onecmd("go %s" %j.url)
             # Depth = 1
             temp_lookup = gc.lookup
