@@ -432,7 +432,12 @@ you'll be able to transparently follow links to Gopherspace!""")
                     os.makedirs(cache_dir,exist_ok=True)
                     # write cache only if content has been modified
                     # in order to preserve the last modified date
-                    if not filecmp.cmp(gi.cache_path,tmpfile):
+                    write_cache = False
+                    if not os.path.exists(gi.cache_path):
+                        write_cache = True
+                    elif not filecmp.cmp(gi.cache_path,tmpfile):
+                        write_cache = True
+                    if write_cache:
                         with open(gi.cache_path,'w') as file:
                             file.write(body)
                             file.close()
@@ -440,7 +445,7 @@ you'll be able to transparently follow links to Gopherspace!""")
                 return
             except Exception as err:
                 # Print an error message
-                print_error = True
+                print_error = not self.sync_only
                 if isinstance(err, socket.gaierror):
                     self.log["dns_failures"] += 1
                     if print_error:
@@ -465,11 +470,11 @@ you'll be able to transparently follow links to Gopherspace!""")
                 return
 
         # Pass file to handler, unless we were asked not to
-        if handle and not self.sync_only :
+        if handle :
             if mime == "text/gemini":
                 self._handle_gemtext(body, gi, display=not self.sync_only)
 
-            else:
+            elif not self.sync_only :
                 cmd_str = self._get_handler_cmd(mime)
                 try:
                     subprocess.call(shlex.split(cmd_str % tmpfile))
@@ -1764,10 +1769,11 @@ def main():
 
     # Endless interpret loop
     if args.synconly:
+        #TODO : synconly should run only every XX hours, no more
         gc.onecmd("sync_only")
         gc.onecmd("bm")
         #gc.onecmd("go rawtext.club/~ploum/")
-        original_lookup = gc.lookup
+        original_lookup = gc.lookup[0:1]
         for j in original_lookup:
             print("Caching bookmark: ",j.url)
             gc.onecmd("go %s" %j.url)
@@ -1775,10 +1781,11 @@ def main():
             temp_lookup = gc.lookup
             #temp_lookup = []
             for k in temp_lookup:
+                print("  --",k.url,k.is_cache_valid())
                 if not k.is_cache_valid():
                     #if not cached, we download
                     #and add to offline tour
-                    #print("  -> ",k.url)
+                    print("  new -> ",k.url)
                     gc.onecmd("go %s" %k.url)
                     # TODO: add to offline tour
         gc.onecmd("blackbox")
