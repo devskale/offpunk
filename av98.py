@@ -1318,15 +1318,6 @@ you'll be able to transparently follow links to Gopherspace!""")
             self.prompt = self.offline_prompt
             print("AV-98 is now offline and will only access cached content")
 
-    def do_sync_only(self, *args):
-        """No output for non-interactive use"""
-        if self.sync_only:
-            self.sync_only = False
-            print("AV-98 will display output")
-        else:
-            self.sync_only = True
-            print("AV-98 is in non-interactive mode. No output")
-    
     ### Stuff for getting around
     def do_go(self, line):
         """Go to a gemini URL or marked item."""
@@ -1711,8 +1702,8 @@ def main():
     parser.add_argument('--tls-cert', metavar='FILE', help='TLS client certificate file')
     parser.add_argument('--tls-key', metavar='FILE', help='TLS client certificate private key file')
     parser.add_argument('--restricted', action="store_true", help='Disallow shell, add, and save commands')
-    parser.add_argument('--synconly', action='store_true', 
-                        help='run non-interactively to build cache')
+    parser.add_argument('--sync', action='store_true', 
+                        help='run non-interactively to build cache by exploring bookmarks')
     parser.add_argument('--version', action='store_true',
                         help='display version information and quit')
     parser.add_argument('url', metavar='URL', nargs='*',
@@ -1725,7 +1716,7 @@ def main():
         sys.exit()
 
     # Instantiate client
-    gc = GeminiClient(restricted=args.restricted,synconly=args.synconly)
+    gc = GeminiClient(restricted=args.restricted,synconly=args.sync)
 
     # Process config file
     rcfile = os.path.join(gc.config_dir, "av98rc")
@@ -1745,7 +1736,7 @@ def main():
                 gc.cmdqueue.append(line)
 
     # Say hi
-    if not args.synconly:
+    if not args.sync:
         print("Welcome to AV-98!")
         if args.restricted:
             print("Restricted mode engaged!")
@@ -1768,24 +1759,29 @@ def main():
             gc.cmdqueue.append("tour")
 
     # Endless interpret loop
-    if args.synconly:
+    if args.sync:
         #TODO : synconly should run only every XX hours, no more
-        gc.onecmd("sync_only")
+        gc.sync_only = True
         gc.onecmd("bm")
         #gc.onecmd("go rawtext.club/~ploum/")
-        original_lookup = gc.lookup[0:1]
+        original_lookup = gc.lookup
+        count = 0
+        end = len(original_lookup)
         for j in original_lookup:
-            print("Caching bookmark: ",j.url)
+            count += 1
+            print("[%s/%s] Get bookmark "%(count,end),j.url)
             gc.onecmd("go %s" %j.url)
             # Depth = 1
             temp_lookup = gc.lookup
             #temp_lookup = []
+            sec_count = 0
+            sec_end = len(temp_lookup)
             for k in temp_lookup:
-                print("  --",k.url,k.is_cache_valid())
+                sec_count += 1
                 if not k.is_cache_valid():
                     #if not cached, we download
                     #and add to offline tour
-                    print("  new -> ",k.url)
+                    print("  -> [%s/%s] "%(sec_count,sec_end),k.url,end='\r')
                     gc.onecmd("go %s" %k.url)
                     # TODO: add to offline tour
         gc.onecmd("blackbox")
