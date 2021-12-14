@@ -159,6 +159,11 @@ class GeminiItem():
             if self.cache_path.endswith("/"):
                 self.cache_path += "index.gmi"
             elif not self.cache_path.endswith(".gmi"):
+                # That’s really a naughty hack
+                # but else, accessing gemini://mysite/~user while offline
+                # will truncate all relative links
+                # mysite/~user/page.gmi would become mysite/page.gmi
+                self.url += "/"
                 self.cache_path += "/index.gmi"
 
     def is_cache_valid(self):
@@ -1343,7 +1348,13 @@ you'll be able to transparently follow links to Gopherspace!""")
     @needs_gi
     def do_reload(self, *args):
         """Reload the current URL."""
-        self._go_to_gi(self.gi, check_cache=False)
+        if self.offline_only:
+            with open(self.syncfile,mode='a') as sf:
+                line = self.gi.url + '\n'
+                sf.write(line)
+                sf.close()
+        else:
+            self._go_to_gi(self.gi, check_cache=False)
 
     @needs_gi
     def do_up(self, *args):

@@ -14,8 +14,6 @@ Use "av-98.py --sync" to build a cache containing your bookmarks and all links i
 * FIXME5: offline web browser use os.system because it’s the only one that understands the ">> file.txt"
 * FIXME6: sync-only always tries to download "uncachable" content (such as XML, forms, gopher…) This is somewhat related to FIXME1.
 
-* TODO: handle request done offline and retrieve them later
-* TODO: reload while offline should mark the url for syncing
 * TODO: number of cache updated in blackbox
 
 This is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98)
