@@ -426,7 +426,7 @@ you'll be able to transparently follow links to Gopherspace!""")
                 tmpfile = cached
                 mime,encoding = mimetypes.guess_type(cached,strict=False)
                 #gmi Mimetype is not recognized yet
-                if not mime and cached.endswith('.gmi'):
+                if not mime :
                     mime = "text/gemini"
                 with open(cached,'r') as file:
                     body = file.read()
