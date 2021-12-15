@@ -9,12 +9,14 @@ Use "av-98.py --sync" to build a cache containing your bookmarks and all links i
 
 * FIXME1: doesn’t handle MIME other than text/gemini
 * FIXME2: consider root file is always index.gmi
-* FIXME3: if a file exists in the cache where it should have been a folder, it fails (should instead remove the file)
 * FIXME4: certificates error are not handled in --synconly
 * FIXME5: offline web browser use os.system because it’s the only one that understands the ">> file.txt"
-* FIXME6: sync-only always tries to download "uncachable" content (such as XML, forms, gopher…) This is somewhat related to FIXME1.
+* FIXME6: sync-only always tries to download "uncachable" content (such as XML, forms, gopher…) This is somewhat related to FIXME1 and FIXME2.
 
 * TODO: number of cache updated in blackbox
+* TODO: don’t add to tour when sync from tour/to_fetch
+* TODO: don’t refresh is cache is young, even for bm
+* TODO: https:// gemini:// should be understood without go
 
 This is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98)
 by Solderpunk. 

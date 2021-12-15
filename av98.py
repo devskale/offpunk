@@ -158,13 +158,6 @@ class GeminiItem():
             # of the file.
             if self.cache_path.endswith("/"):
                 self.cache_path += "index.gmi"
-            elif not self.cache_path.endswith(".gmi"):
-                # That’s really a naughty hack
-                # but else, accessing gemini://mysite/~user while offline
-                # will truncate all relative links
-                # mysite/~user/page.gmi would become mysite/page.gmi
-                self.url += "/"
-                self.cache_path += "/index.gmi"
 
     def is_cache_valid(self):
         # TODO: Try to be smart about when to update a cache
@@ -213,7 +206,8 @@ class GeminiItem():
         Convert a relative URL to an absolute URL by using the URL of this
         GeminiItem as a base.
         """
-        return urllib.parse.urljoin(self.url, relative_url)
+        abs_url = urllib.parse.urljoin(self.url, relative_url)
+        return abs_url
 
     def to_map_line(self, name=None):
         if name or self.name:
@@ -419,10 +413,21 @@ you'll be able to transparently follow links to Gopherspace!""")
             print("original cache used ", gi.url)
             mime, body, tmpfile = self._get_cached(gi.url)
         elif self.offline_only:
-            #FIXME : how do we know MIME for cached content?
-            mime = "text/gemini"
-            if os.path.exists(gi.cache_path):
-                with open(gi.cache_path,'r') as file:
+            if os.path.isdir(gi.cache_path):
+                # if cache is a directory, then we redirect
+                # (similar to status 31 over the network)
+                new_url = gi.url + "/"
+                new_gi = GeminiItem(new_url,name=gi.name)
+                self._go_to_gi(new_gi)
+                return
+            else:
+                cached = gi.cache_path
+            if os.path.isfile(cached):
+                mime,encoding = mimetypes.guess_type(cached,strict=False)
+                #gmi Mimetype is not recognized yet
+                if not mime and cached.endswith('.gmi'):
+                    mime = "text/gemini"
+                with open(cached,'r') as file:
                     body = file.read()
                     file.close()
             else:
@@ -437,6 +442,7 @@ you'll be able to transparently follow links to Gopherspace!""")
             try:
                 gi, mime, body, tmpfile = self._fetch_over_network(gi)
                 ## We create the permanent cache for "text/gemini"
+                ## FIXME : try caching everything eles ?
                 if mime == "text/gemini":
                     cache_dir = os.path.dirname(gi.cache_path)
                     os.makedirs(cache_dir,exist_ok=True)
