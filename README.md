@@ -19,7 +19,6 @@ Known issues in the code:
 
 * TODO: number of cache updated in blackbox
 * TODO: don’t add to tour when sync from tour/to_fetch
-* TODO: https:// gemini:// should be understood without go
 
 This is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98)
 by Solderpunk. 

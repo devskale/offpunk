@@ -381,6 +381,7 @@ class GeminiClient(cmd.Cmd):
             elif self.offline_only and self.options.get("offline_web"):
                 offline_browser = self.options.get("offline_web")
                 cmd = offline_browser % gi.url
+                print("Save for offline web : %s" %gi.url)
                 #FIXME : subprocess doesn’t understand shell redirection
                 os.system(cmd)
                 return
@@ -1215,6 +1216,10 @@ you'll be able to transparently follow links to Gopherspace!""")
             return self.do_up()
         elif line.startswith("/"):
             return self.do_search(line[1:])
+        elif line.startswith("http://") or line.startswith("https://"):
+            return self.do_go(line)
+        elif line.startswith("gemini://"):
+            return self.do_go(line)
 
         # Expand abbreviated commands
         first_word = line.split()[0].strip()
