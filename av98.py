@@ -157,20 +157,27 @@ class GeminiItem():
             # index.gmi. I don’t know how to know the real name
             # of the file. But first, we need to ensure that the domain name
             # finish by "/". Else, the cache with create a file, not a folder.
-            if self.path == "":
+            if self.path == "" or os.path.isdir(self.cache_path):
                 self.cache_path += "/"
             if self.cache_path.endswith("/"):
                 self.cache_path += "index.gmi"
 
-    def is_cache_valid(self):
-        # TODO: Try to be smart about when to update a cache
-        #
+    def is_cache_valid(self,validity=None):
+        # Validity is the acceptable time for 
+        # a cache to be valid  (in seconds)
+        # If None, then any cache is considered as valid
         if self.cache_path:
             if os.path.exists(self.cache_path):
                 #last_access = os.path.getatime(self.cache_path)
                 #last_modification = os.path.getmtime(self.cache_path)
                 #now = time.time()
-                return True
+                if validity:
+                    last_modification = os.path.getmtime(self.cache_path)
+                    now = time.time()
+                    age = now - last_modification 
+                    return age < validity
+                else:
+                    return True
             else:
                 #Cache has not been build
                 return False
@@ -1810,7 +1817,8 @@ def main():
 
     # Endless interpret loop
     if args.sync:
-        #TODO : synconly should run only every XX hours, no more
+        # Don’t refresh is cache is younger than 1h
+        refresh_time = 3600
         gc.sync_only = True
         # First we get ressources from syncfile
         lines_lookup = []
@@ -1835,26 +1843,27 @@ def main():
         end = len(original_lookup)
         for j in original_lookup:
             count += 1
-            print("[%s/%s] Fetch "%(count,end),j.url)
-            gc.onecmd("go %s" %j.url)
-            # Depth = 1
-            temp_lookup = set(gc.lookup)
-            #temp_lookup = []
-            sec_count = 0
-            sec_end = len(temp_lookup)
-            for k in temp_lookup:
-                sec_count += 1
-                if not k.is_cache_valid():
-                    #if not cached, we download
-                    #and add to offline tour
-                    print("  -> [%s/%s] "%(sec_count,sec_end),k.url,end='\r')
-                    gc.onecmd("go %s" %k.url)
-                    #we add to the next tour only if we managed to cache 
-                    #the ressource
-                    if k.is_cache_valid():
-                        with open(gc.tourfile,mode='a') as tf:
-                            line = k.url + "\n"
-                            tf.write(line)
+            if not j.is_cache_valid(validity=refresh_time):
+                print("[%s/%s] Fetch "%(count,end),j.url)
+                gc.onecmd("go %s" %j.url)
+                # Depth = 1
+                temp_lookup = set(gc.lookup)
+                #temp_lookup = []
+                sec_count = 0
+                sec_end = len(temp_lookup)
+                for k in temp_lookup:
+                    sec_count += 1
+                    if not k.is_cache_valid():
+                        #if not cached, we download
+                        #and add to offline tour
+                        print("  -> [%s/%s] "%(sec_count,sec_end),k.url,end='\r')
+                        gc.onecmd("go %s" %k.url)
+                        #we add to the next tour only if we managed to cache 
+                        #the ressource
+                        if k.is_cache_valid():
+                            with open(gc.tourfile,mode='a') as tf:
+                                line = k.url + "\n"
+                                tf.write(line)
         gc.onecmd("blackbox")
     else:
         while True:
