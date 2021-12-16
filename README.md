@@ -5,7 +5,7 @@ This fork is an experiment by Ploum ( gemini://rawtext.club/~ploum) to add offli
 In AV-98, use the commands "online" and "offline" to switch between offline/online.
 While offline, only content cached in .cache/av-98/ is accessed.
 
-Use "av-98.py --sync" to build a cache containing your bookmarks and all links in your bookmarks. It might be quite slow the first time, be patient.
+Use "av-98.py --sync" to build a cache containing your bookmarks and all links in your bookmarks. It might be quite slow the first time, be patient. You can also use the option "--cache-validity 3600" to only refresh cache which are at least 1h old (set the number of seconds according to your needs).
 
 Uncached ressources tentatively accessed offline will be accessed with the next --sync, including reload of already cached ressources.
 
@@ -19,7 +19,6 @@ Known issues in the code:
 
 * TODO: number of cache updated in blackbox
 * TODO: don’t add to tour when sync from tour/to_fetch
-* TODO: don’t refresh is cache is young, even for bm
 * TODO: https:// gemini:// should be understood without go
 
 This is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98)

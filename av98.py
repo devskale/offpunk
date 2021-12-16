@@ -1754,6 +1754,8 @@ def main():
     parser.add_argument('--restricted', action="store_true", help='Disallow shell, add, and save commands')
     parser.add_argument('--sync', action='store_true', 
                         help='run non-interactively to build cache by exploring bookmarks')
+    parser.add_argument('--cache-validity', 
+                        help='duration for which a cache is valid before sync (seconds)')
     parser.add_argument('--version', action='store_true',
                         help='display version information and quit')
     parser.add_argument('url', metavar='URL', nargs='*',
@@ -1818,7 +1820,10 @@ def main():
     # Endless interpret loop
     if args.sync:
         # Don’t refresh is cache is younger than 1h
-        refresh_time = 3600
+        if args.cache_validity:
+            refresh_time = int(args.cache_validity)
+        else:
+            refresh_time = 1
         gc.sync_only = True
         # First we get ressources from syncfile
         lines_lookup = []
@@ -1834,7 +1839,6 @@ def main():
                 lines_lookup += tf.readlines()
                 tf.close
         gc.onecmd("bm")
-        #gc.onecmd("go rawtext.club/~ploum/")
         original_lookup = []
         for l in lines_lookup:
             original_lookup.append(GeminiItem(l))
