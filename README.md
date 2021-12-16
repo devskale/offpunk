@@ -1,14 +1,20 @@
 # AV-98
 
-This fork is an experiment by Ploum ( gemini://rawtext.club/~ploum) to add offline capabilities to AV-98.
+This fork is an experiment by Ploum ( gemini://rawtext.club/~ploum) to add offline capabilities to AV-98, including a persistent "tour" option.
 
-In AV-98, use the command "offline" to switch between offline/online.
+In AV-98, use the commands "online" and "offline" to switch between offline/online.
 While offline, only content cached in .cache/av-98/ is accessed.
 
 Use "av-98.py --sync" to build a cache containing your bookmarks and all links in your bookmarks. It might be quite slow the first time, be patient.
 
+Uncached ressources tentatively accessed offline will be accessed with the next --sync, including reload of already cached ressources.
+
+New ressources discovered while --sync will be added to your tour.
+
+
+Known issues in the code:
 * FIXME2: consider root file is always index.gmi
-* FIXME4: certificates error are not handled in --synconly
+* FIXME4: certificates error are not handled in --sync
 * FIXME5: offline web browser use os.system because it’s the only one that understands the ">> file.txt"
 
 * TODO: number of cache updated in blackbox

@@ -155,7 +155,10 @@ class GeminiItem():
             # FIXME : this is a gross hack to give a name to
             # index files. This will break if the index is not
             # index.gmi. I don’t know how to know the real name
-            # of the file.
+            # of the file. But first, we need to ensure that the domain name
+            # finish by "/". Else, the cache with create a file, not a folder.
+            if self.path == "":
+                self.cache_path += "/"
             if self.cache_path.endswith("/"):
                 self.cache_path += "index.gmi"
 
@@ -444,6 +447,8 @@ you'll be able to transparently follow links to Gopherspace!""")
                 gi, mime, body, tmpfile = self._fetch_over_network(gi)
                 ## We create the permanent cache
                 cache_dir = os.path.dirname(gi.cache_path)
+                if os.path.isfile(cache_dir):
+                    os.remove(cache_dir)
                 os.makedirs(cache_dir,exist_ok=True)
                 shutil.copyfile(tmpfile,gi.cache_path)
                 # The following is an attempt to
@@ -479,6 +484,10 @@ you'll be able to transparently follow links to Gopherspace!""")
                     if print_error:
                         print("""ERROR3: Connection timed out!
         Slow internet connection?  Use 'set timeout' to be more patient.""")
+                elif isinstance(err, FileExistsError):
+                    print("""ERROR5: Trying to create a directory which already exists
+                            in the cache : """)
+                    print(err)
                 else:
                     # we fail silently when sync_only
                     if print_error:
@@ -1326,13 +1335,19 @@ you'll be able to transparently follow links to Gopherspace!""")
     def do_offline(self, *args):
         """Use AV-98 offline by only accessing cached content"""
         if self.offline_only:
-            self.offline_only = False
-            self.prompt = self.no_cert_prompt
-            print("AV-98 is online and will access the network")
+            print("Offline and undisturbed.")
         else:
             self.offline_only = True
             self.prompt = self.offline_prompt
             print("AV-98 is now offline and will only access cached content")
+    
+    def do_online(self, *args):
+        if self.offline_only:    
+            self.offline_only = False
+            self.prompt = self.no_cert_prompt
+            print("AV-98 is online and will access the network")
+        else:
+            print("Already online. Try offline.")
 
     ### Stuff for getting around
     def do_go(self, line):
@@ -1823,7 +1838,7 @@ def main():
             print("[%s/%s] Fetch "%(count,end),j.url)
             gc.onecmd("go %s" %j.url)
             # Depth = 1
-            temp_lookup = gc.lookup
+            temp_lookup = set(gc.lookup)
             #temp_lookup = []
             sec_count = 0
             sec_end = len(temp_lookup)
