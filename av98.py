@@ -449,9 +449,10 @@ you'll be able to transparently follow links to Gopherspace!""")
                 #gmi Mimetype is not recognized yet
                 if not mime :
                     mime = "text/gemini"
-                with open(cached,'r') as file:
-                    body = file.read()
-                    file.close()
+                if mime == "text/gemini":
+                    with open(cached,'r') as file:
+                        body = file.read()
+                        file.close()
             else:
                 print("Content not available, marked for syncing")
                 with open(self.syncfile,mode='a') as sf:
