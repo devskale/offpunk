@@ -1871,6 +1871,7 @@ def main():
                         randomval = int(refresh_time*random.uniform(10,100))
                         #never saving recursion to tour
                         substri = strin + " -->"
+                        subcount[0] += 1
                         fetch_cache(k,depth=d,validity=randomval,\
                                         count=subcount,strin=substri)
 
