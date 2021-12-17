@@ -158,8 +158,10 @@ class GeminiItem():
             # of the file. But first, we need to ensure that the domain name
             # finish by "/". Else, the cache with create a file, not a folder.
             if self.path == "" or os.path.isdir(self.cache_path):
-                self.cache_path += "/"
-                self.url += "/"
+                if not self.cache_path.endswith("/"):
+                    self.cache_path += "/"
+                if not self.url.endswith("/"):
+                    self.url += "/"
             if self.cache_path.endswith("/"):
                 self.cache_path += "index.gmi"
 
@@ -167,7 +169,7 @@ class GeminiItem():
         # Validity is the acceptable time for 
         # a cache to be valid  (in seconds)
         # If None, then any cache is considered as valid
-        if self.cache_path:
+        if self.cache_path :
             if os.path.exists(self.cache_path):
                 #last_access = os.path.getatime(self.cache_path)
                 #last_modification = os.path.getmtime(self.cache_path)
@@ -1847,14 +1849,14 @@ def main():
                 if strin != "":
                     endline = '\r'
                 else:
-                    endline = '\n'
+                    endline = None
                 print("%s [%s/%s] Fetch "%(strin,count[0],count[1]),gitem.url,end=endline)
                 gc.onecmd("go %s" %gitem.url)
                 if totour:
                     #we add to the next tour only if we managed to cache 
                     #the ressource
                     if gitem.is_cache_valid():
-                        print("  -> adding to tour: ",gitem.url)
+                        #print("  -> adding to tour: ",gitem.url)
                         with open(gc.tourfile,mode='a') as tf:
                             line = gitem.url.strip() + "\n"
                             tf.write(line)
@@ -1892,8 +1894,9 @@ def main():
             #always get to_fetch and tour, regarless of refreshtime
             #we don’t save to tour (it’s already there)
             counter += 1
-            fetch_cache(GeminiItem(l),depth=1,validity=1,\
-                        savetotour=None,count=[counter,tot])
+            if l.startswith("gemini://"):
+                fetch_cache(GeminiItem(l),depth=1,validity=1,\
+                            savetotour=None,count=[counter,tot])
         # Then we get ressources from syncfile
         lines_lookup = []
         if os.path.exists(gc.syncfile):
@@ -1910,8 +1913,9 @@ def main():
             #always get to_fetch and tour, regarless of refreshtime
             #we save to tour
             counter += 1
-            fetch_cache(GeminiItem(l),depth=1,validity=1,\
-                        savetotour='force',count=[counter,tot])
+            if l.startswith("gemini://"): 
+                fetch_cache(GeminiItem(l),depth=1,validity=1,\
+                            savetotour='force',count=[counter,tot])
         gc.onecmd("bm")
         original_lookup = gc.lookup
         end = len(original_lookup)
