@@ -1,26 +1,30 @@
 # AV-98
 
+## AV-98-offline
+This is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98) by Solderpunk.
+
 This fork is an experiment by Ploum ( gemini://rawtext.club/~ploum) to add offline capabilities to AV-98, including a persistent "tour" option.
 
 In AV-98, use the commands "online" and "offline" to switch between offline/online.
 While offline, only content cached in .cache/av-98/ is accessed.
 
-Use "av-98.py --sync" to build a cache containing your bookmarks and all links in your bookmarks. It might be quite slow the first time, be patient. You can also use the option "--cache-validity 3600" to only refresh cache which are at least 1h old (set the number of seconds according to your needs).
+Use "av-98.py --sync" to build a cache containing your bookmarks and all links in your bookmarks. It might be quite slow the first time, be patient. You can also use the option "--cache-validity 3600" to only refresh cache which are at least 1h old (set the number of seconds according to your needs. If 0 or not set, cache-validity is considered as infinite).
 
-Uncached ressources tentatively accessed offline will be accessed with the next --sync, including reload of already cached ressources.
+Uncached ressources tentatively accessed offline will be accessed with the next --sync, including reload of already cached ressources. Already cached ressources might randomly be reloaded from time to time.
 
-New ressources discovered while --sync will be added to your tour.
+New ressources discovered in your bookmarks while --sync will be added to your tour. This means that if you have gemlogs in your bookmarks, any new posts in those will be added to your tour.
 
+At the moment, caching only work for gemini:// ressources. gopher:// is not implemented and http(s):// ressources are sent to an "offline browser" (by default, None, nothing is done). It could be useful to, for example, send the http:// links to a text file in order to visit them while online.
 
 Known issues in the code:
-* FIXME2: consider root file is always index.gmi
-* FIXME4: certificates error are not handled in --sync
-* FIXME5: offline web browser use os.system because it’s the only one that understands the ">> file.txt"
+* WONTFIX: Sync is slow if you have bookmarks with lot of links that change very often.
+* WONTFIX: Certificates error are not handled in --sync
+* FIXME1: consider root file is always index.gmi
+* FIXME2: offline web browser use os.system because it’s the only one that understands the ">> file.txt"
 
-* TODO: number of cache updated in blackbox
+* TODO: Update blackbox to reflect cache hits.
 
-This is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98)
-by Solderpunk. 
+## Original description
 
 AV-98 is an experimental client for the
 [Gemini protocol](https://gemini.circumlunar.space).  It is derived from the
