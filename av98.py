@@ -1855,7 +1855,7 @@ def main():
                     if gitem.is_cache_valid():
                         print("  -> adding to tour: ",gitem.url)
                         with open(gc.tourfile,mode='a') as tf:
-                            line = gitem.url + "\n"
+                            line = gitem.url.strip() + "\n"
                             tf.write(line)
                 if depth > 0:
                     d = depth - 1
