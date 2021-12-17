@@ -3,9 +3,9 @@
 ## AV-98-offline
 This is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98) by Solderpunk.
 
-This fork is an experiment by [Ploum](gemini://rawtext.club/~ploum) to add offline capabilities to AV-98, including a persistent "tour" option.
+This fork is an experiment by Ploum (=> gemini://rawtext.club/~ploum ) to add offline capabilities to AV-98, including a persistent "tour" option.
 
-See [how I browse Gemini offline](gemini://rawtext.club/~ploum/2021-12-17-offline-gemini.gmi).
+See how I browse Gemini offline (=> gemini://rawtext.club/~ploum/2021-12-17-offline-gemini.gmi).
 
 In AV-98, use the commands "online" and "offline" to switch between offline/online.
 While offline, only content cached in .cache/av-98/ is accessed.
