@@ -159,6 +159,7 @@ class GeminiItem():
             # finish by "/". Else, the cache with create a file, not a folder.
             if self.path == "" or os.path.isdir(self.cache_path):
                 self.cache_path += "/"
+                self.url += "/"
             if self.cache_path.endswith("/"):
                 self.cache_path += "index.gmi"
 
