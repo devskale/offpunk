@@ -165,16 +165,17 @@ class GeminiItem():
             if self.cache_path.endswith("/"):
                 self.cache_path += "index.gmi"
 
-    def is_cache_valid(self,validity=None):
+    def is_cache_valid(self,validity=0):
         # Validity is the acceptable time for 
         # a cache to be valid  (in seconds)
-        # If None, then any cache is considered as valid
+        # If 0, then any cache is considered as valid
+        # (use validity = 1 if you want to refresh everything)
         if self.cache_path :
             if os.path.exists(self.cache_path):
                 #last_access = os.path.getatime(self.cache_path)
                 #last_modification = os.path.getmtime(self.cache_path)
                 #now = time.time()
-                if validity:
+                if validity > 0 :
                     last_modification = os.path.getmtime(self.cache_path)
                     now = time.time()
                     age = now - last_modification
@@ -1836,6 +1837,14 @@ def main():
 
     # Endless interpret loop
     if args.sync:
+        # fetch_cache is the core of the sync algorithm.
+        # It takes as input :
+        # - a list of GeminiItems to be fetched (TODO: convert to list)
+        # - depth : the degree of recursion to build the cache (0 means no recursion)
+        # - validity : the age, in seconds, existing caches need to have before
+        #               being refreshed (0 = never refreshed if it already exists)
+        # - savetotour : if True, newly cached items are added to tour
+        #                (this option does not apply recursively)
         def fetch_cache(gitem,depth=0,validity=0,savetotour=None,count=[0,0],strin=""):
             #savetotour = "new" to only savetotour things never seen before
             #savetotour = "force" to save to tour
@@ -1880,9 +1889,19 @@ def main():
             refresh_time = int(args.cache_validity)
         else:
             # if no refresh time, a default of 1h is used
-            refresh_time = 3600
+            refresh_time = 0
         gc.sync_only = True
-        ## First we get ressources in the tour
+        # We start by syncing the bookmarks
+        gc.onecmd("bm")
+        original_lookup = gc.lookup
+        end = len(original_lookup)
+        counter = 0
+        print(" * * * %s bookmarks to fetch * * *" %end)
+        for j in original_lookup:
+            #refreshing the bookmarks
+            counter += 1
+            fetch_cache(j,depth=1,validity=refresh_time,savetotour='new',count=[counter,end])
+        ## Second we get ressources in the tour
         lines_lookup = []
         if os.path.exists(gc.tourfile):
             with open(gc.tourfile,mode='r') as tf:
@@ -1918,15 +1937,6 @@ def main():
             if l.startswith("gemini://"): 
                 fetch_cache(GeminiItem(l),depth=1,validity=1,\
                             savetotour='force',count=[counter,tot])
-        gc.onecmd("bm")
-        original_lookup = gc.lookup
-        end = len(original_lookup)
-        counter = 0
-        print(" * * * %s to fetch from your bookmarks * * *" %end)
-        for j in original_lookup:
-            #refreshing the bookmarks
-            counter += 1
-            fetch_cache(j,depth=1,validity=refresh_time,savetotour='new',count=[counter,end])
         gc.onecmd("blackbox")
     else:
         while True:
