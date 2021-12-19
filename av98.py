@@ -88,7 +88,7 @@ _ABBREVS = {
 }
 
 _MIME_HANDLERS = {
-    "application/pdf":      "xpdf %s",
+    "application/pdf":      "zathura %s",
     "audio/mpeg":           "mpg123 %s",
     "audio/ogg":            "ogg123 %s",
     "image/*":              "feh %s",
@@ -1845,31 +1845,31 @@ def main():
         #               being refreshed (0 = never refreshed if it already exists)
         # - savetotour : if True, newly cached items are added to tour
         #                (this option does not apply recursively)
-        def fetch_cache(gitem,depth=0,validity=0,savetotour=None,count=[0,0],strin=""):
-            #savetotour = "new" to only savetotour things never seen before
-            #savetotour = "force" to save to tour
+        def add_to_tour(gitem):
+            if gitem.is_cache_valid():
+                print("  -> adding to tour: ",gitem.url)
+                with open(gc.tourfile,mode='a') as tf:
+                    line = gitem.url.strip() + "\n"
+                    tf.write(line)
+                    tf.close()
+
+        def fetch_cache(gitem,depth=0,validity=0,savetotour=False,count=[0,0],strin=""):
+            #savetotour = True will save to tour newly cached content
             # else, do not save to tour
             #regardless of valitidy
-            totour = False
-            if savetotour == "new":
-                totour = not gitem.is_cache_valid(validity=0)
-            elif savetotour == "force":
-                totour = True
             if not gitem.is_cache_valid(validity=validity):
                 if strin != "":
                     endline = '\r'
                 else:
                     endline = None
+                #Did we already had a cache (even an old one) ?
+                isnew = not gitem.is_cache_valid()
                 print("%s [%s/%s] Fetch "%(strin,count[0],count[1]),gitem.url,end=endline)
                 gc.onecmd("go %s" %gitem.url)
-                if totour:
+                if savetotour and isnew and gitem.is_cache_valid():
                     #we add to the next tour only if we managed to cache 
                     #the ressource
-                    if gitem.is_cache_valid():
-                        #print("  -> adding to tour: ",gitem.url)
-                        with open(gc.tourfile,mode='a') as tf:
-                            line = gitem.url.strip() + "\n"
-                            tf.write(line)
+                    add_to_tour(gitem)
                 if depth > 0:
                     d = depth - 1
                     temp_lookup = set(gc.lookup)
@@ -1878,11 +1878,11 @@ def main():
                         #recursive call
                         #To not refresh already cached ressource too often
                         #we impose a random validity
-                        randomval = int(refresh_time*random.uniform(10,100))
+                        #randomval = int(refresh_time*random.uniform(10,100))
                         #never saving recursion to tour
                         substri = strin + " -->"
                         subcount[0] += 1
-                        fetch_cache(k,depth=d,validity=randomval,\
+                        fetch_cache(k,depth=d,validity=0,savetotour=savetotour,\
                                         count=subcount,strin=substri)
 
         if args.cache_validity:
@@ -1900,7 +1900,7 @@ def main():
         for j in original_lookup:
             #refreshing the bookmarks
             counter += 1
-            fetch_cache(j,depth=1,validity=refresh_time,savetotour='new',count=[counter,end])
+            fetch_cache(j,depth=1,validity=refresh_time,savetotour=True,count=[counter,end])
         ## Second we get ressources in the tour
         lines_lookup = []
         if os.path.exists(gc.tourfile):
@@ -1916,8 +1916,8 @@ def main():
             #we don’t save to tour (it’s already there)
             counter += 1
             if l.startswith("gemini://"):
-                fetch_cache(GeminiItem(l),depth=1,validity=1,\
-                            savetotour=None,count=[counter,tot])
+                fetch_cache(GeminiItem(l),depth=1,validity=refresh_time,\
+                            savetotour=False,count=[counter,tot])
         # Then we get ressources from syncfile
         lines_lookup = []
         if os.path.exists(gc.syncfile):
@@ -1931,12 +1931,15 @@ def main():
         if tot > 0:
             print(" * * * %s to fetch from your offline browsing * * *" %tot)
         for l in set(lines_lookup):
-            #always get to_fetch and tour, regarless of refreshtime
-            #we save to tour
+            #always fetch the cache (we allows only a 3 minutes time)
+            #then add to tour
             counter += 1
+            gitem = GeminiItem(l)
             if l.startswith("gemini://"): 
-                fetch_cache(GeminiItem(l),depth=1,validity=1,\
-                            savetotour='force',count=[counter,tot])
+                fetch_cache(gitem,depth=1,validity=180,\
+                            savetotour=False,count=[counter,tot])
+                add_to_tour(gitem)
+
         gc.onecmd("blackbox")
     else:
         while True:
