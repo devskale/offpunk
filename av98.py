@@ -115,7 +115,7 @@ def fix_ipv6_url(url):
         return "[" + url + "]/"
     # Now the trickier cases...
     if "://" in url:
-        schema, schemaless = url.split("://")
+        schema, schemaless = url.split("://",maxsplit=1)
     else:
         schema, schemaless = None, url
     if "/" in schemaless:
@@ -135,7 +135,7 @@ class GeminiItem():
     def __init__(self, url, name=""):
         if "://" not in url and ("./" not in url and url[0] != "/"):
             url = "gemini://" + url
-        self.url = fix_ipv6_url(url)
+        self.url = fix_ipv6_url(url).strip()
         self.name = name
         self.local = False
         parsed = urllib.parse.urlparse(self.url)
@@ -156,7 +156,7 @@ class GeminiItem():
             # index files. This will break if the index is not
             # index.gmi. I don’t know how to know the real name
             # of the file. But first, we need to ensure that the domain name
-            # finish by "/". Else, the cache with create a file, not a folder.
+            # finish by "/". Else, the cache will create a file, not a folder.
             if self.path == "" or os.path.isdir(self.cache_path):
                 if not self.cache_path.endswith("/"):
                     self.cache_path += "/"
@@ -457,7 +457,7 @@ you'll be able to transparently follow links to Gopherspace!""")
             else:
                 print("Content not available, marked for syncing")
                 with open(self.syncfile,mode='a') as sf:
-                    line = gi.url + '\n'
+                    line = gi.url.strip() + '\n'
                     sf.write(line)
                     sf.close()
                 return
@@ -483,6 +483,8 @@ you'll be able to transparently follow links to Gopherspace!""")
                     cache_dir = os.path.dirname(gi.cache_path)
                     if os.path.isdir(cache_dir):
                         with open(gi.cache_path, "w") as cache:
+                            cache.write(str(datetime.datetime.now())+"\n")
+                            cache.write("ERROR while caching %s\n" %gi.url)
                             cache.write(str(err))
                             cache.write("\n")
                             cache.close()
