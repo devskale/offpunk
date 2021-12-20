@@ -1849,7 +1849,7 @@ def main():
         #                (this option does not apply recursively)
         def add_to_tour(gitem):
             if gitem.is_cache_valid():
-                print("  -> adding to tour: ",gitem.url)
+                print("  -> adding to tour: %s" %gitem.url)
                 with open(gc.tourfile,mode='a') as tf:
                     line = gitem.url.strip() + "\n"
                     tf.write(line)
@@ -1918,7 +1918,7 @@ def main():
             #we don’t save to tour (it’s already there)
             counter += 1
             if l.startswith("gemini://"):
-                fetch_cache(GeminiItem(l),depth=1,validity=refresh_time,\
+                fetch_cache(GeminiItem(l.strip()),depth=1,validity=refresh_time,\
                             savetotour=False,count=[counter,tot])
         # Then we get ressources from syncfile
         lines_lookup = []
@@ -1936,7 +1936,7 @@ def main():
             #always fetch the cache (we allows only a 3 minutes time)
             #then add to tour
             counter += 1
-            gitem = GeminiItem(l)
+            gitem = GeminiItem(l.strip())
             if l.startswith("gemini://"): 
                 fetch_cache(gitem,depth=1,validity=180,\
                             savetotour=False,count=[counter,tot])
