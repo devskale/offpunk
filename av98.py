@@ -471,20 +471,22 @@ you'll be able to transparently follow links to Gopherspace!""")
                     os.remove(cache_dir)
                 os.makedirs(cache_dir,exist_ok=True)
                 shutil.copyfile(tmpfile,gi.cache_path)
-                # The following is an attempt to
-                # write cache only if content has been modified
-                # in order to preserve the last modified date
-                # It is commented out because not useful (yet?)
-                #write_cache = False
-                #if not os.path.exists(gi.cache_path):
-                #    write_cache = True
-                #elif not filecmp.cmp(gi.cache_path,tmpfile):
-                #    write_cache = True
-                #if write_cache:
-                #    shutil.copyfile(tmpfile,gi.cache_path)
             except UserAbortException:
                 return
             except Exception as err:
+                # If we get an error, we want to keep an existing cache
+                # but we need to touch it or to create an empty one
+                # to avoid hitting the error at each refresh
+                if gi.is_cache_valid():
+                    os.utime(gi.cache_path)
+                else:
+                    cache_dir = os.path.dirname(gi.cache_path)
+                    if os.path.isdir(cache_dir):
+                        with open(gi.cache_path, "w") as cache:
+                            cache.write(str(err))
+                            cache.write("\n")
+                            cache.close()
+    
                 # Print an error message
                 print_error = not self.sync_only
                 if isinstance(err, socket.gaierror):
