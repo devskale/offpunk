@@ -249,7 +249,9 @@ CRLF = '\r\n'
 
 # Cheap and cheerful URL detector
 def looks_like_url(word):
-    return "." in word and word.startswith("gemini://")
+    start = word.startswith("gemini://") or word.startswith("http://")\
+            or word.startswith("https://")
+    return "." in word and start
 
 class UserAbortException(Exception):
     pass
@@ -1235,9 +1237,7 @@ you'll be able to transparently follow links to Gopherspace!""")
             return self.do_up()
         elif line.startswith("/"):
             return self.do_search(line[1:])
-        elif line.startswith("http://") or line.startswith("https://"):
-            return self.do_go(line)
-        elif line.startswith("gemini://"):
+        elif looks_like_url(line):
             return self.do_go(line)
 
         # Expand abbreviated commands
@@ -1385,7 +1385,28 @@ you'll be able to transparently follow links to Gopherspace!""")
         """Go to a gemini URL or marked item."""
         line = line.strip()
         if not line:
-            print("Go where?")
+            if shutil.which('xsel'):
+                clipboards = []
+                urls = []
+                clipboards.append(subprocess.check_output(['xsel','-p'],text=True))
+                clipboards.append(subprocess.check_output(['xsel','-s'],text=True))
+                clipboards.append(subprocess.check_output(['xsel','-b'],text=True))
+                for u in clipboards:
+                    if looks_like_url(u) :
+                        urls.append(u)
+                if len(urls) > 1:
+                    self.lookup = []
+                    for u in urls:
+                        self.lookup.append(GeminiItem(u))
+                    print("Where do you want to go today?")
+                    self._show_lookup()
+                elif len(urls) == 1:
+                    self.do_go(urls[0])
+                else:
+                    print("Go where? (hint: simply copy an URL)")
+            else:
+                print("Go where? (hint: install xsel to go to copied URLs)")
+
         # First, check for possible marks
         elif line in self.marks:
             gi = self.marks[line]
