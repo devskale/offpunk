@@ -23,6 +23,7 @@ import glob
 import hashlib
 import io
 import mimetypes
+import magic
 import os
 import os.path
 import filecmp
@@ -320,7 +321,7 @@ class GeminiClient(cmd.Cmd):
         self.synconly = synconly
         self.tmp_filename = ""
         self.visited_hosts = set()
-        self.waypoints = []
+        #self.waypoints = []
         self.offline_only = False
         self.sync_only = False
         self.tourfile = os.path.join(self.config_dir, "tour")
@@ -449,8 +450,10 @@ you'll be able to transparently follow links to Gopherspace!""")
                 mime,encoding = mimetypes.guess_type(cached,strict=False)
                 #gmi Mimetype is not recognized yet
                 if not mime :
+                    mime = magic.from_file(cached,mime=True)
+                if mime.startswith("text"):
+                #if mime == "text/gemini": 
                     mime = "text/gemini"
-                if mime == "text/gemini":
                     with open(cached,'r') as file:
                         body = file.read()
                         file.close()
@@ -1447,25 +1450,54 @@ queue of gemini items.
 Items can be added with `tour 1 2 3 4` or ranges like `tour 1-4`.
 All items in current menu can be added with `tour *`.
 Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
+        def add_to_tourfile(url):
+            with open(self.tourfile,'a') as f:
+                l = url.strip()+"\n"
+                f.write(l)
+                f.close
+        def pop_from_tourfile():
+            l = None
+            lines = []
+            with open(self.tourfile,'r') as f:
+                l = f.readline()
+                lines = f.readlines()
+                f.close()
+            with open(self.tourfile,'w') as f:
+                if len(lines) > 0:
+                    f.writelines(lines)
+                f.close()
+            return l
+        def list_tourfile():
+            lines = []
+            with open(self.tourfile,'r') as f:
+                lines = f.readlines()
+                f.close()
+            return lines
+        def clear_tourfile():
+            with open(self.tourfile,'w') as f:
+                f.close()
         line = line.strip()
         if not line:
             # Fly to next waypoint on tour
-            if not self.waypoints:
+            nexttour = pop_from_tourfile()
+            if not nexttour:
                 print("End of tour.")
             else:
-                gi = self.waypoints.pop(0)
-                self._go_to_gi(gi)
+                self._go_to_gi(GeminiItem(nexttour))
         elif line == "ls":
             old_lookup = self.lookup
-            self.lookup = self.waypoints
+            self.lookup = []
+            for u in list_tourfile():
+                self.lookup.append(GeminiItem(u))
             self._show_lookup()
             self.lookup = old_lookup
         elif line == "clear":
-            self.waypoints = []
+            clear_tourfile()
         elif line == "*":
-            self.waypoints.extend(self.lookup)
+            for l in self.lookup:
+                add_to_tourfile(l.url)
         elif looks_like_url(line):
-            self.waypoints.append(GeminiItem(line))
+            add_to_tourfile(line)
         else:
             for index in line.split():
                 try:
@@ -1474,17 +1506,17 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
                         # Just a single index
                         n = int(index)
                         gi = self.lookup[n-1]
-                        self.waypoints.append(gi)
+                        add_to_tourfile(gi.url)
                     elif len(pair) == 2:
                         # Two endpoints for a range of indices
                         if int(pair[0]) < int(pair[1]):
                             for n in range(int(pair[0]), int(pair[1]) + 1):
                                 gi = self.lookup[n-1]
-                                self.waypoints.append(gi)
+                                add_to_tourfile(gi.url)
                         else:
                             for n in range(int(pair[0]), int(pair[1]) - 1, -1):
                                 gi = self.lookup[n-1]
-                                self.waypoints.append(gi)
+                                add_to_tourfile(gi.url)
 
                     else:
                         # Syntax error
@@ -1751,12 +1783,6 @@ current gemini browsing session."""
                 certfile = os.path.join(self.config_dir, "transient_certs", cert+ext)
                 if os.path.exists(certfile):
                     os.remove(certfile)
-        # Saving the tour on file
-        with open(self.tourfile,'w') as f:
-            for line in self.waypoints:
-                l = line.url+"\n"
-                f.write(l)
-            f.close
         print()
         print("Thank you for flying AV-98!")
         sys.exit()
@@ -1807,14 +1833,6 @@ def main():
                         print("Skipping rc command \"%s\" due to provided URLs." % line)
                     continue
                 gc.cmdqueue.append(line)
-    # Creating the tour
-    if os.path.exists(gc.tourfile):
-        with open(gc.tourfile, "r") as tf:
-            for line in tf:
-                line = line.strip()
-                if line:
-                    tcmd = "t "+line
-                    gc.cmdqueue.append(tcmd)
 
     # Say hi
     if not args.sync:
