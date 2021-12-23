@@ -144,6 +144,21 @@ class GeminiItem():
         self.host = parsed.hostname
         self.port = parsed.port or standard_ports.get(self.scheme, 0)
         self.path = parsed.path
+        self.title = self.host
+        #small intelligence to try to find a good name for a capsule
+        #we try to find eithe ~username or /users/username
+        #else we fallback to hostname
+        if "user" in parsed.path:
+            i = 0
+            splitted = parsed.path.split("/")
+            while i < (len(splitted)-1):
+                if splitted[i].startswith("user"):
+                    self.title = splitted[i+1]
+                i += 1
+        if "~" in parsed.path:
+            for pp in parsed.path.split("/"):
+                if pp.startswith("~"):
+                    self.title = pp[1:]
         self.cache_path = None
         if  self.host == None:
             h = self.url.split('/')
@@ -1039,6 +1054,8 @@ you'll be able to transparently follow links to Gopherspace!""")
         # to display it. This is the output, not native gemtext.
         tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
         self.idx_filename = tmpf.name
+        title = menu_gi.title
+        tmpf.write("\x1b[31m\x1b[1m"+ title + "\x1b[0m""\n")
         for line in body.splitlines():
             if line.startswith("```"):
                 preformatted = not preformatted
@@ -1061,13 +1078,15 @@ you'll be able to transparently follow links to Gopherspace!""")
                     initial_indent = "> ", subsequent_indent="> ") + "\n")
             elif line.startswith("###"):
                 line = line[3:].lstrip("\t ")
-                tmpf.write("\x1b[4m" + line + "\x1b[0m""\n")
+                #tmpf.write("\x1b[4m" + line + "\x1b[0m""\n")
+                tmpf.write("\x1b[34m\x1b[2m" + line + "\x1b[0m""\n")
             elif line.startswith("##"):
                 line = line[2:].lstrip("\t ")
-                tmpf.write("\x1b[1m" + line + "\x1b[0m""\n")
+                #tmpf.write("\x1b[1m" + line + "\x1b[0m""\n")
+                tmpf.write("\x1b[34m" + line + "\x1b[0m""\n")
             elif line.startswith("#"):
                 line = line[1:].lstrip("\t ")
-                tmpf.write("\x1b[1m\x1b[4m" + line + "\x1b[0m""\n")
+                tmpf.write("\x1b[1;34m\x1b[4m" + line + "\x1b[0m""\n")
             else:
                 tmpf.write(textwrap.fill(line, self.options["width"]) + "\n")
         tmpf.close()
