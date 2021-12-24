@@ -1055,6 +1055,10 @@ you'll be able to transparently follow links to Gopherspace!""")
         tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
         self.idx_filename = tmpf.name
         title = menu_gi.title
+        if menu_gi.is_cache_valid() and self.offline_only:
+            last_modification = os.path.getmtime(menu_gi.cache_path)
+            str_last = time.ctime(last_modification)
+            title += "    \x1b[0;31m(last accessed on %s)"%str_last
         tmpf.write("\x1b[31m\x1b[1m"+ title + "\x1b[0m""\n")
         for line in body.splitlines():
             if line.startswith("```"):
