@@ -94,7 +94,7 @@ _MIME_HANDLERS = {
     "audio/ogg":            "ogg123 %s",
     "image/*":              "feh %s",
     "text/html":            "lynx -dump -force_html %s",
-    "text/*":               "cat %s",
+    "text/*":               "less -EFXRf %s",
 }
 
 
