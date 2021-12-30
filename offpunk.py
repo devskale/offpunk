@@ -173,7 +173,7 @@ class GeminiItem():
             self.scheme = 'local'
         else: 
             #if not local, we create a local cache path.
-            self.cache_path = os.path.expanduser(_CACHE_PATH + self.host + self.path)
+            self.cache_path = os.path.expanduser(_CACHE_PATH + self.scheme + "/" + self.host + self.path)
             # FIXME : this is a gross hack to give a name to
             # index files. This will break if the index is not
             # index.gmi. I don’t know how to know the real name
