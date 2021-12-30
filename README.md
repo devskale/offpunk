@@ -1,7 +1,49 @@
-# AV-98
+# OFFPUNK
 
-## AV-98-offline
-This is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98) by Solderpunk.
+A command-line, text-based and offline Gemini browser.
+
+Focused on Gemini first but with some Gopher/web support available or projected, the goal of Offpunk is to be able to synchronise your content once (a day, a week, a month) and then browse it while staying disconnected.
+
+Offpunk is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98) by Solderpunk and was originally only called AV-98-offline as an experimental branch.
+
+## Lightning introduction
+
+You use the `go` command to visit a URL, e.g. `go gemini.circumlunar.space`. If xsel is installed, go will automatically fetch the URL from your clipboard.
+
+Links in Gemini documents are assigned numerical indices.  Just type an index to
+follow that link.
+
+If a Gemini document is too long to fit on your screen, use the `less` command
+to pipe it to the `less` pager.
+
+Use `add` to add a capsule to your bookmarks and `bm` to show your bookmarks (which are stored in a file in you .config).
+
+Use `offline` to only browse cached content and `online` to go back online.
+
+Use the `help` command to learn about additional commands.
+
+When launched with the "--sync" option, offpunk will run non-interactively and fetch content from your bookmarks and content tentatively accessed while offline. New content found in your bookmarks will be added to your tour.
+
+With "--sync", one could specify a "--cache validity" in seconds. This option will not refresh content if a cache exists and is less than the specified amount of seconds old.
+
+For example, running
+
+`offpunk.py --sync --cache-validity 43200`
+
+will refresh your bookmarks if those are at least 12h old.
+
+
+
+## TODO
+
+Known issues in the code:
+* WONTFIX: Sync is slow if you have bookmarks with lot of links that change very often.
+* FIXME0: Certificates error are not handled in --sync
+* FIXME1: consider root file is always index.gmi
+* FIXME2: offline web browser use os.system because it’s the only one that understands the ">> file.txt"
+
+* TODO: Update blackbox to reflect cache hits.
+
 
 This fork is an experiment by Ploum (=> gemini://rawtext.club/~ploum ) to add offline capabilities to AV-98, including a persistent "tour" option.
 
@@ -18,27 +60,10 @@ New ressources discovered in your bookmarks while --sync will be added to your t
 
 At the moment, caching only work for gemini:// ressources. gopher:// is not implemented and http(s):// ressources are sent to an "offline browser" (by default, None, nothing is done). It could be useful to, for example, send the http:// links to a text file in order to visit them while online.
 
-Known issues in the code:
-* WONTFIX: Sync is slow if you have bookmarks with lot of links that change very often.
-* WONTFIX: Certificates error are not handled in --sync
-* FIXME1: consider root file is always index.gmi
-* FIXME2: offline web browser use os.system because it’s the only one that understands the ">> file.txt"
-
-* TODO: Update blackbox to reflect cache hits.
-
-## Original description
-
-AV-98 is an experimental client for the
-[Gemini protocol](https://gemini.circumlunar.space).  It is derived from the
-[gopher client VF-1](https://github.com/solderpunk/VF-1) by the same author.
-AV-98 is "experimental" in the sense that it may occasionally extend or deviate
-from the official Gemini specification for the purposes of, well,
-experimentation.  Despite this, it is expected to be stable enough for regular
-daily use at the same time.
 
 ## Dependencies
 
-AV-98 has no "strict dependencies", i.e. it will run and work without anything
+Offpunk has no "strict dependencies", i.e. it will run and work without anything
 else beyond the Python standard library.  However, it will "opportunistically
 import" a few other libraries if they are available to offer an improved
 experience.
@@ -48,6 +73,7 @@ experience.
 * The [cryptography library](https://pypi.org/project/cryptography/) will
   provide a better and slightly more secure experience when using the default
   TOFU certificate validation mode and is highly recommended.
+* [Python magic](https://github.com/ahupp/python-magic/) is useful to determine the MIME type of cached object. If not present, the file extension will be used but some capsules provide wrong extension or no extension at all.
 
 ## Features
 
@@ -60,18 +86,6 @@ experience.
 * Bookmarks
 * IPv6 support
 * Supports any character encoding recognised by Python
-
-## Lightning introduction
-
-You use the `go` command to visit a URL, e.g. `go gemini.circumlunar.space`.
-
-Links in Gemini documents are assigned numerical indices.  Just type an index to
-follow that link.
-
-If a Gemini document is too long to fit on your screen, use the `less` command
-to pipe it to the `less` pager.
-
-Use the `help` command to learn about additional commands.
 
 ## RC files
 

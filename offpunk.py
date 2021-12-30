@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-# AV-98 Gemini client
-# Dervied from VF-1 (https://github.com/solderpunk/VF-1),
+# Offpunk Offline Gemini client
+# Derived from AV-98 by Solderpunk,
+# (C) 2021 Ploum <offpunk@ploum.eu>
 # (C) 2019, 2020 Solderpunk <solderpunk@sdf.org>
 # With contributions from:
 #  - danceka <hannu.hartikainen@gmail.com>
@@ -66,7 +67,7 @@ _MAX_REDIRECTS = 5
 _MAX_CACHE_SIZE = 10
 _MAX_CACHE_AGE_SECS = 180
 # TODO : use XDG spec for cache
-_CACHE_PATH = "~/.cache/av98/"
+_CACHE_PATH = "~/.cache/offpunk/"
 
 # Command abbreviations
 _ABBREVS = {
@@ -309,7 +310,7 @@ class GeminiClient(cmd.Cmd):
 
         # Find config directory
         ## Look for something pre-existing
-        for confdir in ("~/.av98/", "~/.config/av98/"):
+        for confdir in ("~/.offpunk/", "~/.config/offpunk/"):
             confdir = os.path.expanduser(confdir)
             if os.path.exists(confdir):
                 self.config_dir = confdir
@@ -317,15 +318,15 @@ class GeminiClient(cmd.Cmd):
         ## Otherwise, make one in .config if it exists
         else:
             if os.path.exists(os.path.expanduser("~/.config/")):
-                self.config_dir = os.path.expanduser("~/.config/av98/")
+                self.config_dir = os.path.expanduser("~/.config/offpunk/")
             else:
-                self.config_dir = os.path.expanduser("~/.av98/")
+                self.config_dir = os.path.expanduser("~/.offpunk/")
             print("Creating config directory {}".format(self.config_dir))
             os.makedirs(self.config_dir)
 
-        self.no_cert_prompt = "\x1b[38;5;76m" + "AV-98" + "\x1b[38;5;255m" + "> " + "\x1b[0m"
-        self.cert_prompt = "\x1b[38;5;202m" + "AV-98" + "\x1b[38;5;255m"
-        self.offline_prompt = "\x1b[38;5;76m" + "OFF-98" + "\x1b[38;5;255m" + "> " + "\x1b[0m"
+        self.no_cert_prompt = "\x1b[38;5;76m" + "ON" + "\x1b[38;5;255m" + "> " + "\x1b[0m"
+        self.cert_prompt = "\x1b[38;5;202m" + "ON" + "\x1b[38;5;255m"
+        self.offline_prompt = "\x1b[38;5;76m" + "OFF" + "\x1b[38;5;255m" + "> " + "\x1b[0m"
         self.prompt = self.no_cert_prompt
         self.gi = None
         self.history = []
@@ -401,7 +402,7 @@ class GeminiClient(cmd.Cmd):
             first_seen date, last_seen date, count integer)""")
 
     def _go_to_gi(self, gi, update_hist=True, check_cache=True, handle=True):
-        """This method might be considered "the heart of AV-98".
+        """This method might be considered "the heart of Offpunk".
         Everything involved in fetching a gemini resource happens here:
         sending the request over the network, parsing the response if
         its a menu, storing the response in a temporary file, choosing
@@ -427,7 +428,7 @@ class GeminiClient(cmd.Cmd):
                     return
         elif gi.scheme == "gopher" and not self.options.get("gopher_proxy", None)\
                                     and not self.sync_only:
-            print("""AV-98 does not speak Gopher natively.
+            print("""Offpunk does not speak Gopher natively.
 However, you can use `set gopher_proxy hostname:port` to tell it about a
 Gopher-to-Gemini proxy (such as a running Agena instance), in which case
 you'll be able to transparently follow links to Gopherspace!""")
@@ -1384,7 +1385,7 @@ you'll be able to transparently follow links to Gopherspace!""")
                 print("Are you sure you don't want to pass the filename to the handler?")
 
     def do_abbrevs(self, *args):
-        """Print all AV-98 command abbreviations."""
+        """Print all Offpunk command abbreviations."""
         header = "Command Abbreviations:"
         self.stdout.write("\n{}\n".format(str(header)))
         if self.ruler:
@@ -1394,19 +1395,20 @@ you'll be able to transparently follow links to Gopherspace!""")
         self.stdout.write("\n")
 
     def do_offline(self, *args):
-        """Use AV-98 offline by only accessing cached content"""
+        """Use Offpunk offline by only accessing cached content"""
         if self.offline_only:
             print("Offline and undisturbed.")
         else:
             self.offline_only = True
             self.prompt = self.offline_prompt
-            print("AV-98 is now offline and will only access cached content")
+            print("Offpunk is now offline and will only access cached content")
     
     def do_online(self, *args):
+        """Use Offpunk online with a direct connection"""
         if self.offline_only:    
             self.offline_only = False
             self.prompt = self.no_cert_prompt
-            print("AV-98 is online and will access the network")
+            print("Offpunk is online and will access the network")
         else:
             print("Already online. Try offline.")
 
@@ -1593,7 +1595,7 @@ Think of it like marks in vi: 'mark a'='ma' and 'go a'=''a'."""
 
     def do_version(self, line):
         """Display version information."""
-        print("AV-98 " + _VERSION)
+        print("Offpunk " + _VERSION)
 
     ### Stuff that modifies the lookup table
     def do_ls(self, line):
@@ -1726,7 +1728,7 @@ Use 'ls -l' to see URLs."""
             print("File %s already exists!" % filename)
         else:
             # Don't use _get_active_tmpfile() here, because we want to save the
-            # "source code" of menus, not the rendered view - this way AV-98
+            # "source code" of menus, not the rendered view - this way Offpunk
             # can navigate to it later.
             shutil.copyfile(self.tmp_filename, filename)
             print("Saved to %s" % filename)
@@ -1818,7 +1820,7 @@ current gemini browsing session."""
 
     ### The end!
     def do_quit(self, *args):
-        """Exit AV-98."""
+        """Exit Offpunk."""
         # Close TOFU DB
         self.db_conn.commit()
         self.db_conn.close()
@@ -1835,7 +1837,7 @@ current gemini browsing session."""
                 if os.path.exists(certfile):
                     os.remove(certfile)
         print()
-        print("Thank you for flying AV-98!")
+        print("You can close your screen!")
         sys.exit()
 
     do_exit = do_quit
@@ -1862,14 +1864,14 @@ def main():
 
     # Handle --version
     if args.version:
-        print("AV-98 " + _VERSION)
+        print("Offpunk " + _VERSION)
         sys.exit()
 
     # Instantiate client
     gc = GeminiClient(restricted=args.restricted,synconly=args.sync)
 
     # Process config file
-    rcfile = os.path.join(gc.config_dir, "av98rc")
+    rcfile = os.path.join(gc.config_dir, "offpunkrc")
     if os.path.exists(rcfile):
         print("Using config %s" % rcfile)
         with open(rcfile, "r") as fp:
@@ -1887,7 +1889,7 @@ def main():
 
     # Say hi
     if not args.sync:
-        print("Welcome to AV-98!")
+        print("Welcome to Offpunk!")
         if args.restricted:
             print("Restricted mode engaged!")
         print("Enjoy your patrol through Geminispace...")
