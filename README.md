@@ -1,6 +1,6 @@
 # OFFPUNK
 
-A command-line, text-based and offline-first Gemini browser by [Ploum](gemini://rawtext.club/~ploum).
+A command-line, text-based and offline-first Gemini browser by [Ploum](https://ploum.net).
 
 Focused on Gemini first but with some Gopher/web support available or projected, the goal of Offpunk is to be able to synchronise your content once (a day, a week, a month) and then browse it while staying disconnected.
 
@@ -46,6 +46,8 @@ Known issues in the code:
 ## More
 
 See how I browse Gemini offline => gemini://rawtext.club/~ploum/2021-12-17-offline-gemini.gmi
+
+Announces about Offpunk will be made on Ploum’s Gemlog  => gemini://rawtext.club/~ploum/
 
 
 ## Dependencies
