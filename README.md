@@ -4,23 +4,22 @@ A command-line, text-based and offline-first Gemini browser by [Ploum](https://p
 
 Focused on Gemini first but with some Gopher/web support available or projected, the goal of Offpunk is to be able to synchronise your content once (a day, a week, a month) and then browse it while staying disconnected.
 
-Offpunk is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98) by Solderpunk and was originally only called AV-98-offline as an experimental branch.
+Offpunk is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98) by Solderpunk and was originally called AV-98-offline as an experimental branch.
 
 ## Lightning introduction
 
-You use the `go` command to visit a URL, e.g. `go gemini.circumlunar.space`. If xsel is installed, go will automatically fetch the URL from your clipboard.
+You use the `go` command to visit a URL, e.g. `go gemini.circumlunar.space`.
 
 Links in Gemini documents are assigned numerical indices.  Just type an index to
-follow that link. If a Gemini document is too long to fit on your screen, use the `less` command
-to pipe it to the `less` pager.
+follow that link. If a Gemini document is too long to fit on your screen, the content is displayed in the less pager. Type `q` to quit and go back to Offpunk prompt.
 
-Use `add` to add a capsule to your bookmarks and `bm` to show your bookmarks (which are stored in a file in you .config).
+Use `add` to add a capsule to your bookmarks and `bookmarks` or `bm` to show your bookmarks (which are stored in a file in you .config).
 
 Use `offline` to only browse cached content and `online` to go back online. While offline, the `reload` command will force a re-fetch during the next synchronisation.
 
-Use the `help` command to learn about additional commands.
+Use the `help` command to learn about additional commands. Some abreviations are available. See `abbrevs`.
 
-When launched with the "--sync" option, offpunk will run non-interactively and fetch content from your bookmarks and content tentatively accessed while offline. New content found in your bookmarks will be automatically added to your tour (use `tour ls` to see your current tour, `tour` without argument to access the next item and `tour X` where X is a link number to add the content of a link to your tour). Unlike AV-98, the tour is preserved accross sessions.
+When launched with the "--sync" option, offpunk will run non-interactively and fetch content from your bookmarks and content tentatively accessed while offline. New content found in your bookmarks will be automatically added to your tour (use `tour ls` to see your current tour, `tour` without argument to access the next item and `tour X` where X is a link number to add the content of a link to your tour).
 
 With "--sync", one could specify a "--cache validity" in seconds. This option will not refresh content if a cache exists and is less than the specified amount of seconds old.
 
@@ -62,16 +61,18 @@ experience.
 * The [cryptography library](https://pypi.org/project/cryptography/) will
   provide a better and slightly more secure experience when using the default
   TOFU certificate validation mode and is highly recommended.
-* [Python magic](https://github.com/ahupp/python-magic/) is useful to determine the MIME type of cached object. If not present, the file extension will be used but some capsules provide wrong extension or no extension at all.
+* [Python magic](https://github.com/ahupp/python-magic/) is useful to determine the MIME type of cached object. If not present, the file extension will be used but some capsules provide wrong extension or no extension at all. (apt-get install python3-magic)
+* [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). (apt-get install xsel)
 
 ## Features
 
+* Offline mode to browse cached content without a connection.
 * TOFU or CA server certificate validation
 * Extensive client certificate support if an `openssl` binary is available
 * Ability to specify external handler programs for different MIME types
 * Gopher proxy support (e.g. for use with
   [Agena](https://tildegit.org/solderpunk/agena))
-* Advanced navigation tools like `tour` and `mark` (as per VF-1)
+* Advanced navigation tools like `tour` and `mark` (as per VF-1). Unlike AV-98, tour is saved on disk accross sessions.
 * Bookmarks
 * IPv6 support
 * Supports any character encoding recognised by Python
