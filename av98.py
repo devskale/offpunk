@@ -23,7 +23,6 @@ import glob
 import hashlib
 import io
 import mimetypes
-import magic
 import os
 import os.path
 import filecmp
@@ -54,6 +53,12 @@ try:
     _BACKEND = default_backend()
 except ModuleNotFoundError:
     _HAS_CRYPTOGRAPHY = False
+
+try:
+    import magic
+    _HAS_MAGIC = True
+except ModuleNotFoundError:
+    _HAS_MAGIC = False
 
 _VERSION = "1.0.4dev"
 
@@ -466,8 +471,10 @@ you'll be able to transparently follow links to Gopherspace!""")
                 tmpfile = cached
                 mime,encoding = mimetypes.guess_type(cached,strict=False)
                 #gmi Mimetype is not recognized yet
-                if not mime :
+                if not mime and _HAS_MAGIC :
                     mime = magic.from_file(cached,mime=True)
+                elif not _HAS_MAGIC :
+                    print("Cannot guess the mime type of the file. Install Python-magic")
                 if mime.startswith("text"):
                 #if mime == "text/gemini": 
                     mime = "text/gemini"
