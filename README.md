@@ -1,6 +1,6 @@
 # OFFPUNK
 
-A command-line, text-based and offline Gemini browser.
+A command-line, text-based and offline-first Gemini browser by [Ploum](gemini://rawtext.club/~ploum).
 
 Focused on Gemini first but with some Gopher/web support available or projected, the goal of Offpunk is to be able to synchronise your content once (a day, a week, a month) and then browse it while staying disconnected.
 
@@ -11,18 +11,16 @@ Offpunk is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98)
 You use the `go` command to visit a URL, e.g. `go gemini.circumlunar.space`. If xsel is installed, go will automatically fetch the URL from your clipboard.
 
 Links in Gemini documents are assigned numerical indices.  Just type an index to
-follow that link.
-
-If a Gemini document is too long to fit on your screen, use the `less` command
+follow that link. If a Gemini document is too long to fit on your screen, use the `less` command
 to pipe it to the `less` pager.
 
 Use `add` to add a capsule to your bookmarks and `bm` to show your bookmarks (which are stored in a file in you .config).
 
-Use `offline` to only browse cached content and `online` to go back online.
+Use `offline` to only browse cached content and `online` to go back online. While offline, the `reload` command will force a re-fetch during the next synchronisation.
 
 Use the `help` command to learn about additional commands.
 
-When launched with the "--sync" option, offpunk will run non-interactively and fetch content from your bookmarks and content tentatively accessed while offline. New content found in your bookmarks will be added to your tour.
+When launched with the "--sync" option, offpunk will run non-interactively and fetch content from your bookmarks and content tentatively accessed while offline. New content found in your bookmarks will be automatically added to your tour (use `tour ls` to see your current tour, `tour` without argument to access the next item and `tour X` where X is a link number to add the content of a link to your tour). Unlike AV-98, the tour is preserved accross sessions.
 
 With "--sync", one could specify a "--cache validity" in seconds. This option will not refresh content if a cache exists and is less than the specified amount of seconds old.
 
@@ -30,9 +28,9 @@ For example, running
 
 `offpunk.py --sync --cache-validity 43200`
 
-will refresh your bookmarks if those are at least 12h old.
+will refresh your bookmarks if those are at least 12h old. If cache-validity is not set or set to 0, any cache is considered good and only content never cached before will be fetched. 
 
-
+At the moment, caching only work for gemini:// ressources. gopher:// is not implemented and http(s):// ressources are sent to an "offline browser" (by default, None, nothing is done). It could be useful to, for example, send the http:// links to a text file in order to visit them while online.
 
 ## TODO
 
@@ -45,20 +43,9 @@ Known issues in the code:
 * TODO: Update blackbox to reflect cache hits.
 
 
-This fork is an experiment by Ploum (=> gemini://rawtext.club/~ploum ) to add offline capabilities to AV-98, including a persistent "tour" option.
+## More
 
 See how I browse Gemini offline => gemini://rawtext.club/~ploum/2021-12-17-offline-gemini.gmi
-
-In AV-98, use the commands "online" and "offline" to switch between offline/online.
-While offline, only content cached in .cache/av-98/ is accessed.
-
-Use "av-98.py --sync" to build a cache containing your bookmarks and all links in your bookmarks. It might be quite slow the first time, be patient. You can also use the option "--cache-validity 3600" to only refresh cache which are at least 1h old (set the number of seconds according to your needs. If 0 or not set, cache-validity is considered as infinite).
-
-Uncached ressources tentatively accessed offline will be accessed with the next --sync, including reload of already cached ressources. Already cached ressources might randomly be reloaded from time to time.
-
-New ressources discovered in your bookmarks while --sync will be added to your tour. This means that if you have gemlogs in your bookmarks, any new posts in those will be added to your tour.
-
-At the moment, caching only work for gemini:// ressources. gopher:// is not implemented and http(s):// ressources are sent to an "offline browser" (by default, None, nothing is done). It could be useful to, for example, send the http:// links to a text file in order to visit them while online.
 
 
 ## Dependencies
@@ -89,16 +76,16 @@ experience.
 
 ## RC files
 
-You can use an RC file to automatically run any sequence of valid AV-98
+You can use an RC file to automatically run any sequence of valid Offpunk
 commands upon start up.  This can be used to make settings controlled with the
 `set` or `handler` commanders persistent.  You can also put a `go` command in
 your RC file to visit a "homepage" automatically on startup, or to pre-prepare
-a `tour` of your favourite Gemini sites.
+a `tour` of your favourite Gemini sites or `offline` to go offline by default.
 
-The RC file should be called `av98rc`.  AV-98 will look for it first in
-`~/.av98/` and second in `~/.config/av98/`.  Note that either directory might
-already exist even if you haven't created it manually, as AV-98 will, if
+The RC file should be called `offpunkrc`.  Offpunk will look for it first in
+`~/.offpunk/` and second in `~/.config/offpunk/`.  Note that either directory might
+already exist even if you haven't created it manually, as Offpunk will, if
 necessary, create the directory itself the first time you save a bookmark (the
-bookmark file is saved in the same location).  AV-98 will create
-`~/.config/av98` only if `~/.config/` already exists on your system, otherwise
-it will create `~/.av98/`.
+bookmark file is saved in the same location).  Offpunk will create
+`~/.config/offpunk` only if `~/.config/` already exists on your system, otherwise
+it will create `~/.offpunk/`.
