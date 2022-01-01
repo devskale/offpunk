@@ -61,7 +61,7 @@ try:
 except ModuleNotFoundError:
     _HAS_MAGIC = False
 
-_VERSION = "1.0.4dev"
+_VERSION = "0.1"
 
 _MAX_REDIRECTS = 5
 _MAX_CACHE_SIZE = 10
@@ -1675,8 +1675,8 @@ Use 'ls -l' to see URLs."""
             # No arguments given at all
             # Save current item, if there is one, to a file whose name is
             # inferred from the gemini path
-            if not self.tmp_filename:
-                print("You need to visit an item first!")
+            if not self.gi.cache_path:
+                print("You cannot save if not cached!")
                 return
             else:
                 index = None
@@ -1721,8 +1721,7 @@ Use 'ls -l' to see URLs."""
 
         # Derive filename from current GI's path, if one hasn't been set
         if not filename:
-            filename = os.path.basename(gi.path)
-
+            filename = os.path.basename(gi.cache_path)
         # Check for filename collisions and actually do the save if safe
         if os.path.exists(filename):
             print("File %s already exists!" % filename)
@@ -1730,8 +1729,8 @@ Use 'ls -l' to see URLs."""
             # Don't use _get_active_tmpfile() here, because we want to save the
             # "source code" of menus, not the rendered view - this way Offpunk
             # can navigate to it later.
-            shutil.copyfile(self.tmp_filename, filename)
             print("Saved to %s" % filename)
+            shutil.copyfile(gi.cache_path, filename)
 
         # Restore gi if necessary
         if index != None:
