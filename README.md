@@ -6,12 +6,14 @@ Focused on Gemini first but with some Gopher/web support available or projected,
 
 Offpunk is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98) by Solderpunk and was originally called AV-98-offline as an experimental branch.
 
-## Lightning introduction
+## How to use
+
+Offmini is a single python file. Installation is optional, you can simply download and run "./offmini.py" or "python3 offmini.py" in a terminal.
 
 You use the `go` command to visit a URL, e.g. `go gemini.circumlunar.space`.
 
 Links in Gemini documents are assigned numerical indices.  Just type an index to
-follow that link. If a Gemini document is too long to fit on your screen, the content is displayed in the less pager. Type `q` to quit and go back to Offpunk prompt.
+follow that link. If a Gemini document is too long to fit on your screen, the content is displayed in the less pager (by default). Type `q` to quit and go back to Offpunk prompt.
 
 Use `add` to add a capsule to your bookmarks and `bookmarks` or `bm` to show your bookmarks (which are stored in a file in you .config).
 
@@ -29,7 +31,7 @@ For example, running
 
 will refresh your bookmarks if those are at least 12h old. If cache-validity is not set or set to 0, any cache is considered good and only content never cached before will be fetched. 
 
-At the moment, caching only work for gemini:// ressources. gopher:// is not implemented and http(s):// ressources are sent to an "offline browser" (by default, None, nothing is done). It could be useful to, for example, send the http:// links to a text file in order to visit them while online.
+At the moment, caching only work for gemini:// ressources. gopher:// is not implemented and http(s):// ressources are sent to an "offline browser" (by default, None, nothing is done). It could be useful to send the http:// links to a text file in order to visit them while online.
 
 ## TODO
 
@@ -66,13 +68,13 @@ experience.
 
 ## Features
 
-* Offline mode to browse cached content without a connection.
+* Offline mode to browse cached content without a connection. Requested element are automatically fetched during the next synchronization and are added to your tour.
 * TOFU or CA server certificate validation
 * Extensive client certificate support if an `openssl` binary is available
 * Ability to specify external handler programs for different MIME types
 * Gopher proxy support (e.g. for use with
   [Agena](https://tildegit.org/solderpunk/agena))
-* Advanced navigation tools like `tour` and `mark` (as per VF-1). Unlike AV-98, tour is saved on disk accross sessions.
+* Advanced navigation tools like `tour` and `mark` (as per VF-1). Unlike AV-98, tour is saved on disk accross sessions. 
 * Bookmarks
 * IPv6 support
 * Supports any character encoding recognised by Python
@@ -92,3 +94,10 @@ necessary, create the directory itself the first time you save a bookmark (the
 bookmark file is saved in the same location).  Offpunk will create
 `~/.config/offpunk` only if `~/.config/` already exists on your system, otherwise
 it will create `~/.offpunk/`.
+
+
+## Cache design
+
+The offline content is stored in ~/.cache/offmini/gemini/ as plain .gmi files. The structure of the Gemini-space is tentatively recreated. One key element of the design is to not have any database. The cache can thus be modified by hand, content can be removed, used or added by software other than offpunk.
+
+There’s no feature to automatically trim the cache. It is believed that gemini content being lightweight, one would have to seriously browse a lot before cache size is an issue. If cache becomes too big, simply rm -rf the folders of the capsules taking too much space.
