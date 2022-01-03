@@ -1502,6 +1502,7 @@ queue of gemini items.
 
 Items can be added with `tour 1 2 3 4` or ranges like `tour 1-4`.
 All items in current menu can be added with `tour *`.
+Current item can be added back to the end of the tour with `tour .`.
 Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
         def add_to_tourfile(url):
             with open(self.tourfile,'a') as f:
@@ -1549,6 +1550,8 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
         elif line == "*":
             for l in self.lookup:
                 add_to_tourfile(l.url)
+        elif line == ".":
+            add_to_tourfile(self.gi.url)
         elif looks_like_url(line):
             add_to_tourfile(line)
         else:
