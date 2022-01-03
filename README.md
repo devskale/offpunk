@@ -21,7 +21,7 @@ Use `offline` to only browse cached content and `online` to go back online. Whil
 
 Use the `help` command to learn about additional commands. Some abreviations are available. See `abbrevs`.
 
-When launched with the "--sync" option, offpunk will run non-interactively and fetch content from your bookmarks and content tentatively accessed while offline. New content found in your bookmarks will be automatically added to your tour (use `tour ls` to see your current tour, `tour` without argument to access the next item and `tour X` where X is a link number to add the content of a link to your tour).
+When launched with the "--sync" option, offpunk will run non-interactively and fetch content from your bookmarks and ressources tentatively accessed while offline. New content found in your bookmarks will be automatically added to your tour (use `tour ls` to see your current tour, `tour` without argument to access the next item and `tour X` where X is a link number to add the content of a link to your tour).
 
 With "--sync", one could specify a "--cache validity" in seconds. This option will not refresh content if a cache exists and is less than the specified amount of seconds old.
 
@@ -68,7 +68,8 @@ experience.
 
 ## Features
 
-* Offline mode to browse cached content without a connection. Requested element are automatically fetched during the next synchronization and are added to your tour.
+* Offline mode to browse cached content without a connection. Requested elements are automatically fetched during the next synchronization and are added to your tour.
+* Support "subscriptions" to gemlogs. New content seen in bookmarked gemlogs are automatically added to your next tour.
 * TOFU or CA server certificate validation
 * Extensive client certificate support if an `openssl` binary is available
 * Ability to specify external handler programs for different MIME types
