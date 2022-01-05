@@ -64,7 +64,7 @@ experience.
   provide a better and slightly more secure experience when using the default
   TOFU certificate validation mode and is highly recommended.
 * [Python magic](https://github.com/ahupp/python-magic/) is useful to determine the MIME type of cached object. If not present, the file extension will be used but some capsules provide wrong extension or no extension at all. (apt-get install python3-magic)
-* [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). (apt-get install xsel)
+* [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). Also needed to use the `copy` command. (apt-get install xsel)
 
 ## Features
 
