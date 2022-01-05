@@ -76,6 +76,7 @@ _ABBREVS = {
     "bb":   "blackbox",
     "bm":   "bookmarks",
     "book": "bookmarks",
+    "cp":   "copy",
     "f":    "fold",
     "fo":   "forward",
     "g":    "go",
@@ -83,6 +84,8 @@ _ABBREVS = {
     "hist": "history",
     "l":    "less",
     "n":    "next",
+    "off":  "offline",
+    "on":   "online",
     "p":    "previous",
     "prev": "previous",
     "q":    "quit",
@@ -1412,6 +1415,23 @@ you'll be able to transparently follow links to Gopherspace!""")
         else:
             print("Already online. Try offline.")
 
+    def do_copy(self, *args):
+        """Copy the content of the last visited page as gemtext in the clipboard.
+Use with "url" as argument to only copy the adress.
+Use with "raw" to copy the content as seen in your terminal (not gemtext)"""
+        if self.gi:
+            if shutil.which('xsel'):
+                if args and args[0] == "url":
+                    subprocess.call(("echo %s |xsel -b -i" % self.gi.url), shell=True)
+                elif args and args[0] == "raw":
+                    subprocess.call(("cat %s |xsel -b -i" % self._get_active_tmpfile()), shell=True)
+                else:
+                    subprocess.call(("cat %s |xsel -b -i" % self.gi.cache_path), shell=True)
+            else:
+                print("Please install xsel to use copy")
+        else:
+            print("No content to copy, visit a page first")
+
     ### Stuff for getting around
     def do_go(self, line):
         """Go to a gemini URL or marked item."""
@@ -1784,6 +1804,12 @@ Bookmarks are stored using the 'add' command."""
             print("! is an alias for 'shell'")
         elif arg == "?":
             print("? is an alias for 'help'")
+        elif arg in _ABBREVS:
+            full_cmd = _ABBREVS[arg]
+            print("%s is aan alias for '%s'" %(arg,full_cmd))
+            print("See the list of aliases with 'abbrevs'")
+            print("'help %s':"%full_cmd)
+            cmd.Cmd.do_help(self, full_cmd)
         else:
             cmd.Cmd.do_help(self, arg)
 
