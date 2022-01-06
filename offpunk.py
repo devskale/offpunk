@@ -68,6 +68,8 @@ _MAX_CACHE_SIZE = 10
 _MAX_CACHE_AGE_SECS = 180
 # TODO : use XDG spec for cache
 _CACHE_PATH = "~/.cache/offpunk/"
+#_DEFAULT_LESS = "less -EXFRfM -PMurl\ lines\ \%lt-\%lb/\%L\ \%Pb\%$ %s"
+_DEFAULT_LESS = "less -EXFRfM %s"
 
 # Command abbreviations
 _ABBREVS = {
@@ -103,7 +105,6 @@ _MIME_HANDLERS = {
     "audio/ogg":            "ogg123 %s",
     "image/*":              "feh %s",
     "text/html":            "lynx -dump -force_html %s",
-    "text/*":               "less -EFXRf %s",
 }
 
 
@@ -1051,8 +1052,11 @@ you'll be able to transparently follow links to Gopherspace!""")
             if fnmatch.fnmatch(mimetype, handled_mime):
                 break
         else:
+            if mimetype.startswith("text/"):
+                cmd_str = _DEFAULT_LESS
+            else:
             # Use "xdg-open" as a last resort.
-            cmd_str = "xdg-open %s"
+                cmd_str = "xdg-open %s"
         self._debug("Using handler: %s" % cmd_str)
         return cmd_str
 

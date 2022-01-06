@@ -42,7 +42,7 @@ Known issues in the code:
 * FIXME2: offline web browser use os.system because it’s the only one that understands the ">> file.txt"
 
 * TODO: Update blackbox to reflect cache hits.
-
+* TODO: allow to search cache while offline
 
 ## More
 
