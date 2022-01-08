@@ -460,7 +460,6 @@ class GeminiClient(cmd.Cmd):
             "gopher_proxy" : None,
             "tls_mode" : "tofu",
             "http_proxy": None,
-            "cache" : False,
             "offline_web" : None
         }
 
@@ -480,9 +479,6 @@ class GeminiClient(cmd.Cmd):
         }
 
         self._connect_to_tofu_db()
-
-        self.cache = {}
-        self.cache_timestamps = {}
 
     def _connect_to_tofu_db(self):
 
@@ -874,69 +870,6 @@ you'll be able to transparently follow links to Gopherspace!""")
 
         return addresses
 
-    def _is_cached(self, url):
-        if url not in self.cache:
-            return False
-        now = time.time()
-        cached = self.cache_timestamps[url]
-        if now - cached > _MAX_CACHE_AGE_SECS:
-            self._debug("Expiring old cached copy of resource.")
-            self._remove_from_cache(url)
-            return False
-        self._debug("Found cached copy of resource.")
-        return True
-
-    def _remove_from_cache(self, url):
-        self.cache_timestamps.pop(url)
-        mime, filename = self.cache.pop(url)
-        os.unlink(filename)
-        self._validate_cache()
-
-    def _add_to_cache(self, url, mime, filename):
-
-        self.cache_timestamps[url] = time.time()
-        self.cache[url] = (mime, filename)
-        if len(self.cache) > _MAX_CACHE_SIZE:
-            self._trim_cache()
-        self._validate_cache()
-
-    def _trim_cache(self):
-        # Order cache entries by age
-        lru = [(t, u) for (u, t) in self.cache_timestamps.items()]
-        lru.sort()
-        # Drop the oldest entry no matter what
-        _, url = lru[0]
-        self._debug("Dropping cached copy of {} from full cache.".format(url))
-        self._remove_from_cache(url)
-        # Drop other entries if they are older than the limit
-        now = time.time()
-        for cached, url in lru[1:]:
-            if now - cached > _MAX_CACHE_AGE_SECS:
-                self._debug("Dropping cached copy of {} from full cache.".format(url))
-                self._remove_from_cache(url)
-            else:
-                break
-        self._validate_cache()
-
-    def _get_cached(self, url):
-        mime, filename = self.cache[url]
-        self.log["cache_hits"] += 1
-        if mime.startswith("text/gemini"):
-            with open(filename, "r") as fp:
-                body = fp.read()
-                return mime, body, filename
-        else:
-            return mime, None, filename
-
-    def _empty_cache(self):
-        for mime, filename in self.cache.values():
-            if os.path.exists(filename):
-                os.unlink(filename)
-
-    def _validate_cache(self):
-        assert self.cache.keys() == self.cache_timestamps.keys()
-        for _, filename in self.cache.values():
-            assert os.path.isfile(filename)
 
     def _handle_cert_request(self, meta):
 
@@ -1898,7 +1831,6 @@ current gemini browsing session."""
         self.db_conn.commit()
         self.db_conn.close()
         # Clean up after ourself
-        self._empty_cache()
         if self.tmp_filename and os.path.exists(self.tmp_filename):
             os.unlink(self.tmp_filename)
         if self.idx_filename and os.path.exists(self.idx_filename):
