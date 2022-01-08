@@ -103,7 +103,7 @@ _MIME_HANDLERS = {
     "application/pdf":      "zathura %s",
     "audio/mpeg":           "mpg123 %s",
     "audio/ogg":            "ogg123 %s",
-    "image/*":              "feh %s",
+    "image/*":              "feh -. %s",
     "text/html":            "lynx -dump -force_html %s",
 }
 
@@ -149,59 +149,66 @@ class GeminiItem():
         self.url = fix_ipv6_url(url).strip()
         self.name = name
         self.mime = None
-        self.local = False
         parsed = urllib.parse.urlparse(self.url)
         self.scheme = parsed.scheme
-        self.host = parsed.hostname
-        self.port = parsed.port or standard_ports.get(self.scheme, 0)
-        self.path = parsed.path
-        self.title = self.host
-        #small intelligence to try to find a good name for a capsule
-        #we try to find eithe ~username or /users/username
-        #else we fallback to hostname
-        if "user" in parsed.path:
-            i = 0
-            splitted = parsed.path.split("/")
-            while i < (len(splitted)-1):
-                if splitted[i].startswith("user"):
-                    self.title = splitted[i+1]
-                i += 1
-        if "~" in parsed.path:
-            for pp in parsed.path.split("/"):
-                if pp.startswith("~"):
-                    self.title = pp[1:]
-        self.cache_path = None
-        if  self.host == None:
+        if self.scheme == "localhost":
+            self.local = True
+            self.host = None
             h = self.url.split('/')
             self.host = h[0:len(h)-1]
-            self.local = True
+            self.title = self.name 
             self.scheme = 'local'
-        else: 
+            self._cache_path = None
+            # localhost:/ is 11 char
+            self.path = self.url[11:]
+        else:
+            self.path = parsed.path
+            self.local = False
+            self.host = parsed.hostname
             #if not local, we create a local cache path.
-            self.cache_path = os.path.expanduser(_CACHE_PATH + self.scheme + "/" + self.host + self.path)
+            self._cache_path = os.path.expanduser(_CACHE_PATH + self.scheme + "/" + self.host + self.path)
             # FIXME : this is a gross hack to give a name to
             # index files. This will break if the index is not
             # index.gmi. I don’t know how to know the real name
             # of the file. But first, we need to ensure that the domain name
             # finish by "/". Else, the cache will create a file, not a folder.
             # SPECIFIC GEMINI
-            if self.path == "" or os.path.isdir(self.cache_path):
-                if not self.cache_path.endswith("/"):
-                    self.cache_path += "/"
+            if self.path == "" or os.path.isdir(self._cache_path):
+                if not self._cache_path.endswith("/"):
+                    self._cache_path += "/"
                 if not self.url.endswith("/"):
                     self.url += "/"
-            if self.cache_path.endswith("/"):
-                self.cache_path += "index.gmi"
+            if self._cache_path.endswith("/"):
+                self._cache_path += "index.gmi"
 
+            self.port = parsed.port or standard_ports.get(self.scheme, 0)
+            #small intelligence to try to find a good name for a capsule
+            #we try to find eithe ~username or /users/username
+            #else we fallback to hostname
+            self.title = self.host
+            if "user" in parsed.path:
+                i = 0
+                splitted = parsed.path.split("/")
+                while i < (len(splitted)-1):
+                    if splitted[i].startswith("user"):
+                        self.title = splitted[i+1]
+                    i += 1
+            if "~" in parsed.path:
+                for pp in parsed.path.split("/"):
+                    if pp.startswith("~"):
+                        self.title = pp[1:]
+    
     def is_cache_valid(self,validity=0):
         # Validity is the acceptable time for 
         # a cache to be valid  (in seconds)
         # If 0, then any cache is considered as valid
         # (use validity = 1 if you want to refresh everything)
-        if self.cache_path :
-            if os.path.exists(self.cache_path):
+        if self.local:
+            return True
+        elif self._cache_path :
+            if os.path.exists(self._cache_path):
                 if validity > 0 :
-                    last_modification = os.path.getmtime(self.cache_path)
+                    last_modification = self.cache_last_modified()
                     now = time.time()
                     age = now - last_modification
                     return age < validity
@@ -214,6 +221,90 @@ class GeminiItem():
             #There’s not even a cache!
             return False
 
+    def cache_last_modified(self):
+        if self._cache_path:
+            return os.path.getmtime(self._cache_path)
+        elif self.local:
+            return 0
+        else:
+            print("ERROR : NO CACHE in cache_last_modified")
+            return None
+    
+    def get_body(self,as_file=False):
+        if self.local:
+            path = self.path
+        elif self.is_cache_valid():
+            path = self._cache_path
+        else:
+            path = None
+        if path:
+            if as_file:
+                return path
+            else:
+                with open(path) as f:
+                    body = f.read()
+                    f.close()
+                    return body
+        else:
+            print("ERROR: NO CACHE for %s" %self._cache_path)
+            return FIXME
+
+    def write_body(self,body,mode,encoding):
+        ## body is a copy of the raw gemtext
+        ## Tmpf is the temporary cache (historically, the only cache)
+        tmpf = tempfile.NamedTemporaryFile(mode, encoding=encoding, delete=False)
+        size = tmpf.write(body)
+        tmpf.close()
+        tmp_filename = tmpf.name
+        #self._debug("Wrote %d byte response to %s." % (size, self.tmp_filename))
+
+        # Maintain cache and log : FIXME
+        #self._log_visit(gi, address, size)
+        ## We create the permanent cache
+        cache_dir = os.path.dirname(self._cache_path)
+        # If the subdirectory already exists as a file (not a folder)
+        # We remove it (happens when accessing URL/subfolder before
+        # URL/subfolder/file.gmi.
+        # This causes loss of data in the cache
+        # proper solution would be to save "sufolder" as "sufolder/index.gmi"
+        if os.path.isfile(cache_dir):
+            os.remove(cache_dir)
+        os.makedirs(cache_dir,exist_ok=True)
+        shutil.copyfile(tmp_filename,self._cache_path)
+         
+
+    def get_mime(self):
+        if self.is_cache_valid():
+            mime,encoding = mimetypes.guess_type(self._cache_path,strict=False)
+            #gmi Mimetype is not recognized yet
+            if not mime and _HAS_MAGIC :
+                mime = magic.from_file(self._cache_path,mime=True)
+            elif not _HAS_MAGIC :
+                print("Cannot guess the mime type of the file. Install Python-magic")
+            if mime.startswith("text"):
+            #if mime == "text/gemini":
+            #SPECIFIC GEMINI
+                mime = "text/gemini"
+            self.mime = mime
+        return self.mime
+    
+    def set_error(self,err):
+    # If we get an error, we want to keep an existing cache
+    # but we need to touch it or to create an empty one
+    # to avoid hitting the error at each refresh
+        if self.is_cache_valid():
+            os.utime(self._cache_path)
+        else:
+            cache_dir = os.path.dirname(self._cache_path)
+            if os.path.isdir(cache_dir):
+                with open(self._cache_path, "w") as cache:
+                    cache.write(str(datetime.datetime.now())+"\n")
+                    cache.write("ERROR while caching %s\n" %self.url)
+                    cache.write(str(err))
+                    cache.write("\n")
+                    cache.close()
+    
+               
     def root(self):
         return GeminiItem(self._derive_url("/"))
 
@@ -434,8 +525,8 @@ you'll be able to transparently follow links to Gopherspace!""")
         elif gi.local:
             if os.path.exists(gi.path):
                 with open(gi.path,'r') as f:
-                    body = f.read()
-                    self._handle_gemtext(body,gi)
+                    #body = f.read()
+                    self._handle_gemtext(gi)
                     self.gi = gi
                     self._update_history(gi)
                 return
@@ -452,37 +543,11 @@ you'll be able to transparently follow links to Gopherspace!""")
             self._go_to_gi(new_gi)
             return
 
-        # Use cache, or hit the network if resource is not cached
-        if check_cache and self.options["cache"] and self._is_cached(gi.url):
-            print("original cache used ", gi.url)
-            mime, body, tmpfile = self._get_cached(gi.url)
-        elif self.offline_only:
-            if os.path.isdir(gi.cache_path):
-                # if cache is a directory, then we redirect
-                # (similar to status 31 over the network)
-                new_url = gi.url + "/"
-                new_gi = GeminiItem(new_url,name=gi.name)
-                self._go_to_gi(new_gi)
-                return
-            else:
-                cached = gi.cache_path
-            if os.path.isfile(cached):
-                tmpfile = cached
-                mime,encoding = mimetypes.guess_type(cached,strict=False)
-                #gmi Mimetype is not recognized yet
-                if not mime and _HAS_MAGIC :
-                    mime = magic.from_file(cached,mime=True)
-                elif not _HAS_MAGIC :
-                    print("Cannot guess the mime type of the file. Install Python-magic")
-                if mime.startswith("text"):
-                #if mime == "text/gemini":
-                #SPECIFIC GEMINI
-                    mime = "text/gemini"
-                    with open(cached,'r') as file:
-                        body = file.read()
-                        file.close()
-                gi.mime = mime
-            else:
+        # Use cache or mark as to_fetch if resource is not cached
+        # Why is this code useful ? It set the mimetype !
+        if self.offline_only:
+            
+            if not gi.is_cache_valid():
                 print("Content not available, marked for syncing")
                 with open(self.syncfile,mode='a') as sf:
                     line = gi.url.strip() + '\n'
@@ -490,38 +555,13 @@ you'll be able to transparently follow links to Gopherspace!""")
                     sf.close()
                 return
 
-        else:
+        elif not self.offline_only:
             try:
-                gi, body, tmpfile = self._fetch_over_network(gi)
-                ## We create the permanent cache
-                cache_dir = os.path.dirname(gi.cache_path)
-                # If the subdirectory already exists as a file (not a folder)
-                # We remove it (happens when accessing URL/subfolder before
-                # URL/subfolder/file.gmi.
-                # This causes loss of data in the cache
-                # proper solution would be to save "sufolder" as "sufolder/index.gmi"
-                if os.path.isfile(cache_dir):
-                    os.remove(cache_dir)
-                os.makedirs(cache_dir,exist_ok=True)
-                shutil.copyfile(tmpfile,gi.cache_path)
+                gi = self._fetch_over_network(gi)
             except UserAbortException:
                 return
             except Exception as err:
-                # If we get an error, we want to keep an existing cache
-                # but we need to touch it or to create an empty one
-                # to avoid hitting the error at each refresh
-                if gi.is_cache_valid():
-                    os.utime(gi.cache_path)
-                else:
-                    cache_dir = os.path.dirname(gi.cache_path)
-                    if os.path.isdir(cache_dir):
-                        with open(gi.cache_path, "w") as cache:
-                            cache.write(str(datetime.datetime.now())+"\n")
-                            cache.write("ERROR while caching %s\n" %gi.url)
-                            cache.write(str(err))
-                            cache.write("\n")
-                            cache.close()
-    
+                gi.set_error(err)
                 # Print an error message
                 # we fail silently when sync_only
                 print_error = not self.sync_only
@@ -554,12 +594,14 @@ you'll be able to transparently follow links to Gopherspace!""")
         # Pass file to handler, unless we were asked not to
         #SPECIFIC GEMINI : default handler should be provided by the GI.
         if handle :
-            if gi.mime == "text/gemini":
-                self._handle_gemtext(body, gi, display=not self.sync_only)
+            if gi.get_mime() == "text/gemini":
+                self._handle_gemtext(gi, display=not self.sync_only)
 
             elif not self.sync_only :
-                cmd_str = self._get_handler_cmd(gi.mime)
+                cmd_str = self._get_handler_cmd(gi.get_mime())
                 try:
+                    # get tmpfile from gi !
+                    tmpfile = gi.get_body(as_file=True)
                     subprocess.call(shlex.split(cmd_str % tmpfile))
                 except FileNotFoundError:
                     print("Handler program %s not found!" % shlex.split(cmd_str)[0])
@@ -687,7 +729,7 @@ you'll be able to transparently follow links to Gopherspace!""")
 
         # If we're here, this must be a success and there's a response body
         assert status.startswith("2")
-
+        
         mime = meta
         # DEFAULT GEMINI MIME
         if mime == "":
@@ -704,7 +746,7 @@ you'll be able to transparently follow links to Gopherspace!""")
 
         # Save the result in a temporary file
         ## Set file mode
-        if gi.mime.startswith("text/"):
+        if gi.get_mime().startswith("text/"):
             mode = "w"
             encoding = mime_options.get("charset", "UTF-8")
             try:
@@ -715,19 +757,8 @@ you'll be able to transparently follow links to Gopherspace!""")
             mode = "wb"
             encoding = None
         ## body is a copy of the raw gemtext
-        ## Tmpf is the temporary cache (historically, the only cache)
-        tmpf = tempfile.NamedTemporaryFile(mode, encoding=encoding, delete=False)
-        size = tmpf.write(body)
-        tmpf.close()
-        self.tmp_filename = tmpf.name
-        self._debug("Wrote %d byte response to %s." % (size, self.tmp_filename))
-
-        # Maintain cache and log
-        if self.options["cache"]:
-            self._add_to_cache(gi.url, gi.mime, self.tmp_filename)
-        self._log_visit(gi, address, size)
-
-        return gi, body, self.tmp_filename
+        gi.write_body(body,mode,encoding)    
+        return gi
 
     def _send_request(self, gi):
         """Send a selector to a given host and port.
@@ -777,7 +808,7 @@ you'll be able to transparently follow links to Gopherspace!""")
         if self.client_certs["active"]:
             certfile, keyfile = self.client_certs["active"]
             context.load_cert_chain(certfile, keyfile)
-
+        
         # Connect to remote host by any address possible
         err = None
         for address in addresses:
@@ -817,7 +848,8 @@ you'll be able to transparently follow links to Gopherspace!""")
         # Send request and wrap response in a file descriptor
         self._debug("Sending %s<CRLF>" % gi.url)
         s.sendall((gi.url + CRLF).encode("UTF-8"))
-        return address, s.makefile(mode = "rb")
+        mf= s.makefile(mode = "rb")
+        return address, mf
 
     def _get_addresses(self, host, port):
         # DNS lookup - will get IPv4 and IPv6 records if IPv6 is enabled
@@ -1065,7 +1097,7 @@ you'll be able to transparently follow links to Gopherspace!""")
 
     # Gemtext Rendering Engine
     # this method renders the original Gemtext then call the handler to display it.
-    def _handle_gemtext(self, body, menu_gi, display=True):
+    def _handle_gemtext(self, menu_gi, display=True):
         self.index = []
         preformatted = False
         if self.idx_filename:
@@ -1075,12 +1107,12 @@ you'll be able to transparently follow links to Gopherspace!""")
         tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
         self.idx_filename = tmpf.name
         title = menu_gi.title
-        if menu_gi.is_cache_valid() and self.offline_only:
-            last_modification = os.path.getmtime(menu_gi.cache_path)
+        if menu_gi.is_cache_valid() and self.offline_only and not menu_gi.local:
+            last_modification = menu_gi.cache_last_modified()
             str_last = time.ctime(last_modification)
             title += "    \x1b[0;31m(last accessed on %s)"%str_last
         tmpf.write("\x1b[31m\x1b[1m"+ title + "\x1b[0m""\n")
-        for line in body.splitlines():
+        for line in menu_gi.get_body().splitlines():
             if line.startswith("```"):
                 preformatted = not preformatted
             elif preformatted:
@@ -1156,7 +1188,7 @@ you'll be able to transparently follow links to Gopherspace!""")
             self.log["ipv6_bytes_recvd"] += size
 
     def _get_active_tmpfile(self):
-        if self.gi.mime == "text/gemini":
+        if self.gi.get_mime() == "text/gemini":
             return self.idx_filename
         else:
             return self.tmp_filename
@@ -1676,14 +1708,14 @@ Use 'ls -l' to see URLs."""
     @needs_gi
     def do_less(self, *args):
         """Run most recently visited item through "less" command."""
-        cmd_str = self._get_handler_cmd(self.gi.mime)
+        cmd_str = self._get_handler_cmd(self.gi.get_mime())
         cmd_str = cmd_str % self._get_active_tmpfile()
         subprocess.call("%s | less -R" % cmd_str, shell=True)
 
     @needs_gi
     def do_fold(self, *args):
         """Run most recently visited item through "fold" command."""
-        cmd_str = self._get_handler_cmd(self.gi.mime)
+        cmd_str = self._get_handler_cmd(self.gi.get_mime())
         cmd_str = cmd_str % self._get_active_tmpfile()
         subprocess.call("%s | fold -w 70 -s" % cmd_str, shell=True)
 
@@ -1707,7 +1739,7 @@ Use 'ls -l' to see URLs."""
             # No arguments given at all
             # Save current item, if there is one, to a file whose name is
             # inferred from the gemini path
-            if not self.gi.cache_path:
+            if not self.gi.is_cache_valid():
                 print("You cannot save if not cached!")
                 return
             else:
@@ -1796,12 +1828,12 @@ Bookmarks are stored using the 'add' command."""
             print("bookmarks command takes a single integer argument!")
             return
         with open(bm_file, "r") as fp:
-            body = fp.read()
-            gi = GeminiItem("localhost/" + bm_file)
+            gi = GeminiItem("localhost:/" + bm_file,"Bookmarks")
+            gi.body = fp.read()
             # We don’t display bookmarks if accessing directly one
             # or if in sync_only
             display = not ( args or self.sync_only) 
-            self._handle_gemtext(body, gi, display = display)
+            self._handle_gemtext(gi, display = display)
             if args:
                 # Use argument as a numeric index
                 self.default(line)
