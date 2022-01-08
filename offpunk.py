@@ -248,6 +248,10 @@ class GeminiItem():
         else:
             print("ERROR: NO CACHE for %s" %self._cache_path)
             return FIXME
+    
+    def get_filename(self):
+        filename = os.path.basename(self._cache_path)
+        return filename
 
     def write_body(self,body,mode,encoding):
         ## body is a copy of the raw gemtext
@@ -1467,7 +1471,7 @@ Use with "raw" to copy the content as seen in your terminal (not gemtext)"""
                 elif args and args[0] == "raw":
                     subprocess.call(("cat %s |xsel -b -i" % self._get_active_tmpfile()), shell=True)
                 else:
-                    subprocess.call(("cat %s |xsel -b -i" % self.gi.cache_path), shell=True)
+                    subprocess.call(("cat %s |xsel -b -i" % self.gi.get_body(as_file=True)), shell=True)
             else:
                 print("Please install xsel to use copy")
         else:
@@ -1785,7 +1789,7 @@ Use 'ls -l' to see URLs."""
 
         # Derive filename from current GI's path, if one hasn't been set
         if not filename:
-            filename = os.path.basename(gi.cache_path)
+            filename = gi.get_filename()
         # Check for filename collisions and actually do the save if safe
         if os.path.exists(filename):
             print("File %s already exists!" % filename)
@@ -1794,7 +1798,7 @@ Use 'ls -l' to see URLs."""
             # "source code" of menus, not the rendered view - this way Offpunk
             # can navigate to it later.
             print("Saved to %s" % filename)
-            shutil.copyfile(gi.cache_path, filename)
+            shutil.copyfile(gi.get_body(as_file=True), filename)
 
         # Restore gi if necessary
         if index != None:
