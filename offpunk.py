@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Offpunk Offline Gemini client
 # Derived from AV-98 by Solderpunk,
-# (C) 2021 Ploum <offpunk@ploum.eu>
+# (C) 2021, 2022 Ploum <offpunk@ploum.eu>
 # (C) 2019, 2020 Solderpunk <solderpunk@sdf.org>
 # With contributions from:
 #  - danceka <hannu.hartikainen@gmail.com>
@@ -150,17 +150,26 @@ class GeminiItem():
         self.name = name
         self.mime = None
         parsed = urllib.parse.urlparse(self.url)
-        self.scheme = parsed.scheme
+        if "./" in url or url[0] == "/":
+            self.scheme = "localhost"
+        else:
+            self.scheme = parsed.scheme
         if self.scheme == "localhost":
             self.local = True
             self.host = None
             h = self.url.split('/')
             self.host = h[0:len(h)-1]
-            self.title = self.name 
             self.scheme = 'local'
             self._cache_path = None
             # localhost:/ is 11 char
-            self.path = self.url[11:]
+            if self.url.startswith("localhost://"):
+                self.path = self.url[11:]
+            else:
+                self.path = self.url
+            if self.name != "":
+                self.title = self.name
+            else:
+                self.title = self.path
         else:
             self.path = parsed.path
             self.local = False
@@ -525,13 +534,12 @@ you'll be able to transparently follow links to Gopherspace!""")
         elif gi.local:
             if os.path.exists(gi.path):
                 with open(gi.path,'r') as f:
-                    #body = f.read()
                     self._handle_gemtext(gi)
                     self.gi = gi
                     self._update_history(gi)
                 return
             else:
-                print("Sorry, that file does not exist.")
+                print("Sorry, file %s does not exist."%gi.path)
                 return
         elif gi.scheme not in ("gemini", "gopher") and not self.sync_only:
             print("Sorry, no support for {} links.".format(gi.scheme))
