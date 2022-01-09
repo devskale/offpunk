@@ -264,13 +264,13 @@ class GeminiItem():
 
     def write_body(self,body,mode,encoding):
         ## body is a copy of the raw gemtext
+        ## Write_body() also create the cache !
         ## Tmpf is the temporary cache (historically, the only cache)
         tmpf = tempfile.NamedTemporaryFile(mode, encoding=encoding, delete=False)
         size = tmpf.write(body)
         tmpf.close()
         tmp_filename = tmpf.name
-        #self._debug("Wrote %d byte response to %s." % (size, self.tmp_filename))
-
+        #self._debug("Wrote %d byte response to %s." % (size, tmp_filename))
         # Maintain cache and log : FIXME
         #self._log_visit(gi, address, size)
         ## We create the permanent cache
@@ -621,6 +621,8 @@ you'll be able to transparently follow links to Gopherspace!""")
             self._update_history(gi)
 
     #SPECIFIC GEMINI : fetch_over_network should be part of gi os each could have its own.
+    # fetch_over_network will modify the gi by adding a mime and write_body()
+    # before returning the gi
     def _fetch_over_network(self, gi):
         
         # Be careful with client certificates!
