@@ -638,7 +638,8 @@ you'll be able to transparently follow links to Gopherspace!""")
         mime = response.headers['content-type']
         body = response.content
         if "text/html" in mime:
-            body = Document(response.text).summary()
+            body = response.text
+            #body = Document(response.text).summary()
         elif "text/" in mime:
             body = response.text
         else:
