@@ -1947,12 +1947,11 @@ def main():
     if args.sync:
         # fetch_cache is the core of the sync algorithm.
         # It takes as input :
-        # - a list of GeminiItems to be fetched (TODO: convert to list)
+        # - a list of GeminiItems to be fetched
         # - depth : the degree of recursion to build the cache (0 means no recursion)
         # - validity : the age, in seconds, existing caches need to have before
         #               being refreshed (0 = never refreshed if it already exists)
         # - savetotour : if True, newly cached items are added to tour
-        #                (this option does not apply recursively)
         def add_to_tour(gitem):
             if gitem.is_cache_valid():
                 print("  -> adding to tour: %s" %gitem.url)
@@ -1984,10 +1983,6 @@ def main():
                     subcount = [0,len(temp_lookup)]
                     for k in temp_lookup:
                         #recursive call
-                        #To not refresh already cached ressource too often
-                        #we impose a random validity
-                        #randomval = int(refresh_time*random.uniform(10,100))
-                        #never saving recursion to tour
                         substri = strin + " -->"
                         subcount[0] += 1
                         fetch_cache(k,depth=d,validity=0,savetotour=savetotour,\
@@ -1996,7 +1991,7 @@ def main():
         if args.cache_validity:
             refresh_time = int(args.cache_validity)
         else:
-            # if no refresh time, a default of 1h is used
+            # if no refresh time, a default of 0 is used (which means "infinite")
             refresh_time = 0
         gc.sync_only = True
         # We start by syncing the bookmarks
@@ -2023,7 +2018,7 @@ def main():
             #always get to_fetch and tour, regarless of refreshtime
             #we don’t save to tour (it’s already there)
             counter += 1
-            if l.startswith("gemini://"):
+            if l.startswith("gemini://") or l.startswith("http"):
                 fetch_cache(GeminiItem(l.strip()),depth=1,validity=refresh_time,\
                             savetotour=False,count=[counter,tot])
         # Then we get ressources from syncfile
@@ -2039,11 +2034,12 @@ def main():
         if tot > 0:
             print(" * * * %s to fetch from your offline browsing * * *" %tot)
         for l in set(lines_lookup):
-            #always fetch the cache (we allows only a 3 minutes time)
+            #always fetch the cache (we allows only a 3 minutes time
+            # to avoid multiple fetch in the same sync run)
             #then add to tour
             counter += 1
             gitem = GeminiItem(l.strip())
-            if l.startswith("gemini://"): 
+            if l.startswith("gemini://") or l.startswith("http"): 
                 fetch_cache(gitem,depth=1,validity=180,\
                             savetotour=False,count=[counter,tot])
                 add_to_tour(gitem)
