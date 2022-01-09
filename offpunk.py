@@ -270,20 +270,7 @@ class GeminiItem():
         if mime == "":
             mime = "text/gemini; charset=utf-8"
         mime, mime_options = cgi.parse_header(mime)
-        if "charset" in mime_options:
-            try:
-                codecs.lookup(mime_options["charset"])
-            except LookupError:
-                raise RuntimeError("Header declared unknown encoding %s" % value)
-        self.mime = mime
-        if self.mime.startswith("text/"):
-            encoding = mime_options.get("charset", "UTF-8")
-            try:
-                body = body.decode(encoding)
-            except UnicodeError:
-                raise RuntimeError("Could not decode response body using %s\
-                                    encoding declared in header!" % encoding)
-        
+        self.mime = mime 
         if self.mime and self.mime.startswith("text/"):
             mode = "w"
         else:
@@ -524,8 +511,10 @@ class GeminiClient(cmd.Cmd):
         # Don't try to speak to servers running other protocols
         if gi.scheme in ("http", "https") and not self.sync_only:
             if not self.options.get("http_proxy",None) and not self.offline_only:
-                webbrowser.open_new_tab(gi.url)
-                return
+                print("do nothing for http, see later for fetch")
+                #self._fetch_http(gi)
+                #webbrowser.open_new_tab(gi.url)
+                #return
             elif self.offline_only and self.options.get("offline_web"):
                 offline_browser = self.options.get("offline_web")
                 cmd = offline_browser % gi.url
@@ -580,7 +569,10 @@ you'll be able to transparently follow links to Gopherspace!""")
 
         elif not self.offline_only:
             try:
-                gi = self._fetch_over_network(gi)
+                if gi.scheme in ("http", "https"):
+                    gi = self._fetch_http(gi)
+                else:
+                    gi = self._fetch_over_network(gi)
             except UserAbortException:
                 return
             except Exception as err:
@@ -639,17 +631,17 @@ you'll be able to transparently follow links to Gopherspace!""")
     def _fetch_http(self,gi):
         import requests
         from readability import Document
-        response = requests.fetch(gi.url)
+        response = requests.get(gi.url)
         mime = response.headers['content-type']
         body = response.content
         if "text/html" in mime:
-            body = Document(response.text)
+            body = Document(response.text).summary()
         elif "text/" in mime:
             body = response.text
         else:
             body = response.content
         gi.write_body(body,mime)
-
+        return gi
 
     #SPECIFIC GEMINI : fetch_over_network should be part of gi os each could have its own.
     # fetch_over_network will modify the gi by adding a mime and write_body()
@@ -773,7 +765,23 @@ you'll be able to transparently follow links to Gopherspace!""")
         
         mime = meta
         # Read the response body over the network
-        body = f.read()
+        fbody = f.read()
+        # DEFAULT GEMINI MIME
+        if mime == "":
+            mime = "text/gemini; charset=utf-8"
+        shortmime, mime_options = cgi.parse_header(mime)
+        if "charset" in mime_options:
+            try:
+                codecs.lookup(mime_options["charset"])
+            except LookupError:
+                raise RuntimeError("Header declared unknown encoding %s" % value)
+        if shortmime.startswith("text/"):
+            encoding = mime_options.get("charset", "UTF-8")
+            try:
+                body = fbody.decode(encoding)
+            except UnicodeError:
+                raise RuntimeError("Could not decode response body using %s\
+                                    encoding declared in header!" % encoding)
         gi.write_body(body,mime)    
         return gi
 
