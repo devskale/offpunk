@@ -262,18 +262,14 @@ class GeminiItem():
         filename = os.path.basename(self._cache_path)
         return filename
 
-    def write_body(self,body,mode,encoding):
+    def write_body(self,body,mime):
         ## body is a copy of the raw gemtext
         ## Write_body() also create the cache !
-        ## Tmpf is the temporary cache (historically, the only cache)
-        tmpf = tempfile.NamedTemporaryFile(mode, encoding=encoding, delete=False)
-        size = tmpf.write(body)
-        tmpf.close()
-        tmp_filename = tmpf.name
-        #self._debug("Wrote %d byte response to %s." % (size, tmp_filename))
-        # Maintain cache and log : FIXME
-        #self._log_visit(gi, address, size)
-        ## We create the permanent cache
+        self.mime = mime
+        if self.mime and self.mime.startswith("text/"):
+            mode = "w"
+        else:
+            mode = "wb"
         cache_dir = os.path.dirname(self._cache_path)
         # If the subdirectory already exists as a file (not a folder)
         # We remove it (happens when accessing URL/subfolder before
@@ -283,7 +279,9 @@ class GeminiItem():
         if os.path.isfile(cache_dir):
             os.remove(cache_dir)
         os.makedirs(cache_dir,exist_ok=True)
-        shutil.copyfile(tmp_filename,self._cache_path)
+        with open(self._cache_path, mode=mode) as f:
+            f.write(body)
+            f.close()
          
 
     def get_mime(self):
@@ -446,7 +444,6 @@ class GeminiClient(cmd.Cmd):
         self.synconly = synconly
         self.tmp_filename = ""
         self.visited_hosts = set()
-        #self.waypoints = []
         self.offline_only = False
         self.sync_only = False
         self.tourfile = os.path.join(self.config_dir, "tour")
@@ -744,7 +741,9 @@ you'll be able to transparently follow links to Gopherspace!""")
         # DEFAULT GEMINI MIME
         if mime == "":
             mime = "text/gemini; charset=utf-8"
-        gi.mime, mime_options = cgi.parse_header(mime)
+        mime, mime_options = cgi.parse_header(mime)
+        # Trying to not set the mime to see what happens
+        #gi.set_mime(mime)
         if "charset" in mime_options:
             try:
                 codecs.lookup(mime_options["charset"])
@@ -756,18 +755,18 @@ you'll be able to transparently follow links to Gopherspace!""")
 
         # Save the result in a temporary file
         ## Set file mode
-        if gi.get_mime().startswith("text/"):
-            mode = "w"
+        if mime.startswith("text/"):
             encoding = mime_options.get("charset", "UTF-8")
             try:
                 body = body.decode(encoding)
             except UnicodeError:
                 raise RuntimeError("Could not decode response body using %s encoding declared in header!" % encoding)
-        else:
-            mode = "wb"
-            encoding = None
+        # It looks like we don’t really need encoding to write the file to cache
+        # Text has been converted to UTF-8 anyway
+        #else:
+        #    encoding = None
         ## body is a copy of the raw gemtext
-        gi.write_body(body,mode,encoding)    
+        gi.write_body(body,mime)    
         return gi
 
     def _send_request(self, gi):
