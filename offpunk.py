@@ -265,7 +265,25 @@ class GeminiItem():
     def write_body(self,body,mime):
         ## body is a copy of the raw gemtext
         ## Write_body() also create the cache !
+        
+        # DEFAULT GEMINI MIME
+        if mime == "":
+            mime = "text/gemini; charset=utf-8"
+        mime, mime_options = cgi.parse_header(mime)
+        if "charset" in mime_options:
+            try:
+                codecs.lookup(mime_options["charset"])
+            except LookupError:
+                raise RuntimeError("Header declared unknown encoding %s" % value)
         self.mime = mime
+        if self.mime.startswith("text/"):
+            encoding = mime_options.get("charset", "UTF-8")
+            try:
+                body = body.decode(encoding)
+            except UnicodeError:
+                raise RuntimeError("Could not decode response body using %s\
+                                    encoding declared in header!" % encoding)
+        
         if self.mime and self.mime.startswith("text/"):
             mode = "w"
         else:
@@ -617,6 +635,22 @@ you'll be able to transparently follow links to Gopherspace!""")
         if update_hist:
             self._update_history(gi)
 
+
+    def _fetch_http(self,gi):
+        import requests
+        from readability import Document
+        response = requests.fetch(gi.url)
+        mime = response.headers['content-type']
+        body = response.content
+        if "text/html" in mime:
+            body = Document(response.text)
+        elif "text/" in mime:
+            body = response.text
+        else:
+            body = response.content
+        gi.write_body(body,mime)
+
+
     #SPECIFIC GEMINI : fetch_over_network should be part of gi os each could have its own.
     # fetch_over_network will modify the gi by adding a mime and write_body()
     # before returning the gi
@@ -738,34 +772,8 @@ you'll be able to transparently follow links to Gopherspace!""")
         assert status.startswith("2")
         
         mime = meta
-        # DEFAULT GEMINI MIME
-        if mime == "":
-            mime = "text/gemini; charset=utf-8"
-        mime, mime_options = cgi.parse_header(mime)
-        # Trying to not set the mime to see what happens
-        #gi.set_mime(mime)
-        if "charset" in mime_options:
-            try:
-                codecs.lookup(mime_options["charset"])
-            except LookupError:
-                raise RuntimeError("Header declared unknown encoding %s" % value)
-
         # Read the response body over the network
         body = f.read()
-
-        # Save the result in a temporary file
-        ## Set file mode
-        if mime.startswith("text/"):
-            encoding = mime_options.get("charset", "UTF-8")
-            try:
-                body = body.decode(encoding)
-            except UnicodeError:
-                raise RuntimeError("Could not decode response body using %s encoding declared in header!" % encoding)
-        # It looks like we don’t really need encoding to write the file to cache
-        # Text has been converted to UTF-8 anyway
-        #else:
-        #    encoding = None
-        ## body is a copy of the raw gemtext
         gi.write_body(body,mime)    
         return gi
 
