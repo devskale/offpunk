@@ -181,14 +181,17 @@ class GeminiItem():
             # index.gmi. I don’t know how to know the real name
             # of the file. But first, we need to ensure that the domain name
             # finish by "/". Else, the cache will create a file, not a folder.
-            # SPECIFIC GEMINI
+            if self.scheme.startswith("http"):
+                index = "index.html"
+            else:
+                index = "index.gmi"
             if self.path == "" or os.path.isdir(self._cache_path):
                 if not self._cache_path.endswith("/"):
                     self._cache_path += "/"
                 if not self.url.endswith("/"):
                     self.url += "/"
             if self._cache_path.endswith("/"):
-                self._cache_path += "index.gmi"
+                self._cache_path += index
 
             self.port = parsed.port or standard_ports.get(self.scheme, 0)
             #small intelligence to try to find a good name for a capsule
@@ -298,9 +301,9 @@ class GeminiItem():
             elif not _HAS_MAGIC :
                 print("Cannot guess the mime type of the file. Install Python-magic")
             if mime.startswith("text"):
-            #if mime == "text/gemini":
-            #SPECIFIC GEMINI
-                mime = "text/gemini"
+            #by default, we consider it’s gemini except for html
+                if "html" not in mime:
+                    mime = "text/gemini"
             self.mime = mime
         return self.mime
     
@@ -516,12 +519,12 @@ class GeminiClient(cmd.Cmd):
                 #webbrowser.open_new_tab(gi.url)
                 #return
             elif self.offline_only and self.options.get("offline_web"):
-                offline_browser = self.options.get("offline_web")
-                cmd = offline_browser % gi.url
+                #offline_browser = self.options.get("offline_web")
+                #cmd = offline_browser % gi.url
                 print("Save for offline web : %s" %gi.url)
                 #FIXME : subprocess doesn’t understand shell redirection
-                os.system(cmd)
-                return
+                #os.system(cmd)
+                #return
             else:
                 print("Do you want to try to open this link with a http proxy?")
                 resp = input("(Y)/N ")
@@ -643,8 +646,7 @@ you'll be able to transparently follow links to Gopherspace!""")
         gi.write_body(body,mime)
         return gi
 
-    #SPECIFIC GEMINI : fetch_over_network should be part of gi os each could have its own.
-    # fetch_over_network will modify the gi by adding a mime and write_body()
+    # fetch_over_network will modify with gi.write_body(body,mime)
     # before returning the gi
     def _fetch_over_network(self, gi):
         
