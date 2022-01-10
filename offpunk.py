@@ -1080,21 +1080,39 @@ you'll be able to transparently follow links to Gopherspace!""")
                 rendered_body += "\n"
                 for child in element.children:
                     rendered_body += recursive_render(child)
-            elif element.name == "p":
+            elif element.name == "pre":
                 if element.string:
-                    rendered_body = element.string.strip()
+                    rendered_body += "\n"
+                    rendered_body += element.string
+                    rendered_body += "\n"
+            #if element.name == "ol":
+            #    print("ol : ",element.contents)
+            #    print("all li", element.find_all("li"))
+            #    for li in element.find_all("li"):
+            elif element.name == "li":
+                for child in element.children:
+                    line = recursive_render(child)
+                    wrapped = textwrap.fill(line,self.options["width"])
+                    rendered_body += " * " + wrapped + "\n"
+                #text = recursive_render(element)
+                #print(element.name,element.contents)
+            #if element.name == "li":
+                #print(element.name,element.contents)
+            elif element.name == "p":
+                temp_str = ""
+                if element.string:
+                    temp_str += element.string.strip()
                     #print("p string : ",element.string)
                 else:
-                    rendered_body = ""
                     #print("p no string : ",element.contents)
                     for child in element.children:
-                        rendered_body += recursive_render(child)
-                        rendered_body += " "
-                wrapped = textwrap.fill(rendered_body,self.options["width"])
+                        temp_str += recursive_render(child)
+                        #temp_str += " "
+                wrapped = textwrap.fill(temp_str,self.options["width"])
                 if wrapped.strip() != "":
-                    rendered_body = wrapped + "\n\n"
+                    rendered_body += wrapped + "\n\n"
             elif element.name == "a":
-                text = element.get_text()
+                text = element.get_text().strip()
                 line = "=> " + element.get('href') + " " +text
                 link_id = " [%s] "%(len(self.index)+1)
                 temp_gi = GeminiItem.from_map_line(line, gi)
