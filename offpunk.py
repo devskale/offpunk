@@ -611,7 +611,7 @@ you'll be able to transparently follow links to Gopherspace!""")
 
         # Pass file to handler, unless we were asked not to
         #SPECIFIC GEMINI : default handler should be provided by the GI.
-        if handle :
+        if gi and handle :
             if gi.get_mime() == "text/gemini":
                 self._handle_gemtext(gi, display=not self.sync_only)
 
