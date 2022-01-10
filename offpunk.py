@@ -67,6 +67,12 @@ try:
 except ModuleNotFoundError:
     _DO_HTTP = False
 
+try:
+    from readability import Document
+    from bs4 import BeautifulSoup
+    _DO_HTML = True
+except ModuleNotFoundError:
+    _DO_HTML = False
 _VERSION = "0.1"
 
 _MAX_REDIRECTS = 5
@@ -267,7 +273,7 @@ class GeminiItem():
                 with open(path) as f:
                     body = f.read()
                     f.close()
-                    return body
+                return body
         else:
             print("ERROR: NO CACHE for %s" %self._cache_path)
             return FIXME
@@ -610,7 +616,8 @@ you'll be able to transparently follow links to Gopherspace!""")
         if gi and handle :
             if gi.get_mime() == "text/gemini":
                 self._handle_gemtext(gi, display=not self.sync_only)
-
+            elif gi.get_mime() == "text/html":
+                self._handle_html(gi,display=not self.sync_only)
             elif not self.sync_only :
                 cmd_str = self._get_handler_cmd(gi.get_mime())
                 try:
@@ -628,11 +635,9 @@ you'll be able to transparently follow links to Gopherspace!""")
 
 
     def _fetch_http(self,gi):
-        from readability import Document
         response = requests.get(gi.url)
         mime = response.headers['content-type']
         body = response.content
-        #body = Document(response.text).summary()
         if "text/" in mime:
             body = response.text
         else:
@@ -1063,6 +1068,48 @@ you'll be able to transparently follow links to Gopherspace!""")
             title += "    \x1b[0;31m(last accessed on %s)"%str_last
         rendered_title = "\x1b[31m\x1b[1m"+ title + "\x1b[0m"+"\n"
         return rendered_title
+    # Our own HTML engine (crazy, isn’t it?)
+    def _handle_html(self,gi,display=True):
+        if not _DO_HTML:
+            print("HTML document detected. Please install python-bs4 and python readability.")
+            return
+        def recursive_render(element,rendered_body):
+            if element.string:
+                #print("tag without children:",element.name)
+                if element.name == "p":
+                    rendered_body += "\n\n"
+                if element.string.strip():
+                    #print("%s"%element.string.strip())
+                    paragraph = element.string.strip()
+                    wrapped = textwrap.fill(paragraph,self.options["width"])
+                    rendered_body += wrapped
+            else:
+                #print("tag children:",element.name)
+                for child in element.children:
+                    rendered_body = recursive_render(child,rendered_body)
+            return rendered_body
+        if self.idx_filename:
+            os.unlink(self.idx_filename)
+        tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
+        self.idx_filename = tmpf.name
+        tmpf.write(self._make_terminal_title(gi))
+        body = gi.get_body()
+        title = Document(body).title()
+        tmpf.write("\x1b[1;34m\x1b[4m" + title + "\x1b[0m""\n")
+        summary = Document(body).summary()
+        soup = BeautifulSoup(summary, 'html.parser')
+        rendered_body = ""
+        for el in soup.body.contents:
+            rendered_body = recursive_render(el,rendered_body)
+        #print(rendered_body)
+        #for line in textwrap.wrap(rendered_body,self.options["width"]):
+            #tmpf.write(line + "\n") #, self.options["width"]) + "\n")
+        tmpf.write(rendered_body)
+        tmpf.close()
+        if display:
+            cmd_str = self._get_handler_cmd("text/gemini")
+            subprocess.call(shlex.split(cmd_str % self.idx_filename))
+
     # Gemtext Rendering Engine
     # this method renders the original Gemtext then call the handler to display it.
     def _handle_gemtext(self, menu_gi, display=True):

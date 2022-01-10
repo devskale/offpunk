@@ -61,6 +61,7 @@ experience or some other features.
 To avoid using unstable or too recent libraries, the rule of thumb is that a library should be packaged in Debian/Ubuntu.
 
 * [Python-requests](http://python-requests.org) is needed to handle http/https requests natively (apt-get install python3-requests). Without it, http links will be opened in an external browser
+* BeautifulSoup4 and Readability are both needed to render HTML. Without them, HTML will not be rendered or be sent to an external parser like Lynx. (apt-get install python3-bs4 python3-readability)
 * The [ansiwrap library](https://pypi.org/project/ansiwrap/) may result in
   neater display of text which makes use of ANSI escape codes to control colour (not in Debian?).
 * The [cryptography library](https://pypi.org/project/cryptography/) will
