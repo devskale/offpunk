@@ -1073,21 +1073,47 @@ you'll be able to transparently follow links to Gopherspace!""")
         if not _DO_HTML:
             print("HTML document detected. Please install python-bs4 and python readability.")
             return
-        def recursive_render(element,rendered_body):
-            if element.string:
+        # This method recursively parse the HTML
+        def recursive_render(element):
+            rendered_body = ""
+            if element.name == "div":
+                rendered_body += "\n"
+                for child in element.children:
+                    rendered_body += recursive_render(child)
+            elif element.name == "p":
+                if element.string:
+                    rendered_body = element.string.strip()
+                    #print("p string : ",element.string)
+                else:
+                    rendered_body = ""
+                    #print("p no string : ",element.contents)
+                    for child in element.children:
+                        rendered_body += recursive_render(child)
+                        rendered_body += " "
+                wrapped = textwrap.fill(rendered_body,self.options["width"])
+                if wrapped.strip() != "":
+                    rendered_body = wrapped + "\n\n"
+            elif element.name == "a":
+                text = element.get_text()
+                line = "=> " + element.get('href') + " " +text
+                link_id = " [%s] "%(len(self.index)+1)
+                temp_gi = GeminiItem.from_map_line(line, gi)
+                self.index.append(temp_gi)
+                rendered_body = "\x1b[34m\x1b[2m " + text + link_id + "\x1b[0m"
+            elif element.string:
                 #print("tag without children:",element.name)
-                if element.name == "p":
-                    rendered_body += "\n\n"
-                if element.string.strip():
-                    #print("%s"%element.string.strip())
-                    paragraph = element.string.strip()
-                    wrapped = textwrap.fill(paragraph,self.options["width"])
-                    rendered_body += wrapped
+                #print("string : **%s** "%element.string.strip())
+                #print("########")
+                rendered_body = element.string.strip()
             else:
                 #print("tag children:",element.name)
                 for child in element.children:
-                    rendered_body = recursive_render(child,rendered_body)
+                    rendered_body += recursive_render(child)
+            #print("body for element %s: %s"%(element.name,rendered_body))
             return rendered_body
+
+        # the real _handle_html method
+        self.index = []
         if self.idx_filename:
             os.unlink(self.idx_filename)
         tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
@@ -1100,12 +1126,13 @@ you'll be able to transparently follow links to Gopherspace!""")
         soup = BeautifulSoup(summary, 'html.parser')
         rendered_body = ""
         for el in soup.body.contents:
-            rendered_body = recursive_render(el,rendered_body)
-        #print(rendered_body)
-        #for line in textwrap.wrap(rendered_body,self.options["width"]):
-            #tmpf.write(line + "\n") #, self.options["width"]) + "\n")
+            rendered_body += recursive_render(el)
+        rendered_body = rendered_body.rstrip()
         tmpf.write(rendered_body)
         tmpf.close()
+        self.lookup = self.index
+        self.page_index = 0
+        self.index_index = -1
         if display:
             cmd_str = self._get_handler_cmd("text/gemini")
             subprocess.call(shlex.split(cmd_str % self.idx_filename))
