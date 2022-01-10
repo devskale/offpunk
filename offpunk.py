@@ -1081,7 +1081,6 @@ you'll be able to transparently follow links to Gopherspace!""")
                 for child in element.children:
                     rendered_body += recursive_render(child)
             elif element.name in ["h1","h2","h3","h4","h5","h6"]:
-                print(element.name, element.contents)
                 line = element.get_text()
                 if element.name in ["h1","h2"]:
                     rendered_body += "\n"+"\x1b[1;34m\x1b[4m" + line + "\x1b[0m"+"\n"
