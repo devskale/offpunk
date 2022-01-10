@@ -560,7 +560,7 @@ you'll be able to transparently follow links to Gopherspace!""")
         if self.offline_only:
             
             if not gi.is_cache_valid():
-                print("Content not available, marked for syncing")
+                print("%s not available, marked for syncing"%gi.url)
                 with open(self.syncfile,mode='a') as sf:
                     line = gi.url.strip() + '\n'
                     sf.write(line)
@@ -1765,7 +1765,7 @@ Use 'ls -l' to see URLs."""
         """Run most recently visited item through "less" command."""
         cmd_str = self._get_handler_cmd(self.gi.get_mime())
         cmd_str = cmd_str % self._get_active_tmpfile()
-        subprocess.call("%s | less -R" % cmd_str, shell=True)
+        subprocess.call("%s | less -RM" % cmd_str, shell=True)
 
     @needs_gi
     def do_fold(self, *args):
