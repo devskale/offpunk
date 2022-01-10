@@ -56,13 +56,16 @@ Announces about Offpunk will be made on Ploum’s Gemlog  => gemini://rawtext.cl
 Offpunk has no "strict dependencies", i.e. it will run and work without anything
 else beyond the Python standard library.  However, it will "opportunistically
 import" a few other libraries if they are available to offer an improved
-experience.
+experience or some other features.
 
+To avoid using unstable or too recent libraries, the rule of thumb is that a library should be packaged in Debian/Ubuntu.
+
+* [Python-requests](http://python-requests.org) is needed to handle http/https requests natively (apt-get install python3-requests). Without it, http links will be opened in an external browser
 * The [ansiwrap library](https://pypi.org/project/ansiwrap/) may result in
-  neater display of text which makes use of ANSI escape codes to control colour.
+  neater display of text which makes use of ANSI escape codes to control colour (not in Debian?).
 * The [cryptography library](https://pypi.org/project/cryptography/) will
   provide a better and slightly more secure experience when using the default
-  TOFU certificate validation mode and is highly recommended.
+  TOFU certificate validation mode and is highly recommended (apt-get install python3-cryptography).
 * [Python magic](https://github.com/ahupp/python-magic/) is useful to determine the MIME type of cached object. If not present, the file extension will be used but some capsules provide wrong extension or no extension at all. (apt-get install python3-magic)
 * [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). Also needed to use the `copy` command. (apt-get install xsel)
 

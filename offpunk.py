@@ -61,6 +61,12 @@ try:
 except ModuleNotFoundError:
     _HAS_MAGIC = False
 
+try:
+    import requests
+    _DO_HTTP = True
+except ModuleNotFoundError:
+    _DO_HTTP = False
+
 _VERSION = "0.1"
 
 _MAX_REDIRECTS = 5
@@ -159,17 +165,12 @@ class GeminiItem():
             self.host = None
             h = self.url.split('/')
             self.host = h[0:len(h)-1]
-            self.scheme = 'local'
             self._cache_path = None
             # localhost:/ is 11 char
             if self.url.startswith("localhost://"):
                 self.path = self.url[11:]
             else:
                 self.path = self.url
-            if self.name != "":
-                self.title = self.name
-            else:
-                self.title = self.path
         else:
             self.path = parsed.path
             self.local = False
@@ -194,21 +195,31 @@ class GeminiItem():
                 self._cache_path += index
 
             self.port = parsed.port or standard_ports.get(self.scheme, 0)
+            
+    def get_title(self):
             #small intelligence to try to find a good name for a capsule
             #we try to find eithe ~username or /users/username
             #else we fallback to hostname
-            self.title = self.host
-            if "user" in parsed.path:
-                i = 0
-                splitted = parsed.path.split("/")
-                while i < (len(splitted)-1):
-                    if splitted[i].startswith("user"):
-                        self.title = splitted[i+1]
-                    i += 1
-            if "~" in parsed.path:
-                for pp in parsed.path.split("/"):
-                    if pp.startswith("~"):
-                        self.title = pp[1:]
+            if self.scheme == "localhost":
+                if self.name != "":
+                    self.title = self.name
+                else:
+                    self.title = self.path
+
+            else:
+                self.title = self.host
+                if "user" in self.path:
+                    i = 0
+                    splitted = self.path.split("/")
+                    while i < (len(splitted)-1):
+                        if splitted[i].startswith("user"):
+                            self.title = splitted[i+1]
+                        i += 1
+                if "~" in self.path:
+                    for pp in self.path.split("/"):
+                        if pp.startswith("~"):
+                            self.title = pp[1:]
+            return self.title
     
     def is_cache_valid(self,validity=0):
         # Validity is the acceptable time for 
@@ -268,7 +279,6 @@ class GeminiItem():
     def write_body(self,body,mime):
         ## body is a copy of the raw gemtext
         ## Write_body() also create the cache !
-        
         # DEFAULT GEMINI MIME
         if mime == "":
             mime = "text/gemini; charset=utf-8"
@@ -512,26 +522,7 @@ class GeminiClient(cmd.Cmd):
         and calling a handler program, and updating the history.
         Nothing is returned."""
         # Don't try to speak to servers running other protocols
-        if gi.scheme in ("http", "https") and not self.sync_only:
-            if not self.options.get("http_proxy",None) and not self.offline_only:
-                print("do nothing for http, see later for fetch")
-                #self._fetch_http(gi)
-                #webbrowser.open_new_tab(gi.url)
-                #return
-            elif self.offline_only and self.options.get("offline_web"):
-                #offline_browser = self.options.get("offline_web")
-                #cmd = offline_browser % gi.url
-                print("Save for offline web : %s" %gi.url)
-                #FIXME : subprocess doesn’t understand shell redirection
-                #os.system(cmd)
-                #return
-            else:
-                print("Do you want to try to open this link with a http proxy?")
-                resp = input("(Y)/N ")
-                if resp.strip().lower() in ("n","no"):
-                    webbrowser.open_new_tab(gi.url)
-                    return
-        elif gi.scheme == "gopher" and not self.options.get("gopher_proxy", None)\
+        if gi.scheme == "gopher" and not self.options.get("gopher_proxy", None)\
                                     and not self.sync_only:
             print("""Offpunk does not speak Gopher natively.
 However, you can use `set gopher_proxy hostname:port` to tell it about a
@@ -548,7 +539,7 @@ you'll be able to transparently follow links to Gopherspace!""")
             else:
                 print("Sorry, file %s does not exist."%gi.path)
                 return
-        elif gi.scheme not in ("gemini", "gopher") and not self.sync_only:
+        elif gi.scheme not in ("gemini", "gopher", "http", "https") and not self.sync_only:
             print("Sorry, no support for {} links.".format(gi.scheme))
             return
 
@@ -573,7 +564,12 @@ you'll be able to transparently follow links to Gopherspace!""")
         elif not self.offline_only:
             try:
                 if gi.scheme in ("http", "https"):
-                    gi = self._fetch_http(gi)
+                    if _DO_HTTP:
+                        gi = self._fetch_http(gi)
+                    else:
+                        print("Install python3-requests to handle http requests natively")
+                        webbrowser.open_new_tab(gi.url)
+                        return
                 else:
                     gi = self._fetch_over_network(gi)
             except UserAbortException:
@@ -632,15 +628,12 @@ you'll be able to transparently follow links to Gopherspace!""")
 
 
     def _fetch_http(self,gi):
-        import requests
         from readability import Document
         response = requests.get(gi.url)
         mime = response.headers['content-type']
         body = response.content
-        if "text/html" in mime:
-            body = response.text
-            #body = Document(response.text).summary()
-        elif "text/" in mime:
+        #body = Document(response.text).summary()
+        if "text/" in mime:
             body = response.text
         else:
             body = response.content
@@ -1060,6 +1053,16 @@ you'll be able to transparently follow links to Gopherspace!""")
         self._debug("Using handler: %s" % cmd_str)
         return cmd_str
 
+
+    # Red title above rendered content
+    def _make_terminal_title(self,gi):
+        title = gi.get_title()
+        if gi.is_cache_valid() and self.offline_only and not gi.local:
+            last_modification = gi.cache_last_modified()
+            str_last = time.ctime(last_modification)
+            title += "    \x1b[0;31m(last accessed on %s)"%str_last
+        rendered_title = "\x1b[31m\x1b[1m"+ title + "\x1b[0m"+"\n"
+        return rendered_title
     # Gemtext Rendering Engine
     # this method renders the original Gemtext then call the handler to display it.
     def _handle_gemtext(self, menu_gi, display=True):
@@ -1071,12 +1074,7 @@ you'll be able to transparently follow links to Gopherspace!""")
         # to display it. This is the output, not native gemtext.
         tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
         self.idx_filename = tmpf.name
-        title = menu_gi.title
-        if menu_gi.is_cache_valid() and self.offline_only and not menu_gi.local:
-            last_modification = menu_gi.cache_last_modified()
-            str_last = time.ctime(last_modification)
-            title += "    \x1b[0;31m(last accessed on %s)"%str_last
-        tmpf.write("\x1b[31m\x1b[1m"+ title + "\x1b[0m""\n")
+        tmpf.write(self._make_terminal_title(menu_gi))
         for line in menu_gi.get_body().splitlines():
             if line.startswith("```"):
                 preformatted = not preformatted
