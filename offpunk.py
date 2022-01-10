@@ -116,7 +116,7 @@ _MIME_HANDLERS = {
     "audio/mpeg":           "mpg123 %s",
     "audio/ogg":            "ogg123 %s",
     "image/*":              "feh -. %s",
-    "text/html":            "lynx -dump -force_html %s",
+    #"text/html":            "lynx -dump -force_html %s",
 }
 
 
@@ -1225,7 +1225,7 @@ you'll be able to transparently follow links to Gopherspace!""")
             self.log["ipv6_bytes_recvd"] += size
 
     def _get_active_tmpfile(self):
-        if self.gi.get_mime() == "text/gemini":
+        if self.gi.get_mime() in ["text/gemini","text/html"]:
             return self.idx_filename
         else:
             return self.tmp_filename
