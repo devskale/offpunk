@@ -1,8 +1,8 @@
 # OFFPUNK
 
-A command-line, text-based and offline-first Gemini browser by [Ploum](https://ploum.net).
+A command-line, text-based and offline-first Gemini and Web browser by [Ploum](https://ploum.net).
 
-Focused on Gemini first but with some Gopher/web support available or projected, the goal of Offpunk is to be able to synchronise your content once (a day, a week, a month) and then browse it while staying disconnected.
+Focused on Gemini first but with text-mode support for HTTP/HTML (gopher is planned), the goal of Offpunk is to be able to synchronise your content once (a day, a week, a month) and then browse it while staying disconnected.
 
 Offpunk is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98) by Solderpunk and was originally called AV-98-offline as an experimental branch.
 
@@ -10,12 +10,12 @@ Offpunk is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98)
 
 Offmini is a single python file. Installation is optional, you can simply download and run "./offmini.py" or "python3 offmini.py" in a terminal.
 
-You use the `go` command to visit a URL, e.g. `go gemini.circumlunar.space`.
+You use the `go` command to visit a URL, e.g. `go gemini.circumlunar.space`. (gemini:// is assumed is no protocol is specified).
 
-Links in Gemini documents are assigned numerical indices.  Just type an index to
-follow that link. If a Gemini document is too long to fit on your screen, the content is displayed in the less pager (by default). Type `q` to quit and go back to Offpunk prompt.
+Links in pages are assigned numerical indices.  Just type an index to
+follow that link. If page is too long to fit on your screen, the content is displayed in the less pager (by default). Type `q` to quit and go back to Offpunk prompt. Type `less` or `l` to display it again in less.
 
-Use `add` to add a capsule to your bookmarks and `bookmarks` or `bm` to show your bookmarks (which are stored in a file in you .config).
+Use `add` to add a capsule to your bookmarks and `bookmarks` or `bm` to show your bookmarks (which are stored in an editable file in you .config).
 
 Use `offline` to only browse cached content and `online` to go back online. While offline, the `reload` command will force a re-fetch during the next synchronisation.
 
@@ -38,15 +38,14 @@ At the moment, caching only work for gemini:// ressources. gopher:// is not impl
 Known issues in the code:
 * WONTFIX: Sync is slow if you have bookmarks with lot of links that change very often.
 * FIXME0: Certificates error are not handled in --sync
-* FIXME1: consider root file is always index.gmi
-* FIXME2: offline web browser use os.system because it’s the only one that understands the ">> file.txt"
+* FIXME1: consider root file is always index.gmi or index.html
 
 * TODO: Update blackbox to reflect cache hits.
 * TODO: allow to search cache while offline
 
 ## More
 
-See how I browse Gemini offline => gemini://rawtext.club/~ploum/2021-12-17-offline-gemini.gmi
+See how I browse Web/Gemini offline => gemini://rawtext.club/~ploum/2021-12-17-offline-gemini.gmi
 
 Announces about Offpunk will be made on Ploum’s Gemlog  => gemini://rawtext.club/~ploum/
 
@@ -56,12 +55,12 @@ Announces about Offpunk will be made on Ploum’s Gemlog  => gemini://rawtext.cl
 Offpunk has no "strict dependencies", i.e. it will run and work without anything
 else beyond the Python standard library.  However, it will "opportunistically
 import" a few other libraries if they are available to offer an improved
-experience or some other features.
+experience or some other features. Python libraries requests, bs4 and readabliity are required for http/html support.
 
 To avoid using unstable or too recent libraries, the rule of thumb is that a library should be packaged in Debian/Ubuntu.
 
 * [Python-requests](http://python-requests.org) is needed to handle http/https requests natively (apt-get install python3-requests). Without it, http links will be opened in an external browser
-* BeautifulSoup4 and Readability are both needed to render HTML. Without them, HTML will not be rendered or be sent to an external parser like Lynx. (apt-get install python3-bs4 python3-readability)
+* [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup) and [Readability](https://github.com/buriy/python-readability) are both needed to render HTML. Without them, HTML will not be rendered or be sent to an external parser like Lynx. (apt-get install python3-bs4 python3-readability)
 * The [ansiwrap library](https://pypi.org/project/ansiwrap/) may result in
   neater display of text which makes use of ANSI escape codes to control colour (not in Debian?).
 * The [cryptography library](https://pypi.org/project/cryptography/) will
@@ -73,7 +72,8 @@ To avoid using unstable or too recent libraries, the rule of thumb is that a lib
 ## Features
 
 * Offline mode to browse cached content without a connection. Requested elements are automatically fetched during the next synchronization and are added to your tour.
-* Support "subscriptions" to gemlogs. New content seen in bookmarked gemlogs are automatically added to your next tour.
+* HTML pages are prettified to focus on content. Read without being disturbed.
+* Support "subscriptions" to a page. New content seen in bookmarked pages are automatically added to your next tour.
 * TOFU or CA server certificate validation
 * Extensive client certificate support if an `openssl` binary is available
 * Ability to specify external handler programs for different MIME types
@@ -103,6 +103,6 @@ it will create `~/.offpunk/`.
 
 ## Cache design
 
-The offline content is stored in ~/.cache/offmini/gemini/ as plain .gmi files. The structure of the Gemini-space is tentatively recreated. One key element of the design is to not have any database. The cache can thus be modified by hand, content can be removed, used or added by software other than offpunk.
+The offline content is stored in ~/.cache/offmini/ as plain .gmi/.html files. The structure of the Gemini-space is tentatively recreated. One key element of the design is to not have any database. The cache can thus be modified by hand, content can be removed, used or added by software other than offpunk.
 
 There’s no feature to automatically trim the cache. It is believed that gemini content being lightweight, one would have to seriously browse a lot before cache size is an issue. If cache becomes too big, simply rm -rf the folders of the capsules taking too much space.
