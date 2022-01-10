@@ -1080,24 +1080,25 @@ you'll be able to transparently follow links to Gopherspace!""")
                 rendered_body += "\n"
                 for child in element.children:
                     rendered_body += recursive_render(child)
+            elif element.name in ["h1","h2","h3","h4","h5","h6"]:
+                print(element.name, element.contents)
+                line = element.get_text()
+                if element.name in ["h1","h2"]:
+                    rendered_body += "\n"+"\x1b[1;34m\x1b[4m" + line + "\x1b[0m"+"\n"
+                elif element.name in ["h3","h4"]:
+                    rendered_body += "\n" + "\x1b[34m" + line + "\x1b[0m" + "\n"
+                else:
+                    rendered_body += "\n" + "\x1b[34m\x1b[2m" + line + "\x1b[0m" + "\n"
             elif element.name == "pre":
                 if element.string:
                     rendered_body += "\n"
                     rendered_body += element.string
                     rendered_body += "\n"
-            #if element.name == "ol":
-            #    print("ol : ",element.contents)
-            #    print("all li", element.find_all("li"))
-            #    for li in element.find_all("li"):
             elif element.name == "li":
                 for child in element.children:
                     line = recursive_render(child)
                     wrapped = textwrap.fill(line,self.options["width"])
                     rendered_body += " * " + wrapped + "\n"
-                #text = recursive_render(element)
-                #print(element.name,element.contents)
-            #if element.name == "li":
-                #print(element.name,element.contents)
             elif element.name == "p":
                 temp_str = ""
                 if element.string:
