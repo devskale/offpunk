@@ -1113,11 +1113,13 @@ you'll be able to transparently follow links to Gopherspace!""")
                     rendered_body += wrapped + "\n\n"
             elif element.name == "a":
                 text = element.get_text().strip()
-                line = "=> " + element.get('href') + " " +text
-                link_id = " [%s] "%(len(self.index)+1)
-                temp_gi = GeminiItem.from_map_line(line, gi)
-                self.index.append(temp_gi)
-                rendered_body = "\x1b[34m\x1b[2m " + text + link_id + "\x1b[0m"
+                link = element.get('href')
+                if link:
+                    line = "=> " + link + " " +text
+                    link_id = " [%s] "%(len(self.index)+1)
+                    temp_gi = GeminiItem.from_map_line(line, gi)
+                    self.index.append(temp_gi)
+                    rendered_body = "\x1b[34m\x1b[2m " + text + link_id + "\x1b[0m"
             elif element.string:
                 #print("tag without children:",element.name)
                 #print("string : **%s** "%element.string.strip())
