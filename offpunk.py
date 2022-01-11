@@ -784,6 +784,7 @@ you'll be able to transparently follow links to Gopherspace!""")
             except LookupError:
                 raise RuntimeError("Header declared unknown encoding %s" % value)
         if shortmime.startswith("text/"):
+            #Get the charset and default to UTF-8 in none
             encoding = mime_options.get("charset", "UTF-8")
             try:
                 body = fbody.decode(encoding)
@@ -1103,8 +1104,7 @@ you'll be able to transparently follow links to Gopherspace!""")
             elif element.name == "li":
                 for child in element.children:
                     line = recursive_render(child)
-                    wrapped = textwrap.fill(line,self.options["width"])
-                    rendered_body += " * " + wrapped + "\n"
+                    rendered_body += " * " + line + "\n"
             elif element.name == "p":
                 temp_str = ""
                 if element.string:
@@ -1114,10 +1114,7 @@ you'll be able to transparently follow links to Gopherspace!""")
                     #print("p no string : ",element.contents)
                     for child in element.children:
                         temp_str += recursive_render(child)
-                        #temp_str += " "
-                wrapped = textwrap.fill(temp_str,self.options["width"])
-                if wrapped.strip() != "":
-                    rendered_body += wrapped + "\n\n"
+                rendered_body = temp_str + "\n\n"
             elif element.name == "a":
                 text = element.get_text().strip()
                 link = element.get('href')
@@ -1127,6 +1124,8 @@ you'll be able to transparently follow links to Gopherspace!""")
                     temp_gi = GeminiItem.from_map_line(line, gi)
                     self.index.append(temp_gi)
                     rendered_body = "\x1b[34m\x1b[2m " + text + link_id + "\x1b[0m"
+            elif element.name == "br":
+                rendered_body = "\n"
             elif element.string:
                 #print("tag without children:",element.name)
                 #print("string : **%s** "%element.string.strip())
@@ -1154,8 +1153,17 @@ you'll be able to transparently follow links to Gopherspace!""")
         rendered_body = ""
         for el in soup.body.contents:
             rendered_body += recursive_render(el)
-        rendered_body = rendered_body.rstrip()
-        tmpf.write(rendered_body)
+        paragraphs = rendered_body.split("\n\n")
+        for par in paragraphs:
+            lines = par.splitlines()
+            for line in lines:
+                if line.strip() != "":
+                    wrapped = textwrap.fill(line,self.options["width"])
+                    wrapped += "\n"
+                else:
+                    wrapped = ""
+                tmpf.write(wrapped)
+            tmpf.write("\n")
         tmpf.close()
         self.lookup = self.index
         self.page_index = 0
