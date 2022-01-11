@@ -394,9 +394,16 @@ CRLF = '\r\n'
 
 # Cheap and cheerful URL detector
 def looks_like_url(word):
-    start = word.startswith("gemini://") or word.startswith("http://")\
-            or word.startswith("https://")
-    return "." in word and start
+    try: 
+        url = fix_ipv6_url(word).strip()
+        #print("looks_like_url before %s"%word)
+        #print("looks_like_url after %s"%url)
+        urllib.parse.urlparse(url)
+        start = word.startswith("gemini://") or word.startswith("http://")\
+                or word.startswith("https://")
+        return "." in word and start
+    except ValueError:
+        return False
 
 class UserAbortException(Exception):
     pass
@@ -1565,7 +1572,7 @@ Use with "raw" to copy the content as seen in your terminal (not gemtext)"""
         elif os.path.exists(os.path.expanduser(line)):
             self._go_to_gi(GeminiItem(line))
         # If this isn't a mark, treat it as a URL
-        else:
+        elif looks_like_url(line):
             self._go_to_gi(GeminiItem(line))
 
     @needs_gi
