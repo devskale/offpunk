@@ -2119,8 +2119,6 @@ def main():
             with open(gc.syncfile,mode='r') as sf:
                 lines_lookup += sf.readlines()
                 sf.close()
-                # let’s empty the file
-                open(gc.syncfile,mode='w').close()
         tot = len(set(lines_lookup))
         counter = 0
         if tot > 0:
@@ -2136,6 +2134,9 @@ def main():
                             savetotour=False,count=[counter,tot])
                 add_to_tour(gitem)
 
+        # let’s empty the sync file once the fetch is successful
+        if os.path.exists(gc.syncfile):
+            open(gc.syncfile,mode='w').close()
         gc.onecmd("blackbox")
     else:
         while True:
