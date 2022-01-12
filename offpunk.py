@@ -1095,12 +1095,16 @@ you'll be able to transparently follow links to Gopherspace!""")
             print("HTML document detected. Please install python-bs4 and python readability.")
             return
         # This method recursively parse the HTML
-        def recursive_render(element):
+        def recursive_render(element,indent=""):
             rendered_body = ""
-            if element.name == "div":
+            #print("rendering %s - %s with indent %s" %(element.name,element.string,indent))
+            if element.name == "blockquote":
+                for child in element.children:
+                    rendered_body +=  recursive_render(child,indent="\t").rstrip("\t")
+            elif element.name == "div":
                 rendered_body += "\n"
                 for child in element.children:
-                    rendered_body += recursive_render(child)
+                    rendered_body += recursive_render(child,indent=indent)
             elif element.name in ["h1","h2","h3","h4","h5","h6"]:
                 line = element.get_text()
                 if element.name in ["h1","h2"]:
@@ -1116,7 +1120,7 @@ you'll be able to transparently follow links to Gopherspace!""")
                     rendered_body += "\n"
             elif element.name == "li":
                 for child in element.children:
-                    line = recursive_render(child)
+                    line = recursive_render(child,indent=indent)
                     rendered_body += " * " + line + "\n"
             elif element.name == "p":
                 temp_str = ""
@@ -1126,7 +1130,7 @@ you'll be able to transparently follow links to Gopherspace!""")
                 else:
                     #print("p no string : ",element.contents)
                     for child in element.children:
-                        temp_str += recursive_render(child)
+                        temp_str += recursive_render(child,indent=indent)
                 rendered_body = temp_str + "\n\n"
             elif element.name == "a":
                 text = element.get_text().strip()
@@ -1151,9 +1155,9 @@ you'll be able to transparently follow links to Gopherspace!""")
             else:
                 #print("tag children:",element.name)
                 for child in element.children:
-                    rendered_body += recursive_render(child)
+                    rendered_body += recursive_render(child,indent=indent)
             #print("body for element %s: %s"%(element.name,rendered_body))
-            return rendered_body
+            return indent + rendered_body
 
         # the real _handle_html method
         self.index = []
@@ -1175,8 +1179,14 @@ you'll be able to transparently follow links to Gopherspace!""")
             for par in paragraphs:
                 lines = par.splitlines()
                 for line in lines:
+                    if line.startswith("\t"):
+                        indent = "   "
+                        line = line.strip("\t")
+                    else:
+                        indent = ""
                     if line.strip() != "":
-                        wrapped = textwrap.fill(line,self.options["width"])
+                        wrapped = textwrap.fill(line,self.options["width"],\
+                                    initial_indent=indent,subsequent_indent=indent)
                         wrapped += "\n"
                     else:
                         wrapped = ""
