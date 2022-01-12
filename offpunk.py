@@ -1078,8 +1078,9 @@ you'll be able to transparently follow links to Gopherspace!""")
             last_modification = gi.cache_last_modified()
             str_last = time.ctime(last_modification)
             title += "    \x1b[0;31m(last accessed on %s)"%str_last
-        rendered_title = "\x1b[31m\x1b[1m"+ title + "\x1b[0m"+"\n"
-        return rendered_title
+        rendered_title = "\x1b[31m\x1b[1m"+ title + "\x1b[0m"
+        wrapped = textwrap.fill(rendered_title,self.options["width"])
+        return wrapped + "\n"
     # Our own HTML engine (crazy, isn’t it?)
     def _handle_html(self,gi,display=True):
         if not _DO_HTML:
@@ -1189,6 +1190,16 @@ you'll be able to transparently follow links to Gopherspace!""")
         tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
         self.idx_filename = tmpf.name
         tmpf.write(self._make_terminal_title(menu_gi))
+        def wrap_line(line,color=None):
+            wrapped = textwrap.wrap(line,self.options["width"])
+            final = ""
+            for l in wrapped:
+                if color:
+                    l = color + l + "\x1b[0m"
+                if l.strip() != "":
+                    final += l + "\n"
+            return final
+                    
         for line in menu_gi.get_body().splitlines():
             if line.startswith("```"):
                 preformatted = not preformatted
@@ -1212,16 +1223,16 @@ you'll be able to transparently follow links to Gopherspace!""")
             elif line.startswith("###"):
                 line = line[3:].lstrip("\t ")
                 #tmpf.write("\x1b[4m" + line + "\x1b[0m""\n")
-                tmpf.write("\x1b[34m\x1b[2m" + line + "\x1b[0m""\n")
+                tmpf.write(wrap_line(line, color="\x1b[34m\x1b[2m"))
             elif line.startswith("##"):
                 line = line[2:].lstrip("\t ")
-                #tmpf.write("\x1b[1m" + line + "\x1b[0m""\n")
-                tmpf.write("\x1b[34m" + line + "\x1b[0m""\n")
+                tmpf.write(wrap_line(line, color="\x1b[34m"))
             elif line.startswith("#"):
                 line = line[1:].lstrip("\t ")
-                tmpf.write("\x1b[1;34m\x1b[4m" + line + "\x1b[0m""\n")
+                tmpf.write(wrap_line(line,color="\x1b[1;34m\x1b[4m"))
             else:
-                tmpf.write(textwrap.fill(line, self.options["width"]) + "\n")
+                tmpf.write(wrap_line(line).rstrip() + "\n")
+                #tmpf.write(textwrap.fill(line, self.options["width"]) + "\n")
         tmpf.close()
 
         self.lookup = self.index
