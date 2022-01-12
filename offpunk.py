@@ -199,7 +199,7 @@ class GeminiItem():
                     self.url += "/"
             if self._cache_path.endswith("/"):
                 self._cache_path += index
-
+            
             self.port = parsed.port or standard_ports.get(self.scheme, 0)
             
     def get_title(self):
@@ -398,7 +398,9 @@ def looks_like_url(word):
         url = fix_ipv6_url(word).strip()
         #print("looks_like_url before %s"%word)
         #print("looks_like_url after %s"%url)
-        urllib.parse.urlparse(url)
+        parsed = urllib.parse.urlparse(url)
+        #sometimes, urllib crashed only when requesting the port
+        port = parsed.port
         start = word.startswith("gemini://") or word.startswith("http://")\
                 or word.startswith("https://")
         return "." in word and start
