@@ -151,6 +151,8 @@ def fix_ipv6_url(url):
 standard_ports = {
         "gemini": 1965,
         "gopher": 70,
+        "http"  : 80,
+        "https" : 443,
 }
 
 class GeminiItem():
