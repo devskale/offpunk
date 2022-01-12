@@ -1153,19 +1153,20 @@ you'll be able to transparently follow links to Gopherspace!""")
         summary = Document(body).summary()
         soup = BeautifulSoup(summary, 'html.parser')
         rendered_body = ""
-        for el in soup.body.contents:
-            rendered_body += recursive_render(el)
-        paragraphs = rendered_body.split("\n\n")
-        for par in paragraphs:
-            lines = par.splitlines()
-            for line in lines:
-                if line.strip() != "":
-                    wrapped = textwrap.fill(line,self.options["width"])
-                    wrapped += "\n"
-                else:
-                    wrapped = ""
-                tmpf.write(wrapped)
-            tmpf.write("\n")
+        if soup and soup.body :
+            for el in soup.body.contents:
+                rendered_body += recursive_render(el)
+            paragraphs = rendered_body.split("\n\n")
+            for par in paragraphs:
+                lines = par.splitlines()
+                for line in lines:
+                    if line.strip() != "":
+                        wrapped = textwrap.fill(line,self.options["width"])
+                        wrapped += "\n"
+                    else:
+                        wrapped = ""
+                    tmpf.write(wrapped)
+                tmpf.write("\n")
         tmpf.close()
         self.lookup = self.index
         self.page_index = 0
