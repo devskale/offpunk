@@ -384,13 +384,21 @@ class GeminiItem():
             return "=> {}\n".format(self.url)
 
     @classmethod
-    #SPECIFIC GEMINI
+    #Create a GeminiItem based on a gemini line
+    #also makes relative URL absolute
     def from_map_line(cls, line, origin_gi):
         assert line.startswith("=>")
         assert line[2:].strip()
         bits = line[2:].strip().split(maxsplit=1)
         bits[0] = origin_gi.absolutise_url(bits[0])
-        return cls(*bits)
+        if looks_like_url(bits[0]):
+            try:
+                newgi = cls(*bits)
+                return newgi
+            except:
+                return None
+        else:
+            return None
 
 CRLF = '\r\n'
 
@@ -1127,8 +1135,12 @@ you'll be able to transparently follow links to Gopherspace!""")
                     line = "=> " + link + " " +text
                     link_id = " [%s] "%(len(self.index)+1)
                     temp_gi = GeminiItem.from_map_line(line, gi)
-                    self.index.append(temp_gi)
-                    rendered_body = "\x1b[34m\x1b[2m " + text + link_id + "\x1b[0m"
+                    if temp_gi:
+                        self.index.append(temp_gi)
+                        rendered_body = "\x1b[34m\x1b[2m " + text + link_id + "\x1b[0m"
+                    else:
+                        #No real link found
+                        rendered_body = text
             elif element.name == "br":
                 rendered_body = "\n"
             elif element.string:
@@ -1190,8 +1202,9 @@ you'll be able to transparently follow links to Gopherspace!""")
         tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
         self.idx_filename = tmpf.name
         tmpf.write(self._make_terminal_title(menu_gi))
-        def wrap_line(line,color=None):
-            wrapped = textwrap.wrap(line,self.options["width"])
+        def wrap_line(line,color=None,i_indent="",s_indent=""):
+            wrapped = textwrap.wrap(line,self.options["width"],\
+                                    initial_indent=i_indent,subsequent_indent=s_indent)
             final = ""
             for l in wrapped:
                 if color:
@@ -1208,8 +1221,16 @@ you'll be able to transparently follow links to Gopherspace!""")
             elif line.startswith("=>"):
                 try:
                     gi = GeminiItem.from_map_line(line, menu_gi)
-                    self.index.append(gi)
-                    tmpf.write(self._format_geminiitem(len(self.index), gi) + "\n")
+                    if gi:
+                        self.index.append(gi)
+                        tmpf.write(self._format_geminiitem(len(self.index), gi) + "\n")
+                        #tentative to wrapp long links. Not sure it worth the trouble
+                        #link = self._format_geminiitem(len(self.index), gi)
+                        #pos = link.find("] ") + 2
+                        #wrapped = wrap_line(link,s_indent=pos*" ")
+                        #tmpf.write(wrapped)
+                    else:
+                        self._debug("Skipping possible link: %s" % line)
                 except:
                     self._debug("Skipping possible link: %s" % line)
             elif line.startswith("* "):
