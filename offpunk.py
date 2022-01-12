@@ -1151,7 +1151,7 @@ you'll be able to transparently follow links to Gopherspace!""")
                 #print("tag without children:",element.name)
                 #print("string : **%s** "%element.string.strip())
                 #print("########")
-                rendered_body = element.string.strip()
+                rendered_body = element.string.strip("\n")
             else:
                 #print("tag children:",element.name)
                 for child in element.children:
@@ -1212,6 +1212,8 @@ you'll be able to transparently follow links to Gopherspace!""")
         tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
         self.idx_filename = tmpf.name
         tmpf.write(self._make_terminal_title(menu_gi))
+        #This local method takes a line and apply the ansi code given as "color"
+        #The whole line is then wrapped and ansi code are ended.
         def wrap_line(line,color=None,i_indent="",s_indent=""):
             wrapped = textwrap.wrap(line,self.options["width"],\
                                     initial_indent=i_indent,subsequent_indent=s_indent)
