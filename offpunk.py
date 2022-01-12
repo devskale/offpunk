@@ -1233,12 +1233,12 @@ you'll be able to transparently follow links to Gopherspace!""")
                     gi = GeminiItem.from_map_line(line, menu_gi)
                     if gi:
                         self.index.append(gi)
-                        tmpf.write(self._format_geminiitem(len(self.index), gi) + "\n")
+                        #tmpf.write(self._format_geminiitem(len(self.index), gi) + "\n")
                         #tentative to wrapp long links. Not sure it worth the trouble
-                        #link = self._format_geminiitem(len(self.index), gi)
-                        #pos = link.find("] ") + 2
-                        #wrapped = wrap_line(link,s_indent=pos*" ")
-                        #tmpf.write(wrapped)
+                        link = self._format_geminiitem(len(self.index), gi)
+                        startpos = link.find("] ") + 2
+                        wrapped = wrap_line(link,s_indent=startpos*" ")
+                        tmpf.write(wrapped)
                     else:
                         self._debug("Skipping possible link: %s" % line)
                 except:
@@ -1263,7 +1263,6 @@ you'll be able to transparently follow links to Gopherspace!""")
                 tmpf.write(wrap_line(line,color="\x1b[1;34m\x1b[4m"))
             else:
                 tmpf.write(wrap_line(line).rstrip() + "\n")
-                #tmpf.write(textwrap.fill(line, self.options["width"]) + "\n")
         tmpf.close()
 
         self.lookup = self.index
