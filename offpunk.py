@@ -1121,9 +1121,15 @@ you'll be able to transparently follow links to Gopherspace!""")
                     rendered_body += element.string
                     rendered_body += "\n"
             elif element.name == "li":
+                line = ""
                 for child in element.children:
-                    line = recursive_render(child,indent=indent)
-                    rendered_body += " * " + line + "\n"
+                    line += recursive_render(child,indent=indent).strip("\n")
+                    #print("in li: ***%s***"%line)
+                rendered_body += " * " + line.strip() + "\n"
+            elif element.name in ["code","em","b","i"]:
+                # we don’t do anything with those markup right now. Maybe later?
+                for child in element.children:
+                    rendered_body += recursive_render(child,indent=indent).strip("\n")
             elif element.name == "p":
                 temp_str = ""
                 if element.string:
@@ -1153,7 +1159,7 @@ you'll be able to transparently follow links to Gopherspace!""")
                 #print("tag without children:",element.name)
                 #print("string : **%s** "%element.string.strip())
                 #print("########")
-                rendered_body = element.string.strip("\n")
+                rendered_body = element.string.strip("\n").strip("\t")
             else:
                 #print("tag children:",element.name)
                 for child in element.children:
@@ -1182,13 +1188,18 @@ you'll be able to transparently follow links to Gopherspace!""")
                 lines = par.splitlines()
                 for line in lines:
                     if line.startswith("\t"):
-                        indent = "   "
+                        i_indent = "   "
+                        s_indent = i_indent
                         line = line.strip("\t")
+                    elif line.startswith(" * "):
+                        i_indent = ""  # we keep the initial bullet)
+                        s_indent = "   "
                     else:
-                        indent = ""
+                        i_indent = ""
+                        s_indent = i_indent
                     if line.strip() != "":
                         wrapped = textwrap.fill(line,self.options["width"],\
-                                    initial_indent=indent,subsequent_indent=indent)
+                                    initial_indent=i_indent,subsequent_indent=s_indent)
                         wrapped += "\n"
                     else:
                         wrapped = ""
