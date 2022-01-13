@@ -803,6 +803,8 @@ you'll be able to transparently follow links to Gopherspace!""")
             except UnicodeError:
                 raise RuntimeError("Could not decode response body using %s\
                                     encoding declared in header!" % encoding)
+        else:
+            body = fbody
         gi.write_body(body,mime)    
         return gi
 
