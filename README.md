@@ -31,17 +31,13 @@ For example, running
 
 will refresh your bookmarks if those are at least 12h old. If cache-validity is not set or set to 0, any cache is considered good and only content never cached before will be fetched. 
 
-At the moment, caching only work for gemini:// ressources. gopher:// is not implemented and http(s):// ressources are sent to an "offline browser" (by default, None, nothing is done). It could be useful to send the http:// links to a text file in order to visit them while online.
-
 ## TODO
 
 Known issues in the code:
-* WONTFIX: Sync is slow if you have bookmarks with lot of links that change very often.
 * FIXME0: Certificates error are not handled in --sync
 * FIXME1: consider root file is always index.gmi or index.html
 
 * TODO: Update blackbox to reflect cache hits.
-* TODO: allow to search cache while offline
 
 ## More
 
@@ -103,6 +99,6 @@ it will create `~/.offpunk/`.
 
 ## Cache design
 
-The offline content is stored in ~/.cache/offmini/ as plain .gmi/.html files. The structure of the Gemini-space is tentatively recreated. One key element of the design is to not have any database. The cache can thus be modified by hand, content can be removed, used or added by software other than offpunk.
+The offline content is stored in ~/.cache/offmini/ as plain .gmi/.html files. The structure of the Gemini-space is tentatively recreated. One key element of the design is to avoid any database. The cache can thus be modified by hand, content can be removed, used or added by software other than offpunk.
 
 There’s no feature to automatically trim the cache. It is believed that gemini content being lightweight, one would have to seriously browse a lot before cache size is an issue. If cache becomes too big, simply rm -rf the folders of the capsules taking too much space.
