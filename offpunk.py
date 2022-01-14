@@ -1116,10 +1116,13 @@ you'll be able to transparently follow links to Gopherspace!""")
                 else:
                     rendered_body += "\n" + "\x1b[34m\x1b[2m" + line + "\x1b[0m" + "\n"
             elif element.name == "pre":
+                rendered_body += "\n"
                 if element.string:
-                    rendered_body += "\n"
                     rendered_body += element.string
-                    rendered_body += "\n"
+                else:
+                    for child in element.children:
+                        rendered_body += recursive_render(child,indent=indent)
+                rendered_body += "\n"
             elif element.name == "li":
                 line = ""
                 for child in element.children:
