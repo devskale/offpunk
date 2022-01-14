@@ -73,7 +73,7 @@ try:
     _DO_HTML = True
 except ModuleNotFoundError:
     _DO_HTML = False
-_VERSION = "0.1"
+_VERSION = "0.1~dev"
 
 _MAX_REDIRECTS = 5
 _MAX_CACHE_SIZE = 10
@@ -1132,13 +1132,8 @@ you'll be able to transparently follow links to Gopherspace!""")
                     rendered_body += recursive_render(child,indent=indent).strip("\n")
             elif element.name == "p":
                 temp_str = ""
-                if element.string:
-                    temp_str += element.string.strip()
-                    #print("p string : ",element.string)
-                else:
-                    #print("p no string : ",element.contents)
-                    for child in element.children:
-                        temp_str += recursive_render(child,indent=indent)
+                for child in element.children:
+                    temp_str += recursive_render(child,indent=indent)
                 rendered_body = temp_str + "\n\n"
             elif element.name == "a":
                 text = element.get_text().strip()
@@ -1174,10 +1169,10 @@ you'll be able to transparently follow links to Gopherspace!""")
         tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
         self.idx_filename = tmpf.name
         tmpf.write(self._make_terminal_title(gi))
-        body = gi.get_body()
-        title = Document(body).title()
+        readable = Document(gi.get_body())
+        title = readable.short_title()
         tmpf.write("\x1b[1;34m\x1b[4m" + title + "\x1b[0m""\n")
-        summary = Document(body).summary()
+        summary = readable.summary()
         soup = BeautifulSoup(summary, 'html.parser')
         rendered_body = ""
         if soup and soup.body :
