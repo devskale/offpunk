@@ -213,7 +213,6 @@ class GeminiItem():
                     self.title = self.name
                 else:
                     self.title = self.path
-
             else:
                 self.title = self.host
                 if "user" in self.path:
@@ -406,8 +405,6 @@ CRLF = '\r\n'
 def looks_like_url(word):
     try: 
         url = fix_ipv6_url(word).strip()
-        #print("looks_like_url before %s"%word)
-        #print("looks_like_url after %s"%url)
         parsed = urllib.parse.urlparse(url)
         #sometimes, urllib crashed only when requesting the port
         port = parsed.port
@@ -415,7 +412,8 @@ def looks_like_url(word):
                 or word.startswith("https://")
         if not start:
             return looks_like_url("gemini://"+word)
-        return "." in word and start
+        else:
+            return "." in word
     except ValueError:
         return False
 
