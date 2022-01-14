@@ -413,6 +413,8 @@ def looks_like_url(word):
         port = parsed.port
         start = word.startswith("gemini://") or word.startswith("http://")\
                 or word.startswith("https://")
+        if not start:
+            return looks_like_url("gemini://"+word)
         return "." in word and start
     except ValueError:
         return False
@@ -1117,12 +1119,9 @@ you'll be able to transparently follow links to Gopherspace!""")
                     rendered_body += "\n" + "\x1b[34m\x1b[2m" + line + "\x1b[0m" + "\n"
             elif element.name == "pre":
                 rendered_body += "\n"
-                if element.string:
-                    rendered_body += element.string
-                else:
-                    for child in element.children:
-                        rendered_body += recursive_render(child,indent=indent)
-                rendered_body += "\n"
+                for child in element.children:
+                   rendered_body += recursive_render(child,indent=indent)
+                rendered_body += "\n\n"
             elif element.name == "li":
                 line = ""
                 for child in element.children:
