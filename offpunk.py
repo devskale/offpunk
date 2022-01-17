@@ -313,7 +313,9 @@ class GeminiItem():
         if self.is_cache_valid():
             mime,encoding = mimetypes.guess_type(self._cache_path,strict=False)
             #gmi Mimetype is not recognized yet
-            if not mime and _HAS_MAGIC :
+            if not mime and self._cache_path.endswith(".gmi"):
+                mime = "text/gemini"
+            elif not mime and _HAS_MAGIC :
                 mime = magic.from_file(self._cache_path,mime=True)
             elif not _HAS_MAGIC :
                 print("Cannot guess the mime type of the file. Install Python-magic")
@@ -1171,8 +1173,9 @@ you'll be able to transparently follow links to Gopherspace!""")
         tmpf.write(self._make_terminal_title(gi))
         readable = Document(gi.get_body())
         title = readable.short_title()
-        tmpf.write("\x1b[1;34m\x1b[4m" + title + "\x1b[0m""\n")
         summary = readable.summary()
+        tmpf.write("\x1b[1;34m\x1b[4m" + title + "\x1b[0m""\n")
+        #summary = gi.get_body()
         soup = BeautifulSoup(summary, 'html.parser')
         rendered_body = ""
         if soup and soup.body :
@@ -1956,16 +1959,58 @@ Bookmarks are stored using the 'add' command."""
             print("bookmarks command takes a single integer argument!")
             return
         with open(bm_file, "r") as fp:
+        #else:
             gi = GeminiItem("localhost:/" + bm_file,"Bookmarks")
             gi.body = fp.read()
             # We don’t display bookmarks if accessing directly one
             # or if in sync_only
             display = not ( args or self.sync_only) 
             self._handle_gemtext(gi, display = display)
+            #self._go_to_gi(gi,handle=display)
+            if args:
+                # Use argument as a numeric index
+                self.default(line)
+    
+    def list_add_line(self,line,list):
+        list_path = os.path.join(self.config_dir, "lists/%s.gmi"%list)
+        if not os.path.exists(list_path):
+            print("List %s does not exist. Create it with ""list create %s"""%(list,list))
+            return
+        else:
+            with open(list_path) as l_file:
+                l_file.write(self.gi.to_map_line(line))
+                l_file.close()
+
+    def list_rm_line(self,line,list=None):
+        list_path = os.path.join(self.config_dir, "lists/%s.gmi"%list)
+        print("removing %s from %s not yet implemented"%(line,list))
+
+    def list_show(self,list):
+        list_path = os.path.join(self.config_dir, "lists/%s.gmi"%list)
+        if not os.path.exists(list_path):
+            print("List %s does not exist. Create it with ""list create %s"""%(list,list))
+        else:
+            gi = GeminiItem("localhost:/" + list_path,list)
+            # We don’t display bookmarks if accessing directly one
+            # or if in sync_only
+            self._go_to_gi(gi)
+            display = not ( args or self.sync_only) 
+            self._handle_gemtext(gi, display = display)
             if args:
                 # Use argument as a numeric index
                 self.default(line)
 
+    def list_create(self,list,title=None):
+        listdir = os.path.join(self.config_dir,"lists")
+        os.makedirs(listdir,exist_ok=True)
+        list_path = os.path.join(listdir, "%s.gmi"%list)
+        if not os.path.exists(list_path):
+            with open(list_path) as lfile:
+                if title:
+                    lfile.write("# %s"%title)
+                else:
+                    lfile.write("# %s"%list)
+                lfile.close()
     ### Help
     def do_help(self, arg):
         """ALARM! Recursion detected! ALARM! Prepare to eject!"""
