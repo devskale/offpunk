@@ -155,6 +155,192 @@ standard_ports = {
         "https" : 443,
 }
 
+# First, we define the gemtext and html renderers, outside of the rest
+# (They could later be factorized in other files or replaced)
+
+# Gemtext Rendering Engine
+# this method takes the original gemtext and returns
+# [rendered_text,links_table]
+def render_gemtext(gemtext, width=80):
+    links = []
+    preformatted = False
+    rendered_text = ""
+    #This local method takes a line and apply the ansi code given as "color"
+    #The whole line is then wrapped and ansi code are ended.
+    def wrap_line(line,color=None,i_indent="",s_indent=""):
+        wrapped = textwrap.wrap(line,width,initial_indent=i_indent,\
+                                subsequent_indent=s_indent)
+        final = ""
+        for l in wrapped:
+            if color:
+                l = color + l + "\x1b[0m"
+            if l.strip() != "":
+                final += l + "\n"
+        return final
+    def format_link(url,index,name=None):
+        if "://" in url:
+            protocol,adress = url.split("://")
+            protocol = " %s" %protocol
+        else:
+            adress = url
+            protocol = ""
+        if "gemini" in protocol:
+            protocol = ""
+        if not name:
+            name = adress
+        line = "[%d%s] %s" % (index, protocol, name)
+        return line
+    for line in gemtext.splitlines():
+        if line.startswith("```"):
+            preformatted = not preformatted
+        elif preformatted:
+            rendered_text = line + "\n"
+        elif line.startswith("=>"):
+            strippedline = line[2:].strip()
+            if strippedline:
+                links.append(strippedline)        
+                splitted = strippedline.split(maxsplit=1)
+                url = splitted[0]
+                name = None
+                if len(splitted) > 1:
+                    name = splitted[1]
+                link = format_link(url,len(links),name=name)
+                startpos = link.find("] ") + 2
+                wrapped = wrap_line(link,s_indent=startpos*" ")
+                rendered_text += wrapped
+        elif line.startswith("* "):
+            line = line[1:].lstrip("\t ")
+            rendered_text += textwrap.fill(line, width, initial_indent = "• ", 
+                                            subsequent_indent="  ") + "\n"
+        elif line.startswith(">"):
+            line = line[1:].lstrip("\t ")
+            rendered_text += textwrap.fill(line,width, initial_indent = "> ", 
+                                            subsequent_indent="> ") + "\n"
+        elif line.startswith("###"):
+            line = line[3:].lstrip("\t ")
+            rendered_text += wrap_line(line, color="\x1b[34m\x1b[2m")
+        elif line.startswith("##"):
+            line = line[2:].lstrip("\t ")
+            rendered_text += wrap_line(line, color="\x1b[34m")
+        elif line.startswith("#"):
+            line = line[1:].lstrip("\t ")
+            rendered_text += wrap_line(line,color="\x1b[1;34m\x1b[4m")
+        else:
+            rendered_text += wrap_line(line).rstrip() + "\n"
+    return rendered_text, links
+
+# Our own HTML engine (crazy, isn’t it?)
+def render_html(body,width=80):
+    if not _DO_HTML:
+        print("HTML document detected. Please install python-bs4 and python readability.")
+        return
+    # This method recursively parse the HTML
+    r_body = ""
+    links = []
+    def recursive_render(element,indent=""):
+        rendered_body = ""
+        #print("rendering %s - %s with indent %s" %(element.name,element.string,indent))
+        if element.name == "blockquote":
+            for child in element.children:
+                rendered_body +=  recursive_render(child,indent="\t").rstrip("\t")
+        elif element.name == "div":
+            rendered_body += "\n"
+            for child in element.children:
+                rendered_body += recursive_render(child,indent=indent)
+        elif element.name in ["h1","h2","h3","h4","h5","h6"]:
+            line = element.get_text()
+            if element.name in ["h1","h2"]:
+                rendered_body += "\n"+"\x1b[1;34m\x1b[4m" + line + "\x1b[0m"+"\n"
+            elif element.name in ["h3","h4"]:
+                rendered_body += "\n" + "\x1b[34m" + line + "\x1b[0m" + "\n"
+            else:
+                rendered_body += "\n" + "\x1b[34m\x1b[2m" + line + "\x1b[0m" + "\n"
+        elif element.name == "pre":
+            rendered_body += "\n"
+            for child in element.children:
+               rendered_body += recursive_render(child,indent=indent)
+            rendered_body += "\n\n"
+        elif element.name == "li":
+            line = ""
+            for child in element.children:
+                line += recursive_render(child,indent=indent).strip("\n")
+                #print("in li: ***%s***"%line)
+            rendered_body += " * " + line.strip() + "\n"
+        elif element.name in ["code","em","b","i"]:
+            # we don’t do anything with those markup right now. Maybe later?
+            for child in element.children:
+                rendered_body += recursive_render(child,indent=indent).strip("\n")
+        elif element.name == "p":
+            temp_str = ""
+            for child in element.children:
+                temp_str += recursive_render(child,indent=indent)
+            rendered_body = temp_str + "\n\n"
+        elif element.name == "a":
+            text = element.get_text().strip()
+            link = element.get('href')
+            if link:
+                links.append(link)
+                link_id = " [%s] "%(len(links))
+                rendered_body = "\x1b[34m\x1b[2m " + text + link_id + "\x1b[0m"
+            else:
+                #No real link found
+                rendered_body = text
+        elif element.name == "br":
+            rendered_body = "\n"
+        elif element.string:
+            #print("tag without children:",element.name)
+            #print("string : **%s** "%element.string.strip())
+            #print("########")
+            rendered_body = element.string.strip("\n").strip("\t")
+        else:
+            #print("tag children:",element.name)
+            for child in element.children:
+                rendered_body += recursive_render(child,indent=indent)
+        #print("body for element %s: %s"%(element.name,rendered_body))
+        return indent + rendered_body
+
+    # the real render_html hearth
+    readable = Document(body)
+    title = readable.short_title()
+    summary = readable.summary()
+    r_body += "\x1b[1;34m\x1b[4m" + title + "\x1b[0m""\n"
+    soup = BeautifulSoup(summary, 'html.parser')
+    rendered_body = ""
+    if soup and soup.body :
+        for el in soup.body.contents:
+            rendered_body += recursive_render(el)
+        paragraphs = rendered_body.split("\n\n")
+        for par in paragraphs:
+            lines = par.splitlines()
+            for line in lines:
+                if line.startswith("\t"):
+                    i_indent = "   "
+                    s_indent = i_indent
+                    line = line.strip("\t")
+                elif line.startswith(" * "):
+                    i_indent = ""  # we keep the initial bullet)
+                    s_indent = "   "
+                else:
+                    i_indent = ""
+                    s_indent = i_indent
+                if line.strip() != "":
+                    wrapped = textwrap.fill(line,width,initial_indent=i_indent,
+                                            subsequent_indent=s_indent)
+                    wrapped += "\n"
+                else:
+                    wrapped = ""
+                r_body += wrapped
+            r_body += "\n"
+    return r_body,links
+
+# Offpunk is organized as following:
+# - a GeminiClient instance which handles the browsing of GeminiItem.
+# - There’s only one GeminiClient. Each page is a GeminiItem (name is historical, as
+# it could be non-gemini content)
+# - A GeminiItem is created with an URL from which it will derives content.
+# - Content include : a title, a body, an ansi-rendered-body and a list of links.
+# - Each GeminiItem generates a "cache_path" in which it maintains a cached version of content.
+
 class GeminiItem():
 
     def __init__(self, url, name=""):
@@ -163,6 +349,8 @@ class GeminiItem():
         self.url = fix_ipv6_url(url).strip()
         self.name = name
         self.mime = None
+        self.renderer = None
+        self.links = None
         parsed = urllib.parse.urlparse(self.url)
         if "./" in url or url[0] == "/":
             self.scheme = "localhost"
@@ -201,7 +389,6 @@ class GeminiItem():
                     self.url += "/"
             if self._cache_path.endswith("/"):
                 self._cache_path += index
-            
             self.port = parsed.port or standard_ports.get(self.scheme, 0)
             
     def get_title(self):
@@ -279,6 +466,54 @@ class GeminiItem():
             print("ERROR: NO CACHE for %s" %self._cache_path)
             return FIXME
     
+    #def set_renderer(self,renderer):
+    #    self.renderer = renderer
+    def get_links(self):
+        if self.links:
+            return self.links
+        self.links = []
+        r_body,links = self.renderer(self.get_body())
+        for l in links:
+            #split between link and potential name
+            splitted = l.split(maxsplit=1)
+            url = self.absolutise_url(splitted[0])
+            if looks_like_url(url):
+                if len(splitted) > 1:
+                    newgi = GeminiItem(url,splitted[1])
+                else:
+                    newgi = GeminiItem(url)
+                self.links.append(newgi)
+        return self.links
+
+    # Red title above rendered content
+    def _make_terminal_title(self):
+        title = self.get_title()
+        #FIXME : how do I know that I’m offline_only ?
+        if self.is_cache_valid(): #and self.offline_only and not self.local:
+            last_modification = self.cache_last_modified()
+            str_last = time.ctime(last_modification)
+            title += "    \x1b[0;31m(last accessed on %s)"%str_last
+        rendered_title = "\x1b[31m\x1b[1m"+ title + "\x1b[0m"
+        #FIXME: width wrapped = textwrap.fill(rendered_title,self.options["width"])
+        wrapped = textwrap.fill(rendered_title,80)
+        return wrapped + "\n"
+    
+    def get_rendered_body(self):
+        if not self.renderer:
+            mime = self.get_mime()
+            if mime == "text/gemini":
+                self.renderer = render_gemtext
+            elif mime == "text/html":
+                self.renderer = render_html
+        if self.renderer:
+            body = self.get_body()
+            r_body, links = self.renderer(body)
+            to_return = self._make_terminal_title() + r_body
+            return to_return
+        else:
+            return None
+        
+
     def get_filename(self):
         filename = os.path.basename(self._cache_path)
         return filename
@@ -311,12 +546,16 @@ class GeminiItem():
 
     def get_mime(self):
         if self.is_cache_valid():
-            mime,encoding = mimetypes.guess_type(self._cache_path,strict=False)
+            if self.local:
+                path = self.path
+            else:
+                path = self._cache_path
+            mime,encoding = mimetypes.guess_type(path,strict=False)
             #gmi Mimetype is not recognized yet
-            if not mime and self._cache_path.endswith(".gmi"):
+            if not mime and path.endswith(".gmi"):
                 mime = "text/gemini"
             elif not mime and _HAS_MAGIC :
-                mime = magic.from_file(self._cache_path,mime=True)
+                mime = magic.from_file(path,mime=True)
             elif not _HAS_MAGIC :
                 print("Cannot guess the mime type of the file. Install Python-magic")
             if mime.startswith("text"):
@@ -339,6 +578,8 @@ class GeminiItem():
                     cache.write(str(datetime.datetime.now())+"\n")
                     cache.write("ERROR while caching %s\n" %self.url)
                     cache.write(str(err))
+                    cache.write("If you believe this error was temporary, type ""reload"".\n")
+                    cache.write("The ressource will be tentatively fetched during next sync.\n")
                     cache.write("\n")
                     cache.close()
     
@@ -556,19 +797,19 @@ However, you can use `set gopher_proxy hostname:port` to tell it about a
 Gopher-to-Gemini proxy (such as a running Agena instance), in which case
 you'll be able to transparently follow links to Gopherspace!""")
             return
-        elif gi.local:
-            if os.path.exists(gi.path):
-                with open(gi.path,'r') as f:
-                    self._handle_gemtext(gi)
-                    self.gi = gi
-                    self._update_history(gi)
-                return
-            else:
-                print("Sorry, file %s does not exist."%gi.path)
-                return
-        elif gi.scheme not in ("gemini", "gopher", "http", "https") and not self.sync_only:
-            print("Sorry, no support for {} links.".format(gi.scheme))
-            return
+        #elif gi.local:
+        #    if os.path.exists(gi.path):
+        #        with open(gi.path,'r') as f:
+        #            self._handle_gemtext(gi)
+        #            self.gi = gi
+        #            self._update_history(gi)
+        #        return
+        #    else:
+        #        print("Sorry, file %s does not exist."%gi.path)
+        #        return
+        #elif gi.scheme not in ("gemini", "gopher", "http", "https") and not self.sync_only:
+        #    print("Sorry, no support for {} links.".format(gi.scheme))
+        #    return
 
         # Obey permanent redirects
         if gi.url in self.permanent_redirects:
@@ -633,13 +874,25 @@ you'll be able to transparently follow links to Gopherspace!""")
                 return
 
         # Pass file to handler, unless we were asked not to
-        #SPECIFIC GEMINI : default handler should be provided by the GI.
-        if gi and handle :
-            if gi.get_mime() == "text/gemini":
-                self._handle_gemtext(gi, display=not self.sync_only)
-            elif gi.get_mime() == "text/html":
-                self._handle_html(gi,display=not self.sync_only)
-            elif not self.sync_only :
+        if gi :
+            rendered_body = gi.get_rendered_body()
+            display = handle and not self.sync_only
+            if rendered_body:
+                self.index = gi.get_links()
+                self.lookup = self.index
+                self.page_index = 0
+                self.index_index = -1
+                if display:
+                    # We actually put the body in a tmpfile before giving it to less
+                    if self.idx_filename:
+                        os.unlink(self.idx_filename)
+                    tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
+                    tmpf.write(rendered_body)
+                    tmpf.close()
+                    self.idx_filename = tmpf.name
+                    cmd_str = self._get_handler_cmd("text/gemini")
+                    subprocess.run(shlex.split(cmd_str % tmpf.name))
+            elif display :
                 cmd_str = self._get_handler_cmd(gi.get_mime())
                 try:
                     # get tmpfile from gi !
@@ -1082,210 +1335,7 @@ you'll be able to transparently follow links to Gopherspace!""")
         self._debug("Using handler: %s" % cmd_str)
         return cmd_str
 
-
-    # Red title above rendered content
-    def _make_terminal_title(self,gi):
-        title = gi.get_title()
-        if gi.is_cache_valid() and self.offline_only and not gi.local:
-            last_modification = gi.cache_last_modified()
-            str_last = time.ctime(last_modification)
-            title += "    \x1b[0;31m(last accessed on %s)"%str_last
-        rendered_title = "\x1b[31m\x1b[1m"+ title + "\x1b[0m"
-        wrapped = textwrap.fill(rendered_title,self.options["width"])
-        return wrapped + "\n"
-    # Our own HTML engine (crazy, isn’t it?)
-    def _handle_html(self,gi,display=True):
-        if not _DO_HTML:
-            print("HTML document detected. Please install python-bs4 and python readability.")
-            return
-        # This method recursively parse the HTML
-        def recursive_render(element,indent=""):
-            rendered_body = ""
-            #print("rendering %s - %s with indent %s" %(element.name,element.string,indent))
-            if element.name == "blockquote":
-                for child in element.children:
-                    rendered_body +=  recursive_render(child,indent="\t").rstrip("\t")
-            elif element.name == "div":
-                rendered_body += "\n"
-                for child in element.children:
-                    rendered_body += recursive_render(child,indent=indent)
-            elif element.name in ["h1","h2","h3","h4","h5","h6"]:
-                line = element.get_text()
-                if element.name in ["h1","h2"]:
-                    rendered_body += "\n"+"\x1b[1;34m\x1b[4m" + line + "\x1b[0m"+"\n"
-                elif element.name in ["h3","h4"]:
-                    rendered_body += "\n" + "\x1b[34m" + line + "\x1b[0m" + "\n"
-                else:
-                    rendered_body += "\n" + "\x1b[34m\x1b[2m" + line + "\x1b[0m" + "\n"
-            elif element.name == "pre":
-                rendered_body += "\n"
-                for child in element.children:
-                   rendered_body += recursive_render(child,indent=indent)
-                rendered_body += "\n\n"
-            elif element.name == "li":
-                line = ""
-                for child in element.children:
-                    line += recursive_render(child,indent=indent).strip("\n")
-                    #print("in li: ***%s***"%line)
-                rendered_body += " * " + line.strip() + "\n"
-            elif element.name in ["code","em","b","i"]:
-                # we don’t do anything with those markup right now. Maybe later?
-                for child in element.children:
-                    rendered_body += recursive_render(child,indent=indent).strip("\n")
-            elif element.name == "p":
-                temp_str = ""
-                for child in element.children:
-                    temp_str += recursive_render(child,indent=indent)
-                rendered_body = temp_str + "\n\n"
-            elif element.name == "a":
-                text = element.get_text().strip()
-                link = element.get('href')
-                if link:
-                    line = "=> " + link + " " +text
-                    link_id = " [%s] "%(len(self.index)+1)
-                    temp_gi = GeminiItem.from_map_line(line, gi)
-                    if temp_gi:
-                        self.index.append(temp_gi)
-                        rendered_body = "\x1b[34m\x1b[2m " + text + link_id + "\x1b[0m"
-                    else:
-                        #No real link found
-                        rendered_body = text
-            elif element.name == "br":
-                rendered_body = "\n"
-            elif element.string:
-                #print("tag without children:",element.name)
-                #print("string : **%s** "%element.string.strip())
-                #print("########")
-                rendered_body = element.string.strip("\n").strip("\t")
-            else:
-                #print("tag children:",element.name)
-                for child in element.children:
-                    rendered_body += recursive_render(child,indent=indent)
-            #print("body for element %s: %s"%(element.name,rendered_body))
-            return indent + rendered_body
-
-        # the real _handle_html method
-        self.index = []
-        if self.idx_filename:
-            os.unlink(self.idx_filename)
-        tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
-        self.idx_filename = tmpf.name
-        tmpf.write(self._make_terminal_title(gi))
-        readable = Document(gi.get_body())
-        title = readable.short_title()
-        summary = readable.summary()
-        tmpf.write("\x1b[1;34m\x1b[4m" + title + "\x1b[0m""\n")
-        #summary = gi.get_body()
-        soup = BeautifulSoup(summary, 'html.parser')
-        rendered_body = ""
-        if soup and soup.body :
-            for el in soup.body.contents:
-                rendered_body += recursive_render(el)
-            paragraphs = rendered_body.split("\n\n")
-            for par in paragraphs:
-                lines = par.splitlines()
-                for line in lines:
-                    if line.startswith("\t"):
-                        i_indent = "   "
-                        s_indent = i_indent
-                        line = line.strip("\t")
-                    elif line.startswith(" * "):
-                        i_indent = ""  # we keep the initial bullet)
-                        s_indent = "   "
-                    else:
-                        i_indent = ""
-                        s_indent = i_indent
-                    if line.strip() != "":
-                        wrapped = textwrap.fill(line,self.options["width"],\
-                                    initial_indent=i_indent,subsequent_indent=s_indent)
-                        wrapped += "\n"
-                    else:
-                        wrapped = ""
-                    tmpf.write(wrapped)
-                tmpf.write("\n")
-        tmpf.close()
-        self.lookup = self.index
-        self.page_index = 0
-        self.index_index = -1
-        if display:
-            cmd_str = self._get_handler_cmd("text/gemini")
-            subprocess.call(shlex.split(cmd_str % self.idx_filename))
-
-    # Gemtext Rendering Engine
-    # this method renders the original Gemtext then call the handler to display it.
-    def _handle_gemtext(self, menu_gi, display=True):
-        self.index = []
-        preformatted = False
-        if self.idx_filename:
-            os.unlink(self.idx_filename)
-        # this tempfile will contains a parsed version of the gemtext
-        # to display it. This is the output, not native gemtext.
-        tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
-        self.idx_filename = tmpf.name
-        tmpf.write(self._make_terminal_title(menu_gi))
-        #This local method takes a line and apply the ansi code given as "color"
-        #The whole line is then wrapped and ansi code are ended.
-        def wrap_line(line,color=None,i_indent="",s_indent=""):
-            wrapped = textwrap.wrap(line,self.options["width"],\
-                                    initial_indent=i_indent,subsequent_indent=s_indent)
-            final = ""
-            for l in wrapped:
-                if color:
-                    l = color + l + "\x1b[0m"
-                if l.strip() != "":
-                    final += l + "\n"
-            return final
-                    
-        for line in menu_gi.get_body().splitlines():
-            if line.startswith("```"):
-                preformatted = not preformatted
-            elif preformatted:
-                tmpf.write(line + "\n")
-            elif line.startswith("=>"):
-                try:
-                    gi = GeminiItem.from_map_line(line, menu_gi)
-                    if gi:
-                        self.index.append(gi)
-                        #tmpf.write(self._format_geminiitem(len(self.index), gi) + "\n")
-                        #tentative to wrapp long links. Not sure it worth the trouble
-                        link = self._format_geminiitem(len(self.index), gi)
-                        startpos = link.find("] ") + 2
-                        wrapped = wrap_line(link,s_indent=startpos*" ")
-                        tmpf.write(wrapped)
-                    else:
-                        self._debug("Skipping possible link: %s" % line)
-                except:
-                    self._debug("Skipping possible link: %s" % line)
-            elif line.startswith("* "):
-                line = line[1:].lstrip("\t ")
-                tmpf.write(textwrap.fill(line, self.options["width"],
-                    initial_indent = "• ", subsequent_indent="  ") + "\n")
-            elif line.startswith(">"):
-                line = line[1:].lstrip("\t ")
-                tmpf.write(textwrap.fill(line, self.options["width"],
-                    initial_indent = "> ", subsequent_indent="> ") + "\n")
-            elif line.startswith("###"):
-                line = line[3:].lstrip("\t ")
-                #tmpf.write("\x1b[4m" + line + "\x1b[0m""\n")
-                tmpf.write(wrap_line(line, color="\x1b[34m\x1b[2m"))
-            elif line.startswith("##"):
-                line = line[2:].lstrip("\t ")
-                tmpf.write(wrap_line(line, color="\x1b[34m"))
-            elif line.startswith("#"):
-                line = line[1:].lstrip("\t ")
-                tmpf.write(wrap_line(line,color="\x1b[1;34m\x1b[4m"))
-            else:
-                tmpf.write(wrap_line(line).rstrip() + "\n")
-        tmpf.close()
-
-        self.lookup = self.index
-        self.page_index = 0
-        self.index_index = -1
-
-        if display:
-            cmd_str = self._get_handler_cmd("text/gemini")
-            subprocess.call(shlex.split(cmd_str % self.idx_filename))
-
+    #TODO: remove format_geminiitem
     def _format_geminiitem(self, index, gi, url=False):
         protocol = "" if gi.scheme == "gemini" else " %s" % gi.scheme
         line = "[%d%s] %s" % (index, protocol, gi.name or gi.url)
@@ -1958,18 +2008,14 @@ Bookmarks are stored using the 'add' command."""
         if len(args.split()) > 1 or (args and not args.isnumeric()):
             print("bookmarks command takes a single integer argument!")
             return
-        with open(bm_file, "r") as fp:
-        #else:
-            gi = GeminiItem("localhost:/" + bm_file,"Bookmarks")
-            gi.body = fp.read()
-            # We don’t display bookmarks if accessing directly one
-            # or if in sync_only
-            display = not ( args or self.sync_only) 
-            self._handle_gemtext(gi, display = display)
-            #self._go_to_gi(gi,handle=display)
-            if args:
-                # Use argument as a numeric index
-                self.default(line)
+        gi = GeminiItem("localhost:/" + bm_file,"Bookmarks")
+        # We don’t display bookmarks if accessing directly one
+        # or if in sync_only
+        display = not ( args or self.sync_only) 
+        self._go_to_gi(gi,handle=display)
+        if args:
+            # Use argument as a numeric index
+            self.default(line)
     
     def list_add_line(self,line,list):
         list_path = os.path.join(self.config_dir, "lists/%s.gmi"%list)
