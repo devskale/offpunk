@@ -75,11 +75,32 @@ except ModuleNotFoundError:
     _DO_HTML = False
 _VERSION = "0.1~dev"
 
+## Config directories
+try:
+    import xdg
+    _CACHE_PATH = str(xdg.xdg_cache_home().resolve()) + "/offpunk/"
+    _CONFIG_DIR = str(xdg.xdg_config_home().resolve()) + "/offpunk"
+    _DATA_DIR = str(xdg.xdg_data_home().resolve()) + "/offpunk"
+except ModuleNotFoundError:
+    _CACHE_PATH = "~/.cache/offpunk/"
+    ## Look for pre-existing config directory, if any
+    for confdir in ("~/.offpunk/", "~/.config/offpunk/"):
+        confdir = os.path.expanduser(confdir)
+        if os.path.exists(confdir):
+            _CONFIG_DIR = confdir
+            break
+    ## Otherwise, make one in .config if it exists
+    else:
+        _CONFIG_DIR = os.path.expanduser("~/.offpunk/")
+        _DATA_DIR = _CONFIG_DIR
+for f in [_CONFIG_DIR, _CACHE_PATH, _DATA_DIR]:
+    if not os.path.exists(f):
+        print("Creating config directory {}".format(f))
+        os.makedirs(f)
+
 _MAX_REDIRECTS = 5
 _MAX_CACHE_SIZE = 10
 _MAX_CACHE_AGE_SECS = 180
-# TODO : use XDG spec for cache
-_CACHE_PATH = "~/.cache/offpunk/"
 #_DEFAULT_LESS = "less -EXFRfM -PMurl\ lines\ \%lt-\%lb/\%L\ \%Pb\%$ %s"
 _DEFAULT_LESS = "less -EXFRfM %s"
 
@@ -677,21 +698,6 @@ class GeminiClient(cmd.Cmd):
         # type sensitivie information.
         os.umask(0o077)
 
-        # Find config directory
-        ## Look for something pre-existing
-        for confdir in ("~/.offpunk/", "~/.config/offpunk/"):
-            confdir = os.path.expanduser(confdir)
-            if os.path.exists(confdir):
-                self.config_dir = confdir
-                break
-        ## Otherwise, make one in .config if it exists
-        else:
-            if os.path.exists(os.path.expanduser("~/.config/")):
-                self.config_dir = os.path.expanduser("~/.config/offpunk/")
-            else:
-                self.config_dir = os.path.expanduser("~/.offpunk/")
-            print("Creating config directory {}".format(self.config_dir))
-            os.makedirs(self.config_dir)
 
         self.no_cert_prompt = "\x1b[38;5;76m" + "ON" + "\x1b[38;5;255m" + "> " + "\x1b[0m"
         self.cert_prompt = "\x1b[38;5;202m" + "ON" + "\x1b[38;5;255m"
@@ -715,8 +721,8 @@ class GeminiClient(cmd.Cmd):
         self.visited_hosts = set()
         self.offline_only = False
         self.sync_only = False
-        self.tourfile = os.path.join(self.config_dir, "tour")
-        self.syncfile = os.path.join(self.config_dir, "to_fetch")
+        self.tourfile = os.path.join(_CONFIG_DIR, "tour")
+        self.syncfile = os.path.join(_CONFIG_DIR, "to_fetch")
 
         self.client_certs = {
             "active": None
@@ -757,7 +763,7 @@ class GeminiClient(cmd.Cmd):
 
     def _connect_to_tofu_db(self):
 
-        db_path = os.path.join(self.config_dir, "tofu.db")
+        db_path = os.path.join(_CONFIG_DIR, "tofu.db")
         self.db_conn = sqlite3.connect(db_path)
         self.db_cur = self.db_conn.cursor()
 
@@ -1241,7 +1247,7 @@ you'll be able to transparently follow links to Gopherspace!""")
                 if _HAS_CRYPTOGRAPHY:
                     # Load the most frequently seen certificate to see if it has
                     # expired
-                    certdir = os.path.join(self.config_dir, "cert_cache")
+                    certdir = os.path.join(_CONFIG_DIR, "cert_cache")
                     with open(os.path.join(certdir, most_frequent_cert+".crt"), "rb") as fp:
                         previous_cert = fp.read()
                     previous_cert = x509.load_der_x509_certificate(previous_cert, _BACKEND)
@@ -1280,7 +1286,7 @@ you'll be able to transparently follow links to Gopherspace!""")
                 VALUES (?, ?, ?, ?, ?, ?)""",
                 (host, address, fingerprint, now, now, 1))
             self.db_conn.commit()
-            certdir = os.path.join(self.config_dir, "cert_cache")
+            certdir = os.path.join(_CONFIG_DIR, "cert_cache")
             if not os.path.exists(certdir):
                 os.makedirs(certdir)
             with open(os.path.join(certdir, fingerprint+".crt"), "wb") as fp:
@@ -1383,7 +1389,7 @@ you'll be able to transparently follow links to Gopherspace!""")
         Use `openssl` command to generate a new transient client certificate
         with 24 hours of validity.
         """
-        certdir = os.path.join(self.config_dir, "transient_certs")
+        certdir = os.path.join(_CONFIG_DIR, "transient_certs")
         name = str(uuid.uuid4())
         self._generate_client_cert(certdir, name, transient=True)
         self.active_is_transient = True
@@ -1394,7 +1400,7 @@ you'll be able to transparently follow links to Gopherspace!""")
         Interactively use `openssl` command to generate a new persistent client
         certificate with one year of validity.
         """
-        certdir = os.path.join(self.config_dir, "client_certs")
+        certdir = os.path.join(_CONFIG_DIR, "client_certs")
         print("What do you want to name this new certificate?")
         print("Answering `mycert` will create `{0}/mycert.crt` and `{0}/mycert.key`".format(certdir))
         name = input("> ")
@@ -1424,7 +1430,7 @@ you'll be able to transparently follow links to Gopherspace!""")
         Interactively select a previously generated client certificate and
         activate it.
         """
-        certdir = os.path.join(self.config_dir, "client_certs")
+        certdir = os.path.join(_CONFIG_DIR, "client_certs")
         certs = glob.glob(os.path.join(certdir, "*.crt"))
         if len(certs) == 0:
             print("There are no previously generated certificates.")
@@ -1963,7 +1969,7 @@ Use 'ls -l' to see URLs."""
     def do_add(self, line):
         """Add the current URL to the bookmarks menu.
 Optionally, specify the new name for the bookmark."""
-        with open(os.path.join(self.config_dir, "bookmarks.gmi"), "a") as fp:
+        with open(os.path.join(_CONFIG_DIR, "bookmarks.gmi"), "a") as fp:
             fp.write(self.gi.to_map_line(line))
 
     def do_bookmarks(self, line):
@@ -1971,7 +1977,7 @@ Optionally, specify the new name for the bookmark."""
 'bookmarks' shows all bookmarks.
 'bookmarks n' navigates immediately to item n in the bookmark menu.
 Bookmarks are stored using the 'add' command."""
-        bm_file = os.path.join(self.config_dir, "bookmarks.gmi")
+        bm_file = os.path.join(_CONFIG_DIR, "bookmarks.gmi")
         if not os.path.exists(bm_file):
             print("You need to 'add' some bookmarks, first!")
             return
@@ -1989,7 +1995,7 @@ Bookmarks are stored using the 'add' command."""
             self.default(line)
     
     def list_add_line(self,line,list):
-        list_path = os.path.join(self.config_dir, "lists/%s.gmi"%list)
+        list_path = os.path.join(_DATA_DIR, "lists/%s.gmi"%list)
         if not os.path.exists(list_path):
             print("List %s does not exist. Create it with ""list create %s"""%(list,list))
             return
@@ -1999,26 +2005,25 @@ Bookmarks are stored using the 'add' command."""
                 l_file.close()
 
     def list_rm_line(self,line,list=None):
-        list_path = os.path.join(self.config_dir, "lists/%s.gmi"%list)
+        list_path = os.path.join(_DATA_DIR, "lists/%s.gmi"%list)
         print("removing %s from %s not yet implemented"%(line,list))
 
     def list_show(self,list):
-        list_path = os.path.join(self.config_dir, "lists/%s.gmi"%list)
+        list_path = os.path.join(_DATA_DIR, "lists/%s.gmi"%list)
         if not os.path.exists(list_path):
             print("List %s does not exist. Create it with ""list create %s"""%(list,list))
         else:
             gi = GeminiItem("localhost:/" + list_path,list)
             # We don’t display bookmarks if accessing directly one
             # or if in sync_only
-            self._go_to_gi(gi)
             display = not ( args or self.sync_only) 
-            self._handle_gemtext(gi, display = display)
+            self._go_to_gi(gi,handle=display)
             if args:
                 # Use argument as a numeric index
                 self.default(line)
 
     def list_create(self,list,title=None):
-        listdir = os.path.join(self.config_dir,"lists")
+        listdir = os.path.join(_DATA_DIR,"lists")
         os.makedirs(listdir,exist_ok=True)
         list_path = os.path.join(listdir, "%s.gmi"%list)
         if not os.path.exists(list_path):
@@ -2091,7 +2096,7 @@ current gemini browsing session."""
 
         for cert in self.transient_certs_created:
             for ext in (".crt", ".key"):
-                certfile = os.path.join(self.config_dir, "transient_certs", cert+ext)
+                certfile = os.path.join(_CONFIG_DIR, "transient_certs", cert+ext)
                 if os.path.exists(certfile):
                     os.remove(certfile)
         print()
@@ -2129,7 +2134,7 @@ def main():
     gc = GeminiClient(restricted=args.restricted,synconly=args.sync)
 
     # Process config file
-    rcfile = os.path.join(gc.config_dir, "offpunkrc")
+    rcfile = os.path.join(_CONFIG_DIR, "offpunkrc")
     if os.path.exists(rcfile):
         print("Using config %s" % rcfile)
         with open(rcfile, "r") as fp:
@@ -2172,7 +2177,7 @@ def main():
     if args.sync:
         # fetch_cache is the core of the sync algorithm.
         # It takes as input :
-        # - a list of GeminiItems to be fetched
+        # - a GeminiItem to be fetched
         # - depth : the degree of recursion to build the cache (0 means no recursion)
         # - validity : the age, in seconds, existing caches need to have before
         #               being refreshed (0 = never refreshed if it already exists)
@@ -2257,13 +2262,13 @@ def main():
         if tot > 0:
             print(" * * * %s to fetch from your offline browsing * * *" %tot)
         for l in set(lines_lookup):
-            #always fetch the cache (we allows only a 3 minutes time
+            #always fetch the cache (we allows only a 10 minutes time
             # to avoid multiple fetch in the same sync run)
             #then add to tour
             counter += 1
             gitem = GeminiItem(l.strip())
             if l.startswith("gemini://") or l.startswith("http"): 
-                fetch_cache(gitem,depth=1,validity=180,\
+                fetch_cache(gitem,depth=1,validity=600,\
                             savetotour=False,count=[counter,tot])
                 add_to_tour(gitem)
 

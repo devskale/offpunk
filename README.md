@@ -55,6 +55,7 @@ experience or some other features. Python libraries requests, bs4 and readabliit
 
 To avoid using unstable or too recent libraries, the rule of thumb is that a library should be packaged in Debian/Ubuntu.
 
+* [Python-xdg](https://www.freedesktop.org/wiki/Software/pyxdg) will place your data, config and cache in place recommended by the XDG specs (usually it’s .local/share/offpunk, .config/offpunk and .cache/offpunk). Without it, look for ~/.offpunk or ~/.config/offpunk while the cache will be in ~/.cache/offpunk/.
 * [Python-requests](http://python-requests.org) is needed to handle http/https requests natively (apt-get install python3-requests). Without it, http links will be opened in an external browser
 * [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup) and [Readability](https://github.com/buriy/python-readability) are both needed to render HTML. Without them, HTML will not be rendered or be sent to an external parser like Lynx. (apt-get install python3-bs4 python3-readability or pip3 install readability-lxml)
 * The [ansiwrap library](https://pypi.org/project/ansiwrap/) may result in
@@ -88,14 +89,7 @@ commands upon start up.  This can be used to make settings controlled with the
 your RC file to visit a "homepage" automatically on startup, or to pre-prepare
 a `tour` of your favourite Gemini sites or `offline` to go offline by default.
 
-The RC file should be called `offpunkrc`.  Offpunk will look for it first in
-`~/.offpunk/` and second in `~/.config/offpunk/`.  Note that either directory might
-already exist even if you haven't created it manually, as Offpunk will, if
-necessary, create the directory itself the first time you save a bookmark (the
-bookmark file is saved in the same location).  Offpunk will create
-`~/.config/offpunk` only if `~/.config/` already exists on your system, otherwise
-it will create `~/.offpunk/`.
-
+The RC file should be called `offpunkrc` and goes in $XDG_CONFIG_DIR/offpunk (or .config/offpunk or .offpunk if xdg not available) 
 
 ## Cache design
 
