@@ -194,7 +194,7 @@ def render_gemtext(gemtext, width=80):
         if line.startswith("```"):
             preformatted = not preformatted
         elif preformatted:
-            rendered_text = line + "\n"
+            rendered_text += line + "\n"
         elif line.startswith("=>"):
             strippedline = line[2:].strip()
             if strippedline:
