@@ -179,7 +179,7 @@ def render_gemtext(gemtext, width=80):
         return final
     def format_link(url,index,name=None):
         if "://" in url:
-            protocol,adress = url.split("://")
+            protocol,adress = url.split("://",maxsplit=1)
             protocol = " %s" %protocol
         else:
             adress = url
@@ -464,7 +464,7 @@ class GeminiItem():
                 return body
         else:
             print("ERROR: NO CACHE for %s" %self._cache_path)
-            return FIXME
+            return error
     
     #def set_renderer(self,renderer):
     #    self.renderer = renderer
@@ -494,7 +494,7 @@ class GeminiItem():
             str_last = time.ctime(last_modification)
             title += "    \x1b[0;31m(last accessed on %s)"%str_last
         rendered_title = "\x1b[31m\x1b[1m"+ title + "\x1b[0m"
-        #FIXME: width wrapped = textwrap.fill(rendered_title,self.options["width"])
+        #FIXME: width to replace self.options["width"]
         wrapped = textwrap.fill(rendered_title,80)
         return wrapped + "\n"
     
@@ -797,19 +797,9 @@ However, you can use `set gopher_proxy hostname:port` to tell it about a
 Gopher-to-Gemini proxy (such as a running Agena instance), in which case
 you'll be able to transparently follow links to Gopherspace!""")
             return
-        #elif gi.local:
-        #    if os.path.exists(gi.path):
-        #        with open(gi.path,'r') as f:
-        #            self._handle_gemtext(gi)
-        #            self.gi = gi
-        #            self._update_history(gi)
-        #        return
-        #    else:
-        #        print("Sorry, file %s does not exist."%gi.path)
-        #        return
-        #elif gi.scheme not in ("gemini", "gopher", "http", "https") and not self.sync_only:
-        #    print("Sorry, no support for {} links.".format(gi.scheme))
-        #    return
+        elif gi.scheme not in ("gemini", "gopher", "http", "https") and not self.sync_only:
+            print("Sorry, no support for {} links.".format(gi.scheme))
+            return
 
         # Obey permanent redirects
         if gi.url in self.permanent_redirects:
@@ -829,7 +819,7 @@ you'll be able to transparently follow links to Gopherspace!""")
                     sf.close()
                 return
 
-        elif not self.offline_only:
+        elif not self.offline_only and not gi.local:
             try:
                 if gi.scheme in ("http", "https"):
                     if _DO_HTTP:
@@ -2249,7 +2239,7 @@ def main():
             refresh_time = 0
         gc.sync_only = True
         # We start by syncing the bookmarks
-        gc.onecmd("bm")
+        gc.onecmd("bookmarks")
         original_lookup = gc.lookup
         end = len(original_lookup)
         counter = 0
