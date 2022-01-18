@@ -797,7 +797,7 @@ However, you can use `set gopher_proxy hostname:port` to tell it about a
 Gopher-to-Gemini proxy (such as a running Agena instance), in which case
 you'll be able to transparently follow links to Gopherspace!""")
             return
-        elif gi.scheme not in ("gemini", "gopher", "http", "https") and not self.sync_only:
+        elif gi.scheme not in ("localhost","gemini", "gopher", "http", "https") and not self.sync_only:
             print("Sorry, no support for {} links.".format(gi.scheme))
             return
 
