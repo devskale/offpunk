@@ -141,6 +141,7 @@ _MIME_HANDLERS = {
 }
 
 
+
 # monkey-patch Gemini support in urllib.parse
 # see https://github.com/python/cpython/blob/master/Lib/urllib/parse.py
 urllib.parse.uses_relative.append("gemini")
@@ -300,7 +301,7 @@ def render_html(body,width=80):
             text = element.get_text().strip()
             link = element.get('href')
             if link:
-                links.append(link)
+                links.append(link+" "+text)
                 link_id = " [%s] "%(len(links))
                 rendered_body = "\x1b[34m\x1b[2m " + text + link_id + "\x1b[0m"
             else:
@@ -354,6 +355,11 @@ def render_html(body,width=80):
             r_body += "\n"
     return r_body,links
 
+_FORMAT_RENDERERS = {
+    "text/gemini":  render_gemtext,
+    "text/html" :   render_html,
+    "text/xml" : render_html
+}
 # Offpunk is organized as following:
 # - a GeminiClient instance which handles the browsing of GeminiItem.
 # - There’s only one GeminiClient. Each page is a GeminiItem (name is historical, as
@@ -487,13 +493,9 @@ class GeminiItem():
             print("ERROR: NO CACHE for %s" %self._cache_path)
             return error
     
-    #def set_renderer(self,renderer):
-    #    self.renderer = renderer
-    def get_links(self):
-        if self.links:
-            return self.links
+    # This method is used to load once the list of links in a gi
+    def __make_links(self,links):
         self.links = []
-        r_body,links = self.renderer(self.get_body())
         for l in links:
             #split between link and potential name
             splitted = l.split(maxsplit=1)
@@ -504,7 +506,20 @@ class GeminiItem():
                 else:
                     newgi = GeminiItem(url)
                 self.links.append(newgi)
+
+    def get_links(self):
+        if not self.links:
+            r_body = self.get_rendered_body()
         return self.links
+
+    def get_link(self,nb):
+        if not self.links:
+            r_body = self.get_rendered_body()
+        if len(self.links) < nb:
+            print("Index too high! No link %s for %s" %(nb,self.url))
+            return None
+        else:
+            return self.links[nb-1]
 
     # Red title above rendered content
     def _make_terminal_title(self):
@@ -522,13 +537,12 @@ class GeminiItem():
     def get_rendered_body(self):
         if not self.renderer:
             mime = self.get_mime()
-            if mime == "text/gemini":
-                self.renderer = render_gemtext
-            elif mime == "text/html":
-                self.renderer = render_html
+            if mime in _FORMAT_RENDERERS:
+                self.renderer = _FORMAT_RENDERERS[mime]
         if self.renderer:
             body = self.get_body()
             r_body, links = self.renderer(body)
+            self.__make_links(links)
             to_return = self._make_terminal_title() + r_body
             return to_return
         else:
@@ -564,7 +578,6 @@ class GeminiItem():
             f.write(body)
             f.close()
          
-
     def get_mime(self):
         if self.is_cache_valid():
             if self.local:
@@ -579,10 +592,10 @@ class GeminiItem():
                 mime = magic.from_file(path,mime=True)
             elif not _HAS_MAGIC :
                 print("Cannot guess the mime type of the file. Install Python-magic")
-            if mime.startswith("text"):
-            #by default, we consider it’s gemini except for html
-                if "html" not in mime:
-                    mime = "text/gemini"
+            if mime.startswith("text") and mime not in _FORMAT_RENDERERS:
+                #by default, we consider it’s gemini except for html
+                #print("replacing MIME %s by gemini" %mime)
+                mime = "text/gemini"
             self.mime = mime
         return self.mime
     
@@ -778,6 +791,8 @@ class GeminiClient(cmd.Cmd):
         storing the response in a temporary file, choosing
         and calling a handler program, and updating the history.
         Nothing is returned."""
+        if not gi:
+            return
         # Don't try to speak to servers running other protocols
         if gi.scheme == "gopher" and not self.options.get("gopher_proxy", None)\
                                     and not self.sync_only:
@@ -1348,7 +1363,7 @@ you'll be able to transparently follow links to Gopherspace!""")
             self.log["ipv6_bytes_recvd"] += size
 
     def _get_active_tmpfile(self):
-        if self.gi.get_mime() in ["text/gemini","text/html"]:
+        if self.gi.get_mime() in _FORMAT_RENDERERS:
             return self.idx_filename
         else:
             return self.tmp_filename
@@ -1986,13 +2001,10 @@ Bookmarks are stored using the 'add' command."""
             print("bookmarks command takes a single integer argument!")
             return
         gi = GeminiItem("localhost:/" + bm_file,"Bookmarks")
-        # We don’t display bookmarks if accessing directly one
-        # or if in sync_only
-        display = not ( args or self.sync_only) 
-        self._go_to_gi(gi,handle=display)
+        display = not self.sync_only
         if args:
-            # Use argument as a numeric index
-            self.default(line)
+            gi = gi.get_link(int(args))
+        self._go_to_gi(gi,handle=display)
     
     def list_add_line(self,line,list):
         list_path = os.path.join(_DATA_DIR, "lists/%s.gmi"%list)
@@ -2008,19 +2020,28 @@ Bookmarks are stored using the 'add' command."""
         list_path = os.path.join(_DATA_DIR, "lists/%s.gmi"%list)
         print("removing %s from %s not yet implemented"%(line,list))
 
+    def list_go_to_line(self,line,list):
+        list_path = os.path.join(_DATA_DIR, "lists/%s.gmi"%list)
+        if not os.path.exists(list_path):
+            print("List %s does not exist. Create it with ""list create %s"""%(list,list))
+            return None
+        elif not line.isnumeric():
+            print("go_to_line requires a number as parameter")
+            return None
+        else:
+            gi = GeminiItem("localhost:/" + list_path,list)
+            gi = gi.get_link(line)
+            display = not self.sync_only 
+            self._go_to_gi(gi,handle=display)
+
     def list_show(self,list):
         list_path = os.path.join(_DATA_DIR, "lists/%s.gmi"%list)
         if not os.path.exists(list_path):
             print("List %s does not exist. Create it with ""list create %s"""%(list,list))
         else:
             gi = GeminiItem("localhost:/" + list_path,list)
-            # We don’t display bookmarks if accessing directly one
-            # or if in sync_only
-            display = not ( args or self.sync_only) 
+            display = not self.sync_only 
             self._go_to_gi(gi,handle=display)
-            if args:
-                # Use argument as a numeric index
-                self.default(line)
 
     def list_create(self,list,title=None):
         listdir = os.path.join(_DATA_DIR,"lists")
