@@ -625,24 +625,7 @@ class GeminiItem():
         else:
             return "=> {}\n".format(self.url)
 
-    @classmethod
-    #Create a GeminiItem based on a gemini line
-    #also makes relative URL absolute
-    def from_map_line(cls, line, origin_gi):
-        assert line.startswith("=>")
-        assert line[2:].strip()
-        bits = line[2:].strip().split(maxsplit=1)
-        bits[0] = origin_gi.absolutise_url(bits[0])
-        if looks_like_url(bits[0]):
-            try:
-                newgi = cls(*bits)
-                return newgi
-            except:
-                return None
-        else:
-            return None
-
-CRLF = '\r\n'
+    CRLF = '\r\n'
 
 # Cheap and cheerful URL detector
 def looks_like_url(word):
