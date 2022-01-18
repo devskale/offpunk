@@ -1483,23 +1483,21 @@ you'll be able to transparently follow links to Gopherspace!""")
             return self.do_up()
         elif line.startswith("/"):
             return self.do_search(line[1:])
-        elif looks_like_url(line):
-            return self.do_go(line)
-
         # Expand abbreviated commands
         first_word = line.split()[0].strip()
         if first_word in _ABBREVS:
             full_cmd = _ABBREVS[first_word]
             expanded = line.replace(first_word, full_cmd, 1)
             return self.onecmd(expanded)
-
+        # Try to access it like an URL
+        if looks_like_url(line):
+            return self.do_go(line)
         # Try to parse numerical index for lookup table
         try:
             n = int(line.strip())
         except ValueError:
             print("What?")
             return
-
         try:
             gi = self.lookup[n-1]
         except IndexError:
