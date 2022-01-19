@@ -45,6 +45,7 @@ import webbrowser
 try:
     import ansiwrap as textwrap
 except ModuleNotFoundError:
+    print("Try installing python-ansiwrap for better rendering")
     import textwrap
 
 try:
@@ -78,11 +79,12 @@ _VERSION = "0.1~dev"
 ## Config directories
 try:
     import xdg
-    _CACHE_PATH = str(xdg.xdg_cache_home().resolve()) + "/offpunk/"
-    _CONFIG_DIR = str(xdg.xdg_config_home().resolve()) + "/offpunk"
-    _DATA_DIR = str(xdg.xdg_data_home().resolve()) + "/offpunk"
+    _CACHE_PATH = os.path.join(xdg.xdg_cache_home().resolve(), "offpunk/")
+    _CONFIG_DIR = os.path.join(xdg.xdg_config_home().resolve(), "offpunk/")
+    _DATA_DIR = os.path.join(xdg.xdg_data_home().resolve(), "offpunk/")
 except ModuleNotFoundError:
-    _CACHE_PATH = "~/.cache/offpunk/"
+    _CACHE_PATH = os.path.expanduser("~/.cache/offpunk/")
+    _CONFIG_DIR = None
     ## Look for pre-existing config directory, if any
     for confdir in ("~/.offpunk/", "~/.config/offpunk/"):
         confdir = os.path.expanduser(confdir)
@@ -90,9 +92,11 @@ except ModuleNotFoundError:
             _CONFIG_DIR = confdir
             break
     ## Otherwise, make one in .config if it exists
-    else:
+    if not _CONFIG_DIR and os.path.exists("~/.config/"):
+        _CONFIG_DIR = os.path.expanduser("~/.config/offpunk/")
+    elif not _CONFIG_DIR:
         _CONFIG_DIR = os.path.expanduser("~/.offpunk/")
-        _DATA_DIR = _CONFIG_DIR
+    _DATA_DIR = _CONFIG_DIR
 for f in [_CONFIG_DIR, _CACHE_PATH, _DATA_DIR]:
     if not os.path.exists(f):
         print("Creating config directory {}".format(f))
