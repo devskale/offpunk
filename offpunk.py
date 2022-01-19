@@ -617,7 +617,7 @@ class GeminiItem():
                     cache.write(str(datetime.datetime.now())+"\n")
                     cache.write("ERROR while caching %s\n" %self.url)
                     cache.write(str(err))
-                    cache.write("If you believe this error was temporary, type ""reload"".\n")
+                    cache.write("\n\nIf you believe this error was temporary, type ""reload"".\n")
                     cache.write("The ressource will be tentatively fetched during next sync.\n")
                     cache.write("\n")
                     cache.close()
@@ -1696,6 +1696,7 @@ Use with "raw" to copy the content as seen in your terminal (not gemtext)"""
                 line = self.gi.url + '\n'
                 sf.write(line)
                 sf.close()
+            print("%s marked for syncing" %self.gi.url)
         else:
             self._go_to_gi(self.gi, check_cache=False)
 
@@ -2142,6 +2143,8 @@ def main():
     parser.add_argument('--restricted', action="store_true", help='Disallow shell, add, and save commands')
     parser.add_argument('--sync', action='store_true', 
                         help='run non-interactively to build cache by exploring bookmarks')
+    parser.add_argument('--fetch-later', action='store_true', 
+                        help='run non-interactively with an URL as argument to fetch it later')
     parser.add_argument('--cache-validity', 
                         help='duration for which a cache is valid before sync (seconds)')
     parser.add_argument('--version', action='store_true',
@@ -2176,7 +2179,7 @@ def main():
                 gc.cmdqueue.append(line)
 
     # Say hi
-    if not args.sync:
+    if not args.sync and not args.fetch_later:
         print("Welcome to Offpunk!")
         if args.restricted:
             print("Restricted mode engaged!")
@@ -2199,7 +2202,21 @@ def main():
             gc.cmdqueue.append("tour")
 
     # Endless interpret loop
-    if args.sync:
+    if args.fetch_later:
+        if args.url:
+            # we go offline to fetch later and in sync-only to not display anything
+            gc.onecmd("offline")
+            gc.sync_only = True
+            for u in args.url:
+                gc.onecmd("go %s"%u)
+                if gc.gi and u in gc.gi.url and gc.gi.is_cache_valid():
+                    # forcing re-fetch in case an old catch already exists
+                    # FIXME : this will be fetched too many times, 
+                    # should be handled on the to_fetch level
+                    gc.onecmd("reload")
+        else:
+            print("--netch-later requires an URL (or a list of URLS) as argument")
+    elif args.sync:
         # fetch_cache is the core of the sync algorithm.
         # It takes as input :
         # - a GeminiItem to be fetched

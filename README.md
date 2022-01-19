@@ -73,7 +73,7 @@ To avoid using unstable or too recent libraries, the rule of thumb is that a lib
 * Support "subscriptions" to a page. New content seen in bookmarked pages are automatically added to your next tour.
 * TOFU or CA server certificate validation
 * Extensive client certificate support if an `openssl` binary is available
-* Ability to specify external handler programs for different MIME types
+* Ability to specify external handler programs for different MIME types (use `handler`)
 * Gopher proxy support (e.g. for use with
   [Agena](https://tildegit.org/solderpunk/agena))
 * Advanced navigation tools like `tour` and `mark` (as per VF-1). Unlike AV-98, tour is saved on disk accross sessions. 
