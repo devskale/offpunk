@@ -140,13 +140,10 @@ _MIME_HANDLERS = {
     #"text/html":            "lynx -dump -force_html %s",
 }
 
-
-
 # monkey-patch Gemini support in urllib.parse
 # see https://github.com/python/cpython/blob/master/Lib/urllib/parse.py
 urllib.parse.uses_relative.append("gemini")
 urllib.parse.uses_netloc.append("gemini")
-
 
 def fix_ipv6_url(url):
     if not url.count(":") > 2: # Best way to detect them?
@@ -320,7 +317,6 @@ def render_html(body,width=80):
                 rendered_body += recursive_render(child,indent=indent)
         #print("body for element %s: %s"%(element.name,rendered_body))
         return indent + rendered_body
-
     # the real render_html hearth
     readable = Document(body)
     title = readable.short_title()
@@ -355,18 +351,20 @@ def render_html(body,width=80):
             r_body += "\n"
     return r_body,links
 
+# Mapping mimetypes with renderers
+# (any content with a mimetype text/* not listed here will be rendered with render_gemtext)
 _FORMAT_RENDERERS = {
     "text/gemini":  render_gemtext,
     "text/html" :   render_html,
     "text/xml" : render_html
 }
-# Offpunk is organized as following:
-# - a GeminiClient instance which handles the browsing of GeminiItem.
+# Offpunk is organized as follow:
+# - a GeminiClient instance which handles the browsing of GeminiItems (= pages).
 # - There’s only one GeminiClient. Each page is a GeminiItem (name is historical, as
 # it could be non-gemini content)
 # - A GeminiItem is created with an URL from which it will derives content.
 # - Content include : a title, a body, an ansi-rendered-body and a list of links.
-# - Each GeminiItem generates a "cache_path" in which it maintains a cached version of content.
+# - Each GeminiItem generates a "cache_path" in which it maintains a cached version of its content.
 
 class GeminiItem():
 
@@ -659,7 +657,7 @@ class GeminiItem():
         else:
             return "=> {}\n".format(self.url)
 
-    CRLF = '\r\n'
+CRLF = '\r\n'
 
 # Cheap and cheerful URL detector
 def looks_like_url(word):
