@@ -253,9 +253,10 @@ def render_gemtext(gemtext, width=80):
     return rendered_text, links
 
 # Our own HTML engine (crazy, isn’t it?)
+# Return [rendered_body, list_of_links]
 def render_html(body,width=80):
     if not _DO_HTML:
-        print("HTML document detected. Please install python-bs4 and python readability.")
+        print("HTML document detected. Please install python-bs4 and python-readability.")
         return
     # This method recursively parse the HTML
     r_body = ""
@@ -401,7 +402,8 @@ class GeminiItem():
             self.local = False
             self.host = parsed.hostname
             #if not local, we create a local cache path.
-            self._cache_path = os.path.expanduser(_CACHE_PATH + self.scheme + "/" + self.host + self.path)
+            self._cache_path = os.path.expanduser(_CACHE_PATH + self.scheme +\
+                                                    "/" + self.host + self.path)
             # FIXME : this is a gross hack to give a name to
             # index files. This will break if the index is not
             # index.gmi. I don’t know how to know the real name
@@ -496,6 +498,7 @@ class GeminiItem():
             return error
     
     # This method is used to load once the list of links in a gi
+    # Links can be followed, after a space, by a description/title
     def __make_links(self,links):
         self.links = []
         for l in links:
@@ -756,7 +759,6 @@ class GeminiClient(cmd.Cmd):
             "gopher_proxy" : None,
             "tls_mode" : "tofu",
             "http_proxy": None,
-            "offline_web" : None
         }
 
         self.log = {
