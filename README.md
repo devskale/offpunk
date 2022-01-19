@@ -8,7 +8,7 @@ Offpunk is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98)
 
 ## How to use
 
-Offmini is a single python file. Installation is optional, you can simply download and run "./offmini.py" or "python3 offmini.py" in a terminal.
+Offpunk is a single python file. Installation is optional, you can simply download and run "./offpunk.py" or "python3 offpunk.py" in a terminal.
 
 You use the `go` command to visit a URL, e.g. `go gemini.circumlunar.space`. (gemini:// is assumed is no protocol is specified).
 
@@ -27,9 +27,17 @@ With "--sync", one could specify a "--cache validity" in seconds. This option wi
 
 For example, running
 
-`offpunk.py --sync --cache-validity 43200`
+`offpunk --sync --cache-validity 43200`
 
 will refresh your bookmarks if those are at least 12h old. If cache-validity is not set or set to 0, any cache is considered good and only content never cached before will be fetched. 
+
+Offpunk can also be configured as a browser by other tool. If you want to use offpunk directly with a given URL, simply type:
+
+`offpunk URL`
+
+To have offpunk fetch the URL at next sync and close immediately, run:
+
+`offpunk --fetch-later URL`
 
 ## TODO
 
@@ -93,6 +101,6 @@ The RC file should be called `offpunkrc` and goes in $XDG_CONFIG_DIR/offpunk (or
 
 ## Cache design
 
-The offline content is stored in ~/.cache/offmini/ as plain .gmi/.html files. The structure of the Gemini-space is tentatively recreated. One key element of the design is to avoid any database. The cache can thus be modified by hand, content can be removed, used or added by software other than offpunk.
+The offline content is stored in ~/.cache/offpunk/ as plain .gmi/.html files. The structure of the Gemini-space is tentatively recreated. One key element of the design is to avoid any database. The cache can thus be modified by hand, content can be removed, used or added by software other than offpunk.
 
 There’s no feature to automatically trim the cache. It is believed that gemini content being lightweight, one would have to seriously browse a lot before cache size is an issue. If cache becomes too big, simply rm -rf the folders of the capsules taking too much space.
