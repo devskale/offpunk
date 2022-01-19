@@ -399,6 +399,8 @@ class GeminiItem():
                 self.path = self.url
         else:
             self.path = parsed.path
+            if parsed.query:
+                self.path += "/" + parsed.query
             self.local = False
             self.host = parsed.hostname
             #if not local, we create a local cache path.
