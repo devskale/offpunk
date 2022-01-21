@@ -1989,10 +1989,14 @@ Use 'ls -l' to see URLs."""
     @restricted
     @needs_gi
     def do_add(self, line):
-        """Add the current URL to the bookmarks menu.
-Optionally, specify the new name for the bookmark."""
-        with open(os.path.join(_CONFIG_DIR, "bookmarks.gmi"), "a") as fp:
-            fp.write(self.gi.to_map_line(line))
+        """Add the current URL to the list specied as argument.
+If no argument given, URL is added to Bookmarks."""
+        args = line.split()
+        if len(args) < 1 :
+            with open(os.path.join(_CONFIG_DIR, "bookmarks.gmi"), "a") as fp:
+                fp.write(self.gi.to_map_line())
+        else:
+            self.list_add_line(args[0])
 
     def do_bookmarks(self, line):
         """Show or access the bookmarks menu.
@@ -2013,15 +2017,16 @@ Bookmarks are stored using the 'add' command."""
             gi = gi.get_link(int(args))
         self._go_to_gi(gi,handle=display)
     
-    def list_add_line(self,line,list):
+    def list_add_line(self,list):
         list_path = os.path.join(_DATA_DIR, "lists/%s.gmi"%list)
         if not os.path.exists(list_path):
             print("List %s does not exist. Create it with ""list create %s"""%(list,list))
             return
         else:
-            with open(list_path) as l_file:
-                l_file.write(self.gi.to_map_line(line))
+            with open(list_path,"a") as l_file:
+                l_file.write(self.gi.to_map_line())
                 l_file.close()
+            print("Page added to your %s list" %list)
 
     def list_rm_line(self,line,list=None):
         list_path = os.path.join(_DATA_DIR, "lists/%s.gmi"%list)
@@ -2055,13 +2060,50 @@ Bookmarks are stored using the 'add' command."""
         os.makedirs(listdir,exist_ok=True)
         list_path = os.path.join(listdir, "%s.gmi"%list)
         if not os.path.exists(list_path):
-            with open(list_path) as lfile:
+            with open(list_path,"a") as lfile:
                 if title:
-                    lfile.write("# %s"%title)
+                    lfile.write("# %s\n"%title)
                 else:
-                    lfile.write("# %s"%list)
+                    lfile.write("# %s\n"%list)
                 lfile.close()
-    ### Help
+            print("list created. Display with `list %s`"%list)
+        else:
+            print("list %s already exists" %list)
+    
+    def do_list(self,arg):
+        """Manage list of bookmarked pages.
+            - list : display the list of available lists
+            - list $LIST : display pages in list $LIST
+            - list create $NEWLIST : create a list
+            Also see :
+            - add $NEWLIST (to add current page to list)
+        """
+        listdir = os.path.join(_DATA_DIR,"lists")
+        os.makedirs(listdir,exist_ok=True)
+        if not arg:
+            lists = os.listdir(listdir)
+            # TODO : make a true gemini page
+            if len(lists) > 0:
+                print("# Available lists:")
+                for l in lists:
+                    print("=> %s" %l)
+            else:
+                print("No lists yet. Use `list create`")
+        else:
+            args = arg.split()
+            if len(args) == 1:
+                self.list_show(args[0])
+            elif args[0] == "create":
+                if len(args) > 2:
+                    name = " ".join(args[2:])
+                else:
+                    name = None
+                self.list_create(args[1],title=name)
+            else:
+                print("%s is not a valid list command")
+
+            
+
     def do_help(self, arg):
         """ALARM! Recursion detected! ALARM! Prepare to eject!"""
         if arg == "!":
