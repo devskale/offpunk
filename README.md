@@ -42,10 +42,12 @@ To have offpunk fetch the URL at next sync and close immediately, run:
 ## TODO
 
 Known issues in the code:
-* FIXME0: Certificates error are not handled in --sync
-* FIXME1: consider root file is always index.gmi or index.html
+* NOT_FIXABLE : consider root file is always index.gmi or index.html
 
-* TODO: Update blackbox to reflect cache hits.
+* TODO1: Update blackbox to reflect cache hits.
+* TODO2: Implement retrieving PDF version of pages
+* TODO3: Transparent privacy redirects (twitter->nitter, etc)
+* TODO4: Rendering themes to allow customizing of colors ? (if any interest in the feature)
 
 ## More
 

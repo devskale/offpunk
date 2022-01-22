@@ -736,11 +736,11 @@ class GeminiClient(cmd.Cmd):
         self.previous_redirectors = set()
         # Sync-only mode is restriced by design
         self.restricted = restricted or synconly
-        self.synconly = synconly
         self.tmp_filename = ""
         self.visited_hosts = set()
         self.offline_only = False
         self.sync_only = False
+        self.automatic_choice = "n"
         self.tourfile = os.path.join(_CONFIG_DIR, "tour")
         self.syncfile = os.path.join(_CONFIG_DIR, "to_fetch")
 
@@ -1000,6 +1000,8 @@ you'll be able to transparently follow links to Gopherspace!""")
                 raise RuntimeError("Caught in redirect loop!")
             elif len(self.previous_redirectors) == _MAX_REDIRECTS:
                 raise RuntimeError("Refusing to follow more than %d consecutive redirects!" % _MAX_REDIRECTS)
+            elif self.sync_only:
+                follow = self.automatic_choice
             # Never follow cross-domain redirects without asking
             elif new_gi.host != gi.host:
                 follow = input("Follow cross-domain redirect to %s? (y/n) " % new_gi.url)
@@ -1203,7 +1205,10 @@ you'll be able to transparently follow links to Gopherspace!""")
         print("3. Generate a new persistent certificate.")
         print("4. Load a previously generated persistent.")
         print("5. Load certificate from an external file.")
-        choice = input("> ").strip()
+        if self.sync_only:
+            choice = 1
+        else:
+            choice = input("> ").strip()
         if choice == "2":
             self._generate_transient_cert_cert()
         elif choice == "3":
@@ -1289,7 +1294,10 @@ you'll be able to transparently follow links to Gopherspace!""")
                 print("****************************************")
                 print("Attempt to verify the new certificate fingerprint out-of-band:")
                 print(fingerprint)
-                choice = input("Accept this new certificate? Y/N ").strip().lower()
+                if self.sync_only:
+                    choice = self.automatic_choice
+                else:
+                    choice = input("Accept this new certificate? Y/N ").strip().lower()
                 if choice in ("y", "yes"):
                     self.db_cur.execute("""INSERT INTO cert_cache
                         VALUES (?, ?, ?, ?, ?, ?)""",
@@ -2257,6 +2265,8 @@ def main():
     parser.add_argument('--restricted', action="store_true", help='Disallow shell, add, and save commands')
     parser.add_argument('--sync', action='store_true', 
                         help='run non-interactively to build cache by exploring bookmarks')
+    parser.add_argument('--assume-yes', action='store_true', 
+                        help='assume-yes when asked questions about certificates/redirections during sync')
     parser.add_argument('--fetch-later', action='store_true', 
                         help='run non-interactively with an URL as argument to fetch it later')
     parser.add_argument('--cache-validity', 
@@ -2338,6 +2348,8 @@ def main():
         # - validity : the age, in seconds, existing caches need to have before
         #               being refreshed (0 = never refreshed if it already exists)
         # - savetotour : if True, newly cached items are added to tour
+        if args.assume_yes:
+            self.automatic_choice = "y"
         def add_to_tour(gitem):
             if gitem.is_cache_valid():
                 print("  -> adding to tour: %s" %gitem.url)
