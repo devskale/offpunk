@@ -2018,28 +2018,56 @@ Bookmarks are stored using the 'add' command."""
         self._go_to_gi(gi,handle=display)
     
     def list_add_line(self,list):
-        list_path = os.path.join(_DATA_DIR, "lists/%s.gmi"%list)
-        if not os.path.exists(list_path):
+        list_path = self.list_path(list)
+        if not list_path:
             print("List %s does not exist. Create it with ""list create %s"""%(list,list))
-            return
+            return False
         else:
+            # first we check if url already exists in the file
+            with open(list_path,"r") as l_file:
+                lines = l_file.readlines()
+                l_file.close()
+                for l in lines:
+                    sp = l.split()
+                    if self.gi.url in sp:
+                        print("%s already exists in list %s."%(self.gi.url,list))
+                        return False
             with open(list_path,"a") as l_file:
                 l_file.write(self.gi.to_map_line())
                 l_file.close()
             print("Page added to your %s list" %list)
+            return True
 
-    def list_rm_line(self,line,list=None):
-        list_path = os.path.join(_DATA_DIR, "lists/%s.gmi"%list)
-        print("removing %s from %s not yet implemented"%(line,list))
+    # remove an url from a list.
+    # return True if the URL was removed
+    # return False if the URL was not found
+    def list_rm_url(self,url,list):
+        list_path = self.list_path(list)
+        if list_path:
+            to_return = False
+            with open(list_path,"r") as lf:
+                lines = lf.readlines()
+                lf.close()
+            with open(list_path,"w") as lf:
+                for l in lines:
+                    # we separate components of the line
+                    # to ensure we identify a complete URL, not a part of it
+                    splitted = l.split()
+                    if url not in splitted:
+                        lf.write(l)
+                    else:
+                        to_return = True
+                lf.close()
+            return to_return
+        else:
+            return False
 
     def list_go_to_line(self,line,list):
-        list_path = os.path.join(_DATA_DIR, "lists/%s.gmi"%list)
-        if not os.path.exists(list_path):
+        list_path = self.list_path(list)
+        if not list_path:
             print("List %s does not exist. Create it with ""list create %s"""%(list,list))
-            return None
         elif not line.isnumeric():
             print("go_to_line requires a number as parameter")
-            return None
         else:
             gi = GeminiItem("localhost:/" + list_path,list)
             gi = gi.get_link(line)
@@ -2047,19 +2075,32 @@ Bookmarks are stored using the 'add' command."""
             self._go_to_gi(gi,handle=display)
 
     def list_show(self,list):
-        list_path = os.path.join(_DATA_DIR, "lists/%s.gmi"%list)
-        if not os.path.exists(list_path):
+        list_path = self.list_path(list)
+        if not list_path:
             print("List %s does not exist. Create it with ""list create %s"""%(list,list))
         else:
             gi = GeminiItem("localhost:/" + list_path,list)
             display = not self.sync_only 
             self._go_to_gi(gi,handle=display)
 
-    def list_create(self,list,title=None):
+    #return the path of the list file if list exists.
+    #return None if the list doesn’t exist.
+    def list_path(self,list):
         listdir = os.path.join(_DATA_DIR,"lists")
-        os.makedirs(listdir,exist_ok=True)
         list_path = os.path.join(listdir, "%s.gmi"%list)
-        if not os.path.exists(list_path):
+        if os.path.exists(list_path):
+            return list_path
+        else:
+            return None
+
+    def list_create(self,list,title=None):
+        list_path = self.list_path(list)
+        if list in ["create"]:
+            print("%s is not allowed as a name for a list"%list)
+        elif not list_path:
+            listdir = os.path.join(_DATA_DIR,"lists")
+            os.makedirs(listdir,exist_ok=True)
+            list_path = os.path.join(listdir, "%s.gmi"%list)
             with open(list_path,"a") as lfile:
                 if title:
                     lfile.write("# %s\n"%title)
@@ -2069,15 +2110,38 @@ Bookmarks are stored using the 'add' command."""
             print("list created. Display with `list %s`"%list)
         else:
             print("list %s already exists" %list)
-    
+   
+    def do_move(self,arg):
+        """move LIST will add the current page to the list LIST.
+With a major twist: current page will be removed from all other lists. 
+If current page was not in a list, this command is similar to `add LIST`."""
+        if not arg:
+            print("LIST argument is required as the target for your move")
+        else:
+            args = arg.split()
+            list_path = self.list_path(args[0])
+            if not list_path:
+                print("%s is not a list, aborting the move" %args[0])
+            else:
+                listdir = os.path.join(_DATA_DIR,"lists")
+                lists = os.listdir(listdir)
+                for l in lists:
+                    # remove the .gmi at the end of the filename (4char)
+                    lname = l[:-4]
+                    if lname != args[0]:
+                        isremoved = self.list_rm_url(self.gi.url,lname)
+                        if isremoved:
+                            print("Removed from %s"%lname)
+                self.list_add_line(args[0])
+
     def do_list(self,arg):
         """Manage list of bookmarked pages.
-            - list : display the list of available lists
-            - list $LIST : display pages in list $LIST
-            - list create $NEWLIST : create a list
-            Also see :
-            - add $NEWLIST (to add current page to list)
-        """
+- list : display the list of available lists
+- list $LIST : display pages in list $LIST
+- list create $NEWLIST : create a list
+See alse :
+- add $LIST (to add current page to list)
+- move $LIST (to add current page to list while removing from all others)"""
         listdir = os.path.join(_DATA_DIR,"lists")
         os.makedirs(listdir,exist_ok=True)
         if not arg:
@@ -2085,22 +2149,28 @@ Bookmarks are stored using the 'add' command."""
             # TODO : make a true gemini page
             if len(lists) > 0:
                 print("# Available lists:")
+                self.lookup = []
                 for l in lists:
-                    print("=> %s" %l)
+                    gpath = os.path.join(listdir,l)
+                    lname = l[:-4]
+                    gi = GeminiItem(gpath,lname)
+                    self.lookup.append(gi)
+                self._show_lookup(url=False)
+                self.page_index = 0
             else:
                 print("No lists yet. Use `list create`")
         else:
             args = arg.split()
-            if len(args) == 1:
-                self.list_show(args[0])
-            elif args[0] == "create":
+            if args[0] == "create":
                 if len(args) > 2:
                     name = " ".join(args[2:])
+                    self.list_create(args[1],title=name)
+                elif len(args) == 2:
+                    self.list_create(args[1])
                 else:
-                    name = None
-                self.list_create(args[1],title=name)
+                    print("A name is required to create a new list. Use `list create NAME`")
             else:
-                print("%s is not a valid list command")
+                self.list_show(args[0])
 
             
 
