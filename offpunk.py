@@ -2001,8 +2001,7 @@ Use 'ls -l' to see URLs."""
 If no argument given, URL is added to Bookmarks."""
         args = line.split()
         if len(args) < 1 :
-            with open(os.path.join(_CONFIG_DIR, "bookmarks.gmi"), "a") as fp:
-                fp.write(self.gi.to_map_line())
+            self.list_add_line("bookmarks")
         else:
             self.list_add_line(args[0])
 
@@ -2011,19 +2010,23 @@ If no argument given, URL is added to Bookmarks."""
 'bookmarks' shows all bookmarks.
 'bookmarks n' navigates immediately to item n in the bookmark menu.
 Bookmarks are stored using the 'add' command."""
-        bm_file = os.path.join(_CONFIG_DIR, "bookmarks.gmi")
-        if not os.path.exists(bm_file):
-            print("You need to 'add' some bookmarks, first!")
-            return
+        list_path = self.list_path("bookmarks")
+        if not list_path:
+            old_bm_file = os.path.join(_CONFIG_DIR, "bookmarks.gmi")
+            # migration code from the non-xdg bookmarks
+            if os.path.exists(old_bm_file):
+                target = os.path.join(_DATA_DIR,"lists")
+                shutil.move(old_bm_file,target)
+                list_path = self.list_path("bookmarks")
+            else:
+                self.list_create("bookmarks")
         args = line.strip()
         if len(args.split()) > 1 or (args and not args.isnumeric()):
             print("bookmarks command takes a single integer argument!")
-            return
-        gi = GeminiItem("localhost:/" + bm_file,"Bookmarks")
-        display = not self.sync_only
-        if args:
-            gi = gi.get_link(int(args))
-        self._go_to_gi(gi,handle=display)
+        elif args:
+            self.list_go_to_line(args,"bookmarks")
+        else:
+            self.list_show("bookmarks")
     
     def list_add_line(self,list):
         list_path = self.list_path(list)
@@ -2078,7 +2081,7 @@ Bookmarks are stored using the 'add' command."""
             print("go_to_line requires a number as parameter")
         else:
             gi = GeminiItem("localhost:/" + list_path,list)
-            gi = gi.get_link(line)
+            gi = gi.get_link(int(line))
             display = not self.sync_only 
             self._go_to_gi(gi,handle=display)
 
@@ -2177,8 +2180,10 @@ See alse :
                     self.list_create(args[1])
                 else:
                     print("A name is required to create a new list. Use `list create NAME`")
-            else:
+            elif len(args) == 1:
                 self.list_show(args[0])
+            else:
+                self.list_go_to_line(args[1],args[0])
 
             
 
