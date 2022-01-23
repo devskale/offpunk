@@ -65,7 +65,7 @@ experience or some other features. Python libraries requests, bs4 and readabliit
 
 To avoid using unstable or too recent libraries, the rule of thumb is that a library should be packaged in Debian/Ubuntu.
 
-* [Python-xdg](https://www.freedesktop.org/wiki/Software/pyxdg) will place your data, config and cache in place recommended by the XDG specs (usually it’s .local/share/offpunk, .config/offpunk and .cache/offpunk). Without it, look for ~/.offpunk or ~/.config/offpunk while the cache will be in ~/.cache/offpunk/.
+* [Python-xdg](https://www.freedesktop.org/wiki/Software/pyxdg) will place your data, config and cache in place recommended by the XDG specs (usually it’s .local/share/offpunk, .config/offpunk and .cache/offpunk). Without it, look for ~/.offpunk or ~/.config/offpunk while the cache will be in ~/.cache/offpunk/. If installation is done later, some config files may need to be migrated by hand.
 * [Python-requests](http://python-requests.org) is needed to handle http/https requests natively (apt-get install python3-requests). Without it, http links will be opened in an external browser
 * [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup) and [Readability](https://github.com/buriy/python-readability) are both needed to render HTML. Without them, HTML will not be rendered or be sent to an external parser like Lynx. (apt-get install python3-bs4 python3-readability or pip3 install readability-lxml)
 * The [ansiwrap library](https://pypi.org/project/ansiwrap/) may result in

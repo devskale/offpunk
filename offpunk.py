@@ -744,7 +744,6 @@ class GeminiClient(cmd.Cmd):
         self.offline_only = False
         self.sync_only = False
         self.automatic_choice = "n"
-        self.syncfile = os.path.join(_CONFIG_DIR, "to_fetch")
 
         self.client_certs = {
             "active": None
@@ -830,13 +829,11 @@ you'll be able to transparently follow links to Gopherspace!""")
         # Use cache or mark as to_fetch if resource is not cached
         # Why is this code useful ? It set the mimetype !
         if self.offline_only:
-            
             if not gi.is_cache_valid():
+                self.get_list("to_fetch")
+                self.list_add_line("to_fetch",gi=gi,verbose=False)
                 print("%s not available, marked for syncing"%gi.url)
-                with open(self.syncfile,mode='a') as sf:
-                    line = gi.url.strip() + '\n'
-                    sf.write(line)
-                    sf.close()
+                self.gi = gi
                 return
 
         elif not self.offline_only and not gi.local:
@@ -1712,10 +1709,8 @@ Use with "raw" to copy the content as seen in your terminal (not gemtext)"""
     def do_reload(self, *args):
         """Reload the current URL."""
         if self.offline_only:
-            with open(self.syncfile,mode='a') as sf:
-                line = self.gi.url + '\n'
-                sf.write(line)
-                sf.close()
+            self.get_list("to_fetch")
+            self.list_add_line("to_fetch",gi=self.gi,verbose=False)
             print("%s marked for syncing" %self.gi.url)
         else:
             self._go_to_gi(self.gi, check_cache=False)
@@ -1763,14 +1758,12 @@ Items can be added with `tour 1 2 3 4` or ranges like `tour 1-4`.
 All items in current menu can be added with `tour *`.
 Current item can be added back to the end of the tour with `tour .`.
 Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
+        # Creating the tour list if needed
         self.get_list("tour") 
-        def clear_tourfile():
-            #TODO
-            print("clear_tourfile not implemented")
         line = line.strip()
         if not line:
             # Fly to next waypoint on tour
-            if self.list_size("tour") < 1:
+            if len(self.list_get_links("tour")) < 1:
                 print("End of tour.")
             else:
                 self.list_go_to_line("1","tour")
@@ -1778,12 +1771,13 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
         elif line == "ls":
             self.list_show("tour")
         elif line == "clear":
-            clear_tourfile()
+            for l in self.list_get_links("tour"):
+                self.list_rm_url(l.url,"tour")
         elif line == "*":
             for l in self.lookup:
-                self.list_add_line("tour",gi=l)
+                self.list_add_line("tour",gi=l,verbose=False)
         elif line == ".":
-            self.list_add_line("tour")
+            self.list_add_line("tour",verbose=False)
         elif looks_like_url(line):
             self.list_add_line("tour",gi=GeminiItem(line))
         else:
@@ -1794,17 +1788,17 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
                         # Just a single index
                         n = int(index)
                         gi = self.lookup[n-1]
-                        self.list_add_line("tour",gi=gi)
+                        self.list_add_line("tour",gi=gi,verbose=False)
                     elif len(pair) == 2:
                         # Two endpoints for a range of indices
                         if int(pair[0]) < int(pair[1]):
                             for n in range(int(pair[0]), int(pair[1]) + 1):
                                 gi = self.lookup[n-1]
-                                self.list_add_line("tour",gi=gi)
+                                self.list_add_line("tour",gi=gi,verbose=False)
                         else:
                             for n in range(int(pair[0]), int(pair[1]) - 1, -1):
                                 gi = self.lookup[n-1]
-                                self.list_add_line("tour",gi=gi)
+                                self.list_add_line("tour",gi=gi,verbose=False)
 
                     else:
                         # Syntax error
@@ -2006,6 +2000,15 @@ If no argument given, URL is added to Bookmarks."""
                 self.list_create(list)
                 list_path = self.list_path(list)
         return list_path
+    
+    def do_subscribe(self,line):
+        """Subscribe to current page by saving it in the "subscribed" list.
+If a new link is found in the page during a --sync, the new link is automatically
+fetched and added to your next tour.
+To unsubscribe, remove the page from the "subscribed" list."""
+        list_path = self.get_list("subscribed")
+        self.list_add_line("subscribed",verbose=False)
+        print("Subscribed to %s" %self.gi.url)
 
     def do_bookmarks(self, line):
         """Show or access the bookmarks menu.
@@ -2021,7 +2024,7 @@ Bookmarks are stored using the 'add' command."""
         else:
             self.list_show("bookmarks")
     
-    def list_add_line(self,list,gi=None):
+    def list_add_line(self,list,gi=None,verbose=True):
         list_path = self.list_path(list)
         if not list_path:
             print("List %s does not exist. Create it with ""list create %s"""%(list,list))
@@ -2036,12 +2039,14 @@ Bookmarks are stored using the 'add' command."""
                 for l in lines:
                     sp = l.split()
                     if gi.url in sp:
-                        print("%s already in %s."%(gi.url,list))
+                        if verbose:
+                            print("%s already in %s."%(gi.url,list))
                         return False
             with open(list_path,"a") as l_file:
                 l_file.write(gi.to_map_line())
                 l_file.close()
-            print("%s added to %s" %(gi.url,list))
+            if verbose:
+                print("%s added to %s" %(gi.url,list))
             return True
 
     # remove an url from a list.
@@ -2055,13 +2060,16 @@ Bookmarks are stored using the 'add' command."""
                 lines = lf.readlines()
                 lf.close()
             with open(list_path,"w") as lf:
-                print("removing %s from tour" %url)
                 for l in lines:
                     # we separate components of the line
                     # to ensure we identify a complete URL, not a part of it
                     splitted = l.split()
                     if url not in splitted:
-                        lf.write(l)
+                        #sometimes, we must remove the ending "/"
+                        if url.endswith("/") and url[:-1] in splitted:
+                            to_return = True
+                        else:
+                            lf.write(l)
                     else:
                         to_return = True
                 lf.close()
@@ -2069,13 +2077,13 @@ Bookmarks are stored using the 'add' command."""
         else:
             return False
 
-    def list_size(self,list):
-        size = 0
+    def list_get_links(self,list):
         list_path = self.list_path(list)
         if list_path:
             gi = GeminiItem("localhost:/" + list_path)
-            size = len(gi.get_links())
-        return size
+            return gi.get_links()
+        else:
+            return []
 
     def list_go_to_line(self,line,list):
         list_path = self.list_path(list)
@@ -2148,7 +2156,18 @@ If current page was not in a list, this command is similar to `add LIST`."""
                         if isremoved:
                             print("Removed from %s"%lname)
                 self.list_add_line(args[0])
-
+    
+    def list_lists(self):
+        listdir = os.path.join(_DATA_DIR,"lists")
+        to_return = []
+        if os.path.exists(listdir):
+            lists = os.listdir(listdir)
+            if len(lists) > 0:
+                for l in lists:
+                    #removing the .gmi at the end of the name
+                    to_return.append(l[:-4])
+        return to_return
+    
     def do_list(self,arg):
         """Manage list of bookmarked pages.
 - list : display the list of available lists
@@ -2160,15 +2179,12 @@ See alse :
         listdir = os.path.join(_DATA_DIR,"lists")
         os.makedirs(listdir,exist_ok=True)
         if not arg:
-            lists = os.listdir(listdir)
-            # TODO : make a true gemini page
+            lists = self.list_lists()
             if len(lists) > 0:
-                print("# Available lists:")
                 self.lookup = []
                 for l in lists:
-                    gpath = os.path.join(listdir,l)
-                    lname = l[:-4]
-                    gi = GeminiItem(gpath,lname)
+                    gpath = os.path.join(listdir,l+".gmi")
+                    gi = GeminiItem(gpath,l)
                     self.lookup.append(gi)
                 self._show_lookup(url=False)
                 self.page_index = 0
@@ -2179,15 +2195,15 @@ See alse :
             if args[0] == "create":
                 if len(args) > 2:
                     name = " ".join(args[2:])
-                    self.list_create(args[1],title=name)
+                    self.list_create(args[1].lower(),title=name)
                 elif len(args) == 2:
-                    self.list_create(args[1])
+                    self.list_create(args[1].lower())
                 else:
                     print("A name is required to create a new list. Use `list create NAME`")
             elif len(args) == 1:
-                self.list_show(args[0])
+                self.list_show(args[0].lower())
             else:
-                self.list_go_to_line(args[1],args[0])
+                self.list_go_to_line(args[1],args[0].lower())
 
             
 
@@ -2350,7 +2366,7 @@ def main():
         else:
             print("--fetch-later requires an URL (or a list of URLS) as argument")
     elif args.sync:
-        # fetch_cache is the core of the sync algorithm.
+        # fetch_gitem is the core of the sync algorithm.
         # It takes as input :
         # - a GeminiItem to be fetched
         # - depth : the degree of recursion to build the cache (0 means no recursion)
@@ -2362,12 +2378,9 @@ def main():
         def add_to_tour(gitem):
             if gitem.is_cache_valid():
                 print("  -> adding to tour: %s" %gitem.url)
-                with open(gc.tourfile,mode='a') as tf:
-                    line = gitem.url.strip() + "\n"
-                    tf.write(line)
-                    tf.close()
+                gc.list_add_line("tour",gi=gitem,verbose=False)
 
-        def fetch_cache(gitem,depth=0,validity=0,savetotour=False,count=[0,0],strin=""):
+        def fetch_gitem(gitem,depth=0,validity=0,savetotour=False,count=[0,0],strin=""):
             #savetotour = True will save to tour newly cached content
             # else, do not save to tour
             #regardless of valitidy
@@ -2392,66 +2405,45 @@ def main():
                         #recursive call
                         substri = strin + " -->"
                         subcount[0] += 1
-                        fetch_cache(k,depth=d,validity=0,savetotour=savetotour,\
+                        fetch_gitem(k,depth=d,validity=0,savetotour=savetotour,\
                                         count=subcount,strin=substri)
-
+        
+        def fetch_list(list,validity=0,tourandremove=False,tourchildren=False):
+            links = gc.list_get_links(list)
+            end = len(links)
+            counter = 0
+            print(" * * * %s to fetch in %s * * *" %(end,list))
+            for l in links:
+                counter += 1
+                fetch_gitem(l,depth=1,validity=validity,savetotour=tourchildren,count=[counter,end])
+                if tourandremove:
+                    add_to_tour(l)
+                    gc.list_rm_url(l.url,list)
+            
         if args.cache_validity:
             refresh_time = int(args.cache_validity)
         else:
             # if no refresh time, a default of 0 is used (which means "infinite")
             refresh_time = 0
         gc.sync_only = True
-        # We start by syncing the bookmarks
-        gc.onecmd("bookmarks")
-        original_lookup = gc.lookup
-        end = len(original_lookup)
-        counter = 0
-        print(" * * * %s bookmarks to fetch * * *" %end)
-        for j in original_lookup:
-            #refreshing the bookmarks
-            counter += 1
-            fetch_cache(j,depth=1,validity=refresh_time,savetotour=True,count=[counter,end])
-        ## Second we get ressources in the tour
-        lines_lookup = []
-        if os.path.exists(gc.tourfile):
-            with open(gc.tourfile,mode='r') as tf:
-                lines_lookup += tf.readlines()
-                tf.close
-        tot = len(set(lines_lookup))
-        counter = 0
-        if tot > 0:
-            print(" * * * %s to fetch from your tour browsing * * *" %tot)
-        for l in set(lines_lookup):
-            #always get to_fetch and tour, regarless of refreshtime
-            #we don’t save to tour (it’s already there)
-            counter += 1
-            if l.startswith("gemini://") or l.startswith("http"):
-                fetch_cache(GeminiItem(l.strip()),depth=1,validity=refresh_time,\
-                            savetotour=False,count=[counter,tot])
-        # Then we get ressources from syncfile
-        lines_lookup = []
-        if os.path.exists(gc.syncfile):
-            with open(gc.syncfile,mode='r') as sf:
-                lines_lookup += sf.readlines()
-                sf.close()
-        tot = len(set(lines_lookup))
-        counter = 0
-        if tot > 0:
-            print(" * * * %s to fetch from your offline browsing * * *" %tot)
-        for l in set(lines_lookup):
-            #always fetch the cache (we allows only a 10 minutes time
-            # to avoid multiple fetch in the same sync run)
-            #then add to tour
-            counter += 1
-            gitem = GeminiItem(l.strip())
-            if l.startswith("gemini://") or l.startswith("http"): 
-                fetch_cache(gitem,depth=1,validity=600,\
-                            savetotour=False,count=[counter,tot])
-                add_to_tour(gitem)
+        # We will fetch all the lists except "archives" and "history"
+        if "archives" in lists:
+            lists.remove("archives")
+        if "history" in lists:
+            lists.remove("history")
+        lists = gc.list_lists()
+        #We start with the fetch list to add them early in the tour (item are removed after fetch)
+        if "to_fetch" in lists:
+            lists.remove("to_fetch")
+            fetch_list("subscribed",validity=refresh_time,tourandremove=True)
+        # Second, we do the "subscribed" as we need to find new items
+        if "subscribed" in lists:
+            lists.remove("subscribed")
+            fetch_list("subscribed",validity=refresh_time,tourchildren=True)
+        #then we fetch all the rest (including bookmarks and tour)
+        for l in lists:
+            fetch_list(l,validity=refresh_time)
 
-        # let’s empty the sync file once the fetch is successful
-        if os.path.exists(gc.syncfile):
-            open(gc.syncfile,mode='w').close()
         gc.onecmd("blackbox")
     else:
         while True:
