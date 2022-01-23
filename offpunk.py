@@ -375,7 +375,8 @@ class GeminiItem():
 
     def __init__(self, url, name=""):
         if "://" not in url and ("./" not in url and url[0] != "/"):
-            url = "gemini://" + url
+            if not url.startswith("mailto:"):
+                url = "gemini://" + url
         self.url = fix_ipv6_url(url).strip()
         self.name = name
         self.mime = None
@@ -386,7 +387,7 @@ class GeminiItem():
             self.scheme = "localhost"
         else:
             self.scheme = parsed.scheme
-        if self.scheme == "localhost":
+        if self.scheme in ["localhost","mailto"]:
             self.local = True
             self.host = None
             h = self.url.split('/')
@@ -395,6 +396,8 @@ class GeminiItem():
             # localhost:/ is 11 char
             if self.url.startswith("localhost://"):
                 self.path = self.url[11:]
+            elif self.scheme == "mailto":
+                self.path = parsed.path
             else:
                 self.path = self.url
         else:
@@ -805,6 +808,14 @@ class GeminiClient(cmd.Cmd):
 However, you can use `set gopher_proxy hostname:port` to tell it about a
 Gopher-to-Gemini proxy (such as a running Agena instance), in which case
 you'll be able to transparently follow links to Gopherspace!""")
+            return
+        if gi.scheme == "mailto":
+            if handle and not self.sync_only:
+                resp = input("Send an email to %s Y/N? " %gi.path)
+                self.gi = gi
+                if resp.strip().lower() in ("y", "yes"):
+                    cmd = "xdg-open mailto:%s" %gi.path
+                    subprocess.call(shlex.split(cmd))
             return
         elif gi.scheme not in ("localhost","gemini", "gopher", "http", "https") and not self.sync_only:
             print("Sorry, no support for {} links.".format(gi.scheme))
@@ -2044,6 +2055,7 @@ Bookmarks are stored using the 'add' command."""
                 lines = lf.readlines()
                 lf.close()
             with open(list_path,"w") as lf:
+                print("removing %s from tour" %url)
                 for l in lines:
                     # we separate components of the line
                     # to ensure we identify a complete URL, not a part of it
