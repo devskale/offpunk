@@ -2349,7 +2349,7 @@ def main():
         #               being refreshed (0 = never refreshed if it already exists)
         # - savetotour : if True, newly cached items are added to tour
         if args.assume_yes:
-            self.automatic_choice = "y"
+            gc.automatic_choice = "y"
         def add_to_tour(gitem):
             if gitem.is_cache_valid():
                 print("  -> adding to tour: %s" %gitem.url)
