@@ -741,7 +741,6 @@ class GeminiClient(cmd.Cmd):
         self.offline_only = False
         self.sync_only = False
         self.automatic_choice = "n"
-        self.tourfile = os.path.join(_CONFIG_DIR, "tour")
         self.syncfile = os.path.join(_CONFIG_DIR, "to_fetch")
 
         self.client_certs = {
@@ -1753,56 +1752,29 @@ Items can be added with `tour 1 2 3 4` or ranges like `tour 1-4`.
 All items in current menu can be added with `tour *`.
 Current item can be added back to the end of the tour with `tour .`.
 Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
-        def add_to_tourfile(url):
-            with open(self.tourfile,'a') as f:
-                l = url.strip()+"\n"
-                f.write(l)
-                f.close
-        def pop_from_tourfile():
-            l = None
-            lines = []
-            with open(self.tourfile,'r') as f:
-                l = f.readline()
-                lines = f.readlines()
-                f.close()
-            with open(self.tourfile,'w') as f:
-                if len(lines) > 0:
-                    f.writelines(lines)
-                f.close()
-            return l
-        def list_tourfile():
-            lines = []
-            with open(self.tourfile,'r') as f:
-                lines = f.readlines()
-                f.close()
-            return lines
+        self.get_list("tour") 
         def clear_tourfile():
-            with open(self.tourfile,'w') as f:
-                f.close()
+            #TODO
+            print("clear_tourfile not implemented")
         line = line.strip()
         if not line:
             # Fly to next waypoint on tour
-            nexttour = pop_from_tourfile()
-            if not nexttour:
+            if self.list_size("tour") < 1:
                 print("End of tour.")
             else:
-                self._go_to_gi(GeminiItem(nexttour))
+                self.list_go_to_line("1","tour")
+                self.list_rm_url(self.gi.url,"tour")
         elif line == "ls":
-            old_lookup = self.lookup
-            self.lookup = []
-            for u in list_tourfile():
-                self.lookup.append(GeminiItem(u))
-            self._show_lookup()
-            self.lookup = old_lookup
+            self.list_show("tour")
         elif line == "clear":
             clear_tourfile()
         elif line == "*":
             for l in self.lookup:
-                add_to_tourfile(l.url)
+                self.list_add_line("tour",gi=l)
         elif line == ".":
-            add_to_tourfile(self.gi.url)
+            self.list_add_line("tour")
         elif looks_like_url(line):
-            add_to_tourfile(line)
+            self.list_add_line("tour",gi=GeminiItem(line))
         else:
             for index in line.split():
                 try:
@@ -1811,17 +1783,17 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
                         # Just a single index
                         n = int(index)
                         gi = self.lookup[n-1]
-                        add_to_tourfile(gi.url)
+                        self.list_add_line("tour",gi=gi)
                     elif len(pair) == 2:
                         # Two endpoints for a range of indices
                         if int(pair[0]) < int(pair[1]):
                             for n in range(int(pair[0]), int(pair[1]) + 1):
                                 gi = self.lookup[n-1]
-                                add_to_tourfile(gi.url)
+                                self.list_add_line("tour",gi=gi)
                         else:
                             for n in range(int(pair[0]), int(pair[1]) - 1, -1):
                                 gi = self.lookup[n-1]
-                                add_to_tourfile(gi.url)
+                                self.list_add_line("tour",gi=gi)
 
                     else:
                         # Syntax error
@@ -2004,22 +1976,32 @@ If no argument given, URL is added to Bookmarks."""
             self.list_add_line("bookmarks")
         else:
             self.list_add_line(args[0])
+    
+    # Get the list file name, creating or migrating it if needed.
+    # Migrate bookmarks/tour/to_fetch from XDG_CONFIG to XDG_DATA
+    # We migrate only if the file exists in XDG_CONFIG and not XDG_DATA
+    def get_list(self,list):
+        list_path = self.list_path(list)
+        if not list_path:
+            old_file_gmi = os.path.join(_CONFIG_DIR,list + ".gmi")
+            old_file_nogmi = os.path.join(_CONFIG_DIR,list)
+            target = os.path.join(_DATA_DIR,"lists")
+            if os.path.exists(old_file_gmi):
+                shutil.move(old_file_gmi,target)
+            elif os.path.exists(old_file_nogmi):
+                targetgmi = os.path.join(target,list+".gmi")
+                shutil.move(old_file_nogmi,targetgmi)
+            else:
+                self.list_create(list)
+                list_path = self.list_path(list)
+        return list_path
 
     def do_bookmarks(self, line):
         """Show or access the bookmarks menu.
 'bookmarks' shows all bookmarks.
 'bookmarks n' navigates immediately to item n in the bookmark menu.
 Bookmarks are stored using the 'add' command."""
-        list_path = self.list_path("bookmarks")
-        if not list_path:
-            old_bm_file = os.path.join(_CONFIG_DIR, "bookmarks.gmi")
-            # migration code from the non-xdg bookmarks
-            if os.path.exists(old_bm_file):
-                target = os.path.join(_DATA_DIR,"lists")
-                shutil.move(old_bm_file,target)
-                list_path = self.list_path("bookmarks")
-            else:
-                self.list_create("bookmarks")
+        list_path = self.get_list("bookmarks")
         args = line.strip()
         if len(args.split()) > 1 or (args and not args.isnumeric()):
             print("bookmarks command takes a single integer argument!")
@@ -2028,25 +2010,27 @@ Bookmarks are stored using the 'add' command."""
         else:
             self.list_show("bookmarks")
     
-    def list_add_line(self,list):
+    def list_add_line(self,list,gi=None):
         list_path = self.list_path(list)
         if not list_path:
             print("List %s does not exist. Create it with ""list create %s"""%(list,list))
             return False
         else:
+            if not gi:
+                gi = self.gi
             # first we check if url already exists in the file
             with open(list_path,"r") as l_file:
                 lines = l_file.readlines()
                 l_file.close()
                 for l in lines:
                     sp = l.split()
-                    if self.gi.url in sp:
-                        print("%s already exists in list %s."%(self.gi.url,list))
+                    if gi.url in sp:
+                        print("%s already in %s."%(gi.url,list))
                         return False
             with open(list_path,"a") as l_file:
-                l_file.write(self.gi.to_map_line())
+                l_file.write(gi.to_map_line())
                 l_file.close()
-            print("Page added to your %s list" %list)
+            print("%s added to %s" %(gi.url,list))
             return True
 
     # remove an url from a list.
@@ -2072,6 +2056,14 @@ Bookmarks are stored using the 'add' command."""
             return to_return
         else:
             return False
+
+    def list_size(self,list):
+        size = 0
+        list_path = self.list_path(list)
+        if list_path:
+            gi = GeminiItem("localhost:/" + list_path)
+            size = len(gi.get_links())
+        return size
 
     def list_go_to_line(self,line,list):
         list_path = self.list_path(list)
@@ -2312,7 +2304,7 @@ def main():
         print("Welcome to Offpunk!")
         if args.restricted:
             print("Restricted mode engaged!")
-        print("Enjoy your patrol through Geminispace...")
+        print("Type `help` to get the list of available command.")
 
     # Act on args
     if args.tls_cert:
@@ -2344,7 +2336,7 @@ def main():
                     # should be handled on the to_fetch level
                     gc.onecmd("reload")
         else:
-            print("--netch-later requires an URL (or a list of URLS) as argument")
+            print("--fetch-later requires an URL (or a list of URLS) as argument")
     elif args.sync:
         # fetch_cache is the core of the sync algorithm.
         # It takes as input :
