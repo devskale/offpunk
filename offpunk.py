@@ -768,6 +768,7 @@ class GeminiClient(cmd.Cmd):
             "gopher_proxy" : None,
             "tls_mode" : "tofu",
             "http_proxy": None,
+            "https_everywhere": True
         }
 
         self.log = {
@@ -814,7 +815,7 @@ However, you can use `set gopher_proxy hostname:port` to tell it about a
 Gopher-to-Gemini proxy (such as a running Agena instance), in which case
 you'll be able to transparently follow links to Gopherspace!""")
             return
-        if gi.scheme == "mailto":
+        elif gi.scheme == "mailto":
             if handle and not self.sync_only:
                 resp = input("Send an email to %s Y/N? " %gi.path)
                 self.gi = gi
@@ -829,6 +830,12 @@ you'll be able to transparently follow links to Gopherspace!""")
         # Obey permanent redirects
         if gi.url in self.permanent_redirects:
             new_gi = GeminiItem(self.permanent_redirects[gi.url], name=gi.name)
+            self._go_to_gi(new_gi)
+            return
+        
+        if gi.scheme == "http" and self.options["https_everywhere"] :
+            newurl = "https" + gi.url[4:]
+            new_gi = GeminiItem(newurl,name=gi.name)
             self._go_to_gi(new_gi)
             return
 
