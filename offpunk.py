@@ -43,6 +43,12 @@ import uuid
 import webbrowser
 
 try:
+    import editor
+    _HAS_EDITOR = True
+except ModuleNotFoundError:
+    _HAS_EDITOR = False
+
+try:
     import ansiwrap as textwrap
 except ModuleNotFoundError:
     print("Try installing python-ansiwrap for better rendering")
@@ -2118,7 +2124,7 @@ Bookmarks are stored using the 'add' command."""
 
     def list_create(self,list,title=None):
         list_path = self.list_path(list)
-        if list in ["create"]:
+        if list in ["create","edit"]:
             print("%s is not allowed as a name for a list"%list)
         elif not list_path:
             listdir = os.path.join(_DATA_DIR,"lists")
@@ -2170,10 +2176,11 @@ If current page was not in a list, this command is similar to `add LIST`."""
     
     def do_list(self,arg):
         """Manage list of bookmarked pages.
-- list : display the list of available lists
-- list $LIST : display pages in list $LIST
-- list create $NEWLIST : create a list
-See alse :
+- list : display available lists
+- list $LIST : display pages in $LIST
+- list create $NEWLIST : create a new list
+- list edit $LIST : edit the list
+See also :
 - add $LIST (to add current page to list)
 - move $LIST (to add current page to list while removing from all others)"""
         listdir = os.path.join(_DATA_DIR,"lists")
@@ -2201,6 +2208,18 @@ See alse :
                     self.list_create(args[1].lower())
                 else:
                     print("A name is required to create a new list. Use `list create NAME`")
+            elif args[0] == "edit":
+                if not _HAS_EDITOR:
+                    print("Please install python-editor to edit you lists")
+                elif len(args) > 1:
+                    if args[1] in self.list_lists():
+                        path = os.path.join(listdir,args[1]+".gmi")
+                        editor.edit(path)
+                    else:
+                        print("A valid list name is required to edit a list")
+                else:
+                    print("A valid list name is required to edit a list")
+
             elif len(args) == 1:
                 self.list_show(args[0].lower())
             else:
