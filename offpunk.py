@@ -1520,7 +1520,7 @@ you'll be able to transparently follow links to Gopherspace!""")
         elif line.strip() == "..":
             return self.do_up()
         elif line.startswith("/"):
-            return self.do_search(line[1:])
+            return self.do_find(line[1:])
         # Expand abbreviated commands
         first_word = line.split()[0].strip()
         if first_word in _ABBREVS:
@@ -1858,8 +1858,8 @@ Use 'ls -l' to see URLs."""
         self._show_lookup(url=True)
         self.page_index = 0
 
-    def do_search(self, searchterm):
-        """Search index (case insensitive)."""
+    def do_find(self, searchterm):
+        """Find in the list of links (case insensitive)."""
         results = [
             gi for gi in self.lookup if searchterm.lower() in gi.name.lower()]
         if results:
