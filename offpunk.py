@@ -2124,7 +2124,7 @@ Bookmarks are stored using the 'add' command."""
 
     def list_create(self,list,title=None):
         list_path = self.list_path(list)
-        if list in ["create","edit"]:
+        if list in ["create","edit","delete"]:
             print("%s is not allowed as a name for a list"%list)
         elif not list_path:
             listdir = os.path.join(_DATA_DIR,"lists")
@@ -2180,6 +2180,7 @@ If current page was not in a list, this command is similar to `add LIST`."""
 - list $LIST : display pages in $LIST
 - list create $NEWLIST : create a new list
 - list edit $LIST : edit the list
+- list delete $LIST : delete a list permanently (a confirmation is required)
 See also :
 - add $LIST (to add current page to list)
 - move $LIST (to add current page to list while removing from all others)"""
@@ -2189,6 +2190,7 @@ See also :
             lists = self.list_lists()
             if len(lists) > 0:
                 self.lookup = []
+                lists.sort()
                 for l in lists:
                     gpath = os.path.join(listdir,l+".gmi")
                     size = len(self.list_get_links(l))
@@ -2219,7 +2221,29 @@ See also :
                         print("A valid list name is required to edit a list")
                 else:
                     print("A valid list name is required to edit a list")
-
+            elif args[0] == "delete":
+                if len(args) > 1:
+                    if args[1] in ["tour","to_fetch","bookmarks"]:
+                        print("%s is a mandatory list which cannot be deleted"%args[1])
+                    elif args[1] in self.list_lists():
+                        size = len(self.list_get_links(args[1]))
+                        stri = "Are you sure you want to delete %s ?\n"%args[1]
+                        confirm = "YES"
+                        if size > 0:
+                            stri += "! %s items in the list will be lost !\n"%size
+                            confirm = "YES DELETE %s" %size
+                        else :
+                            stri += "The list is empty, it should be safe to delete it.\n"
+                        stri += "Type \"%s\" (in capital, without quotes) to confirm :"%confirm
+                        answer = input(stri)
+                        if answer == confirm:
+                            path = os.path.join(listdir,args[1]+".gmi")
+                            os.remove(path)
+                            print("* * * %s has been deleted" %args[1])
+                    else:
+                        print("A valid list name is required to be deleted")
+                else:
+                    print("A valid list name is required to be deleted")
             elif len(args) == 1:
                 self.list_show(args[0].lower())
             else:
