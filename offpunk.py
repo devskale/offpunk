@@ -2426,16 +2426,16 @@ def main():
             # if no refresh time, a default of 0 is used (which means "infinite")
             refresh_time = 0
         gc.sync_only = True
+        lists = gc.list_lists()
         # We will fetch all the lists except "archives" and "history"
         if "archives" in lists:
             lists.remove("archives")
         if "history" in lists:
             lists.remove("history")
-        lists = gc.list_lists()
-        #We start with the fetch list to add them early in the tour (item are removed after fetch)
+        #We start with the fetch list to add them early in the tour(item are removed after fetch)
         if "to_fetch" in lists:
             lists.remove("to_fetch")
-            fetch_list("subscribed",validity=refresh_time,tourandremove=True)
+            fetch_list("to_fetch",validity=refresh_time,tourandremove=True)
         # Second, we do the "subscribed" as we need to find new items
         if "subscribed" in lists:
             lists.remove("subscribed")
