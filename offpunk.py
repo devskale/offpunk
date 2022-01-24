@@ -2003,7 +2003,13 @@ If no argument given, URL is added to Bookmarks."""
                 targetgmi = os.path.join(target,list+".gmi")
                 shutil.move(old_file_nogmi,targetgmi)
             else:
-                self.list_create(list)
+                if list == "subscribed":
+                    title = "Subscriptions (new links in those pages will be added to tour)"
+                elif list == "to_fetch":
+                    title = "Links requested and to be fetched during the next --sync"
+                else:
+                    title = None
+                self.list_create(list, title=title)
                 list_path = self.list_path(list)
         return list_path
     
@@ -2013,8 +2019,11 @@ If a new link is found in the page during a --sync, the new link is automaticall
 fetched and added to your next tour.
 To unsubscribe, remove the page from the "subscribed" list."""
         list_path = self.get_list("subscribed")
-        self.list_add_line("subscribed",verbose=False)
-        print("Subscribed to %s" %self.gi.url)
+        added = self.list_add_line("subscribed",verbose=False)
+        if added :
+            print("Subscribed to %s" %self.gi.url)
+        else:
+            print("You are already subscribed to %s"%self.gi.url)
 
     def do_bookmarks(self, line):
         """Show or access the bookmarks menu.
@@ -2223,8 +2232,8 @@ See also :
                     print("A valid list name is required to edit a list")
             elif args[0] == "delete":
                 if len(args) > 1:
-                    if args[1] in ["tour","to_fetch","bookmarks"]:
-                        print("%s is a mandatory list which cannot be deleted"%args[1])
+                    if args[1] in ["tour","to_fetch","bookmarks","history","archives"]:
+                        print("%s is a system list which cannot be deleted"%args[1])
                     elif args[1] in self.list_lists():
                         size = len(self.list_get_links(args[1]))
                         stri = "Are you sure you want to delete %s ?\n"%args[1]
@@ -2476,14 +2485,14 @@ def main():
             lists.remove("archives")
         if "history" in lists:
             lists.remove("history")
-        #We start with the fetch list to add them early in the tour(item are removed after fetch)
-        if "to_fetch" in lists:
-            lists.remove("to_fetch")
-            fetch_list("to_fetch",validity=refresh_time,tourandremove=True)
-        # Second, we do the "subscribed" as we need to find new items
+        # We start with the "subscribed" as we need to find new items
         if "subscribed" in lists:
             lists.remove("subscribed")
             fetch_list("subscribed",validity=refresh_time,tourchildren=True)
+        #Then the fetch list (item are removed from the list after fetch)
+        if "to_fetch" in lists:
+            lists.remove("to_fetch")
+            fetch_list("to_fetch",validity=refresh_time,tourandremove=True)
         #then we fetch all the rest (including bookmarks and tour)
         for l in lists:
             fetch_list(l,validity=refresh_time)
