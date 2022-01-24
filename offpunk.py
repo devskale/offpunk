@@ -2184,7 +2184,8 @@ See alse :
                 self.lookup = []
                 for l in lists:
                     gpath = os.path.join(listdir,l+".gmi")
-                    gi = GeminiItem(gpath,l)
+                    size = len(self.list_get_links(l))
+                    gi = GeminiItem(gpath,l+" (%s items)"%size)
                     self.lookup.append(gi)
                 self._show_lookup(url=False)
                 self.page_index = 0
