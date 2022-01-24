@@ -544,7 +544,10 @@ class GeminiItem():
         if self.is_cache_valid(): #and self.offline_only and not self.local:
             last_modification = self.cache_last_modified()
             str_last = time.ctime(last_modification)
-            title += "    \x1b[0;31m(last accessed on %s)"%str_last
+            if self.local:
+                title += "    \x1b[0;31m(local file)"
+            else:
+                title += "    \x1b[0;31m(last accessed on %s)"%str_last
         rendered_title = "\x1b[31m\x1b[1m"+ title + "\x1b[0m"
         #FIXME: width to replace self.options["width"]
         wrapped = textwrap.fill(rendered_title,80)
@@ -566,7 +569,11 @@ class GeminiItem():
         
 
     def get_filename(self):
-        filename = os.path.basename(self._cache_path)
+        if self.local:
+            path = self.path
+        else:
+            path = self._cache_path
+        filename = os.path.basename(path)
         return filename
 
     def write_body(self,body,mime):
@@ -626,11 +633,12 @@ class GeminiItem():
             if os.path.isdir(cache_dir):
                 with open(self._cache_path, "w") as cache:
                     cache.write(str(datetime.datetime.now())+"\n")
-                    cache.write("ERROR while caching %s\n" %self.url)
-                    cache.write(str(err))
-                    cache.write("\n\nIf you believe this error was temporary, type ""reload"".\n")
+                    cache.write("ERROR while caching %s\n\n" %self.url)
+                    cache.write("*****\n\n")
+                    cache.write(str(err)+"\n")
+                    cache.write("*****\n\n")
+                    cache.write("If you believe this error was temporary, type ""reload"".\n")
                     cache.write("The ressource will be tentatively fetched during next sync.\n")
-                    cache.write("\n")
                     cache.close()
     
                
