@@ -524,12 +524,13 @@ class GeminiItem():
                 self.links.append(newgi)
 
     def get_links(self):
-        if not self.links:
+        if self.links == None:
             r_body = self.get_rendered_body()
         return self.links
 
     def get_link(self,nb):
-        if not self.links:
+        # == None allows to return False, even if the list is empty
+        if self.links == None:
             r_body = self.get_rendered_body()
         if len(self.links) < nb:
             print("Index too high! No link %s for %s" %(nb,self.url))
@@ -544,10 +545,11 @@ class GeminiItem():
         if self.is_cache_valid(): #and self.offline_only and not self.local:
             last_modification = self.cache_last_modified()
             str_last = time.ctime(last_modification)
+            nbr = len(self.get_links())
             if self.local:
-                title += "    \x1b[0;31m(local file)"
+                title += " (%s items)    \x1b[0;31m(local file)"%nbr
             else:
-                title += "    \x1b[0;31m(last accessed on %s)"%str_last
+                title += " (%s links)    \x1b[0;31m(last accessed on %s)"%(nbr,str_last)
         rendered_title = "\x1b[31m\x1b[1m"+ title + "\x1b[0m"
         #FIXME: width to replace self.options["width"]
         wrapped = textwrap.fill(rendered_title,80)
@@ -818,6 +820,7 @@ class GeminiClient(cmd.Cmd):
         # Don't try to speak to servers running other protocols
         if gi.scheme == "gopher" and not self.options.get("gopher_proxy", None)\
                                     and not self.sync_only:
+            print("Attempt to access",gi.url)
             print("""Offpunk does not speak Gopher natively.
 However, you can use `set gopher_proxy hostname:port` to tell it about a
 Gopher-to-Gemini proxy (such as a running Agena instance), in which case
@@ -856,6 +859,10 @@ you'll be able to transparently follow links to Gopherspace!""")
                 print("%s not available, marked for syncing"%gi.url)
                 self.gi = gi
                 return
+        # check if local file exists.
+        if gi.local and not os.path.isfile(gi.path):
+            print("Local file %s does not exist!" %gi.path)
+            return
 
         elif not self.offline_only and not gi.local:
             try:
@@ -1894,9 +1901,12 @@ Use 'ls -l' to see URLs."""
     @needs_gi
     def do_less(self, *args):
         """Run most recently visited item through "less" command."""
-        cmd_str = self._get_handler_cmd(self.gi.get_mime())
-        cmd_str = cmd_str % self._get_active_tmpfile()
-        subprocess.call("%s | less -RM" % cmd_str, shell=True)
+        if self.gi.is_cache_valid():
+            cmd_str = self._get_handler_cmd(self.gi.get_mime())
+            cmd_str = cmd_str % self._get_active_tmpfile()
+            subprocess.call("%s | less -RM" % cmd_str, shell=True)
+        else:
+            self.do_go(self.gi.url)
 
     @needs_gi
     def do_fold(self, *args):
