@@ -390,18 +390,18 @@ class GeminiItem():
         self.links = None
         parsed = urllib.parse.urlparse(self.url)
         if "./" in url or url[0] == "/":
-            self.scheme = "localhost"
+            self.scheme = "file"
         else:
             self.scheme = parsed.scheme
-        if self.scheme in ["localhost","mailto"]:
+        if self.scheme in ["file","mailto"]:
             self.local = True
             self.host = None
             h = self.url.split('/')
             self.host = h[0:len(h)-1]
             self._cache_path = None
-            # localhost:/ is 11 char
-            if self.url.startswith("localhost://"):
-                self.path = self.url[11:]
+            # file:// is 7 char
+            if self.url.startswith("file://"):
+                self.path = self.url[7:]
             elif self.scheme == "mailto":
                 self.path = parsed.path
             else:
@@ -437,7 +437,7 @@ class GeminiItem():
             #small intelligence to try to find a good name for a capsule
             #we try to find eithe ~username or /users/username
             #else we fallback to hostname
-            if self.scheme == "localhost":
+            if self.scheme == "file":
                 if self.name != "":
                     self.title = self.name
                 else:
@@ -834,7 +834,7 @@ you'll be able to transparently follow links to Gopherspace!""")
                     cmd = "xdg-open mailto:%s" %gi.path
                     subprocess.call(shlex.split(cmd))
             return
-        elif gi.scheme not in ("localhost","gemini", "gopher", "http", "https") and not self.sync_only:
+        elif gi.scheme not in ("file","gemini", "gopher", "http", "https") and not self.sync_only:
             print("Sorry, no support for {} links.".format(gi.scheme))
             return
 
@@ -2120,7 +2120,7 @@ Bookmarks are stored using the 'add' command."""
     def list_get_links(self,list):
         list_path = self.list_path(list)
         if list_path:
-            gi = GeminiItem("localhost:/" + list_path)
+            gi = GeminiItem("file://" + list_path)
             return gi.get_links()
         else:
             return []
@@ -2132,7 +2132,7 @@ Bookmarks are stored using the 'add' command."""
         elif not line.isnumeric():
             print("go_to_line requires a number as parameter")
         else:
-            gi = GeminiItem("localhost:/" + list_path,list)
+            gi = GeminiItem("file://" + list_path,list)
             gi = gi.get_link(int(line))
             display = not self.sync_only 
             self._go_to_gi(gi,handle=display)
@@ -2142,7 +2142,7 @@ Bookmarks are stored using the 'add' command."""
         if not list_path:
             print("List %s does not exist. Create it with ""list create %s"""%(list,list))
         else:
-            gi = GeminiItem("localhost:/" + list_path,list)
+            gi = GeminiItem("file://" + list_path,list)
             display = not self.sync_only 
             self._go_to_gi(gi,handle=display)
 
