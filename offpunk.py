@@ -778,7 +778,9 @@ class GeminiClient(cmd.Cmd):
             "gopher_proxy" : None,
             "tls_mode" : "tofu",
             "http_proxy": None,
-            "https_everywhere": True
+            "https_everywhere": True,
+            "archives_size" : 100,
+            "history_size" : 100
         }
 
         self.log = {
@@ -2064,6 +2066,18 @@ Bookmarks are stored using the 'add' command."""
         else:
             self.list_show("bookmarks")
     
+    def do_archive(self,args):
+        """Archive current page by removing it from every list and adding it to
+archives, which is a special historical list limited in size. It is similar to `move archives`."""
+        for li in self.list_lists():
+            if li not in ["archives", "history"]:
+                deleted = self.list_rm_url(self.gi.url,li)
+                if deleted:
+                    print("Removed from %s"%li)
+        self.list_add_top("archives",limit=self.options["archives_size"])
+        print("%s was added to your archives (size limited to %s last items)"\
+                            %(self.gi.url,self.options["archives_size"]))
+
     def list_add_line(self,list,gi=None,verbose=True):
         list_path = self.list_path(list)
         if not list_path:
@@ -2088,6 +2102,29 @@ Bookmarks are stored using the 'add' command."""
             if verbose:
                 print("%s added to %s" %(gi.url,list))
             return True
+    
+    def list_add_top(self,list,limit=0):
+        stri = self.gi.to_map_line().strip("\n")
+        if list == "archives":
+            stri += ", archived on "
+        elif list == "history":
+            stri += ", visited on "
+        else:
+            stri += ", added to %s on "%list
+        stri += time.ctime() + "\n"
+        list_path = self.get_list(list)
+        with open(list_path,"r") as l_file:
+            lines = l_file.readlines()
+            l_file.close()
+        with open(list_path,"w") as l_file:
+            l_file.write(stri)
+            counter = 0
+            for l in lines:
+                if limit == 0 or counter < limit:
+                    l_file.write(l)
+                    counter += 1
+            l_file.close()
+
 
     # remove an url from a list.
     # return True if the URL was removed
@@ -2180,21 +2217,20 @@ With a major twist: current page will be removed from all other lists.
 If current page was not in a list, this command is similar to `add LIST`."""
         if not arg:
             print("LIST argument is required as the target for your move")
+        elif arg[0] == "archives":
+            self.do_archive()
         else:
             args = arg.split()
             list_path = self.list_path(args[0])
             if not list_path:
                 print("%s is not a list, aborting the move" %args[0])
             else:
-                listdir = os.path.join(_DATA_DIR,"lists")
-                lists = os.listdir(listdir)
+                lists = self.list_lists()
                 for l in lists:
-                    # remove the .gmi at the end of the filename (4char)
-                    lname = l[:-4]
-                    if lname != args[0]:
-                        isremoved = self.list_rm_url(self.gi.url,lname)
+                    if l != args[0] and l not in ["archives", "history"]:
+                        isremoved = self.list_rm_url(self.gi.url,l)
                         if isremoved:
-                            print("Removed from %s"%lname)
+                            print("Removed from %s"%l)
                 self.list_add_line(args[0])
     
     def list_lists(self):
