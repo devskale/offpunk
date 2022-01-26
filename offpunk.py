@@ -743,7 +743,6 @@ class GeminiClient(cmd.Cmd):
         self.offline_prompt = "\x1b[38;5;76m" + "OFF" + "\x1b[38;5;255m" + "> " + "\x1b[0m"
         self.prompt = self.no_cert_prompt
         self.gi = None
-        self.history = []
         self.hist_index = 0
         self.idx_filename = ""
         self.index = []
@@ -1393,12 +1392,17 @@ you'll be able to transparently follow links to Gopherspace!""")
             print(self._format_geminiitem(n+offset+1, gi, url))
 
     def _update_history(self, gi):
-        # Don't duplicate
-        if self.history and self.history[self.hist_index] == gi:
+        histlist = self.get_list("history")
+        links = self.list_get_links("history")
+        # avoid duplicate
+        length = len(links)
+        if length > self.options["history_size"]:
+            length = self.options["history_size"]
+        if length > 0 and links[self.hist_index] == gi:
             return
-        self.history = self.history[0:self.hist_index+1]
-        self.history.append(gi)
-        self.hist_index = len(self.history) - 1
+        self.list_add_top("history",limit=self.options["history_size"],truncate_lines=self.hist_index)
+        self.hist_index = 0
+
 
     def _log_visit(self, gi, address, size):
         if not address:
@@ -1752,18 +1756,22 @@ Use with "raw" to copy the content as seen in your terminal (not gemtext)"""
 
     def do_back(self, *args):
         """Go back to the previous gemini item."""
-        if not self.history or self.hist_index == 0:
+        histfile = self.get_list("history")
+        links = self.list_get_links("history")
+        if self.hist_index >= len(links) -1:
             return
-        self.hist_index -= 1
-        gi = self.history[self.hist_index]
+        self.hist_index += 1
+        gi = links[self.hist_index]
         self._go_to_gi(gi, update_hist=False)
 
     def do_forward(self, *args):
         """Go forward to the next gemini item."""
-        if not self.history or self.hist_index == len(self.history) - 1:
+        histfile = self.get_list("history")
+        links = self.list_get_links("history")
+        if self.hist_index <= 0:
             return
-        self.hist_index += 1
-        gi = self.history[self.hist_index]
+        self.hist_index -= 1
+        gi = links[self.hist_index]
         self._go_to_gi(gi, update_hist=False)
 
     def do_next(self, *args):
@@ -1871,9 +1879,7 @@ Use 'ls -l' to see URLs."""
 
     def do_history(self, *args):
         """Display history."""
-        self.lookup = self.history
-        self._show_lookup(url=True)
-        self.page_index = 0
+        self.list_show("history")
 
     def do_find(self, searchterm):
         """Find in the list of links (case insensitive)."""
@@ -2103,7 +2109,7 @@ archives, which is a special historical list limited in size. It is similar to `
                 print("%s added to %s" %(gi.url,list))
             return True
     
-    def list_add_top(self,list,limit=0):
+    def list_add_top(self,list,limit=0,truncate_lines=0):
         stri = self.gi.to_map_line().strip("\n")
         if list == "archives":
             stri += ", archived on "
@@ -2119,8 +2125,11 @@ archives, which is a special historical list limited in size. It is similar to `
         with open(list_path,"w") as l_file:
             l_file.write(stri)
             counter = 0
+            to_truncate = truncate_lines
             for l in lines:
-                if limit == 0 or counter < limit:
+                if to_truncate > 0:
+                    to_truncate -= 1
+                elif limit == 0 or counter < limit:
                     l_file.write(l)
                     counter += 1
             l_file.close()
