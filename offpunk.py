@@ -395,9 +395,10 @@ class GeminiItem():
             self.scheme = parsed.scheme
         if self.scheme in ["file","mailto"]:
             self.local = True
-            self.host = None
-            h = self.url.split('/')
-            self.host = h[0:len(h)-1]
+            self.host = ""
+            #h = self.url.split('/')
+            #self.host = h[0:len(h)-1]
+            self.port = None
             self._cache_path = None
             # file:// is 7 char
             if self.url.startswith("file://"):
@@ -649,8 +650,8 @@ class GeminiItem():
 
     def up(self):
         pathbits = list(os.path.split(self.path.rstrip('/')))
-        # Don't try to go higher than root
-        if len(pathbits) == 1:
+        # Don't try to go higher than root or in config
+        if self.local or len(pathbits) == 1 :
             return self
         # Get rid of bottom component
         pathbits.pop()
@@ -666,9 +667,12 @@ class GeminiItem():
         A thin wrapper around urlunparse which avoids inserting standard ports
         into URLs just to keep things clean.
         """
-        return urllib.parse.urlunparse((self.scheme,
-            self.host if self.port == standard_ports[self.scheme] else self.host + ":" + str(self.port),
-            path or self.path, "", query, ""))
+        print("Derive : ",self.host)
+        if not self.port or self.port == standard_ports[self.scheme] :
+            host = self.host
+        else:
+            host = self.host + ":" + str(self.port)
+        return urllib.parse.urlunparse((self.scheme,host,path or self.path, "", query, ""))
 
     def absolutise_url(self, relative_url):
         """
@@ -2110,7 +2114,9 @@ archives, which is a special historical list limited in size. It is similar to `
             return True
     
     def list_add_top(self,list,limit=0,truncate_lines=0):
-        stri = self.gi.to_map_line().strip("\n")
+        if not self.gi:
+            return
+        stri = "=> %s %s"%(self.gi.url,self.gi.url)
         if list == "archives":
             stri += ", archived on "
         elif list == "history":
