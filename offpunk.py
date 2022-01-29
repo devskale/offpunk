@@ -187,187 +187,218 @@ standard_ports = {
 # First, we define the gemtext and html renderers, outside of the rest
 # (They could later be factorized in other files or replaced)
 
-# Gemtext Rendering Engine
-# this method takes the original gemtext and returns
-# [rendered_text,links_table]
-def render_gemtext(gemtext, width=80):
-    links = []
-    preformatted = False
-    rendered_text = ""
-    #This local method takes a line and apply the ansi code given as "color"
-    #The whole line is then wrapped and ansi code are ended.
-    def wrap_line(line,color=None,i_indent="",s_indent=""):
-        wrapped = textwrap.wrap(line,width,initial_indent=i_indent,\
-                                subsequent_indent=s_indent)
-        final = ""
-        for l in wrapped:
-            if color:
-                l = color + l + "\x1b[0m"
-            if l.strip() != "":
-                final += l + "\n"
-        return final
-    def format_link(url,index,name=None):
-        if "://" in url:
-            protocol,adress = url.split("://",maxsplit=1)
-            protocol = " %s" %protocol
-        else:
-            adress = url
-            protocol = ""
-        if "gemini" in protocol:
-            protocol = ""
-        if not name:
-            name = adress
-        line = "[%d%s] %s" % (index, protocol, name)
-        return line
-    for line in gemtext.splitlines():
-        if line.startswith("```"):
-            preformatted = not preformatted
-        elif preformatted:
-            rendered_text += line + "\n"
-        elif line.startswith("=>"):
-            strippedline = line[2:].strip()
-            if strippedline:
-                links.append(strippedline)        
-                splitted = strippedline.split(maxsplit=1)
-                url = splitted[0]
-                name = None
-                if len(splitted) > 1:
-                    name = splitted[1]
-                link = format_link(url,len(links),name=name)
-                startpos = link.find("] ") + 2
-                wrapped = wrap_line(link,s_indent=startpos*" ")
-                rendered_text += wrapped
-        elif line.startswith("* "):
-            line = line[1:].lstrip("\t ")
-            rendered_text += textwrap.fill(line, width, initial_indent = "• ", 
-                                            subsequent_indent="  ") + "\n"
-        elif line.startswith(">"):
-            line = line[1:].lstrip("\t ")
-            rendered_text += textwrap.fill(line,width, initial_indent = "> ", 
-                                            subsequent_indent="> ") + "\n"
-        elif line.startswith("###"):
-            line = line[3:].lstrip("\t ")
-            rendered_text += wrap_line(line, color="\x1b[34m\x1b[2m")
-        elif line.startswith("##"):
-            line = line[2:].lstrip("\t ")
-            rendered_text += wrap_line(line, color="\x1b[34m")
-        elif line.startswith("#"):
-            line = line[1:].lstrip("\t ")
-            rendered_text += wrap_line(line,color="\x1b[1;34m\x1b[4m")
-        else:
-            rendered_text += wrap_line(line).rstrip() + "\n"
-    return rendered_text, links
+    # Gemtext Rendering Engine
+    # this method takes the original gemtext and returns
+    # [rendered_text,links_table]
+class GemtextRenderer():
+    def __init__(self,content):
+        self.body = content
+        self.rendered_text = None
+        self.links = None
 
-# Our own HTML engine (crazy, isn’t it?)
-# Return [rendered_body, list_of_links]
-def render_html(body,width=80):
-    if not _DO_HTML:
-        print("HTML document detected. Please install python-bs4 and python-readability.")
-        return
-    # This method recursively parse the HTML
-    r_body = ""
-    links = []
-    def recursive_render(element,indent=""):
+    def get_body(self):
+        if self.rendered_text == None :
+            self.rendered_text, self.links = self.render_gemtext(self.body)
+        return self.rendered_text
+
+    def get_links(self):
+        if self.links == None :
+            self.rendered_text, self.links = self.render_gemtext(self.body)
+        return self.links
+
+    def render_gemtext(self,gemtext, width=80):
+        links = []
+        preformatted = False
+        rendered_text = ""
+        #This local method takes a line and apply the ansi code given as "color"
+        #The whole line is then wrapped and ansi code are ended.
+        def wrap_line(line,color=None,i_indent="",s_indent=""):
+            wrapped = textwrap.wrap(line,width,initial_indent=i_indent,\
+                                    subsequent_indent=s_indent)
+            final = ""
+            for l in wrapped:
+                if color:
+                    l = color + l + "\x1b[0m"
+                if l.strip() != "":
+                    final += l + "\n"
+            return final
+        def format_link(url,index,name=None):
+            if "://" in url:
+                protocol,adress = url.split("://",maxsplit=1)
+                protocol = " %s" %protocol
+            else:
+                adress = url
+                protocol = ""
+            if "gemini" in protocol:
+                protocol = ""
+            if not name:
+                name = adress
+            line = "[%d%s] %s" % (index, protocol, name)
+            return line
+        for line in gemtext.splitlines():
+            if line.startswith("```"):
+                preformatted = not preformatted
+            elif preformatted:
+                rendered_text += line + "\n"
+            elif line.startswith("=>"):
+                strippedline = line[2:].strip()
+                if strippedline:
+                    links.append(strippedline)        
+                    splitted = strippedline.split(maxsplit=1)
+                    url = splitted[0]
+                    name = None
+                    if len(splitted) > 1:
+                        name = splitted[1]
+                    link = format_link(url,len(links),name=name)
+                    startpos = link.find("] ") + 2
+                    wrapped = wrap_line(link,s_indent=startpos*" ")
+                    rendered_text += wrapped
+            elif line.startswith("* "):
+                line = line[1:].lstrip("\t ")
+                rendered_text += textwrap.fill(line, width, initial_indent = "• ", 
+                                                subsequent_indent="  ") + "\n"
+            elif line.startswith(">"):
+                line = line[1:].lstrip("\t ")
+                rendered_text += textwrap.fill(line,width, initial_indent = "> ", 
+                                                subsequent_indent="> ") + "\n"
+            elif line.startswith("###"):
+                line = line[3:].lstrip("\t ")
+                rendered_text += wrap_line(line, color="\x1b[34m\x1b[2m")
+            elif line.startswith("##"):
+                line = line[2:].lstrip("\t ")
+                rendered_text += wrap_line(line, color="\x1b[34m")
+            elif line.startswith("#"):
+                line = line[1:].lstrip("\t ")
+                rendered_text += wrap_line(line,color="\x1b[1;34m\x1b[4m")
+            else:
+                rendered_text += wrap_line(line).rstrip() + "\n"
+        return rendered_text, links
+
+class HtmlRenderer():
+    def __init__(self,content):
+        self.body = content
+        self.rendered_text = None
+        self.links = None
+
+    def get_body(self):
+        if self.rendered_text == None :
+            self.rendered_text, self.links = self.render_html(self.body)
+        return self.rendered_text
+
+    def get_links(self):
+        if self.links == None :
+            self.rendered_text, self.links = self.render_html(self.body)
+        return self.links
+    # Our own HTML engine (crazy, isn’t it?)
+    # Return [rendered_body, list_of_links]
+    def render_html(self,body,width=80):
+        if not _DO_HTML:
+            print("HTML document detected. Please install python-bs4 and python-readability.")
+            return
+        # This method recursively parse the HTML
+        r_body = ""
+        links = []
+        def recursive_render(element,indent=""):
+            rendered_body = ""
+            #print("rendering %s - %s with indent %s" %(element.name,element.string,indent))
+            if element.name == "blockquote":
+                for child in element.children:
+                    rendered_body +=  recursive_render(child,indent="\t").rstrip("\t")
+            elif element.name == "div":
+                rendered_body += "\n"
+                for child in element.children:
+                    rendered_body += recursive_render(child,indent=indent)
+            elif element.name in ["h1","h2","h3","h4","h5","h6"]:
+                line = element.get_text()
+                if element.name in ["h1","h2"]:
+                    rendered_body += "\n"+"\x1b[1;34m\x1b[4m" + line + "\x1b[0m"+"\n"
+                elif element.name in ["h3","h4"]:
+                    rendered_body += "\n" + "\x1b[34m" + line + "\x1b[0m" + "\n"
+                else:
+                    rendered_body += "\n" + "\x1b[34m\x1b[2m" + line + "\x1b[0m" + "\n"
+            elif element.name == "pre":
+                rendered_body += "\n"
+                for child in element.children:
+                   rendered_body += recursive_render(child,indent=indent)
+                rendered_body += "\n\n"
+            elif element.name == "li":
+                line = ""
+                for child in element.children:
+                    line += recursive_render(child,indent=indent).strip("\n")
+                    #print("in li: ***%s***"%line)
+                rendered_body += " * " + line.strip() + "\n"
+            elif element.name in ["code","em","b","i"]:
+                # we don’t do anything with those markup right now. Maybe later?
+                for child in element.children:
+                    rendered_body += recursive_render(child,indent=indent).strip("\n")
+            elif element.name == "p":
+                temp_str = ""
+                for child in element.children:
+                    temp_str += recursive_render(child,indent=indent)
+                rendered_body = temp_str + "\n\n"
+            elif element.name == "a":
+                text = element.get_text().strip()
+                link = element.get('href')
+                if link:
+                    links.append(link+" "+text)
+                    link_id = " [%s] "%(len(links))
+                    rendered_body = "\x1b[34m\x1b[2m " + text + link_id + "\x1b[0m"
+                else:
+                    #No real link found
+                    rendered_body = text
+            elif element.name == "br":
+                rendered_body = "\n"
+            elif element.string:
+                #print("tag without children:",element.name)
+                #print("string : **%s** "%element.string.strip())
+                #print("########")
+                rendered_body = element.string.strip("\n").strip("\t")
+            else:
+                #print("tag children:",element.name)
+                for child in element.children:
+                    rendered_body += recursive_render(child,indent=indent)
+            #print("body for element %s: %s"%(element.name,rendered_body))
+            return indent + rendered_body
+        # the real render_html hearth
+        readable = Document(body)
+        title = readable.short_title()
+        summary = readable.summary()
+        r_body += "\x1b[1;34m\x1b[4m" + title + "\x1b[0m""\n"
+        soup = BeautifulSoup(summary, 'html.parser')
         rendered_body = ""
-        #print("rendering %s - %s with indent %s" %(element.name,element.string,indent))
-        if element.name == "blockquote":
-            for child in element.children:
-                rendered_body +=  recursive_render(child,indent="\t").rstrip("\t")
-        elif element.name == "div":
-            rendered_body += "\n"
-            for child in element.children:
-                rendered_body += recursive_render(child,indent=indent)
-        elif element.name in ["h1","h2","h3","h4","h5","h6"]:
-            line = element.get_text()
-            if element.name in ["h1","h2"]:
-                rendered_body += "\n"+"\x1b[1;34m\x1b[4m" + line + "\x1b[0m"+"\n"
-            elif element.name in ["h3","h4"]:
-                rendered_body += "\n" + "\x1b[34m" + line + "\x1b[0m" + "\n"
-            else:
-                rendered_body += "\n" + "\x1b[34m\x1b[2m" + line + "\x1b[0m" + "\n"
-        elif element.name == "pre":
-            rendered_body += "\n"
-            for child in element.children:
-               rendered_body += recursive_render(child,indent=indent)
-            rendered_body += "\n\n"
-        elif element.name == "li":
-            line = ""
-            for child in element.children:
-                line += recursive_render(child,indent=indent).strip("\n")
-                #print("in li: ***%s***"%line)
-            rendered_body += " * " + line.strip() + "\n"
-        elif element.name in ["code","em","b","i"]:
-            # we don’t do anything with those markup right now. Maybe later?
-            for child in element.children:
-                rendered_body += recursive_render(child,indent=indent).strip("\n")
-        elif element.name == "p":
-            temp_str = ""
-            for child in element.children:
-                temp_str += recursive_render(child,indent=indent)
-            rendered_body = temp_str + "\n\n"
-        elif element.name == "a":
-            text = element.get_text().strip()
-            link = element.get('href')
-            if link:
-                links.append(link+" "+text)
-                link_id = " [%s] "%(len(links))
-                rendered_body = "\x1b[34m\x1b[2m " + text + link_id + "\x1b[0m"
-            else:
-                #No real link found
-                rendered_body = text
-        elif element.name == "br":
-            rendered_body = "\n"
-        elif element.string:
-            #print("tag without children:",element.name)
-            #print("string : **%s** "%element.string.strip())
-            #print("########")
-            rendered_body = element.string.strip("\n").strip("\t")
-        else:
-            #print("tag children:",element.name)
-            for child in element.children:
-                rendered_body += recursive_render(child,indent=indent)
-        #print("body for element %s: %s"%(element.name,rendered_body))
-        return indent + rendered_body
-    # the real render_html hearth
-    readable = Document(body)
-    title = readable.short_title()
-    summary = readable.summary()
-    r_body += "\x1b[1;34m\x1b[4m" + title + "\x1b[0m""\n"
-    soup = BeautifulSoup(summary, 'html.parser')
-    rendered_body = ""
-    if soup and soup.body :
-        for el in soup.body.contents:
-            rendered_body += recursive_render(el)
-        paragraphs = rendered_body.split("\n\n")
-        for par in paragraphs:
-            lines = par.splitlines()
-            for line in lines:
-                if line.startswith("\t"):
-                    i_indent = "   "
-                    s_indent = i_indent
-                    line = line.strip("\t")
-                elif line.startswith(" * "):
-                    i_indent = ""  # we keep the initial bullet)
-                    s_indent = "   "
-                else:
-                    i_indent = ""
-                    s_indent = i_indent
-                if line.strip() != "":
-                    wrapped = textwrap.fill(line,width,initial_indent=i_indent,
-                                            subsequent_indent=s_indent)
-                    wrapped += "\n"
-                else:
-                    wrapped = ""
-                r_body += wrapped
-            r_body += "\n"
-    return r_body,links
+        if soup and soup.body :
+            for el in soup.body.contents:
+                rendered_body += recursive_render(el)
+            paragraphs = rendered_body.split("\n\n")
+            for par in paragraphs:
+                lines = par.splitlines()
+                for line in lines:
+                    if line.startswith("\t"):
+                        i_indent = "   "
+                        s_indent = i_indent
+                        line = line.strip("\t")
+                    elif line.startswith(" * "):
+                        i_indent = ""  # we keep the initial bullet)
+                        s_indent = "   "
+                    else:
+                        i_indent = ""
+                        s_indent = i_indent
+                    if line.strip() != "":
+                        wrapped = textwrap.fill(line,width,initial_indent=i_indent,
+                                                subsequent_indent=s_indent)
+                        wrapped += "\n"
+                    else:
+                        wrapped = ""
+                    r_body += wrapped
+                r_body += "\n"
+        return r_body,links
 
 # Mapping mimetypes with renderers
 # (any content with a mimetype text/* not listed here will be rendered with render_gemtext)
 _FORMAT_RENDERERS = {
-    "text/gemini":  render_gemtext,
-    "text/html" :   render_html,
-    "text/xml" : render_html
+    "text/gemini":  GemtextRenderer,
+    "text/html" :   HtmlRenderer,
+    "text/xml" : HtmlRenderer
 }
 # Offpunk is organized as follow:
 # - a GeminiClient instance which handles the browsing of GeminiItems (= pages).
@@ -560,12 +591,12 @@ class GeminiItem():
         if not self.renderer:
             mime = self.get_mime()
             if mime in _FORMAT_RENDERERS:
-                self.renderer = _FORMAT_RENDERERS[mime]
+                func = _FORMAT_RENDERERS[mime]
+                self.renderer = func(self.get_body())
         if self.renderer:
-            body = self.get_body()
-            r_body, links = self.renderer(body)
-            self.__make_links(links)
-            to_return = self._make_terminal_title() + r_body
+            body = self.renderer.get_body()
+            self.__make_links(self.renderer.get_links())
+            to_return = self._make_terminal_title() + body
             return to_return
         else:
             return None
