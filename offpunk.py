@@ -156,6 +156,8 @@ urllib.parse.uses_relative.append("gemini")
 urllib.parse.uses_netloc.append("gemini")
 
 def fix_ipv6_url(url):
+    if not url:
+        return
     if not url.count(":") > 2: # Best way to detect them?
         return url
     # If there's a pair of []s in there, it's probably fine as is.
@@ -729,10 +731,13 @@ def looks_like_url(word):
         parsed = urllib.parse.urlparse(url)
         #sometimes, urllib crashed only when requesting the port
         port = parsed.port
+        mailto = word.startswith("mailto:")
         start = word.startswith("gemini://") or word.startswith("http://")\
                 or word.startswith("https://")
-        if not start:
+        if not start and not mailto:
             return looks_like_url("gemini://"+word)
+        elif mailto:
+            return "@" in word
         else:
             return "." in word
     except ValueError:
