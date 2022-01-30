@@ -197,6 +197,7 @@ class GemtextRenderer():
         self.body = content
         self.rendered_text = None
         self.links = None
+        self.title = None
 
     def get_body(self):
         if self.rendered_text == None :
@@ -207,6 +208,27 @@ class GemtextRenderer():
         if self.links == None :
             self.rendered_text, self.links = self.render_gemtext(self.body)
         return self.links
+
+    def get_title(self):
+        if self.title:
+            return self.title
+        else:
+            lines = self.body.splitlines()
+            for line in lines:
+                if line.startswith("#"):
+                    self.title = line.strip("#").strip()
+                    return self.title
+            if len(lines) > 0:
+                # If not title found, we take the first 80 char 
+                # of the first line
+                title_line = lines[0].strip()
+                if len(title_line) > 80:
+                    title_line = title_line[:79] + "…"
+                self.title = title_line
+                return self.title
+            else:
+                self.title = "Empty Page"
+                return self.title
 
     def render_gemtext(self,gemtext, width=80):
         links = []
@@ -271,6 +293,8 @@ class GemtextRenderer():
                 rendered_text += wrap_line(line, color="\x1b[34m")
             elif line.startswith("#"):
                 line = line[1:].lstrip("\t ")
+                if not self.title:
+                    self.title = line
                 rendered_text += wrap_line(line,color="\x1b[1;34m\x1b[4m")
             else:
                 rendered_text += wrap_line(line).rstrip() + "\n"
@@ -281,6 +305,7 @@ class HtmlRenderer():
         self.body = content
         self.rendered_text = None
         self.links = None
+        self.title = None
 
     def get_body(self):
         if self.rendered_text == None :
@@ -291,6 +316,15 @@ class HtmlRenderer():
         if self.links == None :
             self.rendered_text, self.links = self.render_html(self.body)
         return self.links
+
+    def get_title(self):
+        if self.title:
+            return self.title
+        else:
+            readable = Document(self.body)
+            self.title = readable.short_title()
+            return self.title
+
     # Our own HTML engine (crazy, isn’t it?)
     # Return [rendered_body, list_of_links]
     def render_html(self,body,width=80):
@@ -363,9 +397,8 @@ class HtmlRenderer():
             return indent + rendered_body
         # the real render_html hearth
         readable = Document(body)
-        title = readable.short_title()
         summary = readable.summary()
-        r_body += "\x1b[1;34m\x1b[4m" + title + "\x1b[0m""\n"
+        #r_body += "\x1b[1;34m\x1b[4m" + self.get_title() + "\x1b[0m""\n"
         soup = BeautifulSoup(summary, 'html.parser')
         rendered_body = ""
         if soup and soup.body :
@@ -393,6 +426,13 @@ class HtmlRenderer():
                         wrapped = ""
                     r_body += wrapped
                 r_body += "\n"
+        #check if we need to add the title or if already in content
+        lines = r_body.splitlines()
+        first_line = ""
+        while first_line == "" and len(lines) > 0:
+            first_line = lines.pop(0)
+        if self.get_title() not in first_line:
+            r_body = "\x1b[1;34m\x1b[4m" + self.get_title() + "\x1b[0m""\n" + r_body
         return r_body,links
 
 # Mapping mimetypes with renderers
@@ -467,7 +507,7 @@ class GeminiItem():
                 self._cache_path += index
             self.port = parsed.port or standard_ports.get(self.scheme, 0)
             
-    def get_title(self):
+    def get_capsule_title(self):
             #small intelligence to try to find a good name for a capsule
             #we try to find eithe ~username or /users/username
             #else we fallback to hostname
@@ -574,7 +614,7 @@ class GeminiItem():
 
     # Red title above rendered content
     def _make_terminal_title(self):
-        title = self.get_title()
+        title = self.get_capsule_title()
         #FIXME : how do I know that I’m offline_only ?
         if self.is_cache_valid(): #and self.offline_only and not self.local:
             last_modification = self.cache_last_modified()
@@ -716,11 +756,15 @@ class GeminiItem():
         return abs_url
 
     def to_map_line(self, name=None):
-        #SPECIFIC GEMINI
-        if name or self.name:
-            return "=> {} {}\n".format(self.url, name or self.name)
+        if name:
+            title = name
+        elif self.renderer:
+            title = self.renderer.get_title()
         else:
-            return "=> {}\n".format(self.url)
+            # we take the last component of url as title
+            title = self.url.split("/")[-1]
+        title += " (%s)"%self.get_capsule_title()
+        return "=> {} {}\n".format(self.url, title)
 
 CRLF = '\r\n'
 
@@ -1432,6 +1476,9 @@ you'll be able to transparently follow links to Gopherspace!""")
             print(self._format_geminiitem(n+offset+1, gi, url))
 
     def _update_history(self, gi):
+        # We don’t add lists to history
+        if os.path.join(_DATA_DIR,"lists") in gi.url:
+            return
         histlist = self.get_list("history")
         links = self.list_get_links("history")
         # avoid duplicate
@@ -2152,7 +2199,7 @@ archives, which is a special historical list limited in size. It is similar to `
     def list_add_top(self,list,limit=0,truncate_lines=0):
         if not self.gi:
             return
-        stri = "=> %s %s"%(self.gi.url,self.gi.url)
+        stri = self.gi.to_map_line().strip("\n")
         if list == "archives":
             stri += ", archived on "
         elif list == "history":
