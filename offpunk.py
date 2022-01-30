@@ -2351,7 +2351,8 @@ If current page was not in a list, this command is similar to `add LIST`."""
 - list delete $LIST : delete a list permanently (a confirmation is required)
 See also :
 - add $LIST (to add current page to list)
-- move $LIST (to add current page to list while removing from all others)"""
+- move $LIST (to add current page to list while removing from all others)
+- archive (to remove current page from all lists while adding to archives)"""
         listdir = os.path.join(_DATA_DIR,"lists")
         os.makedirs(listdir,exist_ok=True)
         if not arg:

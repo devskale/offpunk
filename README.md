@@ -2,7 +2,7 @@
 
 A command-line, text-based and offline-first Gemini and Web browser by [Ploum](https://ploum.net).
 
-Focused on Gemini first but with text-mode support for HTTP/HTML (gopher is planned), the goal of Offpunk is to be able to synchronise your content once (a day, a week, a month) and then browse/organise it while staying disconnected.
+Focused on Gemini but with support for HTTP/HTML articles, the goal of Offpunk is to be able to synchronise your content once (a day, a week, a month) and then browse/organise it while staying disconnected.
 
 Offpunk is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98) by Solderpunk and was originally called AV-98-offline as an experimental branch.
 
@@ -38,15 +38,18 @@ To have offpunk fetch the URL at next sync and close immediately, run:
 
 `offpunk --fetch-later URL`
 
-## TODO
+## Roadmap to 1.0 (and beyond)
 
 Known issues in the code:
 * NOT_FIXABLE : consider root file is always index.gmi or index.html
 
-* TODO1: Update blackbox to reflect cache hits.
-* TODO2: Implement retrieving PDF version of pages
-* TODO3: Transparent privacy redirects (twitter->nitter, etc)
-* TODO4: Rendering themes to allow customizing of colors ? (if any interest in the feature)
+* TODO1: Easy - Update blackbox to reflect cache hits.
+* TODO2: Medium - "pdf" - Implement retrieving PDF version of pages
+* TODO3: Easy - Transparent privacy redirects (twitter->nitter, etc)
+* TODO4: Easy - Rendering themes to allow customizing of colors ? (if any interest in the feature)
+* TODO5: Medium - Support for Gopher
+* TODO6: Hard - "search" - Offline search engine to search in the cache (hard, no idea on how to do that)
+* TODO7: Easy - "share" - send a page by email
 
 ## More
 
@@ -78,10 +81,11 @@ To avoid using unstable or too recent libraries, the rule of thumb is that a lib
 
 ## Features
 
+* Built-in documentation: type `help` to get the list of command or a specific help about a command.
 * Offline mode to browse cached content without a connection. Requested elements are automatically fetched during the next synchronization and are added to your tour.
 * HTML pages are prettified to focus on content. Read without being disturbed.
 * Support "subscriptions" to a page. New content seen in subscribed pages are automatically added to your next tour.
-* Complex bookmarks management through multiple lists and built-in edition.
+* Complex bookmarks management through multiple lists, built-in edition and archiving.
 * Advanced navigation tools like `tour` and `mark` (as per VF-1). Unlike AV-98, tour is saved on disk accross sessions. 
 * Ability to specify external handler programs for different MIME types (use `handler`)
 * Gopher proxy support (e.g. for use with
