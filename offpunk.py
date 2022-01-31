@@ -1025,7 +1025,7 @@ you'll be able to transparently follow links to Gopherspace!""")
 
         # Update state
         self.gi = gi
-        if update_hist:
+        if update_hist and not self.sync_only:
             self._update_history(gi)
 
 
@@ -1477,6 +1477,9 @@ you'll be able to transparently follow links to Gopherspace!""")
             print(self._format_geminiitem(n+offset+1, gi, url))
 
     def _update_history(self, gi):
+        # We never update while in sync_only
+        if self.sync_only:
+            return
         # We don’t add lists to history
         if not gi or os.path.join(_DATA_DIR,"lists") in gi.url:
             return
