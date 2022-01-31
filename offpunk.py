@@ -740,7 +740,6 @@ class GeminiItem():
         A thin wrapper around urlunparse which avoids inserting standard ports
         into URLs just to keep things clean.
         """
-        print("Derive : ",self.host)
         if not self.port or self.port == standard_ports[self.scheme] :
             host = self.host
         else:
