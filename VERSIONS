@@ -1,0 +1,25 @@
+# Offpunk History
+
+## 0.2 - Jan 31st 2022
+- config directories have been moved to follow the XDG specifications
+- support for http, https and mailto links (https_everywhere is enabled by default, see "set" command)
+- support for HTML pages, rendered as articles
+- Mutiple bookmarks lists and management of them through commands list, add, archive, move
+- Subscriptions have been moved to a separate list with the subscribe command
+- History is persistent and saved to disk
+- Copy command allows to copy content or url into buffer
+- Search as been renamed find, in the hope of implementing a real search in the future
+- --fetch-later allows to mark a content to be fetched from other software.
+- --assume-yes allows to choose the default answer to certificates warnings during --sync.
+=> gemini://rawtext.club/~ploum/2022-01-31-offpunk02.gmi Announcing Offpunk 0.2
+
+## 0.1 - Jan 3rd 2022
+- initial release as an independant software from AV-98
+- Including contributions published by Bjorn on Notabug.
+- less used by default for all content with custom options
+- online/offline mode
+- content is cached for offline use
+- bookmarks are cached and subscribed through the --sync option
+- tour is persistent and saved to disk
+- reload while offline mark the content to be fetched during next --sync
+=> gemini://rawtext.club/~ploum/2022-01-03-offpunk.gmi Announce of Offpunk 0.1

@@ -80,7 +80,7 @@ try:
     _DO_HTML = True
 except ModuleNotFoundError:
     _DO_HTML = False
-_VERSION = "0.1~dev"
+_VERSION = "0.2"
 
 ## Config directories
 try:
