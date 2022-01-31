@@ -80,7 +80,7 @@ try:
     _DO_HTML = True
 except ModuleNotFoundError:
     _DO_HTML = False
-_VERSION = "0.1~dev"
+_VERSION = "0.2"
 
 ## Config directories
 try:
@@ -770,7 +770,9 @@ CRLF = '\r\n'
 
 # Cheap and cheerful URL detector
 def looks_like_url(word):
-    try: 
+    try:
+        if not word.strip():
+            return False
         url = fix_ipv6_url(word).strip()
         parsed = urllib.parse.urlparse(url)
         #sometimes, urllib crashed only when requesting the port

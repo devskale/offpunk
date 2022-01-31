@@ -43,6 +43,7 @@ To have offpunk fetch the URL at next sync and close immediately, run:
 Known issues in the code:
 * NOT_FIXABLE : consider root file is always index.gmi or index.html
 
+* TODO0: Hard - Make a manual within the git repository and have it automatically deployed as a website.
 * TODO1: Easy - Update blackbox to reflect cache hits.
 * TODO2: Medium - "pdf" - Implement retrieving PDF version of pages
 * TODO3: Easy - Transparent privacy redirects (twitter->nitter, etc)
