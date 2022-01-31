@@ -1477,7 +1477,7 @@ you'll be able to transparently follow links to Gopherspace!""")
 
     def _update_history(self, gi):
         # We don’t add lists to history
-        if os.path.join(_DATA_DIR,"lists") in gi.url:
+        if not gi or os.path.join(_DATA_DIR,"lists") in gi.url:
             return
         histlist = self.get_list("history")
         links = self.list_get_links("history")
