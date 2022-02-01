@@ -83,11 +83,12 @@ except ModuleNotFoundError:
 _VERSION = "0.2"
 
 ## Config directories
+# There are two conflicting xdg modules, we try to work with both
 try:
-    import xdg
-    _CACHE_PATH = os.path.join(xdg.xdg_cache_home().resolve(), "offpunk/")
-    _CONFIG_DIR = os.path.join(xdg.xdg_config_home().resolve(), "offpunk/")
-    _DATA_DIR = os.path.join(xdg.xdg_data_home().resolve(), "offpunk/")
+    from xdg import BaseDirectory
+    _CACHE_PATH = BaseDirectory.save_cache_path("offpunk/")
+    _CONFIG_DIR = BaseDirectory.save_config_path("offpunk/")
+    _DATA_DIR = BaseDirectory.save_data_path("offpunk/")
 except ModuleNotFoundError:
     _CACHE_PATH = os.path.expanduser("~/.cache/offpunk/")
     _CONFIG_DIR = None
