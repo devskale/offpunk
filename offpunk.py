@@ -399,6 +399,7 @@ class HtmlRenderer():
         # the real render_html hearth
         readable = Document(body)
         summary = readable.summary()
+        #summary = body
         #r_body += "\x1b[1;34m\x1b[4m" + self.get_title() + "\x1b[0m""\n"
         soup = BeautifulSoup(summary, 'html.parser')
         rendered_body = ""
@@ -1031,7 +1032,9 @@ you'll be able to transparently follow links to Gopherspace!""")
 
 
     def _fetch_http(self,gi):
-        response = requests.get(gi.url)
+        header = {}
+        header["User-Agent"] = "Offpunk browser v%s"%_VERSION
+        response = requests.get(gi.url,headers=header)
         mime = response.headers['content-type']
         body = response.content
         if "text/" in mime:
