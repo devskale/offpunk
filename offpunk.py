@@ -643,6 +643,7 @@ class GeminiItem():
             to_return = self._make_terminal_title() + body
             return to_return
         else:
+            self.links = []
             return None
         
 
@@ -2618,15 +2619,16 @@ def main():
                     #we add to the next tour only if we managed to cache 
                     #the ressource
                     add_to_tour(gitem)
-                if depth > 0:
-                    d = depth - 1
-                    temp_lookup = set(gc.lookup)
-                    subcount = [0,len(temp_lookup)]
-                    for k in temp_lookup:
-                        #recursive call
-                        substri = strin + " -->"
-                        subcount[0] += 1
-                        fetch_gitem(k,depth=d,validity=0,savetotour=savetotour,\
+            #Now, recursive call, even if we didn’t refresh the cache
+            if depth > 0:
+                d = depth - 1
+                links = gitem.get_links()
+                subcount = [0,len(links)]
+                for k in links:
+                    #recursive call (validity is always 0 in recursion)
+                    substri = strin + " -->"
+                    subcount[0] += 1
+                    fetch_gitem(k,depth=d,validity=0,savetotour=savetotour,\
                                         count=subcount,strin=substri)
         
         def fetch_list(list,validity=0,tourandremove=False,tourchildren=False):
