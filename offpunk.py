@@ -673,6 +673,8 @@ class GeminiItem():
         # URL/subfolder/file.gmi.
         # This causes loss of data in the cache
         # proper solution would be to save "sufolder" as "sufolder/index.gmi"
+        # If the subdirectory doesn’t exist, we recursively try to find one
+        # until it exists to avoid a file blocking the creation of folders
         root_dir = cache_dir
         while not os.path.exists(root_dir):
             root_dir = os.path.dirname(root_dir)
