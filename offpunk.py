@@ -673,8 +673,11 @@ class GeminiItem():
         # URL/subfolder/file.gmi.
         # This causes loss of data in the cache
         # proper solution would be to save "sufolder" as "sufolder/index.gmi"
-        if os.path.isfile(cache_dir):
-            os.remove(cache_dir)
+        root_dir = cache_dir
+        while not os.path.exists(root_dir):
+            root_dir = os.path.dirname(root_dir)
+        if os.path.isfile(root_dir):
+            os.remove(root_dir)
         os.makedirs(cache_dir,exist_ok=True)
         with open(self._cache_path, mode=mode) as f:
             f.write(body)
@@ -709,6 +712,7 @@ class GeminiItem():
             os.utime(self._cache_path)
         else:
             cache_dir = os.path.dirname(self._cache_path)
+            os.makedirs(cache_dir,exist_ok=True)
             if os.path.isdir(cache_dir):
                 with open(self._cache_path, "w") as cache:
                     cache.write(str(datetime.datetime.now())+"\n")
@@ -865,7 +869,7 @@ class GeminiClient(cmd.Cmd):
             "gopher_proxy" : None,
             "tls_mode" : "tofu",
             "http_proxy": None,
-            "https_everywhere": True,
+            "https_everywhere": False,
             "archives_size" : 100,
             "history_size" : 100
         }
@@ -914,6 +918,9 @@ class GeminiClient(cmd.Cmd):
 However, you can use `set gopher_proxy hostname:port` to tell it about a
 Gopher-to-Gemini proxy (such as a running Agena instance), in which case
 you'll be able to transparently follow links to Gopherspace!""")
+            self.gi = gi
+            if update_hist and not self.sync_only:
+                self._update_history(gi)
             return
         elif gi.scheme == "mailto":
             if handle and not self.sync_only:
@@ -2614,7 +2621,7 @@ def main():
                 #Did we already had a cache (even an old one) ?
                 isnew = not gitem.is_cache_valid()
                 print("%s [%s/%s] Fetch "%(strin,count[0],count[1]),gitem.url,end=endline)
-                gc.onecmd("go %s" %gitem.url)
+                gc._go_to_gi(gitem,update_hist=False)
                 if savetotour and isnew and gitem.is_cache_valid():
                     #we add to the next tour only if we managed to cache 
                     #the ressource
