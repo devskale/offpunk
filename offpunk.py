@@ -200,7 +200,7 @@ class GemtextRenderer():
         self.links = None
         self.title = None
 
-    def get_body(self):
+    def get_body(self,readable=True):
         if self.rendered_text == None :
             self.rendered_text, self.links = self.render_gemtext(self.body)
         return self.rendered_text
@@ -308,9 +308,9 @@ class HtmlRenderer():
         self.links = None
         self.title = None
 
-    def get_body(self):
-        if self.rendered_text == None :
-            self.rendered_text, self.links = self.render_html(self.body)
+    def get_body(self,readable=True):
+        if self.rendered_text == None or not readable:
+            self.rendered_text, self.links = self.render_html(self.body,readable=readable)
         return self.rendered_text
 
     def get_links(self):
@@ -328,7 +328,7 @@ class HtmlRenderer():
 
     # Our own HTML engine (crazy, isn’t it?)
     # Return [rendered_body, list_of_links]
-    def render_html(self,body,width=80):
+    def render_html(self,body,readable=True,width=80):
         if not _DO_HTML:
             print("HTML document detected. Please install python-bs4 and python-readability.")
             return
@@ -397,9 +397,11 @@ class HtmlRenderer():
             #print("body for element %s: %s"%(element.name,rendered_body))
             return indent + rendered_body
         # the real render_html hearth
-        readable = Document(body)
-        summary = readable.summary()
-        #summary = body
+        if readable:
+            readable = Document(body)
+            summary = readable.summary()
+        else:
+            summary = body
         #r_body += "\x1b[1;34m\x1b[4m" + self.get_title() + "\x1b[0m""\n"
         soup = BeautifulSoup(summary, 'html.parser')
         rendered_body = ""
@@ -631,14 +633,14 @@ class GeminiItem():
         wrapped = textwrap.fill(rendered_title,80)
         return wrapped + "\n"
     
-    def get_rendered_body(self):
+    def get_rendered_body(self,readable=True):
         if not self.renderer:
             mime = self.get_mime()
             if mime in _FORMAT_RENDERERS:
                 func = _FORMAT_RENDERERS[mime]
                 self.renderer = func(self.get_body())
         if self.renderer:
-            body = self.renderer.get_body()
+            body = self.renderer.get_body(readable=readable)
             self.__make_links(self.renderer.get_links())
             to_return = self._make_terminal_title() + body
             return to_return
@@ -701,7 +703,6 @@ class GeminiItem():
                 print("Cannot guess the mime type of the file. Install Python-magic")
             if mime.startswith("text") and mime not in _FORMAT_RENDERERS:
                 #by default, we consider it’s gemini except for html
-                #print("replacing MIME %s by gemini" %mime)
                 mime = "text/gemini"
             self.mime = mime
         return self.mime
@@ -903,7 +904,7 @@ class GeminiClient(cmd.Cmd):
             (hostname text, address text, fingerprint text,
             first_seen date, last_seen date, count integer)""")
 
-    def _go_to_gi(self, gi, update_hist=True, check_cache=True, handle=True):
+    def _go_to_gi(self, gi, update_hist=True, check_cache=True, handle=True,readable=True):
         """This method might be considered "the heart of Offpunk".
         Everything involved in fetching a gemini resource happens here:
         sending the request over the network, parsing the response, 
@@ -1008,7 +1009,7 @@ you'll be able to transparently follow links to Gopherspace!""")
 
         # Pass file to handler, unless we were asked not to
         if gi :
-            rendered_body = gi.get_rendered_body()
+            rendered_body = gi.get_rendered_body(readable=readable)
             display = handle and not self.sync_only
             if rendered_body:
                 self.index = gi.get_links()
@@ -2013,8 +2014,12 @@ Use 'ls -l' to see URLs."""
 
     @needs_gi
     def do_less(self, *args):
-        """Run most recently visited item through "less" command."""
-        if self.gi.is_cache_valid():
+        """Run most recently visited item through "less" command.
+Use "less full" to see a complete html page instead of the article view.
+(the "full" argument has no effect on Gemtext content)."""
+        if self.gi and args and args[0] == "full":
+            self._go_to_gi(self.gi,readable=False)
+        elif self.gi.is_cache_valid():
             cmd_str = self._get_handler_cmd(self.gi.get_mime())
             cmd_str = cmd_str % self._get_active_tmpfile()
             subprocess.call("%s | less -RM" % cmd_str, shell=True)
