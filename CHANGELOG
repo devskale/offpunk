@@ -1,9 +1,10 @@
 # Offpunk History
 
 ## 0.2.1 or 0.3 - Unreleased
-
+New Features:
 - "less full" allows to see the full html page instead of only the article view
-Small improvements:
+- Option --depth to customize your sync. Be warned, more than 1 is crazy.
+Other Small Improvements:
 - Disabled https_everywhere by default (caching problems and some websites not supporting it)
 - Modified --sync logic to make it more intuitive (thanks Bjorn Westergard)
 - Caching more problems to avoid refetch

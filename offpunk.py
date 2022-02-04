@@ -335,6 +335,13 @@ class HtmlRenderer():
         # This method recursively parse the HTML
         r_body = ""
         links = []
+        def sanitize_string(string):
+            toreturn = string.replace("\n", " ").replace("\t"," ")
+            while "  " in toreturn:
+                toreturn = toreturn.replace("  "," ")
+            toreturn = toreturn.strip("\n").strip("\t").strip()
+            toreturn = toreturn.replace("&nbsp"," ")
+            return toreturn
         def recursive_render(element,indent=""):
             rendered_body = ""
             #print("rendering %s - %s with indent %s" %(element.name,element.string,indent))
@@ -374,7 +381,7 @@ class HtmlRenderer():
                     temp_str += recursive_render(child,indent=indent)
                 rendered_body = temp_str + "\n\n"
             elif element.name == "a":
-                text = element.get_text().strip()
+                text = sanitize_string(element.get_text())
                 link = element.get('href')
                 if link:
                     links.append(link+" "+text)
@@ -383,13 +390,25 @@ class HtmlRenderer():
                 else:
                     #No real link found
                     rendered_body = text
+            elif element.name == "img":
+                alt = element.get("alt")
+                if alt:
+                    alt = sanitize_string(alt)
+                    text = "[IMG] %s"%alt
+                else:
+                    text = "[IMG]"
+                src = element.get("src")
+                if src:
+                    links.append(src+" "+text)
+                    link_id = " [%s]"%(len(links))
+                    rendered_body = "\x1b[33m\x1b[2m " + text + link_id + "\x1b[0m\n"
             elif element.name == "br":
                 rendered_body = "\n"
             elif element.string:
                 #print("tag without children:",element.name)
                 #print("string : **%s** "%element.string.strip())
                 #print("########")
-                rendered_body = element.string.strip("\n").strip("\t")
+                rendered_body = sanitize_string(element.string)
             else:
                 #print("tag children:",element.name)
                 for child in element.children:
@@ -435,8 +454,10 @@ class HtmlRenderer():
         first_line = ""
         while first_line == "" and len(lines) > 0:
             first_line = lines.pop(0)
-        if self.get_title() not in first_line:
-            r_body = "\x1b[1;34m\x1b[4m" + self.get_title() + "\x1b[0m""\n" + r_body
+        if self.get_title()[:79] not in first_line:
+            title = "\x1b[1;34m\x1b[4m" + self.get_title() + "\x1b[0m""\n" 
+            title = textwrap.fill(title,80)
+            r_body = title + "\n" + r_body
         return r_body,links
 
 # Mapping mimetypes with renderers
@@ -2530,6 +2551,8 @@ def main():
                         help='assume-yes when asked questions about certificates/redirections during sync')
     parser.add_argument('--fetch-later', action='store_true', 
                         help='run non-interactively with an URL as argument to fetch it later')
+    parser.add_argument('--depth', 
+                        help='depth of the cache to build. Default is 1. More is crazy. Use at your own risks!')
     parser.add_argument('--cache-validity', 
                         help='duration for which a cache is valid before sync (seconds)')
     parser.add_argument('--version', action='store_true',
@@ -2635,9 +2658,12 @@ def main():
                     add_to_tour(gitem)
             #Now, recursive call, even if we didn’t refresh the cache
             if depth > 0:
-                d = depth - 1
+                #we only savetotour at the first level of recursion
+                if depth > 1:
+                    savetotour=False
                 links = gitem.get_links()
                 subcount = [0,len(links)]
+                d = depth - 1
                 for k in links:
                     #recursive call (validity is always 0 in recursion)
                     substri = strin + " -->"
@@ -2645,14 +2671,14 @@ def main():
                     fetch_gitem(k,depth=d,validity=0,savetotour=savetotour,\
                                         count=subcount,strin=substri)
         
-        def fetch_list(list,validity=0,tourandremove=False,tourchildren=False):
+        def fetch_list(list,validity=0,depth=1,tourandremove=False,tourchildren=False):
             links = gc.list_get_links(list)
             end = len(links)
             counter = 0
             print(" * * * %s to fetch in %s * * *" %(end,list))
             for l in links:
                 counter += 1
-                fetch_gitem(l,depth=1,validity=validity,savetotour=tourchildren,count=[counter,end])
+                fetch_gitem(l,depth=depth,validity=validity,savetotour=tourchildren,count=[counter,end])
                 if tourandremove:
                     add_to_tour(l)
                     gc.list_rm_url(l.url,list)
@@ -2662,6 +2688,10 @@ def main():
         else:
             # if no refresh time, a default of 0 is used (which means "infinite")
             refresh_time = 0
+        if args.depth:
+            depth = int(args.depth)
+        else:
+            depth = 1
         gc.sync_only = True
         lists = gc.list_lists()
         # We will fetch all the lists except "archives" and "history"
@@ -2672,14 +2702,14 @@ def main():
         # We start with the "subscribed" as we need to find new items
         if "subscribed" in lists:
             lists.remove("subscribed")
-            fetch_list("subscribed",validity=refresh_time,tourchildren=True)
+            fetch_list("subscribed",validity=refresh_time,depth=depth,tourchildren=True)
         #Then the fetch list (item are removed from the list after fetch)
         if "to_fetch" in lists:
             lists.remove("to_fetch")
-            fetch_list("to_fetch",validity=refresh_time,tourandremove=True)
+            fetch_list("to_fetch",validity=refresh_time,depth=depth,tourandremove=True)
         #then we fetch all the rest (including bookmarks and tour)
         for l in lists:
-            fetch_list(l,validity=refresh_time)
+            fetch_list(l,validity=refresh_time,depth=depth)
 
         gc.onecmd("blackbox")
     else:
