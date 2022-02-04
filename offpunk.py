@@ -353,7 +353,7 @@ class HtmlRenderer():
                 for child in element.children:
                     rendered_body += recursive_render(child,indent=indent)
             elif element.name in ["h1","h2","h3","h4","h5","h6"]:
-                line = element.get_text()
+                line = sanitize_string(element.get_text())
                 if element.name in ["h1","h2"]:
                     rendered_body += "\n"+"\x1b[1;34m\x1b[4m" + line + "\x1b[0m"+"\n"
                 elif element.name in ["h3","h4"]:
