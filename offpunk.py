@@ -335,23 +335,34 @@ class HtmlRenderer():
         # This method recursively parse the HTML
         r_body = ""
         links = []
+        # You know how bad html is when you realize that space sometimes meaningful, somtimes not.
+        # CR are not meaniningful. Except that, somethimes, they should be interpreted as spaces.
+        # HTML is real crap. At least the one people are generating.
         def sanitize_string(string):
-            toreturn = string.replace("\n", " ").replace("\t"," ")
+            endspace = string.endswith(" ")
+            startspace = string.startswith(" ")
+            toreturn = string.replace("\n", " ").replace("\t"," ").strip()
             while "  " in toreturn:
                 toreturn = toreturn.replace("  "," ")
-            toreturn = toreturn.strip("\n").strip("\t").strip()
+            toreturn = toreturn.strip("\n").strip("\t")
             toreturn = toreturn.replace("&nbsp"," ")
+            if endspace and not toreturn.endswith(" "):
+                toreturn += " "
+            if startspace and not toreturn.startswith(" "):
+                toreturn = " " + toreturn
             return toreturn
         def recursive_render(element,indent=""):
             rendered_body = ""
-            #print("rendering %s - %s with indent %s" %(element.name,element.string,indent))
             if element.name == "blockquote":
                 for child in element.children:
+                    rendered_body += "\x1b[3m"
                     rendered_body +=  recursive_render(child,indent="\t").rstrip("\t")
-            elif element.name == "div":
+                    rendered_body += "\x1b[23m"
+            elif element.name in ["div","p"]:
                 rendered_body += "\n"
                 for child in element.children:
                     rendered_body += recursive_render(child,indent=indent)
+                rendered_body += "\n\n"
             elif element.name in ["h1","h2","h3","h4","h5","h6"]:
                 line = sanitize_string(element.get_text())
                 if element.name in ["h1","h2"]:
@@ -365,28 +376,41 @@ class HtmlRenderer():
                 for child in element.children:
                    rendered_body += recursive_render(child,indent=indent)
                 rendered_body += "\n\n"
-            elif element.name == "li":
+            elif element.name in ["li","tr"]:
                 line = ""
                 for child in element.children:
                     line += recursive_render(child,indent=indent).strip("\n")
-                    #print("in li: ***%s***"%line)
                 rendered_body += " * " + line.strip() + "\n"
-            elif element.name in ["code","em","b","i"]:
-                # we don’t do anything with those markup right now. Maybe later?
+            elif element.name in ["td"]:
+                line = "| "
+                for child in element.children:
+                    line += recursive_render(child)
+                line += " |"
+                rendered_body += line
+            # italics
+            elif element.name in ["code","em","i"]:
+                rendered_body += "\x1b[3m"
                 for child in element.children:
                     rendered_body += recursive_render(child,indent=indent).strip("\n")
-            elif element.name == "p":
-                temp_str = ""
+                rendered_body += "\x1b[23m"
+            #bold
+            elif element.name in ["code","b","strong"]:
+                rendered_body += "\x1b[1m"
                 for child in element.children:
-                    temp_str += recursive_render(child,indent=indent)
-                rendered_body = temp_str + "\n\n"
+                    rendered_body += recursive_render(child,indent=indent).strip("\n")
+                rendered_body += "\x1b[22m"
+            #elif element.name == "p":
+            #    temp_str = ""
+            #    for child in element.children:
+            #        temp_str += recursive_render(child,indent=indent)
+            #    rendered_body = temp_str.strip()  + "\n\n"
             elif element.name == "a":
                 text = sanitize_string(element.get_text())
                 link = element.get('href')
                 if link:
                     links.append(link+" "+text)
-                    link_id = " [%s] "%(len(links))
-                    rendered_body = "\x1b[34m\x1b[2m " + text + link_id + "\x1b[0m"
+                    link_id = " [%s]"%(len(links))
+                    rendered_body = "\x1b[2;34m" + text + link_id + "\x1b[0m"
                 else:
                     #No real link found
                     rendered_body = text
@@ -401,7 +425,7 @@ class HtmlRenderer():
                 if src:
                     links.append(src+" "+text)
                     link_id = " [%s]"%(len(links))
-                    rendered_body = "\x1b[33m\x1b[2m " + text + link_id + "\x1b[0m\n"
+                    rendered_body = "\n\x1b[2;33m" + text + link_id + "\x1b[0m\n"
             elif element.name == "br":
                 rendered_body = "\n"
             elif element.string:
@@ -798,16 +822,17 @@ class GeminiItem():
         abs_url = urllib.parse.urljoin(self.url, relative_url)
         return abs_url
 
-    def to_map_line(self, name=None):
-        if name:
-            title = name
-        elif self.renderer:
+    def full_title(self):
+        if self.renderer:
             title = self.renderer.get_title()
         else:
             # we take the last component of url as title
             title = self.url.split("/")[-1]
         title += " (%s)"%self.get_capsule_title()
-        return "=> {} {}\n".format(self.url, title)
+        return title
+        
+    def to_map_line(self):
+        return "=> {} {}\n".format(self.url, self.full_title())
 
 CRLF = '\r\n'
 
@@ -2229,8 +2254,8 @@ archives, which is a special historical list limited in size. It is similar to `
                 if deleted:
                     print("Removed from %s"%li)
         self.list_add_top("archives",limit=self.options["archives_size"])
-        print("%s was added to your archives (size limited to %s last items)"\
-                            %(self.gi.url,self.options["archives_size"]))
+        print("%s added to your archives"%self.gi.full_title())
+        print("\x1b[2;34mCurrent maximum size of archives : %s\x1b[0m" %self.options["archives_size"])
 
     def list_add_line(self,list,gi=None,verbose=True):
         list_path = self.list_path(list)
