@@ -4,7 +4,9 @@
 New Features:
 - "less full" allows to see the full html page instead of only the article view
 - Option --depth to customize your sync. Be warned, more than 1 is crazy.
+- Option --disable-http to allows deep syncing of gemini-only
 Other Small Improvements:
+- Improved HTML rendering
 - Disabled https_everywhere by default (caching problems and some websites not supporting it)
 - Modified --sync logic to make it more intuitive (thanks Bjorn Westergard)
 - Caching more problems to avoid refetch

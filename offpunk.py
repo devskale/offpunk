@@ -889,6 +889,7 @@ class GeminiClient(cmd.Cmd):
         self.visited_hosts = set()
         self.offline_only = False
         self.sync_only = False
+        self.do_http = _DO_HTTP
         self.automatic_choice = "n"
 
         self.client_certs = {
@@ -1002,11 +1003,14 @@ you'll be able to transparently follow links to Gopherspace!""")
         elif not self.offline_only and not gi.local:
             try:
                 if gi.scheme in ("http", "https"):
-                    if _DO_HTTP:
+                    if self.do_http:
                         gi = self._fetch_http(gi)
-                    else:
-                        print("Install python3-requests to handle http requests natively")
+                    elif handle and not self.sync_only:
+                        if not _DO_HTTP:
+                            print("Install python3-requests to handle http requests natively")
                         webbrowser.open_new_tab(gi.url)
+                        return
+                    else:
                         return
                 else:
                     gi = self._fetch_over_network(gi)
@@ -2564,6 +2568,8 @@ def main():
                         help='run non-interactively to build cache by exploring bookmarks')
     parser.add_argument('--assume-yes', action='store_true', 
                         help='assume-yes when asked questions about certificates/redirections during sync')
+    parser.add_argument('--disable-http',action='store_true',
+                        help='do not try to get http(s) links (but already cached will be displayed)')
     parser.add_argument('--fetch-later', action='store_true', 
                         help='run non-interactively with an URL as argument to fetch it later')
     parser.add_argument('--depth', 
@@ -2624,6 +2630,9 @@ def main():
                 gc.cmdqueue.append("tour %s" % url)
             gc.cmdqueue.append("tour")
 
+    if args.disable_http:
+        gc.do_http = False
+
     # Endless interpret loop
     if args.fetch_later:
         if args.url:
@@ -2653,6 +2662,9 @@ def main():
             if gitem.is_cache_valid():
                 print("  -> adding to tour: %s" %gitem.url)
                 gc.list_add_line("tour",gi=gitem,verbose=False)
+                return True
+            else:
+                return False
 
         def fetch_gitem(gitem,depth=0,validity=0,savetotour=False,count=[0,0],strin=""):
             #savetotour = True will save to tour newly cached content
@@ -2695,8 +2707,8 @@ def main():
                 counter += 1
                 fetch_gitem(l,depth=depth,validity=validity,savetotour=tourchildren,count=[counter,end])
                 if tourandremove:
-                    add_to_tour(l)
-                    gc.list_rm_url(l.url,list)
+                    if add_to_tour(l):
+                        gc.list_rm_url(l.url,list)
             
         if args.cache_validity:
             refresh_time = int(args.cache_validity)
