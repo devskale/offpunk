@@ -564,6 +564,11 @@ class GeminiItem():
         if self.local:
             return True
         elif self._cache_path :
+            # If path is too long, we always return True to avoid
+            # fetching it.
+            if len(self._cache_path) > 259:
+                self.links = []
+                return True
             if os.path.exists(self._cache_path):
                 if validity > 0 :
                     last_modification = self.cache_last_modified()
@@ -596,7 +601,12 @@ class GeminiItem():
         else:
             path = None
         if path:
-            if as_file:
+            # There’s on OS limit on path length
+            if len(path) > 259:
+                toreturn = "Path is too long. This is an OS limitation.\n\n"
+                toreturn += self.url
+                return toreturn
+            elif as_file:
                 return path
             else:
                 with open(path) as f:
@@ -736,6 +746,11 @@ class GeminiItem():
             os.utime(self._cache_path)
         else:
             cache_dir = os.path.dirname(self._cache_path)
+            root_dir = cache_dir
+            while not os.path.exists(root_dir):
+                root_dir = os.path.dirname(root_dir)
+            if os.path.isfile(root_dir):
+                os.remove(root_dir)
             os.makedirs(cache_dir,exist_ok=True)
             if os.path.isdir(cache_dir):
                 with open(self._cache_path, "w") as cache:
