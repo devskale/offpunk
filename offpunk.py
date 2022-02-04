@@ -494,8 +494,6 @@ class GeminiItem():
         if self.scheme in ["file","mailto"]:
             self.local = True
             self.host = ""
-            #h = self.url.split('/')
-            #self.host = h[0:len(h)-1]
             self.port = None
             self._cache_path = None
             # file:// is 7 char
@@ -2643,8 +2641,6 @@ def main():
                 gc.onecmd("go %s"%u)
                 if gc.gi and u in gc.gi.url and gc.gi.is_cache_valid():
                     # forcing re-fetch in case an old catch already exists
-                    # FIXME : this will be fetched too many times, 
-                    # should be handled on the to_fetch level
                     gc.onecmd("reload")
         else:
             print("--fetch-later requires an URL (or a list of URLS) as argument")

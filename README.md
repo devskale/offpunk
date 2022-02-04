@@ -12,7 +12,7 @@ Offpunk is a single python file. Installation is optional, you can simply downlo
 
 You use the `go` command to visit a URL, e.g. `go gemini.circumlunar.space`. (gemini:// is assumed is no protocol is specified).
 
-Links in pages are assigned numerical indices.  Just type an index to follow that link. If page is too long to fit on your screen, the content is displayed in the less pager (by default). Type `q` to quit and go back to Offpunk prompt. Type `less` or `l` to display it again in less.
+Links in pages are assigned numerical indices.  Just type an index to follow that link. If page is too long to fit on your screen, the content is displayed in the less pager (by default). Type `q` to quit and go back to Offpunk prompt. Type `less` or `l` to display it again in less. (`less full` or `l full` allows to see the full html page instead of the article view. This only applies to html pages)
 
 Use `add` to add a capsule to your bookmarks and `bookmarks` or `bm` to show your bookmarks (you can create multiple bookmarks lists, edit and remove them. See the `list` manual with `help list`).
 
@@ -43,9 +43,10 @@ To have offpunk fetch the URL at next sync and close immediately, run:
 Known issues in the code:
 * NOT_FIXABLE : consider root file is always index.gmi or index.html
 
+Nice to have but not priority:
 * TODO0: Hard - Make a manual within the git repository and have it automatically deployed as a website.
 * TODO1: Easy - Update blackbox to reflect cache hits.
-* TODO2: Medium - "pdf" - Implement retrieving PDF version of pages
+* TODO2: Hard - "pdf" - Implement retrieving PDF version of pages
 * TODO3: Easy - Transparent privacy redirects (twitter->nitter, etc)
 * TODO4: Easy - Rendering themes to allow customizing of colors ? (if any interest in the feature)
 * TODO5: Medium - Support for Gopher
@@ -89,6 +90,7 @@ To avoid using unstable or too recent libraries, the rule of thumb is that a lib
 * Complex bookmarks management through multiple lists, built-in edition and archiving.
 * Advanced navigation tools like `tour` and `mark` (as per VF-1). Unlike AV-98, tour is saved on disk accross sessions. 
 * Ability to specify external handler programs for different MIME types (use `handler`)
+* Non-interactive cache-building with configurable depth through the --sync command. The cache can easily be used by other software. 
 * Gopher proxy support (e.g. for use with
   [Agena](https://tildegit.org/solderpunk/agena))
 * IPv6 support
