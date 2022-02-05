@@ -391,13 +391,13 @@ class HtmlRenderer():
             elif element.name in ["code","em","i"]:
                 rendered_body += "\x1b[3m"
                 for child in element.children:
-                    rendered_body += recursive_render(child,indent=indent).strip("\n")
+                    rendered_body += recursive_render(child,indent=indent)
                 rendered_body += "\x1b[23m"
             #bold
             elif element.name in ["code","b","strong"]:
                 rendered_body += "\x1b[1m"
                 for child in element.children:
-                    rendered_body += recursive_render(child,indent=indent).strip("\n")
+                    rendered_body += recursive_render(child,indent=indent)
                 rendered_body += "\x1b[22m"
             #elif element.name == "p":
             #    temp_str = ""
