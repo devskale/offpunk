@@ -530,7 +530,11 @@ class GeminiItem():
         else:
             self.path = parsed.path
             if parsed.query:
-                self.path += "/" + parsed.query
+                # we don’t add the query if path is too long because path above 260 char
+                # are not supported and crash python.
+                # Also, very long query are usually useless stuff
+                if len(self.path+parsed.query) < 258:
+                    self.path += "/" + parsed.query
             self.local = False
             self.host = parsed.hostname
             #if not local, we create a local cache path.
@@ -827,7 +831,14 @@ class GeminiItem():
             title = self.renderer.get_title()
         else:
             # we take the last component of url as title
-            title = self.url.split("/")[-1]
+            if self.local:
+                title = self.url.split("/")[-1]
+            else:
+                parsed = urllib.parse.urlparse(self.url)
+                if parsed.path:
+                    title = parsed.path.strip("/").split("/")[-1]
+                else:
+                    title = parsed.netloc
         title += " (%s)"%self.get_capsule_title()
         return title
         
