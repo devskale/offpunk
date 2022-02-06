@@ -750,12 +750,13 @@ class GeminiItem():
                 path = self.path
             else:
                 path = self._cache_path
-            mime,encoding = mimetypes.guess_type(path,strict=False)
+            if _HAS_MAGIC:
+                mime = magic.from_file(path,mime=True)
+            else:
+                mime,encoding = mimetypes.guess_type(path,strict=False)
             #gmi Mimetype is not recognized yet
             if not mime and path.endswith(".gmi"):
                 mime = "text/gemini"
-            elif not mime and _HAS_MAGIC :
-                mime = magic.from_file(path,mime=True)
             elif not _HAS_MAGIC :
                 print("Cannot guess the mime type of the file. Install Python-magic")
             if mime.startswith("text") and mime not in _FORMAT_RENDERERS:
