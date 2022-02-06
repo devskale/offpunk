@@ -329,28 +329,53 @@ class FeedRenderer():
         return self.links
 
     def get_title(self):
-        return "# Title of the feed"
+        if not self.title:
+            self.render_feed(self.body)
+        return self.title
 
     def render_feed(self,content,full=False):
         self.links = []
+        self.title = "RSS/Atom feed"
+        page = ""
         if _DO_FEED:
             parsed = feedparser.parse(content)
-            page = self.get_title()
-            page += "\n"
         else:
-            page = "Please install python-feedparser to handle RSS/Atom feeds\n"
+            page += "Please install python-feedparser to handle RSS/Atom feeds\n"
             return page
         if parsed.bozo:
             page += "Invalid RSS feed\n\n"
             page += parsed.bozo_exception
         else:
+            if title in parsed.feed:
+                t = parsed.feed.title
+            else:
+                t = "Unknown"
+            title = "\x1b[1;4;34m%s (XML feed)\x1b[0m" %t
+            self.title = textwrap.fill(title,80)
+            page += self.title + "\n"
+            if "subtitle" in parsed.feed:
+                page += textwrap.fill(parsed.feed.subtitle,80) + "\n\n"
+            self.links.append(parsed.feed.link)
+            line = "This is the feed for \x1b[34;2m%s [1]\x1b[0m" %parsed.feed.link
+            page += textwrap.fill(line,80) + "\n"
+            line = "Last updated on %s" %parsed.feed.updated
+            page += textwrap.fill(line,80)
+            page += "\n\n"
             for i in parsed.entries:
                 self.links.append(i.link)
-                page += "## %s [%s] \n"%(i.title,len(self.links))
-                page += "by %s on %s\n\n"%(i.author,i.published)
+                line = "\x1b[34m%s [%s]\x1b[0m"%(i.title,len(self.links))
+                page += textwrap.fill(line,80) + "\n"
+                line = ""
+                if "author" in i:
+                    line += "by %s "%i.author
+                if "published" in i:
+                    line += "on %s"%i.published
+                page += textwrap.fill(line,80)
+                page += "\n\n"
                 if full:
-                    page += i.summary
-                    page += "\n\n"
+                    if "summary" in i:
+                        page += textwrap.fill(i.summary,80)
+                        page += "\n\n"
         return page
 
 
