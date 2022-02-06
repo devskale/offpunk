@@ -120,7 +120,7 @@ _MAX_REDIRECTS = 5
 _MAX_CACHE_SIZE = 10
 _MAX_CACHE_AGE_SECS = 180
 #_DEFAULT_LESS = "less -EXFRfM -PMurl\ lines\ \%lt-\%lb/\%L\ \%Pb\%$ %s"
-_DEFAULT_LESS = "less -EXFRfM %s"
+_DEFAULT_LESS = "less -EXFRfMw %s"
 
 # Command abbreviations
 _ABBREVS = {
@@ -206,6 +206,9 @@ class GemtextRenderer():
         self.rendered_text = None
         self.links = None
         self.title = None
+    
+    def is_valid(self):
+        return True
 
     def get_body(self,readable=True):
         if self.rendered_text == None :
@@ -314,6 +317,11 @@ class FeedRenderer():
         self.rendered_text = None
         self.links = None
         self.title = None
+        self.validity = True
+    
+    def is_valid(self):
+        self.render_feed(self.body)
+        return self.validity
 
     def get_body(self,readable=True):
         if readable:
@@ -341,12 +349,14 @@ class FeedRenderer():
             parsed = feedparser.parse(content)
         else:
             page += "Please install python-feedparser to handle RSS/Atom feeds\n"
+            self.validity = False
             return page
         if parsed.bozo:
             page += "Invalid RSS feed\n\n"
             page += parsed.bozo_exception
+            self.validity = False
         else:
-            if title in parsed.feed:
+            if "title" in parsed.feed:
                 t = parsed.feed.title
             else:
                 t = "Unknown"
@@ -355,12 +365,16 @@ class FeedRenderer():
             page += self.title + "\n"
             if "subtitle" in parsed.feed:
                 page += textwrap.fill(parsed.feed.subtitle,80) + "\n\n"
-            self.links.append(parsed.feed.link)
-            line = "This is the feed for \x1b[34;2m%s [1]\x1b[0m" %parsed.feed.link
-            page += textwrap.fill(line,80) + "\n"
-            line = "Last updated on %s" %parsed.feed.updated
-            page += textwrap.fill(line,80)
+            if "link" in parsed.feed:
+                self.links.append(parsed.feed.link)
+                line = "This is the feed for \x1b[34;2m%s [1]\x1b[0m" %parsed.feed.link
+                page += textwrap.fill(line,80) + "\n"
+            if "updated" in parsed.feed:
+                line = "Last updated on %s" %parsed.feed.updated
+                page += textwrap.fill(line,80)
             page += "\n\n"
+            if len(parsed.entries) < 1:
+                self.validity = False
             for i in parsed.entries:
                 self.links.append(i.link)
                 line = "\x1b[34m%s [%s]\x1b[0m"%(i.title,len(self.links))
@@ -386,6 +400,9 @@ class HtmlRenderer():
         self.rendered_text = None
         self.links = None
         self.title = None
+
+    def is_valid(self):
+        return True
 
     def get_body(self,readable=True):
         if self.rendered_text == None or not readable:
@@ -775,6 +792,14 @@ class GeminiItem():
             if mime in _FORMAT_RENDERERS:
                 func = _FORMAT_RENDERERS[mime]
                 self.renderer = func(self.get_body())
+                # We double check if the renderer is correct.
+                # If not, we fallback to html
+                # (this is currently only for XHTML, often being
+                # mislabelled as xml thus RSS feeds)
+                if not self.renderer.is_valid():
+                    print("We switch to HtmlRenderer")
+                    func = _FORMAT_RENDERERS["text/html"]
+                    self.renderer = func(self.get_body())
         if self.renderer:
             body = self.renderer.get_body(readable=readable)
             self.__make_links(self.renderer.get_links())
@@ -2176,7 +2201,7 @@ Use "less full" to see a complete html page instead of the article view.
         elif self.gi.is_cache_valid():
             cmd_str = self._get_handler_cmd(self.gi.get_mime())
             cmd_str = cmd_str % self._get_active_tmpfile()
-            subprocess.call("%s | less -RM" % cmd_str, shell=True)
+            subprocess.call("%s | less -RMw" % cmd_str, shell=True)
         else:
             self.do_go(self.gi.url)
 
