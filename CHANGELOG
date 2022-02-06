@@ -1,8 +1,10 @@
 # Offpunk History
 
-## 0.2.1 or 0.3 - Unreleased
+## 0.3 - Unreleased
 New Features:
+- support for RSS and Atom feed (you can subscribe to them)
 - "less full" allows to see the full html page instead of only the article view
+ 	(also works with feeds to see descriptions of each post instead of a simple list)
 - Option --depth to customize your sync. Be warned, more than 1 is crazy.
 - Option --disable-http to allows deep syncing of gemini-only
 Other Small Improvements:

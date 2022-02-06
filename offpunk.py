@@ -12,6 +12,8 @@
 #  - Björn Wärmedal <bjorn.warmedal@gmail.com>
 #  - <jake@rmgr.dev>
 
+_VERSION = "0.2"
+
 import argparse
 import cmd
 import cgi
@@ -80,7 +82,12 @@ try:
     _DO_HTML = True
 except ModuleNotFoundError:
     _DO_HTML = False
-_VERSION = "0.2"
+
+try:
+    import feedparser
+    _DO_FEED = True
+except ModuleNotFoundError:
+    _DO_FEED = False
 
 ## Config directories
 # There are two conflicting xdg modules, we try to work with both
@@ -301,6 +308,53 @@ class GemtextRenderer():
                 rendered_text += wrap_line(line).rstrip() + "\n"
         return rendered_text, links
 
+class FeedRenderer():
+    def __init__(self,content):
+        self.body = content
+        self.rendered_text = None
+        self.links = None
+        self.title = None
+
+    def get_body(self,readable=True):
+        if readable:
+            if not self.rendered_text:
+                self.rendered_text = self.render_feed(self.body)
+            return self.rendered_text
+        else:
+            return self.render_feed(self.body,full=True)
+        
+    def get_links(self):
+        if not self.links:
+            self.render_feed(self.body)
+        return self.links
+
+    def get_title(self):
+        return "# Title of the feed"
+
+    def render_feed(self,content,full=False):
+        self.links = []
+        if _DO_FEED:
+            parsed = feedparser.parse(content)
+            page = self.get_title()
+            page += "\n"
+        else:
+            page = "Please install python-feedparser to handle RSS/Atom feeds\n"
+            return page
+        if parsed.bozo:
+            page += "Invalid RSS feed\n\n"
+            page += parsed.bozo_exception
+        else:
+            for i in parsed.entries:
+                self.links.append(i.link)
+                page += "## %s [%s] \n"%(i.title,len(self.links))
+                page += "by %s on %s\n\n"%(i.author,i.published)
+                if full:
+                    page += i.summary
+                    page += "\n\n"
+        return page
+
+
+
 class HtmlRenderer():
     def __init__(self,content):
         self.body = content
@@ -489,7 +543,7 @@ class HtmlRenderer():
 _FORMAT_RENDERERS = {
     "text/gemini":  GemtextRenderer,
     "text/html" :   HtmlRenderer,
-    "text/xml" : HtmlRenderer
+    "text/xml" : FeedRenderer
 }
 # Offpunk is organized as follow:
 # - a GeminiClient instance which handles the browsing of GeminiItems (= pages).
@@ -750,14 +804,14 @@ class GeminiItem():
                 path = self.path
             else:
                 path = self._cache_path
-            if _HAS_MAGIC:
+            if path.endswith(".gmi"):
+                mime = "text/gemini"
+            elif _HAS_MAGIC:
                 mime = magic.from_file(path,mime=True)
             else:
                 mime,encoding = mimetypes.guess_type(path,strict=False)
             #gmi Mimetype is not recognized yet
-            if not mime and path.endswith(".gmi"):
-                mime = "text/gemini"
-            elif not _HAS_MAGIC :
+            if not mime and not _HAS_MAGIC :
                 print("Cannot guess the mime type of the file. Install Python-magic")
             if mime.startswith("text") and mime not in _FORMAT_RENDERERS:
                 #by default, we consider it’s gemini except for html

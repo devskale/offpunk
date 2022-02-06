@@ -47,8 +47,8 @@ Nice to have but not priority:
 * TODO0: Hard - Make a manual within the git repository and have it automatically deployed as a website.
 * TODO1: Easy - Update blackbox to reflect cache hits.
 * TODO2: Hard - "pdf" - Implement retrieving PDF version of pages
-* TODO3: Easy - Transparent privacy redirects (twitter->nitter, etc)
-* TODO4: Easy - Rendering themes to allow customizing of colors ? (if any interest in the feature)
+* TODO3: Medium - Transparent privacy redirects (twitter->nitter, etc)
+* TODO4: Medium - Rendering themes to allow customizing of colors ? (if any interest in the feature)
 * TODO5: Medium - Support for Gopher
 * TODO6: Hard - "search" - Offline search engine to search in the cache (hard, no idea on how to do that)
 * TODO7: Easy - "share" - send a page by email
@@ -72,6 +72,7 @@ To avoid using unstable or too recent libraries, the rule of thumb is that a lib
 * [Python-xdg](https://www.freedesktop.org/wiki/Software/pyxdg) will place your data, config and cache in place recommended by the XDG specs (usually it’s .local/share/offpunk, .config/offpunk and .cache/offpunk). Without it, look for ~/.offpunk or ~/.config/offpunk while the cache will be in ~/.cache/offpunk/. If installation is done later, some config files may need to be migrated by hand.
 * [Python-requests](http://python-requests.org) is needed to handle http/https requests natively (apt-get install python3-requests). Without it, http links will be opened in an external browser
 * [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup) and [Readability](https://github.com/buriy/python-readability) are both needed to render HTML. Without them, HTML will not be rendered or be sent to an external parser like Lynx. (apt-get install python3-bs4 python3-readability or pip3 install readability-lxml)
+* [Python-feedparser](https://github.com/kurtmckee/feedparser) will allow parsing of RSS/Atom feeds and thus subscriptions to them. (apt-get install python3-feedparser)
 * The [ansiwrap library](https://pypi.org/project/ansiwrap/) may result in
   neater display of text which makes use of ANSI escape codes to control colour (not in Debian?).
 * The [cryptography library](https://pypi.org/project/cryptography/) will
