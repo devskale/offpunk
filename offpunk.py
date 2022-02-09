@@ -121,6 +121,7 @@ _MAX_CACHE_SIZE = 10
 _MAX_CACHE_AGE_SECS = 180
 #_DEFAULT_LESS = "less -EXFRfM -PMurl\ lines\ \%lt-\%lb/\%L\ \%Pb\%$ %s"
 _DEFAULT_LESS = "less -EXFRfMw %s"
+#_DEFAULT_LESS = "batcat -p %s"
 
 # Command abbreviations
 _ABBREVS = {
@@ -201,7 +202,8 @@ standard_ports = {
     # this method takes the original gemtext and returns
     # [rendered_text,links_table]
 class GemtextRenderer():
-    def __init__(self,content):
+    def __init__(self,content,url):
+        self.url = url
         self.body = content
         self.rendered_text = None
         self.links = None
@@ -312,7 +314,8 @@ class GemtextRenderer():
         return rendered_text, links
 
 class FeedRenderer():
-    def __init__(self,content):
+    def __init__(self,content,url):
+        self.url = url
         self.body = content
         self.rendered_text = None
         self.links = None
@@ -353,7 +356,7 @@ class FeedRenderer():
             return page
         if parsed.bozo:
             page += "Invalid RSS feed\n\n"
-            page += parsed.bozo_exception
+            page += str(parsed.bozo_exception)
             self.validity = False
         else:
             if "title" in parsed.feed:
@@ -395,7 +398,8 @@ class FeedRenderer():
 
 
 class HtmlRenderer():
-    def __init__(self,content):
+    def __init__(self,content,url):
+        self.url = url
         self.body = content
         self.rendered_text = None
         self.links = None
@@ -495,11 +499,6 @@ class HtmlRenderer():
                 for child in element.children:
                     rendered_body += recursive_render(child,indent=indent)
                 rendered_body += "\x1b[22m"
-            #elif element.name == "p":
-            #    temp_str = ""
-            #    for child in element.children:
-            #        temp_str += recursive_render(child,indent=indent)
-            #    rendered_body = temp_str.strip()  + "\n\n"
             elif element.name == "a":
                 text = sanitize_string(element.get_text())
                 link = element.get('href')
@@ -511,17 +510,25 @@ class HtmlRenderer():
                     #No real link found
                     rendered_body = text
             elif element.name == "img":
+                src = element.get("src")
+                text = ""
+                ansi_img = ""
+                if shutil.which('chafa'):
+                    abs_url = urllib.parse.urljoin(self.url, src)
+                    g = GeminiItem(abs_url)
+                    img = g.get_cache_path()
+                    return_code = subprocess.run("chafa --bg white -s 40 %s"%img, shell=True, capture_output=True)
+                    ansi_img = return_code.stdout.decode() + "\n"
                 alt = element.get("alt")
                 if alt:
                     alt = sanitize_string(alt)
-                    text = "[IMG] %s"%alt
+                    text += "[IMG] %s"%alt
                 else:
-                    text = "[IMG]"
-                src = element.get("src")
+                    text += "[IMG]"
                 if src:
                     links.append(src+" "+text)
                     link_id = " [%s]"%(len(links))
-                    rendered_body = "\n\x1b[2;33m" + text + link_id + "\x1b[0m\n"
+                    rendered_body = ansi_img + "\n\x1b[2;33m" + text + link_id + "\x1b[0m\n"
             elif element.name == "br":
                 rendered_body = "\n"
             elif element.string:
@@ -791,15 +798,15 @@ class GeminiItem():
             mime = self.get_mime()
             if mime in _FORMAT_RENDERERS:
                 func = _FORMAT_RENDERERS[mime]
-                self.renderer = func(self.get_body())
+                self.renderer = func(self.get_body(),self.url)
                 # We double check if the renderer is correct.
                 # If not, we fallback to html
                 # (this is currently only for XHTML, often being
                 # mislabelled as xml thus RSS feeds)
                 if not self.renderer.is_valid():
-                    print("We switch to HtmlRenderer")
+                    #print("We switch to HtmlRenderer")
                     func = _FORMAT_RENDERERS["text/html"]
-                    self.renderer = func(self.get_body())
+                    self.renderer = func(self.get_body(),self.url)
         if self.renderer:
             body = self.renderer.get_body(readable=readable)
             self.__make_links(self.renderer.get_links())
@@ -809,13 +816,18 @@ class GeminiItem():
             self.links = []
             return None
         
-
-    def get_filename(self):
-        if self.local:
+    def get_cache_path(self,url=None):
+        if url:
+            g = GeminiItem(url)
+            path = g.get_cache_path()
+        elif self.local:
             path = self.path
         else:
             path = self._cache_path
-        filename = os.path.basename(path)
+        return path
+
+    def get_filename(self):
+        filename = os.path.basename(self.get_cache_path())
         return filename
 
     def write_body(self,body,mime):
@@ -888,8 +900,9 @@ class GeminiItem():
                     cache.write(str(datetime.datetime.now())+"\n")
                     cache.write("ERROR while caching %s\n\n" %self.url)
                     cache.write("*****\n\n")
-                    cache.write(str(err)+"\n")
-                    cache.write("*****\n\n")
+                    cache.write(str(type(err)) + " = " + str(err))
+                    cache.write("\n" + str(err.with_traceback(None)))
+                    cache.write("\n*****\n\n")
                     cache.write("If you believe this error was temporary, type ""reload"".\n")
                     cache.write("The ressource will be tentatively fetched during next sync.\n")
                     cache.close()
@@ -1183,7 +1196,8 @@ you'll be able to transparently follow links to Gopherspace!""")
                     print(err)
                 else:
                     if print_error:
-                        print("ERROR4: " + str(err))
+                        print("ERROR4: " + str(type(err)) + " : " + str(err))
+                        print("\n" + str(err.with_traceback(None)))
                 return
 
         # Pass file to handler, unless we were asked not to
