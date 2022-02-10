@@ -313,6 +313,74 @@ class GemtextRenderer():
                 rendered_text += wrap_line(line).rstrip() + "\n"
         return rendered_text, links
 
+class GopherRenderer():
+    def __init__(self,content,url):
+        self.url = url
+        self.body = content
+        self.rendered_text = None
+        self.links = None
+        self.title = None
+        self.validity = True
+    
+    def is_valid(self):
+        return True
+
+    def get_body(self,readable=True):
+        if self.rendered_text == None:
+            self.rendered_text,self.links = self.menu_or_text()
+        return self.rendered_text
+
+    def get_links(self):
+        if self.links == None:
+            self.rendered_text,self.links = self.menu_or_text()
+        return self.links
+
+    def get_title(self):
+        return "Gopher - No Title"
+
+    def menu_or_text(self):
+        try:
+            render,links = self._render_goph()
+        except Exception as err:
+            print("Error ",err)
+            render = self.body
+            links = []
+        return render,links
+
+    def _render_goph(self):
+        # This is copied straight from Agena (and thus from VF1)
+        rendered_text = ""
+        links = []
+        for line in self.body.split("\n"):
+            #if line.strip() == ".":
+            #    continue
+            if line.startswith("i"):
+                rendered_text += line[1:].split("\t")[0] + "\r\n"
+            elif not line.strip() in [".",""]:
+                parts = line.split("\t")
+                parts[-1] = parts[-1].strip()
+                if parts[-1] == "+":
+                    parts = parts[:-1]
+                if len(parts) == 4:
+                    name,path,host,port = parts
+                    itemtype = name[0]
+                    name = name[1:]
+                    if port == "70":
+                        port = ""
+                    else:
+                        port = ":%s"%port
+                    if itemtype == "h" and path.startswith("URL:"):
+                        url = path[4:]
+                    else:
+                        url = "gopher://%s%s/%s%s" %(host,port,itemtype,path)
+                    linkline = url + " " + name
+                    links.append(linkline)
+                    rendered_text += "[%s] "%len(links)+ name + "\n"
+                else:
+                    rendered_text += line +"\n"
+        return rendered_text,links
+
+
 class FeedRenderer():
     def __init__(self,content,url):
         self.url = url
@@ -599,7 +667,8 @@ class HtmlRenderer():
 _FORMAT_RENDERERS = {
     "text/gemini":  GemtextRenderer,
     "text/html" :   HtmlRenderer,
-    "text/xml" : FeedRenderer
+    "text/xml" : FeedRenderer,
+    "text/gopher": GopherRenderer,
 }
 # Offpunk is organized as follow:
 # - a GeminiClient instance which handles the browsing of GeminiItems (= pages).
@@ -638,14 +707,30 @@ class GeminiItem():
             else:
                 self.path = self.url
         else:
-            self.path = parsed.path
+            self.local = False
+            if self.scheme == "gopher":
+                if parsed.path and parsed.path[0] == "/" and len(parsed.path) > 1:
+                    itemtype = parsed.path[1]
+                    self.path = parsed.path[2:]
+                else:
+                    itemtype = "1"
+                    self.path = parsed.path
+                if itemtype == "0":
+                    self.mime = "text/gemini"
+                elif itemtype == "1":
+                    self.mime = "text/gopher"
+                elif itemtype == "h":
+                    self.mime = "text/html"
+                elif itemtype in ("9","g","I","s"):
+                    self.mime = None
+            else:
+                self.path = parsed.path
             if parsed.query:
                 # we don’t add the query if path is too long because path above 260 char
                 # are not supported and crash python.
                 # Also, very long query are usually useless stuff
                 if len(self.path+parsed.query) < 258:
                     self.path += "/" + parsed.query
-            self.local = False
             self.host = parsed.hostname
             #if not local, we create a local cache path.
             self._cache_path = os.path.expanduser(_CACHE_PATH + self.scheme +\
@@ -657,6 +742,8 @@ class GeminiItem():
             # finish by "/". Else, the cache will create a file, not a folder.
             if self.scheme.startswith("http"):
                 index = "index.html"
+            elif self.scheme == "gopher":
+                index = "index.txt"
             else:
                 index = "index.gmi"
             if self.path == "" or os.path.isdir(self._cache_path):
@@ -799,21 +886,27 @@ class GeminiItem():
         #FIXME: width to replace self.options["width"]
         wrapped = textwrap.fill(rendered_title,80)
         return wrapped + "\n"
+
+    def _set_renderer(self,mime=None):
+        if not mime:
+            mime = self.get_mime()
+        if mime in _FORMAT_RENDERERS:
+            func = _FORMAT_RENDERERS[mime]
+            #print("Set RENDERER to %s" %mime)
+            self.renderer = func(self.get_body(),self.url)
+            # We double check if the renderer is correct.
+            # If not, we fallback to html
+            # (this is currently only for XHTML, often being
+            # mislabelled as xml thus RSS feeds)
+            if not self.renderer.is_valid():
+                func = _FORMAT_RENDERERS["text/html"]
+                #print("Set (fallback)RENDERER to html instead of %s"%mime)
+                self.renderer = func(self.get_body(),self.url)
+
     
     def get_rendered_body(self,readable=True):
         if not self.renderer:
-            mime = self.get_mime()
-            if mime in _FORMAT_RENDERERS:
-                func = _FORMAT_RENDERERS[mime]
-                self.renderer = func(self.get_body(),self.url)
-                # We double check if the renderer is correct.
-                # If not, we fallback to html
-                # (this is currently only for XHTML, often being
-                # mislabelled as xml thus RSS feeds)
-                if not self.renderer.is_valid():
-                    #print("We switch to HtmlRenderer")
-                    func = _FORMAT_RENDERERS["text/html"]
-                    self.renderer = func(self.get_body(),self.url)
+            self._set_renderer()
         if self.renderer:
             body = self.renderer.get_body(readable=readable)
             self.__make_links(self.renderer.get_links())
@@ -841,10 +934,8 @@ class GeminiItem():
         ## body is a copy of the raw gemtext
         ## Write_body() also create the cache !
         # DEFAULT GEMINI MIME
-        if mime == "":
-            mime = "text/gemini; charset=utf-8"
-        mime, mime_options = cgi.parse_header(mime)
-        self.mime = mime 
+        if mime:
+            self.mime, mime_options = cgi.parse_header(mime)
         if self.mime and self.mime.startswith("text/"):
             mode = "w"
         else:
@@ -868,7 +959,9 @@ class GeminiItem():
             f.close()
          
     def get_mime(self):
-        if self.is_cache_valid():
+        if self.mime:
+            return self.mime
+        elif self.is_cache_valid():
             if self.local:
                 path = self.path
             else:
@@ -1110,17 +1203,6 @@ class GeminiClient(cmd.Cmd):
         if not gi:
             return
         # Don't try to speak to servers running other protocols
-        if gi.scheme == "gopher" and not self.options.get("gopher_proxy", None)\
-                                    and not self.sync_only:
-            print("Attempt to access",gi.url)
-            print("""Offpunk does not speak Gopher natively.
-However, you can use `set gopher_proxy hostname:port` to tell it about a
-Gopher-to-Gemini proxy (such as a running Agena instance), in which case
-you'll be able to transparently follow links to Gopherspace!""")
-            self.gi = gi
-            if update_hist and not self.sync_only:
-                self._update_history(gi)
-            return
         elif gi.scheme == "mailto":
             if handle and not self.sync_only:
                 resp = input("Send an email to %s Y/N? " %gi.path)
@@ -1171,6 +1253,8 @@ you'll be able to transparently follow links to Gopherspace!""")
                         return
                     else:
                         return
+                elif gi.scheme in ("gopher"):
+                    gi = self._fetch_gopher(gi)
                 else:
                     gi = self._fetch_over_network(gi)
             except UserAbortException:
@@ -1203,6 +1287,7 @@ you'll be able to transparently follow links to Gopherspace!""")
                     print(err)
                 else:
                     if print_error:
+                        crash
                         print("ERROR4: " + str(type(err)) + " : " + str(err))
                         print("\n" + str(err.with_traceback(None)))
                 return
@@ -1253,6 +1338,61 @@ you'll be able to transparently follow links to Gopherspace!""")
         else:
             body = response.content
         gi.write_body(body,mime)
+        return gi
+
+    def _fetch_gopher(self,gi):
+        parsed =urllib.parse.urlparse(gi.url)
+        host = parsed.hostname
+        port = parsed.port or 70
+        if parsed.path and parsed.path[0] == "/" and len(parsed.path) > 1:
+            splitted = parsed.path.split("/")
+            # We check if we have well a gopher type
+            if len(splitted[1]) == 1:
+                itemtype = parsed.path[1]
+                selector = parsed.path[2:]
+            else:
+                itemtype = "1"
+                selector = parsed.path
+        else:
+            itemtype = "1"
+            selector = parsed.path
+        s = socket.create_connection((host,port))
+        if parsed.query:
+            request = selector + "\t" + parsed.query
+        else:
+            request = selector
+        request += "\r\n"
+        s.sendall(request.encode("UTF-8"))
+        response = s.makefile("rb").read()
+        # Transcode response into UTF-8
+        #if itemtype in ("0","1","h"):
+        if not itemtype in ("9","g","I","s"):
+            # Try most common encodings
+            for encoding in ("UTF-8", "ISO-8859-1"):
+                try:
+                    response = response.decode("UTF-8")
+                    break
+                except UnicodeDecodeError:
+                    pass
+            else:
+                # try to find encoding
+                #if _HAS_CHARDET:
+                detected = chardet.detect(response)
+                response = response.decode(detected["encoding"])
+                #else:
+                    #raise UnicodeDecodeError
+        if itemtype == "0":
+            mime = "text/gemini"
+        elif itemtype == "1":
+            mime = "text/gopher"
+        elif itemtype == "h":
+            mime = "text/html"
+        elif itemtype in ("9","g","I","s"):
+            mime = None
+        else:
+            # by default, we should consider Gopher
+            mime = "text/gopher"
+        gi.write_body(response,mime)
         return gi
 
     # fetch_over_network will modify with gi.write_body(body,mime)

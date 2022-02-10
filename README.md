@@ -1,8 +1,8 @@
 # OFFPUNK
 
-A command-line, text-based and offline-first Gemini and Web browser by [Ploum](https://ploum.net).
+A command-line, text-based and offline-first Gemini, Gopher and Web browser by [Ploum](https://ploum.net).
 
-Focused on Gemini but with support for HTTP/HTML articles, the goal of Offpunk is to be able to synchronise your content once (a day, a week, a month) and then browse/organise it while staying disconnected.
+The goal of Offpunk is to be able to synchronise your content once (a day, a week, a month) and then browse/organise it while staying disconnected.
 
 Offpunk is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98) by Solderpunk and was originally called AV-98-offline as an experimental branch.
 
@@ -49,7 +49,6 @@ I would happily mentor anyone willing to implement those:
 * TODO2: Hard - "pdf" - Implement retrieving PDF version of pages
 * TODO3: Medium - Transparent privacy redirects (twitter->nitter, etc)
 * TODO4: Medium - Rendering themes to allow customizing of colors ? (if any interest in the feature)
-* TODO5: Medium - Support for Gopher
 * TODO6: Hard - "search" - Offline search engine to search in the cache (hard, no idea on how to do that)
 * TODO7: Easy - "share" - send a page by email
 
@@ -85,6 +84,7 @@ To avoid using unstable or too recent libraries, the rule of thumb is that a lib
 
 ## Features
 
+* Browse https/gemini/gopher without leaving your keyboard and without distractions
 * Built-in documentation: type `help` to get the list of command or a specific help about a command.
 * Offline mode to browse cached content without a connection. Requested elements are automatically fetched during the next synchronization and are added to your tour.
 * HTML pages are prettified to focus on content. Read without being disturbed.
@@ -93,8 +93,6 @@ To avoid using unstable or too recent libraries, the rule of thumb is that a lib
 * Advanced navigation tools like `tour` and `mark` (as per VF-1). Unlike AV-98, tour is saved on disk accross sessions. 
 * Ability to specify external handler programs for different MIME types (use `handler`)
 * Non-interactive cache-building with configurable depth through the --sync command. The cache can easily be used by other software. 
-* Gopher proxy support (e.g. for use with
-  [Agena](https://tildegit.org/solderpunk/agena))
 * IPv6 support
 * Supports any character encoding recognised by Python
 * Cryptography : TOFU or CA server certificate validation

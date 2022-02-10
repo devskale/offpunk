@@ -2,6 +2,7 @@
 
 ## 0.3 - Unreleased
 New Features:
+- Gopher supported natively (early version, might have many bugs)
 - support for RSS and Atom feed (you can subscribe to them)
 - "less full" allows to see the full html page instead of only the article view
  	(also works with feeds to see descriptions of each post instead of a simple list)
