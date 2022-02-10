@@ -501,11 +501,16 @@ class HtmlRenderer():
                 rendered_body += "\x1b[22m"
             elif element.name == "a":
                 text = sanitize_string(element.get_text())
+                # support for images nested in links
+                for child in element.children:
+                    if child.name == "img":
+                        img = recursive_render(child)
+                        rendered_body += img
                 link = element.get('href')
                 if link:
                     links.append(link+" "+text)
                     link_id = " [%s]"%(len(links))
-                    rendered_body = "\x1b[2;34m" + text + link_id + "\x1b[0m"
+                    rendered_body += "\x1b[2;34m" + text + link_id + "\x1b[0m"
                 else:
                     #No real link found
                     rendered_body = text
@@ -516,9 +521,11 @@ class HtmlRenderer():
                 if shutil.which('chafa'):
                     abs_url = urllib.parse.urljoin(self.url, src)
                     g = GeminiItem(abs_url)
-                    img = g.get_cache_path()
-                    return_code = subprocess.run("chafa --bg white -s 40 %s"%img, shell=True, capture_output=True)
-                    ansi_img = return_code.stdout.decode() + "\n"
+                    if g.is_cache_valid():
+                        img = g.get_cache_path()
+                        return_code = subprocess.run("chafa --bg white -s 40 %s"%img, \
+                                                    shell=True, capture_output=True)
+                        ansi_img = return_code.stdout.decode()
                 alt = element.get("alt")
                 if alt:
                     alt = sanitize_string(alt)
@@ -528,7 +535,7 @@ class HtmlRenderer():
                 if src:
                     links.append(src+" "+text)
                     link_id = " [%s]"%(len(links))
-                    rendered_body = ansi_img + "\n\x1b[2;33m" + text + link_id + "\x1b[0m\n"
+                    rendered_body = ansi_img + "\x1b[2;33m" + text + link_id + "\x1b[0m\n\n"
             elif element.name == "br":
                 rendered_body = "\n"
             elif element.string:

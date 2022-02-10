@@ -81,6 +81,7 @@ To avoid using unstable or too recent libraries, the rule of thumb is that a lib
 * [Python magic](https://github.com/ahupp/python-magic/) is useful to determine the MIME type of cached object. If not present, the file extension will be used but some capsules provide wrong extension or no extension at all. (apt-get install python3-magic)
 * [Python editor](https://github.com/fmoo/python-editor) is used to edit your lists with "list edit". (apt-get install python3-editor)
 * [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). Also needed to use the `copy` command. (apt-get install xsel)
+* [Chafa](https://hpjansson.org/chafa/) allows to display pictures in your console. Install it and browse to an HTML page with picture to see the magic.
 
 ## Features
 
