@@ -52,9 +52,23 @@ except ModuleNotFoundError:
 
 try:
     import ansiwrap as textwrap
+    _HAS_ANSIWRAP = True
 except ModuleNotFoundError:
     print("Try installing python-ansiwrap for better rendering")
     import textwrap
+    _HAS_ANSIWRAP = False
+
+try:
+    from PIL import Image
+    if _HAS_ANSIWRAP and shutil.which('chafa'):
+        _RENDER_IMAGE = True
+    else:
+        print("chafa and ansiwrap are required to render images in terminal")
+        _RENDER_IMAGE = False
+except ModuleNotFoundError:
+    print("python-pil, chafa and ansiwrap are required to render images")
+    _RENDER_IMAGE = False
+
 
 try:
     from cryptography import x509
@@ -586,12 +600,16 @@ class HtmlRenderer():
                 src = element.get("src")
                 text = ""
                 ansi_img = ""
-                if shutil.which('chafa'):
+                if _RENDER_IMAGE:
                     abs_url = urllib.parse.urljoin(self.url, src)
                     g = GeminiItem(abs_url)
                     if g.is_cache_valid():
                         img = g.get_cache_path()
-                        return_code = subprocess.run("chafa --bg white -s 40 %s"%img, \
+                        img_obj = Image.open(img)
+                        if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
+                            # we remove all frames but the first one
+                            img_obj.save(img,save_all=False)
+                        return_code = subprocess.run("chafa --bg white -s 40 %s -w 1"%img, \
                                                     shell=True, capture_output=True)
                         ansi_img = return_code.stdout.decode()
                 alt = element.get("alt")
@@ -644,8 +662,14 @@ class HtmlRenderer():
                         i_indent = ""
                         s_indent = i_indent
                     if line.strip() != "":
-                        wrapped = textwrap.fill(line,width,initial_indent=i_indent,
+                        try:
+                            wrapped = textwrap.fill(line,width,initial_indent=i_indent,
                                                 subsequent_indent=s_indent)
+                        except Exception as err:
+                            wrapped = line
+                            #print(self.url)
+                            #print(err)
+                            #crash
                         wrapped += "\n"
                     else:
                         wrapped = ""
@@ -1254,7 +1278,7 @@ class GeminiClient(cmd.Cmd):
                     else:
                         return
                 elif gi.scheme in ("gopher"):
-                    gi = self._fetch_gopher(gi)
+                    gi = self._fetch_gopher(gi,timeout=self.options["short_timeout"])
                 else:
                     gi = self._fetch_over_network(gi)
             except UserAbortException:
@@ -1340,7 +1364,9 @@ class GeminiClient(cmd.Cmd):
         gi.write_body(body,mime)
         return gi
 
-    def _fetch_gopher(self,gi):
+    def _fetch_gopher(self,gi,timeout=10):
+        if not looks_like_url(gi.url):
+            print("%s is not a valide url" %gi.url)
         parsed =urllib.parse.urlparse(gi.url)
         host = parsed.hostname
         port = parsed.port or 70
@@ -1356,7 +1382,22 @@ class GeminiClient(cmd.Cmd):
         else:
             itemtype = "1"
             selector = parsed.path
+        addresses = socket.getaddrinfo(host, port, family=0,type=socket.SOCK_STREAM)
         s = socket.create_connection((host,port))
+        for address in addresses:
+            self._debug("Connecting to: " + str(address[4]))
+            s = socket.socket(address[0], address[1])
+            s.settimeout(timeout)
+            try:
+                s.connect(address[4])
+                break
+            except OSError as e:
+                err = e
+        else:
+            # If we couldn't connect to *any* of the addresses, just
+            # bubble up the exception from the last attempt and deny
+            # knowledge of earlier failures.
+            raise err
         if parsed.query:
             request = selector + "\t" + parsed.query
         else:

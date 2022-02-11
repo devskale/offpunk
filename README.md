@@ -73,7 +73,7 @@ To avoid using unstable or too recent libraries, the rule of thumb is that a lib
 * [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup) and [Readability](https://github.com/buriy/python-readability) are both needed to render HTML. Without them, HTML will not be rendered or be sent to an external parser like Lynx. (apt-get install python3-bs4 python3-readability or pip3 install readability-lxml)
 * [Python-feedparser](https://github.com/kurtmckee/feedparser) will allow parsing of RSS/Atom feeds and thus subscriptions to them. (apt-get install python3-feedparser)
 * The [ansiwrap library](https://pypi.org/project/ansiwrap/) may result in
-  neater display of text which makes use of ANSI escape codes to control colour (not in Debian?).
+  neater display of text which makes use of ANSI escape codes to control colour. Ansiwrap is also required to display pictures in HTML pages (together with Chafa and python-pil) (not in Debian?).
 * The [cryptography library](https://pypi.org/project/cryptography/) will
   provide a better and slightly more secure experience when using the default
   TOFU certificate validation mode and is highly recommended (apt-get install python3-cryptography).
@@ -81,6 +81,7 @@ To avoid using unstable or too recent libraries, the rule of thumb is that a lib
 * [Python editor](https://github.com/fmoo/python-editor) is used to edit your lists with "list edit". (apt-get install python3-editor)
 * [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). Also needed to use the `copy` command. (apt-get install xsel)
 * [Chafa](https://hpjansson.org/chafa/) allows to display pictures in your console. Install it and browse to an HTML page with picture to see the magic.
+* [Python-pil](http://python-pillow.github.io/) is required to only display the first frame of animated gif with chafa.
 
 ## Features
 
