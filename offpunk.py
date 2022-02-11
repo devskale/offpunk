@@ -610,11 +610,11 @@ class HtmlRenderer():
                             if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
                                 # we remove all frames but the first one
                                 img_obj.save(img,save_all=False)
-                            return_code = subprocess.run("chafa --bg white -s 40 %s -w 1"%img, \
-                                                    shell=True, capture_output=True)
+                            cmd = "chafa --bg white -s 40 -w 1 \"%s\"" %img
+                            return_code = subprocess.run(cmd,shell=True, capture_output=True)
                             ansi_img = return_code.stdout.decode()
-                        except:
-                            ansi_img = "***image failed***\n"
+                        except Exception as err:
+                            ansi_img = "***image failed : %s***\n" %err
                 alt = element.get("alt")
                 if alt:
                     alt = sanitize_string(alt)
