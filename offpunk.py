@@ -492,12 +492,16 @@ class HtmlRenderer():
 
     def get_body(self,readable=True):
         if self.rendered_text == None or not readable:
-            self.rendered_text, self.links = self.render_html(self.body,readable=readable)
+            if readable:
+                mode = "readable"
+            else:
+                mode = "full"
+            self.rendered_text, self.links = self.render_html(self.body,mode=mode)
         return self.rendered_text
 
     def get_links(self):
         if self.links == None :
-            self.rendered_text, self.links = self.render_html(self.body)
+            rendered_text, self.links = self.render_html(self.body,mode="quick")
         return self.links
 
     def get_title(self):
@@ -510,7 +514,8 @@ class HtmlRenderer():
 
     # Our own HTML engine (crazy, isn’t it?)
     # Return [rendered_body, list_of_links]
-    def render_html(self,body,readable=True,width=80):
+    # mode is either quick, readable or full
+    def render_html(self,body,mode="readable",width=80):
         if not _DO_HTML:
             print("HTML document detected. Please install python-bs4 and python-readability.")
             return
@@ -600,7 +605,7 @@ class HtmlRenderer():
                 src = element.get("src")
                 text = ""
                 ansi_img = ""
-                if _RENDER_IMAGE:
+                if _RENDER_IMAGE and mode != "quick":
                     abs_url = urllib.parse.urljoin(self.url, src)
                     g = GeminiItem(abs_url)
                     if g.is_cache_valid():
@@ -639,11 +644,11 @@ class HtmlRenderer():
             #print("body for element %s: %s"%(element.name,rendered_body))
             return indent + rendered_body
         # the real render_html hearth
-        if readable:
+        if mode == "full":
+            summary = body
+        else:
             readable = Document(body)
             summary = readable.summary()
-        else:
-            summary = body
         #r_body += "\x1b[1;34m\x1b[4m" + self.get_title() + "\x1b[0m""\n"
         soup = BeautifulSoup(summary, 'html.parser')
         rendered_body = ""
@@ -884,7 +889,12 @@ class GeminiItem():
 
     def get_links(self):
         if self.links == None:
-            r_body = self.get_rendered_body()
+            if not self.renderer:
+                self._set_renderer()
+            if self.renderer:
+                self.__make_links(self.renderer.get_links())
+            else:
+                self.links = []
         return self.links
 
     def get_link(self,nb):
