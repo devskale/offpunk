@@ -12,7 +12,7 @@
 #  - Björn Wärmedal <bjorn.warmedal@gmail.com>
 #  - <jake@rmgr.dev>
 
-_VERSION = "0.2"
+_VERSION = "0.3"
 
 import argparse
 import cmd
@@ -605,13 +605,16 @@ class HtmlRenderer():
                     g = GeminiItem(abs_url)
                     if g.is_cache_valid():
                         img = g.get_cache_path()
-                        img_obj = Image.open(img)
-                        if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
-                            # we remove all frames but the first one
-                            img_obj.save(img,save_all=False)
-                        return_code = subprocess.run("chafa --bg white -s 40 %s -w 1"%img, \
+                        try:
+                            img_obj = Image.open(img)
+                            if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
+                                # we remove all frames but the first one
+                                img_obj.save(img,save_all=False)
+                            return_code = subprocess.run("chafa --bg white -s 40 %s -w 1"%img, \
                                                     shell=True, capture_output=True)
-                        ansi_img = return_code.stdout.decode()
+                            ansi_img = return_code.stdout.decode()
+                        except:
+                            ansi_img = "***image failed***\n"
                 alt = element.get("alt")
                 if alt:
                     alt = sanitize_string(alt)

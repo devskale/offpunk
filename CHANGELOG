@@ -1,6 +1,6 @@
 # Offpunk History
 
-## 0.3 - Unreleased
+## 0.3 - Feb 11th 2022
 New Features:
 - Gopher supported natively (early version, might have many bugs)
 - support for RSS and Atom feed (you can subscribe to them)
@@ -15,6 +15,7 @@ Other Small Improvements:
 - Caching more problems to avoid refetch
 - Offpunk has now an User-Agent when http browsing to avoid being blocked as a bot
 - Changed XDG logic to improve compatibility (thanks Klaus Alexander)
+=> gemini://rawtext.club/~ploum/2022-02-11-offpunk03.gmi
 
 ## 0.2 - Jan 31st 2022
 - config directories have been moved to follow the XDG specifications
