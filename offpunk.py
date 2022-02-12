@@ -134,7 +134,16 @@ _MAX_REDIRECTS = 5
 _MAX_CACHE_SIZE = 10
 _MAX_CACHE_AGE_SECS = 180
 #_DEFAULT_LESS = "less -EXFRfM -PMurl\ lines\ \%lt-\%lb/\%L\ \%Pb\%$ %s"
-_DEFAULT_LESS = "less -EXFRfMw %s"
+# -E : quit when reaching end of file (to behave like "cat")
+# -F : quit if content fits the screen (behave like "cat")
+# -X : does not clear the screen
+# -R : interpret ANSI colors correctly
+# -f : suppress warning for some contents
+# -M : long prompt (to have info about where you are in the file)
+# -w : hilite the new first line after a page skip (space)
+# -i : ignore case in search
+_DEFAULT_CAT = "less -EXFRfMwi %s"
+_DEFAULT_LESS = "less -XRfMwi %s"
 #_DEFAULT_LESS = "batcat -p %s"
 
 # Command abbreviations
@@ -1426,7 +1435,7 @@ class GeminiClient(cmd.Cmd):
                     tmpf.write(rendered_body)
                     tmpf.close()
                     self.idx_filename = tmpf.name
-                    cmd_str = self._get_handler_cmd("text/gemini")
+                    cmd_str = _DEFAULT_CAT
                     subprocess.run(shlex.split(cmd_str % tmpf.name))
             elif display :
                 cmd_str = self._get_handler_cmd(gi.get_mime())
@@ -1945,11 +1954,8 @@ class GeminiClient(cmd.Cmd):
             if fnmatch.fnmatch(mimetype, handled_mime):
                 break
         else:
-            if mimetype.startswith("text/"):
-                cmd_str = _DEFAULT_LESS
-            else:
             # Use "xdg-open" as a last resort.
-                cmd_str = "xdg-open %s"
+            cmd_str = "xdg-open %s"
         self._debug("Using handler: %s" % cmd_str)
         return cmd_str
 
@@ -2502,9 +2508,8 @@ Use "less full" to see a complete html page instead of the article view.
         if self.gi and args and args[0] == "full":
             self._go_to_gi(self.gi,readable=False)
         elif self.gi.is_cache_valid():
-            cmd_str = self._get_handler_cmd(self.gi.get_mime())
-            cmd_str = cmd_str % self._get_active_tmpfile()
-            subprocess.call("%s | less -RMw" % cmd_str, shell=True)
+            cmd_str = _DEFAULT_LESS % self._get_active_tmpfile()
+            subprocess.call(cmd_str, shell=True)
         else:
             self.do_go(self.gi.url)
 
@@ -2521,8 +2526,7 @@ see "handler" command to set your own."""
     @needs_gi
     def do_fold(self, *args):
         """Run most recently visited item through "fold" command."""
-        cmd_str = self._get_handler_cmd(self.gi.get_mime())
-        cmd_str = cmd_str % self._get_active_tmpfile()
+        cmd_str = _DEFAULT_LESS % self._get_active_tmpfile()
         subprocess.call("%s | fold -w 70 -s" % cmd_str, shell=True)
 
     @restricted

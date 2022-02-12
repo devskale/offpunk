@@ -1,5 +1,11 @@
 # Offpunk History
 
+## 0.4 - Unreleased
+- Pictures are now displayed directely in terminal (suggested by kelbot)
+- Introducing the "open" command to open current page with external handler.
+- "set width XX" will now work everywhere (thanks kelbot for reporting the bug)
+- Improved syncing performances and multiple bug/crash fixes.
+
 ## 0.3 - Feb 11th 2022
 New Features:
 - Gopher supported natively (early version, might have many bugs)
