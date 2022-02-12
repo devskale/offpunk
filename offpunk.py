@@ -500,7 +500,41 @@ class FeedRenderer():
                         page += "\n\n"
         return page
 
-
+class ImageRenderer():
+    def __init__(self,img,url):
+        self.url = url
+        self.path = img
+        self.rendered_text = None
+        self.title = "Picture file"
+    def is_valid(self):
+        if _RENDER_IMAGE:
+            return True
+        else:
+            return False
+    def get_body(self,readable=True,width=None):
+        if not width:
+            width = TERM_WIDTH
+        if self.rendered_text == None:
+            self.rendered_text = self.render_image(self.path,width)
+        return self.rendered_text
+    def get_links(self):
+        return []
+    def get_title(self):
+        return self.title
+    def render_image(self,img,width=None):
+        if not width:
+            width = TERM_WIDTH
+        try:
+            img_obj = Image.open(img)
+            if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
+                # we remove all frames but the first one
+                img_obj.save(img,save_all=False)
+            cmd = "chafa --bg white -s %s -w 1 \"%s\"" %(width,img)
+            return_code = subprocess.run(cmd,shell=True, capture_output=True)
+            ansi_img = return_code.stdout.decode()
+        except Exception as err:
+            ansi_img = "***image failed : %s***\n" %err
+        return ansi_img
 
 class HtmlRenderer():
     def __init__(self,content,url):
@@ -637,16 +671,13 @@ class HtmlRenderer():
                     g = GeminiItem(abs_url)
                     if g.is_cache_valid():
                         img = g.get_cache_path()
-                        try:
-                            img_obj = Image.open(img)
-                            if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
-                                # we remove all frames but the first one
-                                img_obj.save(img,save_all=False)
-                            cmd = "chafa --bg white -s 40 -w 1 \"%s\"" %img
-                            return_code = subprocess.run(cmd,shell=True, capture_output=True)
-                            ansi_img = return_code.stdout.decode()
-                        except Exception as err:
-                            ansi_img = "***image failed : %s***\n" %err
+                        renderer = ImageRenderer(img,abs_url)
+                        # Image are 40px wide except if terminal is smaller
+                        if width > 40:
+                            size = 40
+                        else:
+                            size = width
+                        ansi_img = renderer.get_body(width=size)
                 alt = element.get("alt")
                 if alt:
                     alt = sanitize_string(alt)
@@ -728,6 +759,7 @@ _FORMAT_RENDERERS = {
     "text/html" :   HtmlRenderer,
     "text/xml" : FeedRenderer,
     "text/gopher": GopherRenderer,
+    "image/*": ImageRenderer
 }
 # Offpunk is organized as follow:
 # - a GeminiClient instance which handles the browsing of GeminiItems (= pages).
@@ -964,18 +996,28 @@ class GeminiItem():
     def _set_renderer(self,mime=None):
         if not mime:
             mime = self.get_mime()
-        if mime in _FORMAT_RENDERERS:
-            func = _FORMAT_RENDERERS[mime]
-            #print("Set RENDERER to %s" %mime)
-            self.renderer = func(self.get_body(),self.url)
-            # We double check if the renderer is correct.
-            # If not, we fallback to html
-            # (this is currently only for XHTML, often being
-            # mislabelled as xml thus RSS feeds)
-            if not self.renderer.is_valid():
-                func = _FORMAT_RENDERERS["text/html"]
-                #print("Set (fallback)RENDERER to html instead of %s"%mime)
+        mime_to_use = []
+        for m in _FORMAT_RENDERERS:
+            if fnmatch.fnmatch(mime, m):
+                mime_to_use.append(m)
+        if len(mime_to_use) > 0:
+            current_mime = mime_to_use[0]
+            func = _FORMAT_RENDERERS[current_mime]
+            if current_mime.startswith("text"):
                 self.renderer = func(self.get_body(),self.url)
+                # We double check if the renderer is correct.
+                # If not, we fallback to html
+                # (this is currently only for XHTML, often being
+                # mislabelled as xml thus RSS feeds)
+                if not self.renderer.is_valid():
+                    func = _FORMAT_RENDERERS["text/html"]
+                    #print("Set (fallback)RENDERER to html instead of %s"%mime)
+                    self.renderer = func(self.get_body(),self.url)
+            else:
+                #we don’t parse text, we give the file to the renderer
+                self.renderer = func(self._cache_path,self.url)
+                if not self.renderer.is_valid():
+                    self.renderer = None
 
     
     def get_rendered_body(self,readable=True):
@@ -2465,6 +2507,16 @@ Use "less full" to see a complete html page instead of the article view.
             subprocess.call("%s | less -RMw" % cmd_str, shell=True)
         else:
             self.do_go(self.gi.url)
+
+    @needs_gi
+    def do_open(self, *args):
+        """Open current item with the configured handler or xdg-open.
+see "handler" command to set your own."""
+        cmd_str = self._get_handler_cmd(self.gi.get_mime())
+        file_path = "\"%s\"" %self.gi.get_body(as_file=True)
+        cmd_str = cmd_str % file_path 
+        subprocess.call(cmd_str,shell=True)
+
 
     @needs_gi
     def do_fold(self, *args):
