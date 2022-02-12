@@ -1257,7 +1257,7 @@ class GeminiClient(cmd.Cmd):
         self.visited_hosts = set()
         self.offline_only = False
         self.sync_only = False
-        self.do_http = _DO_HTTP
+        self.support_http = _DO_HTTP
         self.automatic_choice = "n"
 
         self.client_certs = {
@@ -1361,7 +1361,7 @@ class GeminiClient(cmd.Cmd):
         elif not self.offline_only and not gi.local:
             try:
                 if gi.scheme in ("http", "https"):
-                    if self.do_http:
+                    if self.support_http:
                         gi = self._fetch_http(gi)
                     elif handle and not self.sync_only:
                         if not _DO_HTTP:
@@ -3083,7 +3083,7 @@ def main():
             gc.cmdqueue.append("tour")
 
     if args.disable_http:
-        gc.do_http = False
+        gc.support_http = False
 
     # Endless interpret loop
     if args.fetch_later:
