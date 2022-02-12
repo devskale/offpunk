@@ -178,6 +178,9 @@ _MIME_HANDLERS = {
 urllib.parse.uses_relative.append("gemini")
 urllib.parse.uses_netloc.append("gemini")
 
+global TERM_WIDTH
+TERM_WIDTH = 80
+
 def fix_ipv6_url(url):
     if not url:
         return
@@ -226,14 +229,16 @@ class GemtextRenderer():
     def is_valid(self):
         return True
 
-    def get_body(self,readable=True):
+    def get_body(self,readable=True,width=None):
+        if not width:
+            width = TERM_WIDTH
         if self.rendered_text == None :
-            self.rendered_text, self.links = self.render_gemtext(self.body)
+            self.rendered_text, self.links = self.render_gemtext(self.body,width=width)
         return self.rendered_text
 
     def get_links(self):
         if self.links == None :
-            self.rendered_text, self.links = self.render_gemtext(self.body)
+            rendered_text, self.links = self.render_gemtext(self.body)
         return self.links
 
     def get_title(self):
@@ -246,18 +251,20 @@ class GemtextRenderer():
                     self.title = line.strip("#").strip()
                     return self.title
             if len(lines) > 0:
-                # If not title found, we take the first 80 char 
+                # If not title found, we take the first 50 char 
                 # of the first line
                 title_line = lines[0].strip()
-                if len(title_line) > 80:
-                    title_line = title_line[:79] + "…"
+                if len(title_line) > 50:
+                    title_line = title_line[:49] + "…"
                 self.title = title_line
                 return self.title
             else:
                 self.title = "Empty Page"
                 return self.title
 
-    def render_gemtext(self,gemtext, width=80):
+    def render_gemtext(self,gemtext, width=None):
+        if not width:
+            width = TERM_WIDTH
         links = []
         preformatted = False
         rendered_text = ""
@@ -339,29 +346,38 @@ class GopherRenderer():
     def is_valid(self):
         return True
 
-    def get_body(self,readable=True):
+    def get_body(self,readable=True,width=None):
+        if not width:
+            width = TERM_WIDTH
         if self.rendered_text == None:
-            self.rendered_text,self.links = self.menu_or_text()
+            self.rendered_text,self.links = self.menu_or_text(width=width)
         return self.rendered_text
 
     def get_links(self):
         if self.links == None:
-            self.rendered_text,self.links = self.menu_or_text()
+            rendered_text,self.links = self.menu_or_text()
         return self.links
 
     def get_title(self):
         return "Gopher - No Title"
 
-    def menu_or_text(self):
+    def menu_or_text(self,width=None):
+        if not width:
+            width = TERM_WIDTH
         try:
-            render,links = self._render_goph()
+            render,links = self._render_goph(width=width)
         except Exception as err:
             print("Error ",err)
-            render = self.body
+            lines = self.body.split("\n")
+            render = ""
+            for line in lines:
+                render += textwrap.fill(line,width) + "\n"
             links = []
         return render,links
 
-    def _render_goph(self):
+    def _render_goph(self,width=None):
+        if not width:
+            width = TERM_WIDTH
         # This is copied straight from Agena (and thus from VF1)
         rendered_text = ""
         links = []
@@ -369,7 +385,8 @@ class GopherRenderer():
             #if line.strip() == ".":
             #    continue
             if line.startswith("i"):
-                rendered_text += line[1:].split("\t")[0] + "\r\n"
+                towrap = line[1:].split("\t")[0] + "\r\n"
+                rendered_text += textwrap.fill(towrap,width) + "\n"
             elif not line.strip() in [".",""]:
                 parts = line.split("\t")
                 parts[-1] = parts[-1].strip()
@@ -389,9 +406,11 @@ class GopherRenderer():
                         url = "gopher://%s%s/%s%s" %(host,port,itemtype,path)
                     linkline = url + " " + name
                     links.append(linkline)
-                    rendered_text += "[%s] "%len(links)+ name + "\n"
+                    towrap = "[%s] "%len(links)+ name + "\n"
+                    rendered_text += textwrap.fill(towrap,width) + "\n"
                 else:
-                    rendered_text += line +"\n"
+                    towrap = line +"\n"
+                    rendered_text += textwrap.fill(towrap,width) + "\n"
         return rendered_text,links
 
 
@@ -408,10 +427,12 @@ class FeedRenderer():
         self.render_feed(self.body)
         return self.validity
 
-    def get_body(self,readable=True):
+    def get_body(self,readable=True,width=None):
+        if not width:
+            width = TERM_WIDTH
         if readable:
             if not self.rendered_text:
-                self.rendered_text = self.render_feed(self.body)
+                self.rendered_text = self.render_feed(self.body,width=width)
             return self.rendered_text
         else:
             return self.render_feed(self.body,full=True)
@@ -426,7 +447,9 @@ class FeedRenderer():
             self.render_feed(self.body)
         return self.title
 
-    def render_feed(self,content,full=False):
+    def render_feed(self,content,full=False,width=None):
+        if not width:
+            width = TERM_WIDTH
         self.links = []
         self.title = "RSS/Atom feed"
         page = ""
@@ -446,34 +469,34 @@ class FeedRenderer():
             else:
                 t = "Unknown"
             title = "\x1b[1;4;34m%s (XML feed)\x1b[0m" %t
-            self.title = textwrap.fill(title,80)
+            self.title = textwrap.fill(title,width)
             page += self.title + "\n"
             if "subtitle" in parsed.feed:
-                page += textwrap.fill(parsed.feed.subtitle,80) + "\n\n"
+                page += textwrap.fill(parsed.feed.subtitle,width) + "\n\n"
             if "link" in parsed.feed:
                 self.links.append(parsed.feed.link)
                 line = "This is the feed for \x1b[34;2m%s [1]\x1b[0m" %parsed.feed.link
-                page += textwrap.fill(line,80) + "\n"
+                page += textwrap.fill(line,width) + "\n"
             if "updated" in parsed.feed:
                 line = "Last updated on %s" %parsed.feed.updated
-                page += textwrap.fill(line,80)
+                page += textwrap.fill(line,width)
             page += "\n\n"
             if len(parsed.entries) < 1:
                 self.validity = False
             for i in parsed.entries:
                 self.links.append(i.link)
                 line = "\x1b[34m%s [%s]\x1b[0m"%(i.title,len(self.links))
-                page += textwrap.fill(line,80) + "\n"
+                page += textwrap.fill(line,width) + "\n"
                 line = ""
                 if "author" in i:
                     line += "by %s "%i.author
                 if "published" in i:
                     line += "on %s"%i.published
-                page += textwrap.fill(line,80)
+                page += textwrap.fill(line,width)
                 page += "\n\n"
                 if full:
                     if "summary" in i:
-                        page += textwrap.fill(i.summary,80)
+                        page += textwrap.fill(i.summary,width)
                         page += "\n\n"
         return page
 
@@ -490,13 +513,15 @@ class HtmlRenderer():
     def is_valid(self):
         return True
 
-    def get_body(self,readable=True):
+    def get_body(self,readable=True,width=None):
+        if not width:
+            width = TERM_WIDTH
         if self.rendered_text == None or not readable:
             if readable:
                 mode = "readable"
             else:
                 mode = "full"
-            self.rendered_text, self.links = self.render_html(self.body,mode=mode)
+            self.rendered_text, self.links = self.render_html(self.body,mode=mode,width=width)
         return self.rendered_text
 
     def get_links(self):
@@ -515,7 +540,9 @@ class HtmlRenderer():
     # Our own HTML engine (crazy, isn’t it?)
     # Return [rendered_body, list_of_links]
     # mode is either quick, readable or full
-    def render_html(self,body,mode="readable",width=80):
+    def render_html(self,body,mode="readable",width=None):
+        if not width:
+            width = TERM_WIDTH
         if not _DO_HTML:
             print("HTML document detected. Please install python-bs4 and python-readability.")
             return
@@ -690,7 +717,7 @@ class HtmlRenderer():
             first_line = lines.pop(0)
         if self.get_title()[:79] not in first_line:
             title = "\x1b[1;34m\x1b[4m" + self.get_title() + "\x1b[0m""\n" 
-            title = textwrap.fill(title,80)
+            title = textwrap.fill(title,width)
             r_body = title + "\n" + r_body
         return r_body,links
 
@@ -742,6 +769,14 @@ class GeminiItem():
             self.local = False
             if self.scheme == "gopher":
                 if parsed.path and parsed.path[0] == "/" and len(parsed.path) > 1:
+                    splitted = parsed.path.split("/")
+                    # We check if we have well a gopher type
+                    if len(splitted[1]) == 1:
+                        itemtype = parsed.path[1]
+                        selector = parsed.path[2:]
+                    else:
+                        itemtype = "1"
+                        selector = parsed.path
                     itemtype = parsed.path[1]
                     self.path = parsed.path[2:]
                 else:
@@ -755,6 +790,8 @@ class GeminiItem():
                     self.mime = "text/html"
                 elif itemtype in ("9","g","I","s"):
                     self.mime = None
+                else:
+                    self.mime = "text/gopher"
             else:
                 self.path = parsed.path
             if parsed.query:
@@ -921,7 +958,7 @@ class GeminiItem():
                 title += " (%s links)    \x1b[0;31m(last accessed on %s)"%(nbr,str_last)
         rendered_title = "\x1b[31m\x1b[1m"+ title + "\x1b[0m"
         #FIXME: width to replace self.options["width"]
-        wrapped = textwrap.fill(rendered_title,80)
+        wrapped = textwrap.fill(rendered_title,TERM_WIDTH)
         return wrapped + "\n"
 
     def _set_renderer(self,mime=None):
@@ -1202,7 +1239,8 @@ class GeminiClient(cmd.Cmd):
             "archives_size" : 100,
             "history_size" : 100
         }
-
+        global TERM_WIDTH
+        TERM_WIDTH = self.options["width"]
         self.log = {
             "start_time": time.time(),
             "requests": 0,
@@ -2100,6 +2138,14 @@ class GeminiClient(cmd.Cmd):
                 if value.lower() not in ("ca", "tofu"):
                     print("TLS mode must be `ca` or `tofu`!")
                     return
+            elif option == "width":
+                if value.isnumeric():
+                    value = int(value)
+                    print("changing width to ",value)
+                    global TERM_WIDTH
+                    TERM_WIDTH = value
+                else:
+                    print("%s is not a valid width (integer required)"%value)
             elif value.isnumeric():
                 value = int(value)
             elif value.lower() == "false":
