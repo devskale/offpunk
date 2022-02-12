@@ -214,6 +214,7 @@ def fix_ipv6_url(url):
         return schema + "://" + schemaless
     return schemaless
 
+# This list is also used as a list of supported protocols
 standard_ports = {
         "gemini": 1965,
         "gopher": 70,
@@ -221,26 +222,35 @@ standard_ports = {
         "https" : 443,
 }
 
-# First, we define the gemtext and html renderers, outside of the rest
+# First, we define the different content->text renderers, outside of the rest
 # (They could later be factorized in other files or replaced)
-
-    # Gemtext Rendering Engine
-    # this method takes the original gemtext and returns
-    # [rendered_text,links_table]
-class GemtextRenderer():
+class AbstractRenderer():
     def __init__(self,content,url):
         self.url = url
         self.body = content
         self.rendered_text = None
         self.links = None
         self.title = None
+        self.validity = True
+    
+    def with_width(func):
+        def inner(*args, **kwargs):
+            if not kwargs["width"]:
+                kwargs["width"] = TERM_WIDTH
+            func(*args, **kwargs)
+        return inner
     
     def is_valid(self):
-        return True
-
+        return self.validity
+    
+    @with_width
     def get_body(self,readable=True,width=None):
-        if not width:
-            width = TERM_WIDTH
+        pass
+
+# Gemtext Rendering Engine
+class GemtextRenderer(AbstractRenderer):
+    def get_body(self,readable=True,width=None):
+        super().get_body(readable=readable,width=width)
         if self.rendered_text == None :
             self.rendered_text, self.links = self.render_gemtext(self.body,width=width)
         return self.rendered_text
@@ -343,21 +353,9 @@ class GemtextRenderer():
                 rendered_text += wrap_line(line).rstrip() + "\n"
         return rendered_text, links
 
-class GopherRenderer():
-    def __init__(self,content,url):
-        self.url = url
-        self.body = content
-        self.rendered_text = None
-        self.links = None
-        self.title = None
-        self.validity = True
-    
-    def is_valid(self):
-        return True
-
+class GopherRenderer(AbstractRenderer):
     def get_body(self,readable=True,width=None):
-        if not width:
-            width = TERM_WIDTH
+        super().get_body(readable=readable,width=width)
         if self.rendered_text == None:
             self.rendered_text,self.links = self.menu_or_text(width=width)
         return self.rendered_text
@@ -423,22 +421,13 @@ class GopherRenderer():
         return rendered_text,links
 
 
-class FeedRenderer():
-    def __init__(self,content,url):
-        self.url = url
-        self.body = content
-        self.rendered_text = None
-        self.links = None
-        self.title = None
-        self.validity = True
-    
+class FeedRenderer(AbstractRenderer):
     def is_valid(self):
         self.render_feed(self.body)
         return self.validity
 
     def get_body(self,readable=True,width=None):
-        if not width:
-            width = TERM_WIDTH
+        super().get_body(readable=readable,width=width)
         if readable:
             if not self.rendered_text:
                 self.rendered_text = self.render_feed(self.body,width=width)
@@ -509,27 +498,21 @@ class FeedRenderer():
                         page += "\n\n"
         return page
 
-class ImageRenderer():
-    def __init__(self,img,url):
-        self.url = url
-        self.path = img
-        self.rendered_text = None
-        self.title = "Picture file"
+class ImageRenderer(AbstractRenderer):
     def is_valid(self):
         if _RENDER_IMAGE:
             return True
         else:
             return False
     def get_body(self,readable=True,width=None):
-        if not width:
-            width = TERM_WIDTH
+        super().get_body(readable=readable,width=width)
         if self.rendered_text == None:
-            self.rendered_text = self.render_image(self.path,width)
+            self.rendered_text = self.render_image(self.body,width)
         return self.rendered_text
     def get_links(self):
         return []
     def get_title(self):
-        return self.title
+        return "Picture file"
     def render_image(self,img,width=None):
         if not width:
             width = TERM_WIDTH
@@ -545,20 +528,9 @@ class ImageRenderer():
             ansi_img = "***image failed : %s***\n" %err
         return ansi_img
 
-class HtmlRenderer():
-    def __init__(self,content,url):
-        self.url = url
-        self.body = content
-        self.rendered_text = None
-        self.links = None
-        self.title = None
-
-    def is_valid(self):
-        return True
-
+class HtmlRenderer(AbstractRenderer):
     def get_body(self,readable=True,width=None):
-        if not width:
-            width = TERM_WIDTH
+        super().get_body(readable=readable,width=width)
         if self.rendered_text == None or not readable:
             if readable:
                 mode = "readable"
@@ -675,7 +647,7 @@ class HtmlRenderer():
                 src = element.get("src")
                 text = ""
                 ansi_img = ""
-                if _RENDER_IMAGE and mode != "quick":
+                if _RENDER_IMAGE and mode != "quick" and src:
                     abs_url = urllib.parse.urljoin(self.url, src)
                     g = GeminiItem(abs_url)
                     if g.is_cache_valid():
@@ -700,15 +672,10 @@ class HtmlRenderer():
             elif element.name == "br":
                 rendered_body = "\n"
             elif element.string:
-                #print("tag without children:",element.name)
-                #print("string : **%s** "%element.string.strip())
-                #print("########")
                 rendered_body = sanitize_string(element.string)
             else:
-                #print("tag children:",element.name)
                 for child in element.children:
                     rendered_body += recursive_render(child,indent=indent)
-            #print("body for element %s: %s"%(element.name,rendered_body))
             return indent + rendered_body
         # the real render_html hearth
         if mode == "full":
@@ -716,7 +683,6 @@ class HtmlRenderer():
         else:
             readable = Document(body)
             summary = readable.summary()
-        #r_body += "\x1b[1;34m\x1b[4m" + self.get_title() + "\x1b[0m""\n"
         soup = BeautifulSoup(summary, 'html.parser')
         rendered_body = ""
         if soup and soup.body :
@@ -742,9 +708,6 @@ class HtmlRenderer():
                                                 subsequent_indent=s_indent)
                         except Exception as err:
                             wrapped = line
-                            #print(self.url)
-                            #print(err)
-                            #crash
                         wrapped += "\n"
                     else:
                         wrapped = ""
@@ -755,14 +718,14 @@ class HtmlRenderer():
         first_line = ""
         while first_line == "" and len(lines) > 0:
             first_line = lines.pop(0)
-        if self.get_title()[:79] not in first_line:
+        if self.get_title()[:(width-1)] not in first_line:
             title = "\x1b[1;34m\x1b[4m" + self.get_title() + "\x1b[0m""\n" 
             title = textwrap.fill(title,width)
             r_body = title + "\n" + r_body
         return r_body,links
 
 # Mapping mimetypes with renderers
-# (any content with a mimetype text/* not listed here will be rendered with render_gemtext)
+# (any content with a mimetype text/* not listed here will be rendered with as GemText)
 _FORMAT_RENDERERS = {
     "text/gemini":  GemtextRenderer,
     "text/html" :   HtmlRenderer,
@@ -789,6 +752,7 @@ class GeminiItem():
         self.mime = None
         self.renderer = None
         self.links = None
+        self.body = None
         parsed = urllib.parse.urlparse(self.url)
         if "./" in url or url[0] == "/":
             self.scheme = "file"
@@ -927,6 +891,8 @@ class GeminiItem():
             return None
     
     def get_body(self,as_file=False):
+        if self.body and not as_file:
+            return self.body
         if self.local:
             path = self.path
         elif self.is_cache_valid():
@@ -1055,33 +1021,35 @@ class GeminiItem():
         filename = os.path.basename(self.get_cache_path())
         return filename
 
-    def write_body(self,body,mime):
+    def write_body(self,body,mime=None):
         ## body is a copy of the raw gemtext
         ## Write_body() also create the cache !
         # DEFAULT GEMINI MIME
+        self.body = body
         if mime:
             self.mime, mime_options = cgi.parse_header(mime)
-        if self.mime and self.mime.startswith("text/"):
-            mode = "w"
-        else:
-            mode = "wb"
-        cache_dir = os.path.dirname(self._cache_path)
-        # If the subdirectory already exists as a file (not a folder)
-        # We remove it (happens when accessing URL/subfolder before
-        # URL/subfolder/file.gmi.
-        # This causes loss of data in the cache
-        # proper solution would be to save "sufolder" as "sufolder/index.gmi"
-        # If the subdirectory doesn’t exist, we recursively try to find one
-        # until it exists to avoid a file blocking the creation of folders
-        root_dir = cache_dir
-        while not os.path.exists(root_dir):
-            root_dir = os.path.dirname(root_dir)
-        if os.path.isfile(root_dir):
-            os.remove(root_dir)
-        os.makedirs(cache_dir,exist_ok=True)
-        with open(self._cache_path, mode=mode) as f:
-            f.write(body)
-            f.close()
+        if not self.local:
+            if self.mime and self.mime.startswith("text/"):
+                mode = "w"
+            else:
+                mode = "wb"
+            cache_dir = os.path.dirname(self._cache_path)
+            # If the subdirectory already exists as a file (not a folder)
+            # We remove it (happens when accessing URL/subfolder before
+            # URL/subfolder/file.gmi.
+            # This causes loss of data in the cache
+            # proper solution would be to save "sufolder" as "sufolder/index.gmi"
+            # If the subdirectory doesn’t exist, we recursively try to find one
+            # until it exists to avoid a file blocking the creation of folders
+            root_dir = cache_dir
+            while not os.path.exists(root_dir):
+                root_dir = os.path.dirname(root_dir)
+            if os.path.isfile(root_dir):
+                os.remove(root_dir)
+            os.makedirs(cache_dir,exist_ok=True)
+            with open(self._cache_path, mode=mode) as f:
+                f.write(body)
+                f.close()
          
     def get_mime(self):
         if self.mime:
@@ -1363,7 +1331,7 @@ class GeminiClient(cmd.Cmd):
                 self.gi = gi
                 return
         # check if local file exists.
-        if gi.local and not os.path.isfile(gi.path):
+        if gi.local and not os.path.exists(gi.path):
             print("Local file %s does not exist!" %gi.path)
             return
 
@@ -1428,15 +1396,9 @@ class GeminiClient(cmd.Cmd):
                 self.page_index = 0
                 self.index_index = -1
                 if display:
-                    # We actually put the body in a tmpfile before giving it to less
-                    if self.idx_filename:
-                        os.unlink(self.idx_filename)
-                    tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
-                    tmpf.write(rendered_body)
-                    tmpf.close()
-                    self.idx_filename = tmpf.name
+                    self._temp_file(rendered_body)
                     cmd_str = _DEFAULT_CAT
-                    subprocess.run(shlex.split(cmd_str % tmpf.name))
+                    subprocess.run(shlex.split(cmd_str % self.idx_filename))
             elif display :
                 cmd_str = self._get_handler_cmd(gi.get_mime())
                 try:
@@ -1446,11 +1408,21 @@ class GeminiClient(cmd.Cmd):
                 except FileNotFoundError:
                     print("Handler program %s not found!" % shlex.split(cmd_str)[0])
                     print("You can use the ! command to specify another handler program or pipeline.")
-
         # Update state
         self.gi = gi
         if update_hist and not self.sync_only:
             self._update_history(gi)
+
+
+    def _temp_file(self,content):
+        # We actually put the body in a tmpfile before giving it to less
+        if self.idx_filename:
+            os.unlink(self.idx_filename)
+        tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
+        tmpf.write(content)
+        tmpf.close()
+        self.idx_filename = tmpf.name
+        return self.idx_filename
 
 
     def _fetch_http(self,gi):
@@ -1976,8 +1948,8 @@ class GeminiClient(cmd.Cmd):
         if self.sync_only:
             return
         # We don’t add lists to history
-        if not gi or os.path.join(_DATA_DIR,"lists") in gi.url:
-            return
+        #if not gi or os.path.join(_DATA_DIR,"lists") in gi.url:
+        #    return
         histlist = self.get_list("history")
         links = self.list_get_links("history")
         # avoid duplicate
@@ -2874,18 +2846,42 @@ See also :
 - archive (to remove current page from all lists while adding to archives)"""
         listdir = os.path.join(_DATA_DIR,"lists")
         os.makedirs(listdir,exist_ok=True)
+        def write_list(l):
+            path = os.path.join(listdir,l+".gmi")
+            size = len(self.list_get_links(l))
+            line = "=> %s %s (%s items)\n" %(str(path),l,size)
+            return line
+            
         if not arg:
             lists = self.list_lists()
             if len(lists) > 0:
-                self.lookup = []
+                body = ""
+                my_lists = []
+                system_lists = []
+                subscriptions = []
                 lists.sort()
                 for l in lists:
-                    gpath = os.path.join(listdir,l+".gmi")
-                    size = len(self.list_get_links(l))
-                    gi = GeminiItem(gpath,l+" (%s items)"%size)
-                    self.lookup.append(gi)
-                self._show_lookup(url=False)
-                self.page_index = 0
+                    if l in ["history","to_fetch","archives","tour"]:
+                        system_lists.append(l)
+                    elif l in ["subscribed"]:
+                        subscriptions.append(l)
+                    else:
+                        my_lists.append(l)
+                if len(my_lists) > 0:
+                    body+= "\n## Bookmarks Lists\n"
+                    for l in my_lists:
+                        body += write_list(l)
+                if len(subscriptions) > 0:
+                    body +="\n## Subscriptions\n"
+                    for l in subscriptions:
+                        body += write_list(l)
+                if len(system_lists) > 0:
+                    body +="\n## System Lists\n"
+                    for l in system_lists:
+                        body += write_list(l)
+                lgi = GeminiItem(listdir, "My lists")
+                lgi.write_body(body,"text/gemini")
+                self._go_to_gi(lgi)
             else:
                 print("No lists yet. Use `list create`")
         else:
