@@ -713,7 +713,7 @@ class HtmlRenderer(AbstractRenderer):
                                 size = 40
                             else:
                                 size = width
-                            ansi_img = renderer.get_body(width=size)
+                            ansi_img = "\n" + renderer.get_body(width=size)
                     except Exception as err:
                         #we sometimes encounter really bad formatted files or URL
                         ansi_img += "[BAD IMG] %s"%src
@@ -780,6 +780,8 @@ class HtmlRenderer(AbstractRenderer):
             title = "\x1b[1;34m\x1b[4m" + self.get_title() + "\x1b[0m""\n" 
             title = textwrap.fill(title,width)
             r_body = title + "\n" + r_body
+        #We try to avoid huge empty gaps in the page
+        r_body = r_body.replace("\n\n\n\n","\n\n").replace("\n\n\n","\n\n")
         return r_body,links
 
 # Mapping mimetypes with renderers
@@ -867,6 +869,9 @@ class GeminiItem():
             #if not local, we create a local cache path.
             self._cache_path = os.path.expanduser(_CACHE_PATH + self.scheme +\
                                                     "/" + self.host + self.path)
+            #There’s an OS limitation of 260 characters per path. 
+            #We will thus cut the path enough to add the index afterward
+            self._cache_path = self._cache_path[:249]
             # FIXME : this is a gross hack to give a name to
             # index files. This will break if the index is not
             # index.gmi. I don’t know how to know the real name
@@ -923,7 +928,8 @@ class GeminiItem():
             # fetching it.
             if len(self._cache_path) > 259:
                 self.links = []
-                return True
+                print("We return False because path is too long")
+                return False
             if os.path.exists(self._cache_path):
                 if validity > 0 :
                     last_modification = self.cache_last_modified()
@@ -1122,7 +1128,7 @@ class GeminiItem():
                 path = self._cache_path
             if path.endswith(".gmi"):
                 mime = "text/gemini"
-            elif _HAS_MAGIC:
+            elif _HAS_MAGIC :
                 mime = magic.from_file(path,mime=True)
             else:
                 mime,encoding = mimetypes.guess_type(path,strict=False)
