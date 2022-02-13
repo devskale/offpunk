@@ -461,11 +461,11 @@ class FolderRenderer(AbstractRenderer):
                     else:
                         my_lists.append(l)
                 if len(my_lists) > 0:
-                    body+= "\n## Bookmarks Lists\n"
+                    body+= "\n## Bookmarks Lists (updated during sync)\n"
                     for l in my_lists:
                         body += write_list(l)
                 if len(subscriptions) > 0:
-                    body +="\n## Subscriptions\n"
+                    body +="\n## Subscriptions (new links in those are added to tour)\n"
                     for l in subscriptions:
                         body += write_list(l)
                 if len(system_lists) > 0:
@@ -703,16 +703,20 @@ class HtmlRenderer(AbstractRenderer):
                 ansi_img = ""
                 if _RENDER_IMAGE and mode != "quick" and src:
                     abs_url = urllib.parse.urljoin(self.url, src)
-                    g = GeminiItem(abs_url)
-                    if g.is_cache_valid():
-                        img = g.get_cache_path()
-                        renderer = ImageRenderer(img,abs_url)
-                        # Image are 40px wide except if terminal is smaller
-                        if width > 40:
-                            size = 40
-                        else:
-                            size = width
-                        ansi_img = renderer.get_body(width=size)
+                    try:
+                        g = GeminiItem(abs_url)
+                        if g.is_cache_valid():
+                            img = g.get_cache_path()
+                            renderer = ImageRenderer(img,abs_url)
+                            # Image are 40px wide except if terminal is smaller
+                            if width > 40:
+                                size = 40
+                            else:
+                                size = width
+                            ansi_img = renderer.get_body(width=size)
+                    except Exception as err:
+                        #we sometimes encounter really bad formatted files or URL
+                        ansi_img += "[BAD IMG] %s"%src
                 alt = element.get("alt")
                 if alt:
                     alt = sanitize_string(alt)
