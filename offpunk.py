@@ -196,6 +196,8 @@ def fix_ipv6_url(url):
         return
     if not url.count(":") > 2: # Best way to detect them?
         return url
+    if url.startswith("mailto"):
+        return url
     # If there's a pair of []s in there, it's probably fine as is.
     if "[" in url and "]" in url:
         return url
@@ -1103,7 +1105,10 @@ class GeminiItem():
                 mime2,encoding = mimetypes.guess_type(path,strict=False)
                 #If we hesitate between html and xml, takes the xml one
                 #because the FeedRendered fallback to HtmlRenderer
-                if mime != mime2 and "html" in mime and "xml" in mime2:
+                if mime2 and mime != mime2 and "html" in mime and "xml" in mime2:
+                    mime = "text/xml"
+                #Some xml/html document are considered as octet-stream
+                if mime == "application/octet-stream":
                     mime = "text/xml"
             else:
                 mime,encoding = mimetypes.guess_type(path,strict=False)
