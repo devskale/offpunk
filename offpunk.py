@@ -82,6 +82,7 @@ try:
     import magic
     _HAS_MAGIC = True
 except ModuleNotFoundError:
+    print("Python-magic is recommended for better detection of mimetypes")
     _HAS_MAGIC = False
 
 try:
@@ -242,6 +243,10 @@ class AbstractRenderer():
     def get_title(self):
         return "Abstract title"
     
+    #This function will give gemtext to the gemtext renderer
+    def prepare(self,body):
+        return body
+    
     def get_body(self,readable=True,width=None):
         if not width:
             width = TERM_WIDTH
@@ -250,11 +255,14 @@ class AbstractRenderer():
                 mode = "readable" 
             else :
                 mode = "full"
-            self.rendered_text, self.links = self.render(self.body,width=width,mode=mode)
+            prepared_body = self.prepare(self.body)
+            self.rendered_text, self.links = self.render(prepared_body,width=width,mode=mode)
         return self.rendered_text
     # An instance of AbstractRenderer should have a self.render(body,width,mode) method.
     # 3 modes are used : readable (by default), full and links_only (the fastest, when
     # rendered content is not used, only the links are needed)
+    # The prepare() function is called before the rendering. It is useful if
+    # your renderer output in a format suitable for another existing renderer (such as gemtext)
 
 # Gemtext Rendering Engine
 class GemtextRenderer(AbstractRenderer):
@@ -411,8 +419,8 @@ class GopherRenderer(AbstractRenderer):
         return rendered_text,links
 
 
-class FolderRenderer(AbstractRenderer):
-    def render(self,body,mode=None,width=None):
+class FolderRenderer(GemtextRenderer):
+    def prepare(self,body):
         def write_list(l):
             path = os.path.join(listdir,l+".gmi")
             gi = GeminiItem("file://" + path)
@@ -455,8 +463,7 @@ class FolderRenderer(AbstractRenderer):
                     body +="\n## System Lists\n"
                     for l in system_lists:
                         body += write_list(l)
-                self.rendered_body,self.links = GemtextRenderer.render(self,body,width=width)
-                return self.rendered_body, self.links
+                return body
 
 class FeedRenderer(AbstractRenderer):
     def is_valid(self):
@@ -523,8 +530,10 @@ class FeedRenderer(AbstractRenderer):
                 page += "\n\n"
                 if mode == "full":
                     if "summary" in i:
-                        page += textwrap.fill(i.summary,width)
-                        page += "\n\n"
+                        rendered, links = HtmlRenderer.render(self,i.summary,\
+                                            width=width,mode="full",add_title=False)
+                        page += rendered
+                        page += "\n"
         return page, self.links
 
 class ImageRenderer(AbstractRenderer):
@@ -566,7 +575,7 @@ class HtmlRenderer(AbstractRenderer):
     # Our own HTML engine (crazy, isn’t it?)
     # Return [rendered_body, list_of_links]
     # mode is either links_only, readable or full
-    def render(self,body,mode="readable",width=None):
+    def render(self,body,mode="readable",width=None,add_title=True):
         if not width:
             width = TERM_WIDTH
         if not _DO_HTML:
@@ -700,8 +709,12 @@ class HtmlRenderer(AbstractRenderer):
             summary = readable.summary()
         soup = BeautifulSoup(summary, 'html.parser')
         rendered_body = ""
-        if soup and soup.body :
-            for el in soup.body.contents:
+        if soup :
+            if soup.body :
+                contents = soup.body.contents
+            else:
+                contents = soup.contents
+            for el in contents:
                 rendered_body += recursive_render(el)
             paragraphs = rendered_body.split("\n\n")
             for par in paragraphs:
@@ -733,7 +746,7 @@ class HtmlRenderer(AbstractRenderer):
         first_line = ""
         while first_line == "" and len(lines) > 0:
             first_line = lines.pop(0)
-        if self.get_title()[:(width-1)] not in first_line:
+        if add_title and self.get_title()[:(width-1)] not in first_line:
             title = "\x1b[1;34m\x1b[4m" + self.get_title() + "\x1b[0m""\n" 
             title = textwrap.fill(title,width)
             r_body = title + "\n" + r_body
@@ -991,7 +1004,7 @@ class GeminiItem():
 
     def _set_renderer(self,mime=None):
         if self.local and os.path.isdir(self.path):
-            self.renderer = FolderRenderer(None,self.path)
+            self.renderer = FolderRenderer("",self.path)
             return
         if not mime:
             mime = self.get_mime()
@@ -1087,6 +1100,11 @@ class GeminiItem():
                 mime = "text/gemini"
             elif _HAS_MAGIC :
                 mime = magic.from_file(path,mime=True)
+                mime2,encoding = mimetypes.guess_type(path,strict=False)
+                #If we hesitate between html and xml, takes the xml one
+                #because the FeedRendered fallback to HtmlRenderer
+                if mime != mime2 and "html" in mime and "xml" in mime2:
+                    mime = "text/xml"
             else:
                 mime,encoding = mimetypes.guess_type(path,strict=False)
             #gmi Mimetype is not recognized yet
