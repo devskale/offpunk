@@ -242,10 +242,17 @@ class AbstractRenderer():
     
     def is_valid(self):
         return self.validity
+    def get_links(self):
+        if not self.links:
+            self.links = []
+        return self.links
+    def get_title(self):
+        return "Abstract title"
     
     @with_width
     def get_body(self,readable=True,width=None):
         pass
+        #return self.body
 
 # Gemtext Rendering Engine
 class GemtextRenderer(AbstractRenderer):
@@ -420,6 +427,53 @@ class GopherRenderer(AbstractRenderer):
                     rendered_text += textwrap.fill(towrap,width) + "\n"
         return rendered_text,links
 
+
+class FolderRenderer(AbstractRenderer):
+    def get_body(self,readable=True,width=None):
+        def write_list(l):
+            path = os.path.join(listdir,l+".gmi")
+            gi = GeminiItem("file://" + path)
+            size = len(gi.get_links())
+            line = "=> %s %s (%s items)\n" %(str(path),l,size)
+            return line
+        listdir = os.path.join(_DATA_DIR,"lists")
+        if self.url != listdir:
+            return "This is folder %s" %self.url
+        else:
+            lists = []
+            if os.path.exists(listdir):
+                listfiles = os.listdir(listdir)
+                if len(listfiles) > 0:
+                    for l in listfiles:
+                        #removing the .gmi at the end of the name
+                        lists.append(l[:-4])
+            if len(lists) > 0:
+                body = ""
+                my_lists = []
+                system_lists = []
+                subscriptions = []
+                lists.sort()
+                for l in lists:
+                    if l in ["history","to_fetch","archives","tour"]:
+                        system_lists.append(l)
+                    elif l in ["subscribed"]:
+                        subscriptions.append(l)
+                    else:
+                        my_lists.append(l)
+                if len(my_lists) > 0:
+                    body+= "\n## Bookmarks Lists\n"
+                    for l in my_lists:
+                        body += write_list(l)
+                if len(subscriptions) > 0:
+                    body +="\n## Subscriptions\n"
+                    for l in subscriptions:
+                        body += write_list(l)
+                if len(system_lists) > 0:
+                    body +="\n## System Lists\n"
+                    for l in system_lists:
+                        body += write_list(l)
+                self.rendered_body,self.links = GemtextRenderer.render_gemtext(self,body)
+                return self.rendered_body
 
 class FeedRenderer(AbstractRenderer):
     def is_valid(self):
@@ -969,6 +1023,9 @@ class GeminiItem():
         return wrapped + "\n"
 
     def _set_renderer(self,mime=None):
+        if self.local and os.path.isdir(self.path):
+            self.renderer = FolderRenderer(None,self.path)
+            return
         if not mime:
             mime = self.get_mime()
         mime_to_use = []
@@ -2846,41 +2903,10 @@ See also :
 - archive (to remove current page from all lists while adding to archives)"""
         listdir = os.path.join(_DATA_DIR,"lists")
         os.makedirs(listdir,exist_ok=True)
-        def write_list(l):
-            path = os.path.join(listdir,l+".gmi")
-            size = len(self.list_get_links(l))
-            line = "=> %s %s (%s items)\n" %(str(path),l,size)
-            return line
-            
         if not arg:
             lists = self.list_lists()
             if len(lists) > 0:
-                body = ""
-                my_lists = []
-                system_lists = []
-                subscriptions = []
-                lists.sort()
-                for l in lists:
-                    if l in ["history","to_fetch","archives","tour"]:
-                        system_lists.append(l)
-                    elif l in ["subscribed"]:
-                        subscriptions.append(l)
-                    else:
-                        my_lists.append(l)
-                if len(my_lists) > 0:
-                    body+= "\n## Bookmarks Lists\n"
-                    for l in my_lists:
-                        body += write_list(l)
-                if len(subscriptions) > 0:
-                    body +="\n## Subscriptions\n"
-                    for l in subscriptions:
-                        body += write_list(l)
-                if len(system_lists) > 0:
-                    body +="\n## System Lists\n"
-                    for l in system_lists:
-                        body += write_list(l)
                 lgi = GeminiItem(listdir, "My lists")
-                lgi.write_body(body,"text/gemini")
                 self._go_to_gi(lgi)
             else:
                 print("No lists yet. Use `list create`")
