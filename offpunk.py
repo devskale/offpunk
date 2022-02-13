@@ -233,40 +233,31 @@ class AbstractRenderer():
         self.title = None
         self.validity = True
     
-    def with_width(func):
-        def inner(*args, **kwargs):
-            if not kwargs["width"]:
-                kwargs["width"] = TERM_WIDTH
-            func(*args, **kwargs)
-        return inner
-    
     def is_valid(self):
         return self.validity
     def get_links(self):
-        if not self.links:
-            self.links = []
+        if self.links == None :
+            rendered_text, self.links = self.render(self.body,mode="links_only")
         return self.links
     def get_title(self):
         return "Abstract title"
     
-    @with_width
     def get_body(self,readable=True,width=None):
-        pass
-        #return self.body
+        if not width:
+            width = TERM_WIDTH
+        if self.rendered_text == None or not readable:
+            if readable : 
+                mode = "readable" 
+            else :
+                mode = "full"
+            self.rendered_text, self.links = self.render(self.body,width=width,mode=mode)
+        return self.rendered_text
+    # An instance of AbstractRenderer should have a self.render(body,width,mode) method.
+    # 3 modes are used : readable (by default), full and links_only (the fastest, when
+    # rendered content is not used, only the links are needed)
 
 # Gemtext Rendering Engine
 class GemtextRenderer(AbstractRenderer):
-    def get_body(self,readable=True,width=None):
-        super().get_body(readable=readable,width=width)
-        if self.rendered_text == None :
-            self.rendered_text, self.links = self.render_gemtext(self.body,width=width)
-        return self.rendered_text
-
-    def get_links(self):
-        if self.links == None :
-            rendered_text, self.links = self.render_gemtext(self.body)
-        return self.links
-
     def get_title(self):
         if self.title:
             return self.title
@@ -287,8 +278,9 @@ class GemtextRenderer(AbstractRenderer):
             else:
                 self.title = "Empty Page"
                 return self.title
-
-    def render_gemtext(self,gemtext, width=None):
+    
+    #render_gemtext
+    def render(self,gemtext, width=None,mode=None):
         if not width:
             width = TERM_WIDTH
         links = []
@@ -361,35 +353,26 @@ class GemtextRenderer(AbstractRenderer):
         return rendered_text, links
 
 class GopherRenderer(AbstractRenderer):
-    def get_body(self,readable=True,width=None):
-        super().get_body(readable=readable,width=width)
-        if self.rendered_text == None:
-            self.rendered_text,self.links = self.menu_or_text(width=width)
-        return self.rendered_text
-
-    def get_links(self):
-        if self.links == None:
-            rendered_text,self.links = self.menu_or_text()
-        return self.links
-
     def get_title(self):
         return "Gopher - No Title"
 
-    def menu_or_text(self,width=None):
+    #menu_or_text
+    def render(self,body,width=None,mode=None):
+        print("Gopher rendering with width %s" %width)
         if not width:
             width = TERM_WIDTH
         try:
-            render,links = self._render_goph(width=width)
+            render,links = self._render_goph(width=width,mode=mode)
         except Exception as err:
             print("Error ",err)
-            lines = self.body.split("\n")
+            lines = body.split("\n")
             render = ""
             for line in lines:
                 render += textwrap.fill(line,width) + "\n"
             links = []
         return render,links
 
-    def _render_goph(self,width=None):
+    def _render_goph(self,width=None,mode=None):
         if not width:
             width = TERM_WIDTH
         # This is copied straight from Agena (and thus from VF1)
@@ -429,7 +412,7 @@ class GopherRenderer(AbstractRenderer):
 
 
 class FolderRenderer(AbstractRenderer):
-    def get_body(self,readable=True,width=None):
+    def render(self,body,mode=None,width=None):
         def write_list(l):
             path = os.path.join(listdir,l+".gmi")
             gi = GeminiItem("file://" + path)
@@ -472,34 +455,26 @@ class FolderRenderer(AbstractRenderer):
                     body +="\n## System Lists\n"
                     for l in system_lists:
                         body += write_list(l)
-                self.rendered_body,self.links = GemtextRenderer.render_gemtext(self,body)
-                return self.rendered_body
+                self.rendered_body,self.links = GemtextRenderer.render(self,body,width=width)
+                return self.rendered_body, self.links
 
 class FeedRenderer(AbstractRenderer):
     def is_valid(self):
-        self.render_feed(self.body)
-        return self.validity
-
-    def get_body(self,readable=True,width=None):
-        super().get_body(readable=readable,width=width)
-        if readable:
-            if not self.rendered_text:
-                self.rendered_text = self.render_feed(self.body,width=width)
-            return self.rendered_text
+        if _DO_FEED:
+            parsed = feedparser.parse(self.body)
         else:
-            return self.render_feed(self.body,full=True)
-        
-    def get_links(self):
-        if not self.links:
-            self.render_feed(self.body)
-        return self.links
+            return False
+        if parsed.bozo:
+            return False
+        else:
+            return True
 
     def get_title(self):
         if not self.title:
-            self.render_feed(self.body)
+            self.render(self.body)
         return self.title
 
-    def render_feed(self,content,full=False,width=None):
+    def render(self,content,mode="readable",width=None):
         if not width:
             width = TERM_WIDTH
         self.links = []
@@ -546,11 +521,11 @@ class FeedRenderer(AbstractRenderer):
                     line += "on %s"%i.published
                 page += textwrap.fill(line,width)
                 page += "\n\n"
-                if full:
+                if mode == "full":
                     if "summary" in i:
                         page += textwrap.fill(i.summary,width)
                         page += "\n\n"
-        return page
+        return page, self.links
 
 class ImageRenderer(AbstractRenderer):
     def is_valid(self):
@@ -558,16 +533,13 @@ class ImageRenderer(AbstractRenderer):
             return True
         else:
             return False
-    def get_body(self,readable=True,width=None):
-        super().get_body(readable=readable,width=width)
-        if self.rendered_text == None:
-            self.rendered_text = self.render_image(self.body,width)
-        return self.rendered_text
     def get_links(self):
         return []
     def get_title(self):
         return "Picture file"
-    def render_image(self,img,width=None):
+    def render(self,img,width=None,mode=None):
+        if mode == "links_only":
+            return "", []
         if not width:
             width = TERM_WIDTH
         try:
@@ -580,24 +552,9 @@ class ImageRenderer(AbstractRenderer):
             ansi_img = return_code.stdout.decode()
         except Exception as err:
             ansi_img = "***image failed : %s***\n" %err
-        return ansi_img
+        return ansi_img, []
 
 class HtmlRenderer(AbstractRenderer):
-    def get_body(self,readable=True,width=None):
-        super().get_body(readable=readable,width=width)
-        if self.rendered_text == None or not readable:
-            if readable:
-                mode = "readable"
-            else:
-                mode = "full"
-            self.rendered_text, self.links = self.render_html(self.body,mode=mode,width=width)
-        return self.rendered_text
-
-    def get_links(self):
-        if self.links == None :
-            rendered_text, self.links = self.render_html(self.body,mode="quick")
-        return self.links
-
     def get_title(self):
         if self.title:
             return self.title
@@ -608,8 +565,8 @@ class HtmlRenderer(AbstractRenderer):
 
     # Our own HTML engine (crazy, isn’t it?)
     # Return [rendered_body, list_of_links]
-    # mode is either quick, readable or full
-    def render_html(self,body,mode="readable",width=None):
+    # mode is either links_only, readable or full
+    def render(self,body,mode="readable",width=None):
         if not width:
             width = TERM_WIDTH
         if not _DO_HTML:
@@ -701,7 +658,7 @@ class HtmlRenderer(AbstractRenderer):
                 src = element.get("src")
                 text = ""
                 ansi_img = ""
-                if _RENDER_IMAGE and mode != "quick" and src:
+                if _RENDER_IMAGE and mode != "links_only" and src:
                     abs_url = urllib.parse.urljoin(self.url, src)
                     try:
                         g = GeminiItem(abs_url)
