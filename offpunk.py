@@ -598,14 +598,32 @@ class HtmlRenderer(AbstractRenderer):
         # You know how bad html is when you realize that space sometimes meaningful, somtimes not.
         # CR are not meaniningful. Except that, somethimes, they should be interpreted as spaces.
         # HTML is real crap. At least the one people are generating.
+        def render_image(src,width=40,mode=None):
+            ansi_img = ""
+            if _RENDER_IMAGE and mode != "links_only" and src:
+                abs_url = urllib.parse.urljoin(self.url, src)
+                try:
+                    g = GeminiItem(abs_url)
+                    if g.is_cache_valid():
+                        img = g.get_cache_path()
+                        renderer = ImageRenderer(img,abs_url)
+                        # Image are 40px wide except if terminal is smaller
+                        if width > 40:
+                            size = 40
+                        else:
+                            size = width
+                        ansi_img = "\n" + renderer.get_body(width=size)
+                except Exception as err:
+                    #we sometimes encounter really bad formatted files or URL
+                    ansi_img += "[BAD IMG] %s"%src
+            return ansi_img
         def sanitize_string(string):
-            endspace = string.endswith(" ")
-            startspace = string.startswith(" ")
+            endspace = string.endswith(" ") or string.endswith("\xa0")
+            startspace = string.startswith(" ") or string.startswith("\xa0")
             toreturn = string.replace("\n", " ").replace("\t"," ").strip()
             while "  " in toreturn:
                 toreturn = toreturn.replace("  "," ")
-            toreturn = toreturn.strip("\n").strip("\t")
-            toreturn = toreturn.replace("&nbsp"," ")
+            toreturn = toreturn.replace("&nbsp","\xa0")
             if endspace and not toreturn.endswith(" "):
                 toreturn += " "
             if startspace and not toreturn.startswith(" "):
@@ -660,12 +678,16 @@ class HtmlRenderer(AbstractRenderer):
                     rendered_body += recursive_render(child,indent=indent)
                 rendered_body += "\x1b[22m"
             elif element.name == "a":
-                text = sanitize_string(element.get_text())
+                text = ""
                 # support for images nested in links
                 for child in element.children:
                     if child.name == "img":
-                        img = recursive_render(child)
+                        # recursive rendering seems to displaying images twice
+                        src = child.get("src")
+                        img = render_image(src,width=width,mode=mode)
                         rendered_body += img
+                    else:
+                        text += recursive_render(child)
                 link = element.get('href')
                 if link:
                     links.append(link+" "+text)
@@ -677,23 +699,7 @@ class HtmlRenderer(AbstractRenderer):
             elif element.name == "img":
                 src = element.get("src")
                 text = ""
-                ansi_img = ""
-                if _RENDER_IMAGE and mode != "links_only" and src:
-                    abs_url = urllib.parse.urljoin(self.url, src)
-                    try:
-                        g = GeminiItem(abs_url)
-                        if g.is_cache_valid():
-                            img = g.get_cache_path()
-                            renderer = ImageRenderer(img,abs_url)
-                            # Image are 40px wide except if terminal is smaller
-                            if width > 40:
-                                size = 40
-                            else:
-                                size = width
-                            ansi_img = "\n" + renderer.get_body(width=size)
-                    except Exception as err:
-                        #we sometimes encounter really bad formatted files or URL
-                        ansi_img += "[BAD IMG] %s"%src
+                ansi_img = render_image(src,width=width,mode=mode)
                 alt = element.get("alt")
                 if alt:
                     alt = sanitize_string(alt)
