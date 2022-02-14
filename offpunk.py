@@ -246,7 +246,7 @@ class AbstractRenderer():
         return "Abstract title"
     
     #This function will give gemtext to the gemtext renderer
-    def prepare(self,body):
+    def prepare(self,body,mode=None):
         return body
     
     def get_body(self,readable=True,width=None):
@@ -257,7 +257,7 @@ class AbstractRenderer():
                 mode = "readable" 
             else :
                 mode = "full"
-            prepared_body = self.prepare(self.body)
+            prepared_body = self.prepare(self.body,mode=mode)
             self.rendered_text, self.links = self.render(prepared_body,width=width,mode=mode)
         return self.rendered_text
     # An instance of AbstractRenderer should have a self.render(body,width,mode) method.
@@ -467,7 +467,7 @@ class FolderRenderer(GemtextRenderer):
                         body += write_list(l)
                 return body
 
-class FeedRenderer(AbstractRenderer):
+class FeedRenderer(GemtextRenderer):
     def is_valid(self):
         if _DO_FEED:
             parsed = feedparser.parse(self.body)
@@ -483,7 +483,7 @@ class FeedRenderer(AbstractRenderer):
             self.render(self.body)
         return self.title
 
-    def render(self,content,mode="readable",width=None):
+    def prepare(self,content,mode="readable",width=None):
         if not width:
             width = TERM_WIDTH
         self.links = []
@@ -505,39 +505,33 @@ class FeedRenderer(AbstractRenderer):
             else:
                 t = "Unknown"
             self.title = "%s (XML feed)" %t
-            title = "\x1b[1;4;34m%s\x1b[0m" %self.title
-            blue_title = textwrap.fill(title,width)
-            page += blue_title + "\n"
-            if "subtitle" in parsed.feed:
-                page += textwrap.fill(parsed.feed.subtitle,width) + "\n\n"
-            if "link" in parsed.feed:
-                self.links.append(parsed.feed.link)
-                line = "This is the feed for \x1b[34;2m%s [1]\x1b[0m" %parsed.feed.link
-                page += textwrap.fill(line,width) + "\n"
+            title = "# %s"%self.title
+            page += title + "\n"
             if "updated" in parsed.feed:
-                line = "Last updated on %s" %parsed.feed.updated
-                page += textwrap.fill(line,width)
-            page += "\n\n"
+                page += "Last updated on %s\n\n" %parsed.feed.updated
+            if "subtitle" in parsed.feed:
+                page += parsed.feed.subtitle + "\n"
+            if "link" in parsed.feed:
+                page += "=> %s\n" %parsed.feed.link
+            page += "\n## Entries\n"
             if len(parsed.entries) < 1:
                 self.validity = False
             for i in parsed.entries:
-                self.links.append(i.link)
-                line = "\x1b[34m%s [%s]\x1b[0m"%(i.title,len(self.links))
-                page += textwrap.fill(line,width) + "\n"
-                line = ""
-                if "author" in i:
-                    line += "by %s "%i.author
+                line = "=> %s " %i.link
                 if "published" in i:
-                    line += "on %s"%i.published
-                page += textwrap.fill(line,width)
-                page += "\n\n"
+                    pub_date = time.strftime("%Y-%m-%d",i.published_parsed)
+                    line += pub_date + " : "
+                line += "%s" %(i.title)
+                if "author" in i:
+                    line += " (by %s)"%i.author
+                page += line + "\n"
                 if mode == "full":
                     if "summary" in i:
                         rendered, links = HtmlRenderer.render(self,i.summary,\
                                             width=width,mode="full",add_title=False)
                         page += rendered
                         page += "\n"
-        return page, self.links
+        return page
 
 class ImageRenderer(AbstractRenderer):
     def is_valid(self):
