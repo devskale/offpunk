@@ -422,7 +422,7 @@ class GopherRenderer(AbstractRenderer):
 
 
 class FolderRenderer(GemtextRenderer):
-    def prepare(self,body):
+    def prepare(self,body,mode=None):
         def write_list(l):
             path = os.path.join(listdir,l+".gmi")
             gi = GeminiItem("file://" + path)
@@ -2944,8 +2944,6 @@ See also :
             else:
                 self.list_go_to_line(args[1],args[0].lower())
 
-            
-
     def do_help(self, arg):
         """ALARM! Recursion detected! ALARM! Prepare to eject!"""
         if arg == "!":
@@ -3011,7 +3009,6 @@ current gemini browsing session."""
                 certfile = os.path.join(_CONFIG_DIR, "transient_certs", cert+ext)
                 if os.path.exists(certfile):
                     os.remove(certfile)
-        print()
         print("You can close your screen!")
         sys.exit()
 
@@ -3053,25 +3050,23 @@ def main():
     # Instantiate client
     gc = GeminiClient(restricted=args.restricted,synconly=args.sync)
 
-    # Process config file
-    rcfile = os.path.join(_CONFIG_DIR, "offpunkrc")
-    if os.path.exists(rcfile):
-        print("Using config %s" % rcfile)
-        with open(rcfile, "r") as fp:
-            for line in fp:
-                line = line.strip()
-                if ((args.bookmarks or args.url) and
-                    any((line.startswith(x) for x in ("go", "g", "tour", "t")))
-                   ):
-                    if args.bookmarks:
-                        print("Skipping rc command \"%s\" due to --bookmarks option." % line)
-                    else:
-                        print("Skipping rc command \"%s\" due to provided URLs." % line)
-                    continue
-                gc.cmdqueue.append(line)
-
-    # Say hi
     if not args.sync and not args.fetch_later:
+        # Process config file
+        rcfile = os.path.join(_CONFIG_DIR, "offpunkrc")
+        if os.path.exists(rcfile):
+            print("Using config %s" % rcfile)
+            with open(rcfile, "r") as fp:
+                for line in fp:
+                    line = line.strip()
+                    if ((args.bookmarks or args.url) and
+                        any((line.startswith(x) for x in ("go", "g", "tour", "t")))
+                        ):
+                        if args.bookmarks:
+                            print("Skipping rc command \"%s\" due to --bookmarks option." % line)
+                        else:
+                            print("Skipping rc command \"%s\" due to provided URLs." % line)
+                        continue
+                    gc.cmdqueue.append(line)
         print("Welcome to Offpunk!")
         if args.restricted:
             print("Restricted mode engaged!")
@@ -3099,14 +3094,13 @@ def main():
     # Endless interpret loop
     if args.fetch_later:
         if args.url:
-            # we go offline to fetch later and in sync-only to not display anything
-            gc.onecmd("offline")
             gc.sync_only = True
             for u in args.url:
-                gc.onecmd("go %s"%u)
-                if gc.gi and u in gc.gi.url and gc.gi.is_cache_valid():
-                    # forcing re-fetch in case an old catch already exists
-                    gc.onecmd("reload")
+                gi = GeminiItem(u)
+                if gi and gi.is_cache_valid():
+                    gc.list_add_line("tour",gi)
+                else:
+                    gc.list_add_line("to_fetch",gi)
         else:
             print("--fetch-later requires an URL (or a list of URLS) as argument")
     elif args.sync:

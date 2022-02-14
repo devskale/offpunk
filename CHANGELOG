@@ -4,6 +4,7 @@
 - Pictures are now displayed directely in terminal (suggested by kelbot)
 - Introducing the "open" command to open current page/image/file with external handler.
 - "set width XX" will now work everywhere (thanks kelbot for reporting the bug)
+- RSS feeds are now rendered as Gemlogs to improve consistency while browsing
 - Improved syncing performances and multiple bug/crash fixes.
 
 ## 0.3 - Feb 11th 2022
