@@ -504,9 +504,10 @@ class FeedRenderer(AbstractRenderer):
                 t = parsed.feed.title
             else:
                 t = "Unknown"
-            title = "\x1b[1;4;34m%s (XML feed)\x1b[0m" %t
-            self.title = textwrap.fill(title,width)
-            page += self.title + "\n"
+            self.title = "%s (XML feed)" %t
+            title = "\x1b[1;4;34m%s\x1b[0m" %self.title
+            blue_title = textwrap.fill(title,width)
+            page += blue_title + "\n"
             if "subtitle" in parsed.feed:
                 page += textwrap.fill(parsed.feed.subtitle,width) + "\n\n"
             if "link" in parsed.feed:
@@ -870,23 +871,23 @@ class GeminiItem():
             #else we fallback to hostname
             if self.scheme == "file":
                 if self.name != "":
-                    self.title = self.name
+                    red_title = self.name
                 else:
-                    self.title = self.path
+                    red_title = self.path
             else:
-                self.title = self.host
+                red_title = self.host
                 if "user" in self.path:
                     i = 0
                     splitted = self.path.split("/")
                     while i < (len(splitted)-1):
                         if splitted[i].startswith("user"):
-                            self.title = splitted[i+1]
+                            red_title = splitted[i+1]
                         i += 1
                 if "~" in self.path:
                     for pp in self.path.split("/"):
                         if pp.startswith("~"):
-                            self.title = pp[1:]
-            return self.title
+                            red_title = pp[1:]
+            return red_title
     
     def is_cache_valid(self,validity=0):
         # Validity is the acceptable time for 
@@ -2706,7 +2707,7 @@ archives, which is a special historical list limited in size. It is similar to `
                 if deleted:
                     print("Removed from %s"%li)
         self.list_add_top("archives",limit=self.options["archives_size"])
-        print("%s added to your archives"%self.gi.full_title())
+        print("Archiving: %s"%self.gi.full_title())
         print("\x1b[2;34mCurrent maximum size of archives : %s\x1b[0m" %self.options["archives_size"])
 
     def list_add_line(self,list,gi=None,verbose=True):
@@ -3188,6 +3189,9 @@ def main():
         gc.sync_only = True
         lists = gc.list_lists()
         # We will fetch all the lists except "archives" and "history"
+        # We keep tour for the last round
+        if "tour" in lists:
+            lists.remove("tour")
         if "archives" in lists:
             lists.remove("archives")
         if "history" in lists:
@@ -3203,6 +3207,9 @@ def main():
         #then we fetch all the rest (including bookmarks and tour)
         for l in lists:
             fetch_list(l,validity=refresh_time,depth=depth)
+        #tour should be the last one as item my be added to it by others
+        fetch_list("tour",validity=refresh_time,depth=depth)
+
 
         gc.onecmd("blackbox")
     else:
