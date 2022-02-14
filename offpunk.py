@@ -757,6 +757,9 @@ _FORMAT_RENDERERS = {
     "text/gemini":  GemtextRenderer,
     "text/html" :   HtmlRenderer,
     "text/xml" : FeedRenderer,
+    "application/xml" : FeedRenderer,
+    "application/rss+xml" : FeedRenderer,
+    "application/atom+xml" : FeedRenderer,
     "text/gopher": GopherRenderer,
     "image/*": ImageRenderer
 }
@@ -1474,7 +1477,8 @@ class GeminiClient(cmd.Cmd):
         mime = response.headers['content-type']
         body = response.content
         if "text/" in mime:
-            body = response.text
+            #body = response.text
+            body = response.content.decode("UTF-8","replace")
         else:
             body = response.content
         gi.write_body(body,mime)
