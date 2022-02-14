@@ -58,9 +58,12 @@ except ModuleNotFoundError:
     import textwrap
     _HAS_ANSIWRAP = False
 
+_HAS_CHAFA = shutil.which('chafa')
+_HAS_XSEL = shutil.which('xsel')
 try:
     from PIL import Image
-    if _HAS_ANSIWRAP and shutil.which('chafa'):
+    _HAS_PIL = True
+    if _HAS_ANSIWRAP and _HAS_CHAFA:
         _RENDER_IMAGE = True
     else:
         print("chafa and ansiwrap are required to render images in terminal")
@@ -68,6 +71,7 @@ try:
 except ModuleNotFoundError:
     print("python-pil, chafa and ansiwrap are required to render images")
     _RENDER_IMAGE = False
+    _HAS_PIL = False
 
 
 try:
@@ -93,10 +97,17 @@ except ModuleNotFoundError:
 
 try:
     from readability import Document
-    from bs4 import BeautifulSoup
-    _DO_HTML = True
+    _HAS_READABILITY = True
 except ModuleNotFoundError:
-    _DO_HTML = False
+    _HAS_READABILITY = False
+
+try:
+    from bs4 import BeautifulSoup
+    _HAS_SOUP = True
+except ModuleNotFoundError:
+    _HAS_SOUP = False
+
+_DO_HTML = _HAS_SOUP and _HAS_READABILITY
 
 try:
     import feedparser
@@ -108,10 +119,12 @@ except ModuleNotFoundError:
 # There are two conflicting xdg modules, we try to work with both
 try:
     from xdg import BaseDirectory
+    _HAS_XDG = True
     _CACHE_PATH = BaseDirectory.save_cache_path("offpunk/")
     _CONFIG_DIR = BaseDirectory.save_config_path("offpunk/")
     _DATA_DIR = BaseDirectory.save_data_path("offpunk/")
 except ModuleNotFoundError:
+    _HAS_XDG = False
     _CACHE_PATH = os.path.expanduser("~/.cache/offpunk/")
     _CONFIG_DIR = None
     ## Look for pre-existing config directory, if any
@@ -161,6 +174,7 @@ _ABBREVS = {
     "h":    "history",
     "hist": "history",
     "l":    "less",
+    "mv":   "move",
     "n":    "next",
     "off":  "offline",
     "on":   "online",
@@ -368,7 +382,6 @@ class GopherRenderer(AbstractRenderer):
 
     #menu_or_text
     def render(self,body,width=None,mode=None):
-        print("Gopher rendering with width %s" %width)
         if not width:
             width = TERM_WIDTH
         try:
@@ -433,6 +446,7 @@ class FolderRenderer(GemtextRenderer):
         if self.url != listdir:
             return "This is folder %s" %self.url
         else:
+            self.title = "My lists"
             lists = []
             if os.path.exists(listdir):
                 listfiles = os.listdir(listdir)
@@ -1426,7 +1440,6 @@ class GeminiClient(cmd.Cmd):
                     print(err)
                 else:
                     if print_error:
-                        crash
                         print("ERROR4: " + str(type(err)) + " : " + str(err))
                         print("\n" + str(err.with_traceback(None)))
                 return
@@ -2301,7 +2314,7 @@ class GeminiClient(cmd.Cmd):
 Use with "url" as argument to only copy the adress.
 Use with "raw" to copy the content as seen in your terminal (not gemtext)"""
         if self.gi:
-            if shutil.which('xsel'):
+            if _HAS_XSEL:
                 if args and args[0] == "url":
                     subprocess.call(("echo %s |xsel -b -i" % self.gi.url), shell=True)
                 elif args and args[0] == "raw":
@@ -2473,8 +2486,39 @@ Think of it like marks in vi: 'mark a'='ma' and 'go a'=''a'."""
             print("Invalid mark, must be one letter")
 
     def do_version(self, line):
-        """Display version information."""
-        print("Offpunk " + _VERSION)
+        """Display version and system information."""
+        def has(value):
+            if value:
+                return "\t\x1b[1;32mInstalled\x1b[0m\n"
+            else:
+                return "\t\x1b[1;31mNot Installed\x1b[0m\n"
+        output = "Offpunk " + _VERSION + "\n"
+        output += "===========\n"
+        output += " - python-editor       : " + has(_HAS_EDITOR)
+        output += " - python-ansiwrap     : " + has(_HAS_ANSIWRAP)
+        output += " - python-pil          : " + has(_HAS_PIL)
+        output += " - python-cryptography : " + has(_HAS_CRYPTOGRAPHY)
+        output += " - python-magic        : " + has(_HAS_MAGIC)
+        output += " - python-requests     : " + has(_DO_HTTP)
+        output += " - python-feedparser   : " + has(_DO_FEED)
+        output += " - python-bs4          : " + has(_HAS_SOUP)
+        output += " - python-readability  : " + has(_HAS_READABILITY)
+        output += " - python-xdg          : " + has(_HAS_XDG)
+        output += " - chafa               : " + has(_HAS_CHAFA)
+        output += " - xsel                : " + has(_HAS_XSEL)
+
+        output += "\nFeatures :\n"
+        output += " - Render images (ansiwrap,pil,chafa) : " + has(_RENDER_IMAGE)
+        output += " - Render HTML (bs4, readability)     : " + has(_DO_HTML)
+        output += " - Render Atom/RSS feeds (feedparser) : " + has(_DO_FEED)
+        output += " - Connect to http/https (requests)   : " + has(_DO_HTTP)
+        output += " - copy to/from clipboard (xsel)      : " + has(_HAS_XSEL)
+        output += "\n"
+        output += "Config directory    : " +  _CONFIG_DIR + "\n"
+        output += "User Data directory : " +  _DATA_DIR + "\n"
+        output += "CACHE               : " +  _CACHE_PATH
+
+        print(output)
 
     ### Stuff that modifies the lookup table
     def do_ls(self, line):
@@ -2887,7 +2931,7 @@ If current page was not in a list, this command is similar to `add LIST`."""
 - list edit $LIST : edit the list
 - list delete $LIST : delete a list permanently (a confirmation is required)
 See also :
-- add $LIST (to add current page to list)
+- add $LIST (to add current page to $LIST or, by default, to bookmarks)
 - move $LIST (to add current page to list while removing from all others)
 - archive (to remove current page from all lists while adding to archives)"""
         listdir = os.path.join(_DATA_DIR,"lists")
