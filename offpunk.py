@@ -2964,9 +2964,9 @@ If current page was not in a list, this command is similar to `add LIST`."""
         return toreturn
 
     def list_is_subscribed(self,list):
-        return self.list_has_status("#subscribed")
+        return self.list_has_status(list,"#subscribed")
     def list_is_frozen(self,list):
-        return self.list_has_status("#frozen")
+        return self.list_has_status(list,"#frozen")
     def list_is_system(self,list):
         return list in ["history","to_fetch","archives","tour"]
 
@@ -3317,8 +3317,8 @@ def main():
         subscriptions = []
         normal_lists = []
         for l in lists:
-            if not list_is_frozen(l) and not list_is_system(l):
-                if list_is_subscribed(l):
+            if not gc.list_is_frozen(l) and not gc.list_is_system(l):
+                if gc.list_is_subscribed(l):
                     subscriptions.append(l)
                 else:
                     normal_lists.append(l)
