@@ -1413,7 +1413,7 @@ class GeminiClient(cmd.Cmd):
                     print("%s not available, marked for syncing"%gi.url)
                 else:
                     print("%s already marked for syncing"%gi.url)
-                self.gi = gi
+                #self.gi = gi
                 return
         # check if local file exists.
         if gi.local and not os.path.exists(gi.path):
