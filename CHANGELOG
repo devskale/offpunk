@@ -1,6 +1,7 @@
 # Offpunk History
 
 ## 0.4 - Unreleased
+UPGRADE: Users who subscribed to pages before 0.4 should run once the command "list subscribe subscribed". Without that, the subscribed list will be seen as a normal list by sync.
 - New list command : "list freeze" and "list suscribe"
 - Pictures are now displayed directely in terminal (suggested by kelbot)
 - Introducing the "open" command to open current page/image/file with external handler.
