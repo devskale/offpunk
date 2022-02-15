@@ -490,7 +490,7 @@ class FolderRenderer(GemtextRenderer):
                     body +="\n## Subscriptions (new links in those are added to tour)\n"
                     body += write_list(subscriptions)
                 if len(frozen) > 0:
-                    body +="\n## Frozen (never updated)\n"
+                    body +="\n## Frozen (fetched but never updated)\n"
                     body += write_list(frozen)
                 if len(system_lists) > 0:
                     body +="\n## System Lists\n"
@@ -2903,7 +2903,7 @@ archives, which is a special historical list limited in size. It is similar to `
 
     def list_create(self,list,title=None):
         list_path = self.list_path(list)
-        if list in ["create","edit","delete"]:
+        if list in ["create","edit","delete","help"]:
             print("%s is not allowed as a name for a list"%list)
         elif not list_path:
             listdir = os.path.join(_DATA_DIR,"lists")
@@ -3004,6 +3004,7 @@ If current page was not in a list, this command is similar to `add LIST`."""
 - list freeze $LIST : don’t update pages in list during sync if a cache already exists
 - list normal $LIST : update pages in list during sync but don’t add anything to tour
 - list delete $LIST : delete a list permanently (a confirmation is required)
+- list help : print this help
 See also :
 - add $LIST (to add current page to $LIST or, by default, to bookmarks)
 - move $LIST (to add current page to list while removing from all others)
@@ -3075,6 +3076,8 @@ See also :
                         self.list_modify(args[1],action=action)
                 else:
                     print("A valid list name is required after %s" %args[0])
+            elif args[0] == "help":
+                self.onecmd("help list")
             elif len(args) == 1:
                 self.list_show(args[0].lower())
             else:
