@@ -3001,7 +3001,7 @@ If current page was not in a list, this command is similar to `add LIST`."""
 - list create $NEWLIST : create a new list
 - list edit $LIST : edit the list
 - list subscribe $LIST : during sync, add new links found in listed pages to tour 
-- list freeze $LIST : don’t update pages in list during sync
+- list freeze $LIST : don’t update pages in list during sync if a cache already exists
 - list normal $LIST : update pages in list during sync but don’t add anything to tour
 - list delete $LIST : delete a list permanently (a confirmation is required)
 See also :
@@ -3316,9 +3316,12 @@ def main():
         # We keep tour for the last round
         subscriptions = []
         normal_lists = []
+        fridge = []
         for l in lists:
-            if not gc.list_is_frozen(l) and not gc.list_is_system(l):
-                if gc.list_is_subscribed(l):
+            if not gc.list_is_system(l):
+                if gc.list_is_frozen(l):
+                    fridge.append(l)
+                elif gc.list_is_subscribed(l):
                     subscriptions.append(l)
                 else:
                     normal_lists.append(l)
@@ -3331,9 +3334,10 @@ def main():
         #then we fetch all the rest (including bookmarks and tour)
         for l in normal_lists:
             fetch_list(l,validity=refresh_time,depth=depth)
+        for l in fridge:
+            fetch_list(l,validity=0,depth=depth)
         #tour should be the last one as item my be added to it by others
         fetch_list("tour",validity=refresh_time,depth=depth)
-
 
         gc.onecmd("blackbox")
     else:
