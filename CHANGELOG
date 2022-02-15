@@ -5,7 +5,7 @@ UPGRADE: Users who subscribed to pages before 0.4 should run once the command "l
 - New list command : "list freeze" and "list suscribe"
 - Pictures are now displayed directely in terminal (suggested by kelbot)
 - Introducing the "open" command to open current page/image/file with external handler.
-- "set width XX" will now work everywhere (thanks kelbot for reporting the bug)
+- "set width XX" now works to set the max width. If smaller, terminal width is used (thanks kelbot for reporting the bug)
 - RSS feeds are now rendered as Gemlogs to improve consistency while browsing
 - Improved syncing performances and multiple bug/crash fixes.
 

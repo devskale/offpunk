@@ -205,6 +205,13 @@ urllib.parse.uses_netloc.append("gemini")
 global TERM_WIDTH
 TERM_WIDTH = 80
 
+def term_width():
+    width = TERM_WIDTH
+    cur = shutil.get_terminal_size()[0] - 1
+    if cur < width:
+        width = cur
+    return width
+
 def fix_ipv6_url(url):
     if not url:
         return
@@ -265,7 +272,7 @@ class AbstractRenderer():
     
     def get_body(self,readable=True,width=None):
         if not width:
-            width = TERM_WIDTH
+            width = term_width()
         if self.rendered_text == None or not readable:
             if readable : 
                 mode = "readable" 
@@ -306,7 +313,7 @@ class GemtextRenderer(AbstractRenderer):
     #render_gemtext
     def render(self,gemtext, width=None,mode=None):
         if not width:
-            width = TERM_WIDTH
+            width = term_width()
         links = []
         preformatted = False
         rendered_text = ""
@@ -383,7 +390,7 @@ class GopherRenderer(AbstractRenderer):
     #menu_or_text
     def render(self,body,width=None,mode=None):
         if not width:
-            width = TERM_WIDTH
+            width = term_width()
         try:
             render,links = self._render_goph(width=width,mode=mode)
         except Exception as err:
@@ -397,7 +404,7 @@ class GopherRenderer(AbstractRenderer):
 
     def _render_goph(self,width=None,mode=None):
         if not width:
-            width = TERM_WIDTH
+            width = term_width()
         # This is copied straight from Agena (and thus from VF1)
         rendered_text = ""
         links = []
@@ -515,7 +522,7 @@ class FeedRenderer(GemtextRenderer):
 
     def prepare(self,content,mode="readable",width=None):
         if not width:
-            width = TERM_WIDTH
+            width = term_width()
         self.links = []
         self.title = "RSS/Atom feed"
         page = ""
@@ -577,7 +584,7 @@ class ImageRenderer(AbstractRenderer):
         if mode == "links_only":
             return "", []
         if not width:
-            width = TERM_WIDTH
+            width = term_width()
         try:
             img_obj = Image.open(img)
             if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
@@ -604,7 +611,7 @@ class HtmlRenderer(AbstractRenderer):
     # mode is either links_only, readable or full
     def render(self,body,mode="readable",width=None,add_title=True):
         if not width:
-            width = TERM_WIDTH
+            width = term_width()
         if not _DO_HTML:
             print("HTML document detected. Please install python-bs4 and python-readability.")
             return
@@ -1036,7 +1043,7 @@ class GeminiItem():
                 title += " (%s links)    \x1b[0;31m(last accessed on %s)"%(nbr,str_last)
         rendered_title = "\x1b[31m\x1b[1m"+ title + "\x1b[0m"
         #FIXME: width to replace self.options["width"]
-        wrapped = textwrap.fill(rendered_title,TERM_WIDTH)
+        wrapped = textwrap.fill(rendered_title,term_width())
         return wrapped + "\n"
 
     def _set_renderer(self,mime=None):
@@ -2458,8 +2465,9 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
             if len(self.list_get_links("tour")) < 1:
                 print("End of tour.")
             else:
-                self.list_go_to_line("1","tour")
-                self.list_rm_url(self.gi.url,"tour")
+                url = self.list_go_to_line("1","tour")
+                if url:
+                    self.list_rm_url(url,"tour")
         elif line == "ls":
             self.list_show("tour")
         elif line == "clear":
@@ -2881,6 +2889,7 @@ archives, which is a special historical list limited in size. It is similar to `
             gi = gi.get_link(int(line))
             display = not self.sync_only 
             self._go_to_gi(gi,handle=display)
+            return gi.url
 
     def list_show(self,list):
         list_path = self.list_path(list)
