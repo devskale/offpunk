@@ -436,12 +436,23 @@ class GopherRenderer(AbstractRenderer):
 
 class FolderRenderer(GemtextRenderer):
     def prepare(self,body,mode=None):
-        def write_list(l):
+        def get_first_line(l):
             path = os.path.join(listdir,l+".gmi")
-            gi = GeminiItem("file://" + path)
-            size = len(gi.get_links())
-            line = "=> %s %s (%s items)\n" %(str(path),l,size)
-            return line
+            with open(path) as f:
+                first_line = f.readline().strip()
+                f.close()
+            if first_line.startswith("#"):
+                return first_line
+            else:
+                return None
+        def write_list(l):
+            body = ""
+            for li in l:
+                path = os.path.join(listdir,li+".gmi")
+                gi = GeminiItem("file://" + path)
+                size = len(gi.get_links())
+                body += "=> %s %s (%s items)\n" %(str(path),li,size)
+            return body
         listdir = os.path.join(_DATA_DIR,"lists")
         if self.url != listdir:
             return "This is folder %s" %self.url
@@ -459,26 +470,31 @@ class FolderRenderer(GemtextRenderer):
                 my_lists = []
                 system_lists = []
                 subscriptions = []
+                frozen = []
                 lists.sort()
                 for l in lists:
                     if l in ["history","to_fetch","archives","tour"]:
                         system_lists.append(l)
-                    elif l in ["subscribed"]:
-                        subscriptions.append(l)
                     else:
-                        my_lists.append(l)
+                        first_line = get_first_line(l)
+                        if first_line and "#subscribed" in first_line:
+                            subscriptions.append(l)
+                        elif first_line and "#frozen" in first_line:
+                            frozen.append(l)
+                        else:
+                            my_lists.append(l)
                 if len(my_lists) > 0:
                     body+= "\n## Bookmarks Lists (updated during sync)\n"
-                    for l in my_lists:
-                        body += write_list(l)
+                    body += write_list(my_lists)
                 if len(subscriptions) > 0:
                     body +="\n## Subscriptions (new links in those are added to tour)\n"
-                    for l in subscriptions:
-                        body += write_list(l)
+                    body += write_list(subscriptions)
+                if len(frozen) > 0:
+                    body +="\n## Frozen (never updated)\n"
+                    body += write_list(frozen)
                 if len(system_lists) > 0:
                     body +="\n## System Lists\n"
-                    for l in system_lists:
-                        body += write_list(l)
+                    body += write_list(system_lists)
                 return body
 
 class FeedRenderer(GemtextRenderer):
@@ -1392,8 +1408,11 @@ class GeminiClient(cmd.Cmd):
         if self.offline_only:
             if not gi.is_cache_valid():
                 self.get_list("to_fetch")
-                self.list_add_line("to_fetch",gi=gi,verbose=False)
-                print("%s not available, marked for syncing"%gi.url)
+                r = self.list_add_line("to_fetch",gi=gi,verbose=False)
+                if r:
+                    print("%s not available, marked for syncing"%gi.url)
+                else:
+                    print("%s already marked for syncing"%gi.url)
                 self.gi = gi
                 return
         # check if local file exists.
@@ -2376,8 +2395,11 @@ Use with "raw" to copy the content as seen in your terminal (not gemtext)"""
         """Reload the current URL."""
         if self.offline_only:
             self.get_list("to_fetch")
-            self.list_add_line("to_fetch",gi=self.gi,verbose=False)
-            print("%s marked for syncing" %self.gi.url)
+            r = self.list_add_line("to_fetch",gi=self.gi,verbose=False)
+            if r:
+                print("%s marked for syncing" %self.gi.url)
+            else:
+                print("%s already marked for syncing" %self.gi.url)
         else:
             self._go_to_gi(self.gi, check_cache=False)
 
@@ -2712,7 +2734,7 @@ If no argument given, URL is added to Bookmarks."""
                 shutil.move(old_file_nogmi,targetgmi)
             else:
                 if list == "subscribed":
-                    title = "Subscriptions (new links in those pages will be added to tour)"
+                    title = "Subscriptions #subscribed (new links in those pages will be added to tour)"
                 elif list == "to_fetch":
                     title = "Links requested and to be fetched during the next --sync"
                 else:
@@ -2930,12 +2952,57 @@ If current page was not in a list, this command is similar to `add LIST`."""
                     to_return.append(l[:-4])
         return to_return
     
+    def list_has_status(self,list,status):
+        path = self.list_path(list)
+        toreturn = False
+        if path:
+            with open(path) as f:
+                line = f.readline().strip()
+                f.close()
+            if line.startswith("#") and status in line:
+                toreturn = True
+        return toreturn
+
+    def list_is_subscribed(self,list):
+        return self.list_has_status("#subscribed")
+    def list_is_frozen(self,list):
+        return self.list_has_status("#frozen")
+    def list_is_system(self,list):
+        return list in ["history","to_fetch","archives","tour"]
+
+    # This modify the status of a list to one of :
+    # normal, frozen, subscribed
+    # action is either #frozen, #subscribed or None
+    def list_modify(self,list,action=None):
+        path = self.list_path(list)
+        with open(path) as f:
+            lines = f.readlines()
+            f.close()
+        if lines[0].strip().startswith("#"):
+            first_line = lines.pop(0).strip("\n")
+        else:
+            first_line = "# %s "%list
+        first_line = first_line.replace("#subscribed","").replace("#frozen","")
+        if action:
+            first_line += " " + action
+            print("List %s has been marked as %s"%(list,action))
+        else:
+            print("List %s is now a normal list" %list)
+        first_line += "\n"
+        lines.insert(0,first_line)
+        with open(path,"w") as f:
+            for line in lines:
+                f.write(line)
+            f.close()
     def do_list(self,arg):
         """Manage list of bookmarked pages.
 - list : display available lists
 - list $LIST : display pages in $LIST
 - list create $NEWLIST : create a new list
 - list edit $LIST : edit the list
+- list subscribe $LIST : during sync, add new links found in listed pages to tour 
+- list freeze $LIST : don’t update pages in list during sync
+- list normal $LIST : update pages in list during sync but don’t add anything to tour
 - list delete $LIST : delete a list permanently (a confirmation is required)
 See also :
 - add $LIST (to add current page to $LIST or, by default, to bookmarks)
@@ -2973,7 +3040,7 @@ See also :
                     print("A valid list name is required to edit a list")
             elif args[0] == "delete":
                 if len(args) > 1:
-                    if args[1] in ["tour","to_fetch","bookmarks","history","archives"]:
+                    if self.list_is_system(args[1]):
                         print("%s is a system list which cannot be deleted"%args[1])
                     elif args[1] in self.list_lists():
                         size = len(self.list_get_links(args[1]))
@@ -2994,6 +3061,20 @@ See also :
                         print("A valid list name is required to be deleted")
                 else:
                     print("A valid list name is required to be deleted")
+            elif args[0] in ["subscribe","freeze","normal"]:
+                if len(args) > 1:
+                    if self.list_is_system(args[1]):
+                        print("You cannot modify %s which is a system list"%args[1])
+                    elif args[1] in self.list_lists():
+                        if args[0] == "subscribe":
+                            action = "#subscribed"
+                        elif args[0] == "freeze":
+                            action = "#frozen"
+                        else:
+                            action = None
+                        self.list_modify(args[1],action=action)
+                else:
+                    print("A valid list name is required after %s" %args[0])
             elif len(args) == 1:
                 self.list_show(args[0].lower())
             else:
@@ -3233,22 +3314,22 @@ def main():
         lists = gc.list_lists()
         # We will fetch all the lists except "archives" and "history"
         # We keep tour for the last round
-        if "tour" in lists:
-            lists.remove("tour")
-        if "archives" in lists:
-            lists.remove("archives")
-        if "history" in lists:
-            lists.remove("history")
+        subscriptions = []
+        normal_lists = []
+        for l in lists:
+            if not list_is_frozen(l) and not list_is_system(l):
+                if list_is_subscribed(l):
+                    subscriptions.append(l)
+                else:
+                    normal_lists.append(l)
         # We start with the "subscribed" as we need to find new items
-        if "subscribed" in lists:
-            lists.remove("subscribed")
-            fetch_list("subscribed",validity=refresh_time,depth=depth,tourchildren=True)
+        for l in subscriptions:
+            fetch_list(l,validity=refresh_time,depth=depth,tourchildren=True)
         #Then the fetch list (item are removed from the list after fetch)
         if "to_fetch" in lists:
-            lists.remove("to_fetch")
             fetch_list("to_fetch",validity=refresh_time,depth=depth,tourandremove=True)
         #then we fetch all the rest (including bookmarks and tour)
-        for l in lists:
+        for l in normal_lists:
             fetch_list(l,validity=refresh_time,depth=depth)
         #tour should be the last one as item my be added to it by others
         fetch_list("tour",validity=refresh_time,depth=depth)
