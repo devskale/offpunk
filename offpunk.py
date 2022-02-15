@@ -683,8 +683,9 @@ class HtmlRenderer(AbstractRenderer):
                 for child in element.children:
                     if child.name == "img":
                         # recursive rendering seems to displaying images twice
-                        src = child.get("src")
-                        img = render_image(src,width=width,mode=mode)
+                        img = recursive_render(child)
+                        #src = child.get("src")
+                        #img = render_image(src,width=width,mode=mode)
                         rendered_body += img
                     else:
                         text += recursive_render(child)
