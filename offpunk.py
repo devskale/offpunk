@@ -430,6 +430,8 @@ class GopherRenderer(AbstractRenderer):
                     if itemtype == "h" and path.startswith("URL:"):
                         url = path[4:]
                     else:
+                        if not path.startswith("/"):
+                            path = "/"+path
                         url = "gopher://%s%s/%s%s" %(host,port,itemtype,path)
                     linkline = url + " " + name
                     links.append(linkline)
