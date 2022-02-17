@@ -156,8 +156,18 @@ _MAX_CACHE_AGE_SECS = 180
 # -M : long prompt (to have info about where you are in the file)
 # -w : hilite the new first line after a page skip (space)
 # -i : ignore case in search
+_DEFAULT_LESS = "less --save-marks -XRfMwi \"+''\" %s"
 _DEFAULT_CAT = "less --save-marks -EXFRfMwi %s"
-_DEFAULT_LESS = "less --save-marks -XRfMwi %s"
+def less_cmd(file, histfile=None,cat=False):
+    if histfile:
+        prefix = "LESSHISTFILE=%s "%histfile
+    else:
+        prefix = ""
+    if cat:
+        cmd_str = prefix + _DEFAULT_CAT % file 
+    else:
+        cmd_str = prefix + _DEFAULT_LESS % file
+    subprocess.call(cmd_str,shell=True)
 
 less_version = 0
 return_code = subprocess.run("less --version",shell=True, capture_output=True)
@@ -848,6 +858,7 @@ class GeminiItem():
         self.renderer = None
         self.links = None
         self.body = None
+        self.histfile = None
         parsed = urllib.parse.urlparse(self.url)
         if "./" in url or url[0] == "/":
             self.scheme = "file"
@@ -902,6 +913,12 @@ class GeminiItem():
                 # Also, very long query are usually useless stuff
                 if len(self.path+parsed.query) < 258:
                     self.path += "/" + parsed.query
+    
+    def get_histfile(self):
+        if not self.histfile:
+            tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
+            self.histfile = tmpf.name
+        return self.histfile
 
     def get_cache_path(self):
         if self._cache_path and not os.path.isdir(self._cache_path):
@@ -1504,8 +1521,7 @@ class GeminiClient(cmd.Cmd):
                 self.index_index = -1
                 if display:
                     self._temp_file(rendered_body)
-                    cmd_str = _DEFAULT_CAT
-                    subprocess.run(shlex.split(cmd_str % self.idx_filename))
+                    less_cmd(self.idx_filename,histfile=gi.get_histfile(),cat=True)
             elif display :
                 cmd_str = self._get_handler_cmd(gi.get_mime())
                 try:
@@ -2618,14 +2634,14 @@ Use 'ls -l' to see URLs."""
 
     @needs_gi
     def do_less(self, *args):
-        """Run most recently visited item through "less" command.
+        """Run most recently visited item through "less" command, restoring \
+previous position.
 Use "less full" to see a complete html page instead of the article view.
-(the "full" argument has no effect on Gemtext content)."""
+(the "full" argument has no effect on Gemtext content but doesn’t restore position)."""
         if self.gi and args and args[0] == "full":
             self._go_to_gi(self.gi,readable=False)
         elif self.gi.is_cache_valid():
-            cmd_str = _DEFAULT_LESS % self._get_active_tmpfile()
-            subprocess.call(cmd_str, shell=True)
+            less_cmd(self._get_active_tmpfile(),histfile=self.gi.get_histfile())
         else:
             self.do_go(self.gi.url)
 

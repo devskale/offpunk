@@ -7,6 +7,7 @@ UPGRADE: Users who subscribed to pages before 0.4 should run once the command "l
 - Introducing the "open" command to open current page/image/file with external handler.
 - "set width XX" now works to set the max width. If smaller, terminal width is used (thanks kelbot for reporting the bug)
 - RSS feeds are now rendered as Gemlogs to improve consistency while browsing
+- "less" will restore previous position in a page (requires less 572+)
 - Improved syncing performances and multiple bug/crash fixes.
 
 ## 0.3 - Feb 11th 2022
