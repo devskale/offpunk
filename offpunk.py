@@ -158,7 +158,20 @@ _MAX_CACHE_AGE_SECS = 180
 # -i : ignore case in search
 _DEFAULT_CAT = "less --save-marks -EXFRfMwi %s"
 _DEFAULT_LESS = "less --save-marks -XRfMwi %s"
-#_DEFAULT_LESS = "batcat -p %s"
+
+less_version = 0
+return_code = subprocess.run("less --version",shell=True, capture_output=True)
+output = return_code.stdout.decode()
+# We get less Version (which is the only integer on the first line)
+words = output.split("\n")[0].split()
+for w in words:
+    if w.isdigit():
+        less_version = int(w)
+# restoring position only works for version of less > 572
+if less_version >= 572:
+    _LESS_RESTORE_POSITION = True
+else:
+    _LESS_RESTORE_POSITION = False
 
 # Command abbreviations
 _ABBREVS = {
@@ -2553,6 +2566,7 @@ Think of it like marks in vi: 'mark a'='ma' and 'go a'=''a'."""
         output += " - Render Atom/RSS feeds (feedparser) : " + has(_DO_FEED)
         output += " - Connect to http/https (requests)   : " + has(_DO_HTTP)
         output += " - copy to/from clipboard (xsel)      : " + has(_HAS_XSEL)
+        output += " - restore last position (less 572+)  : " + has(_LESS_RESTORE_POSITION) 
         output += "\n"
         output += "Config directory    : " +  _CONFIG_DIR + "\n"
         output += "User Data directory : " +  _DATA_DIR + "\n"
