@@ -863,6 +863,7 @@ class GeminiItem():
                     self.path = parsed.path
                 else:
                     self.path = self.url
+                self._cache_path = self.path
             else:
                 if self.scheme == "gopher":
                     if parsed.path and parsed.path[0] == "/" and len(parsed.path) > 1:
@@ -898,36 +899,39 @@ class GeminiItem():
                     if len(self.path+parsed.query) < 258:
                         self.path += "/" + parsed.query
                 #if not local, we create a local cache path.
-                self._cache_path = os.path.expanduser(_CACHE_PATH + self.scheme +\
-                                                        "/" + self.host + self.path)
-                #There’s an OS limitation of 260 characters per path. 
-                #We will thus cut the path enough to add the index afterward
-                self._cache_path = self._cache_path[:249]
-                # FIXME : this is a gross hack to give a name to
-                # index files. This will break if the index is not
-                # index.gmi. I don’t know how to know the real name
-                # of the file. But first, we need to ensure that the domain name
-                # finish by "/". Else, the cache will create a file, not a folder.
-                if self.scheme.startswith("http"):
-                    index = "index.html"
-                elif self.scheme == "gopher":
-                    index = "index.txt"
+                if self.local:
+                    self._cache_path = self.path
                 else:
-                    index = "index.gmi"
-                if self.path == "" or os.path.isdir(self._cache_path):
-                    if not self._cache_path.endswith("/"):
-                        self._cache_path += "/"
-                    if not self.url.endswith("/"):
-                        self.url += "/"
-                if self._cache_path.endswith("/"):
-                    self._cache_path += index
+                    self._cache_path = os.path.expanduser(_CACHE_PATH + self.scheme +\
+                                                        "/" + self.host + self.path)
+                    #There’s an OS limitation of 260 characters per path. 
+                    #We will thus cut the path enough to add the index afterward
+                    self._cache_path = self._cache_path[:249]
+                    # FIXME : this is a gross hack to give a name to
+                    # index files. This will break if the index is not
+                    # index.gmi. I don’t know how to know the real name
+                    # of the file. But first, we need to ensure that the domain name
+                    # finish by "/". Else, the cache will create a file, not a folder.
+                    if self.scheme.startswith("http"):
+                        index = "index.html"
+                    elif self.scheme == "gopher":
+                        index = "index.txt"
+                    else:
+                        index = "index.gmi"
+                    if self.path == "" or os.path.isdir(self._cache_path):
+                        if not self._cache_path.endswith("/"):
+                            self._cache_path += "/"
+                        if not self.url.endswith("/"):
+                            self.url += "/"
+                    if self._cache_path.endswith("/"):
+                        self._cache_path += index
         return self._cache_path
             
     def get_capsule_title(self):
             #small intelligence to try to find a good name for a capsule
             #we try to find eithe ~username or /users/username
             #else we fallback to hostname
-            if self.scheme == "file":
+            if self.local:
                 if self.name != "":
                     red_title = self.name
                 else:
@@ -990,9 +994,7 @@ class GeminiItem():
     def get_body(self,as_file=False):
         if self.body and not as_file:
             return self.body
-        if self.local:
-            path = self.path
-        elif self.is_cache_valid():
+        if self.is_cache_valid():
             path = self.get_cache_path()
         else:
             path = None
@@ -1065,8 +1067,8 @@ class GeminiItem():
         return wrapped + "\n"
 
     def _set_renderer(self,mime=None):
-        if self.local and os.path.isdir(self.path):
-            self.renderer = FolderRenderer("",self.path)
+        if self.local and os.path.isdir(self.get_cache_path()):
+            self.renderer = FolderRenderer("",self.get_cache_path())
             return
         if not mime:
             mime = self.get_mime()
@@ -1144,10 +1146,7 @@ class GeminiItem():
         if self.mime:
             return self.mime
         elif self.is_cache_valid():
-            if self.local:
-                path = self.path
-            else:
-                path = self.get_cache_path()
+            path = self.get_cache_path()
             if path.endswith(".gmi"):
                 mime = "text/gemini"
             elif _HAS_MAGIC :
