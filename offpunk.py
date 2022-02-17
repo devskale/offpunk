@@ -156,8 +156,8 @@ _MAX_CACHE_AGE_SECS = 180
 # -M : long prompt (to have info about where you are in the file)
 # -w : hilite the new first line after a page skip (space)
 # -i : ignore case in search
-_DEFAULT_CAT = "less -EXFRfMwi %s"
-_DEFAULT_LESS = "less -XRfMwi %s"
+_DEFAULT_CAT = "less --save-marks -EXFRfMwi %s"
+_DEFAULT_LESS = "less --save-marks -XRfMwi %s"
 #_DEFAULT_LESS = "batcat -p %s"
 
 # Command abbreviations
@@ -643,15 +643,17 @@ class HtmlRenderer(AbstractRenderer):
                     ansi_img += "[BAD IMG] %s"%src
             return ansi_img
         def sanitize_string(string):
+            #string = string.lstrip("\n")
+            string = string.replace("\n", " ").replace("\t"," ")
             endspace = string.endswith(" ") or string.endswith("\xa0")
             startspace = string.startswith(" ") or string.startswith("\xa0")
             toreturn = string.replace("\n", " ").replace("\t"," ").strip()
             while "  " in toreturn:
                 toreturn = toreturn.replace("  "," ")
             toreturn = toreturn.replace("&nbsp","\xa0")
-            if endspace and not toreturn.endswith(" "):
+            if endspace and not toreturn.endswith(" ") and not toreturn.endswith("\xa0"):
                 toreturn += " "
-            if startspace and not toreturn.startswith(" "):
+            if startspace and not toreturn.startswith(" ") and not toreturn.startswith("\xa0"):
                 toreturn = " " + toreturn
             return toreturn
         def recursive_render(element,indent=""):
@@ -663,8 +665,10 @@ class HtmlRenderer(AbstractRenderer):
                     rendered_body += "\x1b[23m"
             elif element.name in ["div","p"]:
                 rendered_body += "\n"
+                div = ""
                 for child in element.children:
-                    rendered_body += recursive_render(child,indent=indent)
+                    div += recursive_render(child,indent=indent)
+                rendered_body += div.strip()
                 rendered_body += "\n\n"
             elif element.name in ["h1","h2","h3","h4","h5","h6"]:
                 line = sanitize_string(element.get_text())
@@ -697,7 +701,7 @@ class HtmlRenderer(AbstractRenderer):
                     rendered_body += recursive_render(child,indent=indent)
                 rendered_body += "\x1b[23m"
             #bold
-            elif element.name in ["code","b","strong"]:
+            elif element.name in ["b","strong"]:
                 rendered_body += "\x1b[1m"
                 for child in element.children:
                     rendered_body += recursive_render(child,indent=indent)
@@ -767,8 +771,9 @@ class HtmlRenderer(AbstractRenderer):
                         i_indent = "   "
                         s_indent = i_indent
                         line = line.strip("\t")
-                    elif line.startswith(" * "):
-                        i_indent = ""  # we keep the initial bullet)
+                    elif line.lstrip().startswith("* "):
+                        line = line.lstrip()
+                        i_indent = " "  # we keep the initial bullet)
                         s_indent = "   "
                     else:
                         i_indent = ""
