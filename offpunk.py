@@ -858,7 +858,6 @@ class GeminiItem():
         self.renderer = None
         self.links = None
         self.body = None
-        self.histfile = None
         parsed = urllib.parse.urlparse(self.url)
         if "./" in url or url[0] == "/":
             self.scheme = "file"
@@ -914,12 +913,6 @@ class GeminiItem():
                 if len(self.path+parsed.query) < 258:
                     self.path += "/" + parsed.query
     
-    def get_histfile(self):
-        if not self.histfile:
-            tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
-            self.histfile = tmpf.name
-        return self.histfile
-
     def get_cache_path(self):
         if self._cache_path and not os.path.isdir(self._cache_path):
             return self._cache_path
@@ -1343,6 +1336,7 @@ class GeminiClient(cmd.Cmd):
         self.gi = None
         self.hist_index = 0
         self.idx_filename = ""
+        self.less_histfile = None
         self.index = []
         self.index_index = -1
         self.lookup = self.index
@@ -1521,7 +1515,11 @@ class GeminiClient(cmd.Cmd):
                 self.index_index = -1
                 if display:
                     self._temp_file(rendered_body)
-                    less_cmd(self.idx_filename,histfile=gi.get_histfile(),cat=True)
+                    if self.less_histfile:
+                        os.unlink(self.less_histfile)
+                    tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
+                    self.less_histfile = tmpf.name
+                    less_cmd(self.idx_filename,histfile=self.less_histfile,cat=True)
             elif display :
                 cmd_str = self._get_handler_cmd(gi.get_mime())
                 try:
@@ -2641,7 +2639,7 @@ Use "less full" to see a complete html page instead of the article view.
         if self.gi and args and args[0] == "full":
             self._go_to_gi(self.gi,readable=False)
         elif self.gi.is_cache_valid():
-            less_cmd(self._get_active_tmpfile(),histfile=self.gi.get_histfile())
+            less_cmd(self._get_active_tmpfile(),histfile=self.less_histfile)
         else:
             self.do_go(self.gi.url)
 
@@ -3176,14 +3174,16 @@ current gemini browsing session."""
     ### The end!
     def do_quit(self, *args):
         """Exit Offpunk."""
+        def unlink(filename):
+            if filename and os.path.exists(filename):
+                os.unlink(filename)
         # Close TOFU DB
         self.db_conn.commit()
         self.db_conn.close()
         # Clean up after ourself
-        if self.tmp_filename and os.path.exists(self.tmp_filename):
-            os.unlink(self.tmp_filename)
-        if self.idx_filename and os.path.exists(self.idx_filename):
-            os.unlink(self.idx_filename)
+        unlink(self.tmp_filename)
+        unlink(self.idx_filename)
+        unlink(self.less_histfile)
 
         for cert in self.transient_certs_created:
             for ext in (".crt", ".key"):
