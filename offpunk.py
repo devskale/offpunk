@@ -951,7 +951,7 @@ class GeminiItem():
                 self.links = []
                 print("We return False because path is too long")
                 return False
-            if os.path.exists(self._cache_path):
+            if os.path.exists(self._cache_path) and not os.path.isdir(self._cache_path):
                 if validity > 0 :
                     last_modification = self.cache_last_modified()
                     now = time.time()
