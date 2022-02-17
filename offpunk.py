@@ -147,27 +147,6 @@ for f in [_CONFIG_DIR, _CACHE_PATH, _DATA_DIR]:
 _MAX_REDIRECTS = 5
 _MAX_CACHE_SIZE = 10
 _MAX_CACHE_AGE_SECS = 180
-#_DEFAULT_LESS = "less -EXFRfM -PMurl\ lines\ \%lt-\%lb/\%L\ \%Pb\%$ %s"
-# -E : quit when reaching end of file (to behave like "cat")
-# -F : quit if content fits the screen (behave like "cat")
-# -X : does not clear the screen
-# -R : interpret ANSI colors correctly
-# -f : suppress warning for some contents
-# -M : long prompt (to have info about where you are in the file)
-# -w : hilite the new first line after a page skip (space)
-# -i : ignore case in search
-_DEFAULT_LESS = "less --save-marks -XRfMwi \"+''\" %s"
-_DEFAULT_CAT = "less --save-marks -EXFRfMwi %s"
-def less_cmd(file, histfile=None,cat=False):
-    if histfile:
-        prefix = "LESSHISTFILE=%s "%histfile
-    else:
-        prefix = ""
-    if cat:
-        cmd_str = prefix + _DEFAULT_CAT % file 
-    else:
-        cmd_str = prefix + _DEFAULT_LESS % file
-    subprocess.call(cmd_str,shell=True)
 
 less_version = 0
 return_code = subprocess.run("less --version",shell=True, capture_output=True)
@@ -182,6 +161,33 @@ if less_version >= 572:
     _LESS_RESTORE_POSITION = True
 else:
     _LESS_RESTORE_POSITION = False
+#_DEFAULT_LESS = "less -EXFRfM -PMurl\ lines\ \%lt-\%lb/\%L\ \%Pb\%$ %s"
+# -E : quit when reaching end of file (to behave like "cat")
+# -F : quit if content fits the screen (behave like "cat")
+# -X : does not clear the screen
+# -R : interpret ANSI colors correctly
+# -f : suppress warning for some contents
+# -M : long prompt (to have info about where you are in the file)
+# -w : hilite the new first line after a page skip (space)
+# -i : ignore case in search
+#--incsearch : incremental search starting rev581
+if less_version >= 581:
+    less_base = "less --incsearch --save-marks -XRfMwi"
+else:
+    less_base = "less --save-marks -XRfMwi"
+_DEFAULT_LESS = less_base + " \"+''\" %s"
+_DEFAULT_CAT = less_base + " -EF %s"
+def less_cmd(file, histfile=None,cat=False):
+    if histfile:
+        prefix = "LESSHISTFILE=%s "%histfile
+    else:
+        prefix = ""
+    if cat:
+        cmd_str = prefix + _DEFAULT_CAT % file 
+    else:
+        cmd_str = prefix + _DEFAULT_LESS % file
+    subprocess.call(cmd_str,shell=True)
+
 
 # Command abbreviations
 _ABBREVS = {
