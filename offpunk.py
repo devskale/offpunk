@@ -829,6 +829,7 @@ class GeminiItem():
             if not url.startswith("mailto:"):
                 url = "gemini://" + url
         self.url = fix_ipv6_url(url).strip()
+        self._cache_path = None
         self.name = name
         self.mime = None
         self.renderer = None
@@ -843,75 +844,84 @@ class GeminiItem():
             self.local = True
             self.host = ""
             self.port = None
-            self._cache_path = None
-            # file:// is 7 char
-            if self.url.startswith("file://"):
-                self.path = self.url[7:]
-            elif self.scheme == "mailto":
-                self.path = parsed.path
-            else:
-                self.path = self.url
         else:
             self.local = False
-            if self.scheme == "gopher":
-                if parsed.path and parsed.path[0] == "/" and len(parsed.path) > 1:
-                    splitted = parsed.path.split("/")
-                    # We check if we have well a gopher type
-                    if len(splitted[1]) == 1:
+            self.host = parsed.hostname
+            self.port = parsed.port or standard_ports.get(self.scheme, 0)
+        self._cache_path = self.get_cache_path()
+
+    def get_cache_path(self):
+        if self._cache_path and not os.path.isdir(self._cache_path):
+            return self._cache_path
+        else:
+            parsed = urllib.parse.urlparse(self.url)
+            if self.scheme in ["file","mailto"]:
+                # file:// is 7 char
+                if self.url.startswith("file://"):
+                    self.path = self.url[7:]
+                elif self.scheme == "mailto":
+                    self.path = parsed.path
+                else:
+                    self.path = self.url
+            else:
+                if self.scheme == "gopher":
+                    if parsed.path and parsed.path[0] == "/" and len(parsed.path) > 1:
+                        splitted = parsed.path.split("/")
+                        # We check if we have well a gopher type
+                        if len(splitted[1]) == 1:
+                            itemtype = parsed.path[1]
+                            selector = parsed.path[2:]
+                        else:
+                            itemtype = "1"
+                            selector = parsed.path
                         itemtype = parsed.path[1]
-                        selector = parsed.path[2:]
+                        self.path = parsed.path[2:]
                     else:
                         itemtype = "1"
-                        selector = parsed.path
-                    itemtype = parsed.path[1]
-                    self.path = parsed.path[2:]
+                        self.path = parsed.path
+                    if itemtype == "0":
+                        self.mime = "text/gemini"
+                    elif itemtype == "1":
+                        self.mime = "text/gopher"
+                    elif itemtype == "h":
+                        self.mime = "text/html"
+                    elif itemtype in ("9","g","I","s"):
+                        self.mime = None
+                    else:
+                        self.mime = "text/gopher"
                 else:
-                    itemtype = "1"
                     self.path = parsed.path
-                if itemtype == "0":
-                    self.mime = "text/gemini"
-                elif itemtype == "1":
-                    self.mime = "text/gopher"
-                elif itemtype == "h":
-                    self.mime = "text/html"
-                elif itemtype in ("9","g","I","s"):
-                    self.mime = None
+                if parsed.query:
+                    # we don’t add the query if path is too long because path above 260 char
+                    # are not supported and crash python.
+                    # Also, very long query are usually useless stuff
+                    if len(self.path+parsed.query) < 258:
+                        self.path += "/" + parsed.query
+                #if not local, we create a local cache path.
+                self._cache_path = os.path.expanduser(_CACHE_PATH + self.scheme +\
+                                                        "/" + self.host + self.path)
+                #There’s an OS limitation of 260 characters per path. 
+                #We will thus cut the path enough to add the index afterward
+                self._cache_path = self._cache_path[:249]
+                # FIXME : this is a gross hack to give a name to
+                # index files. This will break if the index is not
+                # index.gmi. I don’t know how to know the real name
+                # of the file. But first, we need to ensure that the domain name
+                # finish by "/". Else, the cache will create a file, not a folder.
+                if self.scheme.startswith("http"):
+                    index = "index.html"
+                elif self.scheme == "gopher":
+                    index = "index.txt"
                 else:
-                    self.mime = "text/gopher"
-            else:
-                self.path = parsed.path
-            if parsed.query:
-                # we don’t add the query if path is too long because path above 260 char
-                # are not supported and crash python.
-                # Also, very long query are usually useless stuff
-                if len(self.path+parsed.query) < 258:
-                    self.path += "/" + parsed.query
-            self.host = parsed.hostname
-            #if not local, we create a local cache path.
-            self._cache_path = os.path.expanduser(_CACHE_PATH + self.scheme +\
-                                                    "/" + self.host + self.path)
-            #There’s an OS limitation of 260 characters per path. 
-            #We will thus cut the path enough to add the index afterward
-            self._cache_path = self._cache_path[:249]
-            # FIXME : this is a gross hack to give a name to
-            # index files. This will break if the index is not
-            # index.gmi. I don’t know how to know the real name
-            # of the file. But first, we need to ensure that the domain name
-            # finish by "/". Else, the cache will create a file, not a folder.
-            if self.scheme.startswith("http"):
-                index = "index.html"
-            elif self.scheme == "gopher":
-                index = "index.txt"
-            else:
-                index = "index.gmi"
-            if self.path == "" or os.path.isdir(self._cache_path):
-                if not self._cache_path.endswith("/"):
-                    self._cache_path += "/"
-                if not self.url.endswith("/"):
-                    self.url += "/"
-            if self._cache_path.endswith("/"):
-                self._cache_path += index
-            self.port = parsed.port or standard_ports.get(self.scheme, 0)
+                    index = "index.gmi"
+                if self.path == "" or os.path.isdir(self._cache_path):
+                    if not self._cache_path.endswith("/"):
+                        self._cache_path += "/"
+                    if not self.url.endswith("/"):
+                        self.url += "/"
+                if self._cache_path.endswith("/"):
+                    self._cache_path += index
+        return self._cache_path
             
     def get_capsule_title(self):
             #small intelligence to try to find a good name for a capsule
@@ -942,16 +952,17 @@ class GeminiItem():
         # a cache to be valid  (in seconds)
         # If 0, then any cache is considered as valid
         # (use validity = 1 if you want to refresh everything)
+        cache = self.get_cache_path()
         if self.local:
             return True
-        elif self._cache_path :
+        elif cache :
             # If path is too long, we always return True to avoid
             # fetching it.
-            if len(self._cache_path) > 259:
+            if len(cache) > 259:
                 self.links = []
                 print("We return False because path is too long")
                 return False
-            if os.path.exists(self._cache_path) and not os.path.isdir(self._cache_path):
+            if os.path.exists(cache) and not os.path.isdir(cache):
                 if validity > 0 :
                     last_modification = self.cache_last_modified()
                     now = time.time()
@@ -967,8 +978,9 @@ class GeminiItem():
             return False
 
     def cache_last_modified(self):
-        if self._cache_path:
-            return os.path.getmtime(self._cache_path)
+        path = self.get_cache_path()
+        if path:
+            return os.path.getmtime(path)
         elif self.local:
             return 0
         else:
@@ -981,7 +993,7 @@ class GeminiItem():
         if self.local:
             path = self.path
         elif self.is_cache_valid():
-            path = self._cache_path
+            path = self.get_cache_path()
         else:
             path = None
         if path:
@@ -1049,7 +1061,6 @@ class GeminiItem():
             else:
                 title += " (%s links)    \x1b[0;31m(last accessed on %s)"%(nbr,str_last)
         rendered_title = "\x1b[31m\x1b[1m"+ title + "\x1b[0m"
-        #FIXME: width to replace self.options["width"]
         wrapped = textwrap.fill(rendered_title,term_width())
         return wrapped + "\n"
 
@@ -1078,7 +1089,7 @@ class GeminiItem():
                     self.renderer = func(self.get_body(),self.url)
             else:
                 #we don’t parse text, we give the file to the renderer
-                self.renderer = func(self._cache_path,self.url)
+                self.renderer = func(self.get_cache_path(),self.url)
                 if not self.renderer.is_valid():
                     self.renderer = None
 
@@ -1095,16 +1106,6 @@ class GeminiItem():
             self.links = []
             return None
         
-    def get_cache_path(self,url=None):
-        if url:
-            g = GeminiItem(url)
-            path = g.get_cache_path()
-        elif self.local:
-            path = self.path
-        else:
-            path = self._cache_path
-        return path
-
     def get_filename(self):
         filename = os.path.basename(self.get_cache_path())
         return filename
@@ -1121,7 +1122,7 @@ class GeminiItem():
                 mode = "w"
             else:
                 mode = "wb"
-            cache_dir = os.path.dirname(self._cache_path)
+            cache_dir = os.path.dirname(self.get_cache_path())
             # If the subdirectory already exists as a file (not a folder)
             # We remove it (happens when accessing URL/subfolder before
             # URL/subfolder/file.gmi.
@@ -1135,7 +1136,7 @@ class GeminiItem():
             if os.path.isfile(root_dir):
                 os.remove(root_dir)
             os.makedirs(cache_dir,exist_ok=True)
-            with open(self._cache_path, mode=mode) as f:
+            with open(self.get_cache_path(), mode=mode) as f:
                 f.write(body)
                 f.close()
          
@@ -1146,7 +1147,7 @@ class GeminiItem():
             if self.local:
                 path = self.path
             else:
-                path = self._cache_path
+                path = self.get_cache_path()
             if path.endswith(".gmi"):
                 mime = "text/gemini"
             elif _HAS_MAGIC :
@@ -1174,10 +1175,11 @@ class GeminiItem():
     # If we get an error, we want to keep an existing cache
     # but we need to touch it or to create an empty one
     # to avoid hitting the error at each refresh
+        cache = self.get_cache_path()
         if self.is_cache_valid():
-            os.utime(self._cache_path)
+            os.utime(cache)
         else:
-            cache_dir = os.path.dirname(self._cache_path)
+            cache_dir = os.path.dirname(cache)
             root_dir = cache_dir
             while not os.path.exists(root_dir):
                 root_dir = os.path.dirname(root_dir)
@@ -1185,7 +1187,7 @@ class GeminiItem():
                 os.remove(root_dir)
             os.makedirs(cache_dir,exist_ok=True)
             if os.path.isdir(cache_dir):
-                with open(self._cache_path, "w") as cache:
+                with open(cache, "w") as cache:
                     cache.write(str(datetime.datetime.now())+"\n")
                     cache.write("ERROR while caching %s\n\n" %self.url)
                     cache.write("*****\n\n")
