@@ -844,87 +844,82 @@ class GeminiItem():
             self.local = True
             self.host = ""
             self.port = None
+            # file:// is 7 char
+            if self.url.startswith("file://"):
+                self.path = self.url[7:]
+            elif self.scheme == "mailto":
+                self.path = parsed.path
+            else:
+                self.path = self.url
         else:
             self.local = False
             self.host = parsed.hostname
             self.port = parsed.port or standard_ports.get(self.scheme, 0)
-        self._cache_path = self.get_cache_path()
+            # special gopher selector case
+            if self.scheme == "gopher":
+                if parsed.path and parsed.path[0] == "/" and len(parsed.path) > 1:
+                    splitted = parsed.path.split("/")
+                    # We check if we have well a gopher type
+                    if len(splitted[1]) == 1:
+                        itemtype = parsed.path[1]
+                        selector = parsed.path[2:]
+                    else:
+                        itemtype = "1"
+                        selector = parsed.path
+                    itemtype = parsed.path[1]
+                    self.path = parsed.path[2:]
+                else:
+                    itemtype = "1"
+                    self.path = parsed.path
+                if itemtype == "0":
+                    self.mime = "text/gemini"
+                elif itemtype == "1":
+                    self.mime = "text/gopher"
+                elif itemtype == "h":
+                    self.mime = "text/html"
+                elif itemtype in ("9","g","I","s"):
+                    self.mime = None
+                else:
+                    self.mime = "text/gopher"
+            else:
+                self.path = parsed.path
+            if parsed.query:
+                # we don’t add the query if path is too long because path above 260 char
+                # are not supported and crash python.
+                # Also, very long query are usually useless stuff
+                if len(self.path+parsed.query) < 258:
+                    self.path += "/" + parsed.query
 
     def get_cache_path(self):
         if self._cache_path and not os.path.isdir(self._cache_path):
             return self._cache_path
+        elif self.local:
+            self._cache_path = self.path
+        #if not local, we create a local cache path.
         else:
-            parsed = urllib.parse.urlparse(self.url)
-            if self.scheme in ["file","mailto"]:
-                # file:// is 7 char
-                if self.url.startswith("file://"):
-                    self.path = self.url[7:]
-                elif self.scheme == "mailto":
-                    self.path = parsed.path
-                else:
-                    self.path = self.url
-                self._cache_path = self.path
+            self._cache_path = os.path.expanduser(_CACHE_PATH + self.scheme +\
+                                                "/" + self.host + self.path)
+            #There’s an OS limitation of 260 characters per path. 
+            #We will thus cut the path enough to add the index afterward
+            self._cache_path = self._cache_path[:249]
+            # FIXME : this is a gross hack to give a name to
+            # index files. This will break if the index is not
+            # index.gmi. I don’t know how to know the real name
+            # of the file. But first, we need to ensure that the domain name
+            # finish by "/". Else, the cache will create a file, not a folder.
+            if self.scheme.startswith("http"):
+                index = "index.html"
+            elif self.scheme == "gopher":
+                index = "index.txt"
             else:
-                if self.scheme == "gopher":
-                    if parsed.path and parsed.path[0] == "/" and len(parsed.path) > 1:
-                        splitted = parsed.path.split("/")
-                        # We check if we have well a gopher type
-                        if len(splitted[1]) == 1:
-                            itemtype = parsed.path[1]
-                            selector = parsed.path[2:]
-                        else:
-                            itemtype = "1"
-                            selector = parsed.path
-                        itemtype = parsed.path[1]
-                        self.path = parsed.path[2:]
-                    else:
-                        itemtype = "1"
-                        self.path = parsed.path
-                    if itemtype == "0":
-                        self.mime = "text/gemini"
-                    elif itemtype == "1":
-                        self.mime = "text/gopher"
-                    elif itemtype == "h":
-                        self.mime = "text/html"
-                    elif itemtype in ("9","g","I","s"):
-                        self.mime = None
-                    else:
-                        self.mime = "text/gopher"
-                else:
-                    self.path = parsed.path
-                if parsed.query:
-                    # we don’t add the query if path is too long because path above 260 char
-                    # are not supported and crash python.
-                    # Also, very long query are usually useless stuff
-                    if len(self.path+parsed.query) < 258:
-                        self.path += "/" + parsed.query
-                #if not local, we create a local cache path.
-                if self.local:
-                    self._cache_path = self.path
-                else:
-                    self._cache_path = os.path.expanduser(_CACHE_PATH + self.scheme +\
-                                                        "/" + self.host + self.path)
-                    #There’s an OS limitation of 260 characters per path. 
-                    #We will thus cut the path enough to add the index afterward
-                    self._cache_path = self._cache_path[:249]
-                    # FIXME : this is a gross hack to give a name to
-                    # index files. This will break if the index is not
-                    # index.gmi. I don’t know how to know the real name
-                    # of the file. But first, we need to ensure that the domain name
-                    # finish by "/". Else, the cache will create a file, not a folder.
-                    if self.scheme.startswith("http"):
-                        index = "index.html"
-                    elif self.scheme == "gopher":
-                        index = "index.txt"
-                    else:
-                        index = "index.gmi"
-                    if self.path == "" or os.path.isdir(self._cache_path):
-                        if not self._cache_path.endswith("/"):
-                            self._cache_path += "/"
-                        if not self.url.endswith("/"):
-                            self.url += "/"
-                    if self._cache_path.endswith("/"):
-                        self._cache_path += index
+                index = "index.gmi"
+            if self.path == "" or os.path.isdir(self._cache_path):
+                if not self._cache_path.endswith("/"):
+                    self._cache_path += "/"
+                if not self.url.endswith("/"):
+                    self.url += "/"
+            if self._cache_path.endswith("/"):
+                self._cache_path += index
         return self._cache_path
             
     def get_capsule_title(self):
