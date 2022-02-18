@@ -16,6 +16,7 @@ _VERSION = "0.3"
 
 import argparse
 import cmd
+#import cmd2 as cmd
 import cgi
 import codecs
 import collections
@@ -3323,7 +3324,7 @@ def main():
                         else:
                             print("Skipping rc command \"%s\" due to provided URLs." % line)
                         continue
-                    gc.cmdqueue.append(line)
+                    gc.onecmd(line)
         print("Welcome to Offpunk!")
         if args.restricted:
             print("Restricted mode engaged!")
@@ -3334,21 +3335,19 @@ def main():
         # If tls_key is None, python will attempt to load the key from tls_cert.
         gc._activate_client_cert(args.tls_cert, args.tls_key)
     if args.bookmarks:
-        gc.cmdqueue.append("bookmarks")
+        gc.onecmd("bookmarks")
     elif args.url:
         if len(args.url) == 1:
-            gc.cmdqueue.append("go %s" % args.url[0])
+            gc.onecmd("go %s" % args.url[0])
         else:
             for url in args.url:
-                if not url.startswith("gemini://"):
-                    url = "gemini://" + url
-                gc.cmdqueue.append("tour %s" % url)
-            gc.cmdqueue.append("tour")
+                gc.onecmd("tour %s" % url)
+            gc.onecmd("tour")
 
     if args.disable_http:
         gc.support_http = False
 
-    # Endless interpret loop
+    # Endless interpret loop (except while --sync or --fetch-later)
     if args.fetch_later:
         if args.url:
             gc.sync_only = True
@@ -3462,11 +3461,7 @@ def main():
 
         gc.onecmd("blackbox")
     else:
-        while True:
-            try:
-                gc.cmdloop()
-            except KeyboardInterrupt:
-                print("")
+        gc.cmdloop()
 
 if __name__ == '__main__':
     main()
