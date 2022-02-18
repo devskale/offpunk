@@ -1096,6 +1096,9 @@ class GeminiItem():
             return
         if not mime:
             mime = self.get_mime()
+            #we don’t even have a mime (so probably we don’t have a cache)
+            if not mime:
+                return
         mime_to_use = []
         for m in _FORMAT_RENDERERS:
             if fnmatch.fnmatch(mime, m):
