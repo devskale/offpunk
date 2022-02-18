@@ -46,6 +46,13 @@ import uuid
 import webbrowser
 
 try:
+    import setproctitle
+    setproctitle.setproctitle("offpunk")
+    _HAS_SETPROCTITLE = True
+except ModuleNotFoundError:
+    _HAS_SETPROCTITLE = False
+
+try:
     import editor
     _HAS_EDITOR = True
 except ModuleNotFoundError:
@@ -2630,6 +2637,7 @@ Think of it like marks in vi: 'mark a'='ma' and 'go a'=''a'."""
         output += " - python-bs4          : " + has(_HAS_SOUP)
         output += " - python-readability  : " + has(_HAS_READABILITY)
         output += " - python-xdg          : " + has(_HAS_XDG)
+        output += " - python-setproctitle : " + has(_HAS_SETPROCTITLE)
         output += " - chafa               : " + has(_HAS_CHAFA)
         output += " - xsel                : " + has(_HAS_XSEL)
 

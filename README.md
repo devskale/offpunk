@@ -62,7 +62,7 @@ Announces about Offpunk will be made on Ploum’s Gemlog  => gemini://rawtext.cl
 ## Dependencies
 
 Offpunk has no "strict dependencies", i.e. it will run and work without anything
-else beyond the Python standard library.  However, it will "opportunistically
+else beyond the Python standard library and the "less" pager.  However, it will "opportunistically
 import" a few other libraries if they are available to offer an improved
 experience or some other features. Python libraries requests, bs4 and readabliity are required for http/html support.
 
@@ -84,6 +84,7 @@ Run command `version` in offpunk to see if you are missing some dependencies.
 * [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). Also needed to use the `copy` command. (apt-get install xsel)
 * [Chafa](https://hpjansson.org/chafa/) allows to display pictures in your console. Install it and browse to an HTML page with picture to see the magic.
 * [Python-pil](http://python-pillow.github.io/) is required to only display the first frame of animated gif with chafa.
+* [Python-setproctitle](https://github.com/dvarrazzo/py-setproctitle) will change the process name from "python" to "offpunk". Useful to kill it without killing every python service.
 
 ## Features
 
