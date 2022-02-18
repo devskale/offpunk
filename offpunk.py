@@ -3248,6 +3248,118 @@ current gemini browsing session."""
         for key, value in lines:
             print(key.ljust(24) + str(value).rjust(8))
 
+    
+    def do_sync(self, line):
+        """Synchronize all bookmarks lists.
+- New elements in pages in subscribed lists will be added to tour
+- Elements in list to_fetch will be retrieved and added to tour
+- Normal lists will be synchronized and updated
+- Frozen lists will be fetched only if not present.
+
+Argument : duration of cache validity (in seconds)."""
+        if self.offline_only:
+            print("Sync can only be achieved online. Change status with `online`.")
+            return
+        args = line.split()
+        if len(args) > 0:
+            if not args[0].isdigit():
+                print("sync argument should be the cache validity expressed in seconds")
+                return
+            else:
+                validity = int(args[0])
+        else:
+            validity = 0
+        self.call_sync(refresh_time=validity)
+
+    def call_sync(self,refresh_time=0,depth=1):
+        # fetch_gitem is the core of the sync algorithm.
+        # It takes as input :
+        # - a GeminiItem to be fetched
+        # - depth : the degree of recursion to build the cache (0 means no recursion)
+        # - validity : the age, in seconds, existing caches need to have before
+        #               being refreshed (0 = never refreshed if it already exists)
+        # - savetotour : if True, newly cached items are added to tour
+        def add_to_tour(gitem):
+            if gitem.is_cache_valid():
+                print("  -> adding to tour: %s" %gitem.url)
+                self.list_add_line("tour",gi=gitem,verbose=False)
+                return True
+            else:
+                return False
+        def fetch_gitem(gitem,depth=0,validity=0,savetotour=False,count=[0,0],strin=""):
+            #savetotour = True will save to tour newly cached content
+            # else, do not save to tour
+            #regardless of valitidy
+            if not gitem.is_cache_valid(validity=validity):
+                if strin != "":
+                    endline = '\r'
+                else:
+                    endline = None
+                #Did we already had a cache (even an old one) ?
+                isnew = not gitem.is_cache_valid()
+                print("%s [%s/%s] Fetch "%(strin,count[0],count[1]),gitem.url,end=endline)
+                self._go_to_gi(gitem,update_hist=False)
+                if savetotour and isnew and gitem.is_cache_valid():
+                    #we add to the next tour only if we managed to cache 
+                    #the ressource
+                    add_to_tour(gitem)
+            #Now, recursive call, even if we didn’t refresh the cache
+            if depth > 0:
+                #we only savetotour at the first level of recursion
+                if depth > 1:
+                    savetotour=False
+                links = gitem.get_links()
+                subcount = [0,len(links)]
+                d = depth - 1
+                for k in links:
+                    #recursive call (validity is always 0 in recursion)
+                    substri = strin + " -->"
+                    subcount[0] += 1
+                    fetch_gitem(k,depth=d,validity=0,savetotour=savetotour,\
+                                        count=subcount,strin=substri) 
+        def fetch_list(list,validity=0,depth=1,tourandremove=False,tourchildren=False):
+            links = self.list_get_links(list)
+            end = len(links)
+            counter = 0
+            print(" * * * %s to fetch in %s * * *" %(end,list))
+            for l in links:
+                counter += 1
+                fetch_gitem(l,depth=depth,validity=validity,savetotour=tourchildren,count=[counter,end])
+                if tourandremove:
+                    if add_to_tour(l):
+                        self.list_rm_url(l.url,list)
+            
+        self.sync_only = True
+        lists = self.list_lists()
+        # We will fetch all the lists except "archives" and "history"
+        # We keep tour for the last round
+        subscriptions = []
+        normal_lists = []
+        fridge = []
+        for l in lists:
+            if not self.list_is_system(l):
+                if self.list_is_frozen(l):
+                    fridge.append(l)
+                elif self.list_is_subscribed(l):
+                    subscriptions.append(l)
+                else:
+                    normal_lists.append(l)
+        # We start with the "subscribed" as we need to find new items
+        for l in subscriptions:
+            fetch_list(l,validity=refresh_time,depth=depth,tourchildren=True)
+        #Then the fetch list (item are removed from the list after fetch)
+        if "to_fetch" in lists:
+            fetch_list("to_fetch",validity=refresh_time,depth=depth,tourandremove=True)
+        #then we fetch all the rest (including bookmarks and tour)
+        for l in normal_lists:
+            fetch_list(l,validity=refresh_time,depth=depth)
+        for l in fridge:
+            fetch_list(l,validity=0,depth=depth)
+        #tour should be the last one as item my be added to it by others
+        fetch_list("tour",validity=refresh_time,depth=depth)
+        print("End of sync")
+        self.sync_only = False
+
     ### The end!
     def do_quit(self, *args):
         """Exit Offpunk."""
@@ -3271,6 +3383,8 @@ current gemini browsing session."""
         sys.exit()
 
     do_exit = do_quit
+
+
 
 # Main function
 def main():
@@ -3307,42 +3421,21 @@ def main():
 
     # Instantiate client
     gc = GeminiClient(restricted=args.restricted,synconly=args.sync)
-
-    if not args.sync and not args.fetch_later:
-        # Process config file
-        rcfile = os.path.join(_CONFIG_DIR, "offpunkrc")
-        if os.path.exists(rcfile):
-            print("Using config %s" % rcfile)
-            with open(rcfile, "r") as fp:
-                for line in fp:
-                    line = line.strip()
-                    if ((args.bookmarks or args.url) and
-                        any((line.startswith(x) for x in ("go", "g", "tour", "t")))
-                        ):
-                        if args.bookmarks:
-                            print("Skipping rc command \"%s\" due to --bookmarks option." % line)
-                        else:
-                            print("Skipping rc command \"%s\" due to provided URLs." % line)
-                        continue
-                    gc.onecmd(line)
-        print("Welcome to Offpunk!")
-        if args.restricted:
-            print("Restricted mode engaged!")
-        print("Type `help` to get the list of available command.")
-
+    torun_queue = []
+    
     # Act on args
     if args.tls_cert:
         # If tls_key is None, python will attempt to load the key from tls_cert.
         gc._activate_client_cert(args.tls_cert, args.tls_key)
     if args.bookmarks:
-        gc.onecmd("bookmarks")
+        torun_queue.append("bookmarks")
     elif args.url:
         if len(args.url) == 1:
-            gc.onecmd("go %s" % args.url[0])
+            torun_queue.append("go %s" % args.url[0])
         else:
             for url in args.url:
-                gc.onecmd("tour %s" % url)
-            gc.onecmd("tour")
+                torun_queue.append("tour %s" % url)
+            torun_queue.append("tour")
 
     if args.disable_http:
         gc.support_http = False
@@ -3360,67 +3453,8 @@ def main():
         else:
             print("--fetch-later requires an URL (or a list of URLS) as argument")
     elif args.sync:
-        # fetch_gitem is the core of the sync algorithm.
-        # It takes as input :
-        # - a GeminiItem to be fetched
-        # - depth : the degree of recursion to build the cache (0 means no recursion)
-        # - validity : the age, in seconds, existing caches need to have before
-        #               being refreshed (0 = never refreshed if it already exists)
-        # - savetotour : if True, newly cached items are added to tour
         if args.assume_yes:
             gc.automatic_choice = "y"
-        def add_to_tour(gitem):
-            if gitem.is_cache_valid():
-                print("  -> adding to tour: %s" %gitem.url)
-                gc.list_add_line("tour",gi=gitem,verbose=False)
-                return True
-            else:
-                return False
-
-        def fetch_gitem(gitem,depth=0,validity=0,savetotour=False,count=[0,0],strin=""):
-            #savetotour = True will save to tour newly cached content
-            # else, do not save to tour
-            #regardless of valitidy
-            if not gitem.is_cache_valid(validity=validity):
-                if strin != "":
-                    endline = '\r'
-                else:
-                    endline = None
-                #Did we already had a cache (even an old one) ?
-                isnew = not gitem.is_cache_valid()
-                print("%s [%s/%s] Fetch "%(strin,count[0],count[1]),gitem.url,end=endline)
-                gc._go_to_gi(gitem,update_hist=False)
-                if savetotour and isnew and gitem.is_cache_valid():
-                    #we add to the next tour only if we managed to cache 
-                    #the ressource
-                    add_to_tour(gitem)
-            #Now, recursive call, even if we didn’t refresh the cache
-            if depth > 0:
-                #we only savetotour at the first level of recursion
-                if depth > 1:
-                    savetotour=False
-                links = gitem.get_links()
-                subcount = [0,len(links)]
-                d = depth - 1
-                for k in links:
-                    #recursive call (validity is always 0 in recursion)
-                    substri = strin + " -->"
-                    subcount[0] += 1
-                    fetch_gitem(k,depth=d,validity=0,savetotour=savetotour,\
-                                        count=subcount,strin=substri)
-        
-        def fetch_list(list,validity=0,depth=1,tourandremove=False,tourchildren=False):
-            links = gc.list_get_links(list)
-            end = len(links)
-            counter = 0
-            print(" * * * %s to fetch in %s * * *" %(end,list))
-            for l in links:
-                counter += 1
-                fetch_gitem(l,depth=depth,validity=validity,savetotour=tourchildren,count=[counter,end])
-                if tourandremove:
-                    if add_to_tour(l):
-                        gc.list_rm_url(l.url,list)
-            
         if args.cache_validity:
             refresh_time = int(args.cache_validity)
         else:
@@ -3430,37 +3464,31 @@ def main():
             depth = int(args.depth)
         else:
             depth = 1
-        gc.sync_only = True
-        lists = gc.list_lists()
-        # We will fetch all the lists except "archives" and "history"
-        # We keep tour for the last round
-        subscriptions = []
-        normal_lists = []
-        fridge = []
-        for l in lists:
-            if not gc.list_is_system(l):
-                if gc.list_is_frozen(l):
-                    fridge.append(l)
-                elif gc.list_is_subscribed(l):
-                    subscriptions.append(l)
-                else:
-                    normal_lists.append(l)
-        # We start with the "subscribed" as we need to find new items
-        for l in subscriptions:
-            fetch_list(l,validity=refresh_time,depth=depth,tourchildren=True)
-        #Then the fetch list (item are removed from the list after fetch)
-        if "to_fetch" in lists:
-            fetch_list("to_fetch",validity=refresh_time,depth=depth,tourandremove=True)
-        #then we fetch all the rest (including bookmarks and tour)
-        for l in normal_lists:
-            fetch_list(l,validity=refresh_time,depth=depth)
-        for l in fridge:
-            fetch_list(l,validity=0,depth=depth)
-        #tour should be the last one as item my be added to it by others
-        fetch_list("tour",validity=refresh_time,depth=depth)
-
+        gc.call_sync(refresh_time=refresh_time,depth=depth)
         gc.onecmd("blackbox")
     else:
+        # We are in the normal mode. First process config file
+        rcfile = os.path.join(_CONFIG_DIR, "offpunkrc")
+        if os.path.exists(rcfile):
+            print("Using config %s" % rcfile)
+            with open(rcfile, "r") as fp:
+                for line in fp:
+                    line = line.strip()
+                    if ((args.bookmarks or args.url) and
+                        any((line.startswith(x) for x in ("go", "g", "tour", "t")))
+                        ):
+                        if args.bookmarks:
+                            print("Skipping rc command \"%s\" due to --bookmarks option." % line)
+                        else:
+                            print("Skipping rc command \"%s\" due to provided URLs." % line)
+                        continue
+                    torun_queue.append(line)
+        print("Welcome to Offpunk!")
+        if args.restricted:
+            print("Restricted mode engaged!")
+        print("Type `help` to get the list of available command.")
+        for line in torun_queue:
+            gc.onecmd(line)
         gc.cmdloop()
 
 if __name__ == '__main__':

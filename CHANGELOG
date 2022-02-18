@@ -12,6 +12,7 @@ UPGRADE: Users who subscribed to pages before 0.4 should run once the command "l
 - Improved syncing performances and multiple bug/crash fixes.
 - "version" will now display info about your system installation
 - "info" command will display technical information about current page
+- "sync" allows you to do the sync from within Offpunk
 
 ## 0.3 - Feb 11th 2022
 New Features:
