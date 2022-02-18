@@ -2594,6 +2594,21 @@ Think of it like marks in vi: 'mark a'='ma' and 'go a'=''a'."""
             self.marks[line] = self.gi
         else:
             print("Invalid mark, must be one letter")
+    
+    @needs_gi
+    def do_info(self,line):
+        """Display information about current page."""
+        out = self.gi.full_title() + "\n\n"
+        out += "URL      :   " + self.gi.url + "\n"
+        out += "Mime     :   " + self.gi.get_mime() + "\n"
+        out += "Cache    :   " + self.gi.get_cache_path() + "\n"
+        if self.gi.renderer :
+            rend = str(self.gi.renderer.__class__)
+            rend = rend.lstrip("<class '__main__.").rstrip("'>")
+        else:
+            rende = "None"
+        out += "Renderer :   " + rend + "\n"
+        print(out)
 
     def do_version(self, line):
         """Display version and system information."""

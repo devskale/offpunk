@@ -4,11 +4,14 @@
 UPGRADE: Users who subscribed to pages before 0.4 should run once the command "list subscribe subscribed". Without that, the subscribed list will be seen as a normal list by sync.
 - New list command : "list freeze" and "list suscribe"
 - Pictures are now displayed directely in terminal (suggested by kelbot)
-- Introducing the "open" command to open current page/image/file with external handler.
+- "open" command to open current page/image/file with external handler.
 - "set width XX" now works to set the max width. If smaller, terminal width is used (thanks kelbot for reporting the bug)
 - RSS feeds are now rendered as Gemlogs to improve consistency while browsing
+- "subscribe" will detect feeds in html pages if any
 - "less" will restore previous position in a page (requires less 572+)
 - Improved syncing performances and multiple bug/crash fixes.
+- "version" will now display info about your system installation
+- "info" command will display technical information about current page
 
 ## 0.3 - Feb 11th 2022
 New Features:
