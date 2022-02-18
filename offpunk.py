@@ -285,7 +285,9 @@ class AbstractRenderer():
         self.links = None
         self.title = None
         self.validity = True
-    
+   
+    def get_subscribe_links(self):
+        return [[self.url,self.get_mime(),self.get_title()]]
     def is_valid(self):
         return self.validity
     def get_links(self):
@@ -318,6 +320,8 @@ class AbstractRenderer():
 
 # Gemtext Rendering Engine
 class GemtextRenderer(AbstractRenderer):
+    def get_mime(self):
+        return "text/gemini"
     def get_title(self):
         if self.title:
             return self.title
@@ -413,6 +417,8 @@ class GemtextRenderer(AbstractRenderer):
         return rendered_text, links
 
 class GopherRenderer(AbstractRenderer):
+    def get_mime(self):
+        return "text/gopher"
     def get_title(self):
         return "Gopher - No Title"
 
@@ -473,6 +479,8 @@ class GopherRenderer(AbstractRenderer):
 
 
 class FolderRenderer(GemtextRenderer):
+    def get_mime(self):
+        return "Directory"
     def prepare(self,body,mode=None):
         def get_first_line(l):
             path = os.path.join(listdir,l+".gmi")
@@ -536,6 +544,8 @@ class FolderRenderer(GemtextRenderer):
                 return body
 
 class FeedRenderer(GemtextRenderer):
+    def get_mime(self):
+        return "application/rss+xml"
     def is_valid(self):
         if _DO_FEED:
             parsed = feedparser.parse(self.body)
@@ -602,6 +612,8 @@ class FeedRenderer(GemtextRenderer):
         return page
 
 class ImageRenderer(AbstractRenderer):
+    def get_mime(self):
+        return "image/*"
     def is_valid(self):
         if _RENDER_IMAGE:
             return True
@@ -629,6 +641,18 @@ class ImageRenderer(AbstractRenderer):
         return ansi_img, []
 
 class HtmlRenderer(AbstractRenderer):
+    def get_mime(self):
+        return "text/html"
+    def get_subscribe_links(self):
+        subs = [[self.url,self.get_mime(),self.get_title()]]
+        soup = BeautifulSoup(self.body, 'html.parser')
+        links = soup.find_all("link",rel="alternate",recursive=True)
+        for l in links:
+            ty = l.get("type")
+            if "rss" in ty or "atom" in ty or "feed" in ty:
+                subs.append([l.get("href"),ty,l.get("title")])
+        return subs
+
     def get_title(self):
         if self.title:
             return self.title
@@ -1074,6 +1098,14 @@ class GeminiItem():
         else:
             return self.links[nb-1]
 
+    def get_subscribe_links(self):
+        if not self.renderer:
+            self._set_renderer()
+        if self.renderer:
+            return self.renderer.get_subscribe_links()
+        else:
+            return []
+
     # Red title above rendered content
     def _make_terminal_title(self):
         title = self.get_capsule_title()
@@ -1264,6 +1296,8 @@ class GeminiItem():
     def full_title(self):
         if self.renderer:
             title = self.renderer.get_title()
+        elif self.name:
+            title = self.name
         else:
             # we take the last component of url as title
             if self.local:
@@ -2796,12 +2830,30 @@ If no argument given, URL is added to Bookmarks."""
 If a new link is found in the page during a --sync, the new link is automatically
 fetched and added to your next tour.
 To unsubscribe, remove the page from the "subscribed" list."""
-        list_path = self.get_list("subscribed")
-        added = self.list_add_line("subscribed",verbose=False)
-        if added :
-            print("Subscribed to %s" %self.gi.url)
+        subs = self.gi.get_subscribe_links()
+        if len(subs) > 1:
+            stri = "Multiple feeds have been found :\n\n"
+            counter = 0
+            for l in subs:
+                stri += "[%s] %s [%s]\n"%(counter+1,l[0],l[1])
+                counter += 1
+            stri += "\n\n"
+            stri += "Which feed do you want to subsribe ? > "
+            ans = input(stri)
+            if ans.isdigit() and 0 < int(ans) <= len(subs):
+                sublink,mime,title = subs[int(ans)-1]
+            else:
+                sublink,title = None,None
         else:
-            print("You are already subscribed to %s"%self.gi.url)
+            sublink,mime,title = subs[0]
+        if sublink:
+            gi = GeminiItem(sublink,name=title)
+            list_path = self.get_list("subscribed")
+            added = self.list_add_line("subscribed",gi=gi,verbose=False)
+            if added :
+                print("Subscribed to %s" %sublink)
+            else:
+                print("You are already subscribed to %s"%sublink)
 
     def do_bookmarks(self, line):
         """Show or access the bookmarks menu.
