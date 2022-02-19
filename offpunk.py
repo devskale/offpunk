@@ -927,8 +927,7 @@ class GeminiItem():
                     else:
                         itemtype = "1"
                         selector = parsed.path
-                    itemtype = parsed.path[1]
-                    self.path = parsed.path[2:]
+                    self.path = selector
                 else:
                     itemtype = "1"
                     self.path = parsed.path
@@ -1214,7 +1213,9 @@ class GeminiItem():
             return self.mime
         elif self.is_cache_valid():
             path = self.get_cache_path()
-            if path.endswith(".gmi"):
+            if os.path.isdir(path):
+                mime = "Local Folder"
+            elif path.endswith(".gmi"):
                 mime = "text/gemini"
             elif _HAS_MAGIC :
                 mime = magic.from_file(path,mime=True)
@@ -1276,6 +1277,8 @@ class GeminiItem():
         # Get rid of bottom component
         pathbits.pop()
         new_path = os.path.join(*pathbits)
+        if self.scheme == "gopher":
+            new_path = "/1" + new_path
         return GeminiItem(self._derive_url(new_path))
 
     def query(self, query):
@@ -2608,6 +2611,7 @@ Think of it like marks in vi: 'mark a'='ma' and 'go a'=''a'."""
         """Display information about current page."""
         out = self.gi.full_title() + "\n\n"
         out += "URL      :   " + self.gi.url + "\n"
+        out += "Path     :   " + self.gi.path + "\n"
         out += "Mime     :   " + self.gi.get_mime() + "\n"
         out += "Cache    :   " + self.gi.get_cache_path() + "\n"
         if self.gi.renderer :
