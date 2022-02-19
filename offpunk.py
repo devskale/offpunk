@@ -2615,7 +2615,26 @@ Think of it like marks in vi: 'mark a'='ma' and 'go a'=''a'."""
             rend = rend.lstrip("<class '__main__.").rstrip("'>")
         else:
             rende = "None"
-        out += "Renderer :   " + rend + "\n"
+        out += "Renderer :   " + rend + "\n\n"
+        lists = []
+        for l in self.list_lists():
+            if self.list_has_url(self.gi.url,l):
+                lists.append(l)
+        if len(lists) > 0:
+            out += "Page appeard in following lists :\n"
+            for l in lists:
+                if not self.list_is_system(l):
+                    status = "normal list"
+                    if self.list_is_subscribed(l):
+                        status = "subscription"
+                    elif self.list_is_frozen(l):
+                        status = "frozen list"
+                    out += " * %s\t(%s)\n" %(l,status)
+            for l in lists:
+                if self.list_is_system(l):
+                    out += " * %s\n" %l
+        else:
+            out += "Page is not save in any list"
         print(out)
 
     def do_version(self, line):
@@ -2962,26 +2981,34 @@ archives, which is a special historical list limited in size. It is similar to `
     # return True if the URL was removed
     # return False if the URL was not found
     def list_rm_url(self,url,list):
+        return self.list_has_url(url,list,deletion=True)
+   
+    # deletion and has_url are so similar, I made them the same method
+    def list_has_url(self,url,list,deletion=False):
         list_path = self.list_path(list)
         if list_path:
             to_return = False
             with open(list_path,"r") as lf:
                 lines = lf.readlines()
                 lf.close()
-            with open(list_path,"w") as lf:
-                for l in lines:
-                    # we separate components of the line
-                    # to ensure we identify a complete URL, not a part of it
-                    splitted = l.split()
-                    if url not in splitted:
-                        #sometimes, we must remove the ending "/"
-                        if url.endswith("/") and url[:-1] in splitted:
-                            to_return = True
-                        else:
-                            lf.write(l)
-                    else:
+            to_write = []
+            for l in lines:
+                # we separate components of the line
+                # to ensure we identify a complete URL, not a part of it
+                splitted = l.split()
+                if url not in splitted:
+                    #sometimes, we must remove the ending "/"
+                    if url.endswith("/") and url[:-1] in splitted:
                         to_return = True
-                lf.close()
+                    else:
+                        to_write.append(l)
+                else:
+                    to_return = True
+            if deletion :
+                with open(list_path,"w") as lf:
+                    for l in to_write:
+                        lf.write(l)
+                    lf.close()
             return to_return
         else:
             return False
