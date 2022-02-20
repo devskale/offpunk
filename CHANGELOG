@@ -1,6 +1,6 @@
 # Offpunk History
 
-## 0.4 - Unreleased
+## 0.4 - Feb 21st 2022
 UPGRADE: Users who subscribed to pages before 0.4 should run once the command "list subscribe subscribed". Without that, the subscribed list will be seen as a normal list by sync.
 - New list command : "list freeze" and "list suscribe"
 - Pictures are now displayed directely in terminal (suggested by kelbot)
@@ -13,6 +13,7 @@ UPGRADE: Users who subscribed to pages before 0.4 should run once the command "l
 - "version" will now display info about your system installation
 - "info" command will display technical information about current page
 - "sync" allows you to do the sync from within Offpunk
+=> gemini://rawtext.club/~ploum/2022-02-21-offpunk04.gmi
 
 ## 0.3 - Feb 11th 2022
 New Features:

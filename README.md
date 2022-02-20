@@ -1,6 +1,6 @@
 # OFFPUNK
 
-A command-line, text-based and offline-first Gemini, Gopher and Web browser by [Ploum](https://ploum.net).
+A command-line and offline-first smolnet browser/feed reader for Gemini, Gopher and Web by [Ploum](https://ploum.net).
 
 The goal of Offpunk is to be able to synchronise your content once (a day, a week, a month) and then browse/organise it while staying disconnected.
 
@@ -46,11 +46,8 @@ Known issues in the code:
 I would happily mentor anyone willing to implement those:
 * TODO0: Hard - Make a manual within the git repository and have it automatically deployed as a website.
 * TODO1: Easy - Update blackbox to reflect cache hits.
-* TODO2: Hard - "pdf" - Implement retrieving PDF version of pages
-* TODO3: Medium - Transparent privacy redirects (twitter->nitter, etc)
-* TODO4: Medium - Rendering themes to allow customizing of colors ? (if any interest in the feature)
-* TODO6: Hard - "search" - Offline search engine to search in the cache (hard, no idea on how to do that)
-* TODO7: Easy - "share" - send a page by email
+* TODO2: Medium - Rendering themes to allow customizing of colors ? (if any interest in the feature)
+* TODO3: Hard - "search" - Offline search engine to search in the cache (hard, no idea on how to do that)
 
 ## More
 
@@ -61,16 +58,17 @@ Announces about Offpunk will be made on Ploum’s Gemlog  => gemini://rawtext.cl
 
 ## Dependencies
 
-Offpunk has no "strict dependencies", i.e. it will run and work without anything
+Offpunk has no "strict dependencies", i.e. it should run and work without anything
 else beyond the Python standard library and the "less" pager.  However, it will "opportunistically
 import" a few other libraries if they are available to offer an improved
 experience or some other features. Python libraries requests, bs4 and readabliity are required for http/html support.
 
-To avoid using unstable or too recent libraries, the rule of thumb is that a library should be packaged in Debian/Ubuntu.
+To avoid using unstable or too recent libraries, the rule of thumb is that a library should be packaged in Debian/Ubuntu. Keep in mind that Offpunk is mainly tested will all libraries installed. If you encounter a crash without one optional dependencies, please report it.
 
 Run command `version` in offpunk to see if you are missing some dependencies.
 
 * [Python-xdg](https://www.freedesktop.org/wiki/Software/pyxdg) will place your data, config and cache in place recommended by the XDG specs (usually it’s .local/share/offpunk, .config/offpunk and .cache/offpunk). Without it, look for ~/.offpunk or ~/.config/offpunk while the cache will be in ~/.cache/offpunk/. If installation is done later, some config files may need to be migrated by hand.
+* [xdg-utils](https://www.freedesktop.org/wiki/Software/xdg-utils/) provides xdg-open which is highly recommended to open files without a renderer or a handler. It is also used for mailto: command.
 * [Python-requests](http://python-requests.org) is needed to handle http/https requests natively (apt-get install python3-requests). Without it, http links will be opened in an external browser
 * [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup) and [Readability](https://github.com/buriy/python-readability) are both needed to render HTML. Without them, HTML will not be rendered or be sent to an external parser like Lynx. (apt-get install python3-bs4 python3-readability or pip3 install readability-lxml)
 * [Python-feedparser](https://github.com/kurtmckee/feedparser) will allow parsing of RSS/Atom feeds and thus subscriptions to them. (apt-get install python3-feedparser)
@@ -92,8 +90,9 @@ Run command `version` in offpunk to see if you are missing some dependencies.
 * Built-in documentation: type `help` to get the list of command or a specific help about a command.
 * Offline mode to browse cached content without a connection. Requested elements are automatically fetched during the next synchronization and are added to your tour.
 * HTML pages are prettified to focus on content. Read without being disturbed.
+* RSS/Atom feeds are automatically discovered by `subscribe` and rendered as gemlogs.
 * Support "subscriptions" to a page. New content seen in subscribed pages are automatically added to your next tour.
-* Complex bookmarks management through multiple lists, built-in edition and archiving.
+* Complex bookmarks management through multiple lists, built-in edition, subscribing/freezing and archiving.
 * Advanced navigation tools like `tour` and `mark` (as per VF-1). Unlike AV-98, tour is saved on disk accross sessions. 
 * Ability to specify external handler programs for different MIME types (use `handler`)
 * Non-interactive cache-building with configurable depth through the --sync command. The cache can easily be used by other software. 

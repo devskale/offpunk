@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='offpunk',
-    version='0.3',
+    version='0.4',
     description="Offline Command line Gemini client forked from AV-98.",
     author="Ploum",
     author_email="offpunk@ploum.eu",

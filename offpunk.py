@@ -68,6 +68,7 @@ except ModuleNotFoundError:
 
 _HAS_CHAFA = shutil.which('chafa')
 _HAS_XSEL = shutil.which('xsel')
+_HAS_XDGOPEN = shutil.which('xdg-open')
 try:
     from PIL import Image
     _HAS_PIL = True
@@ -300,7 +301,9 @@ class AbstractRenderer():
         return self.validity
     def get_links(self):
         if self.links == None :
-            rendered_text, self.links = self.render(self.body,mode="links_only")
+            results = self.render(self.body,mode="links_only")
+            if results:
+                self.links = results[1]
         return self.links
     def get_title(self):
         return "Abstract title"
@@ -318,7 +321,10 @@ class AbstractRenderer():
             else :
                 mode = "full"
             prepared_body = self.prepare(self.body,mode=mode)
-            self.rendered_text, self.links = self.render(prepared_body,width=width,mode=mode)
+            result = self.render(prepared_body,width=width,mode=mode)
+            if result:
+                self.rendered_text = result[0]
+                self.links = result[1]
         return self.rendered_text
     # An instance of AbstractRenderer should have a self.render(body,width,mode) method.
     # 3 modes are used : readable (by default), full and links_only (the fastest, when
@@ -651,6 +657,10 @@ class ImageRenderer(AbstractRenderer):
 class HtmlRenderer(AbstractRenderer):
     def get_mime(self):
         return "text/html"
+    def is_valid(self):
+        if not _DO_HTML:
+            print("HTML document detected. Please install python-bs4 and python-readability.")
+        return _DO_HTML and self.validity
     def get_subscribe_links(self):
         subs = [[self.url,self.get_mime(),self.get_title()]]
         soup = BeautifulSoup(self.body, 'html.parser')
@@ -1165,7 +1175,7 @@ class GeminiItem():
     def get_rendered_body(self,readable=True):
         if not self.renderer:
             self._set_renderer()
-        if self.renderer:
+        if self.renderer and self.renderer.is_valid():
             body = self.renderer.get_body(readable=readable)
             self.__make_links(self.renderer.get_links())
             to_return = self._make_terminal_title() + body
@@ -1472,8 +1482,12 @@ class GeminiClient(cmd.Cmd):
                 resp = input("Send an email to %s Y/N? " %gi.path)
                 self.gi = gi
                 if resp.strip().lower() in ("y", "yes"):
-                    cmd = "xdg-open mailto:%s" %gi.path
-                    subprocess.call(shlex.split(cmd))
+                    if _HAS_XDGOPEN :
+                        cmd = "xdg-open mailto:%s" %gi.path
+                        subprocess.call(shlex.split(cmd))
+                    else:
+                        print("Cannot find a mail client to send mail to %s" %gi.path)
+                        print("Please install xdg-open (usually from xdg-util package)")
             return
         elif gi.scheme not in ("file","gemini", "gopher", "http", "https") and not self.sync_only:
             print("Sorry, no support for {} links.".format(gi.scheme))
@@ -2103,7 +2117,11 @@ class GeminiClient(cmd.Cmd):
                 break
         else:
             # Use "xdg-open" as a last resort.
-            cmd_str = "xdg-open %s"
+            if _HAS_XDGOPEN:
+                cmd_str = "xdg-open %s"
+            else:
+                cmd_str = "echo ""Can’t find how to open %s"""
+                print("Please install xdg-open (usually from xdg-util package)")
         self._debug("Using handler: %s" % cmd_str)
         return cmd_str
 
@@ -2661,6 +2679,7 @@ Think of it like marks in vi: 'mark a'='ma' and 'go a'=''a'."""
         output += " - python-readability  : " + has(_HAS_READABILITY)
         output += " - python-xdg          : " + has(_HAS_XDG)
         output += " - python-setproctitle : " + has(_HAS_SETPROCTITLE)
+        output += " - xdg-open            : " + has(_HAS_XDGOPEN)
         output += " - chafa               : " + has(_HAS_CHAFA)
         output += " - xsel                : " + has(_HAS_XSEL)
 
@@ -2674,7 +2693,7 @@ Think of it like marks in vi: 'mark a'='ma' and 'go a'=''a'."""
         output += "\n"
         output += "Config directory    : " +  _CONFIG_DIR + "\n"
         output += "User Data directory : " +  _DATA_DIR + "\n"
-        output += "CACHE               : " +  _CACHE_PATH
+        output += "Cache directoy      : " +  _CACHE_PATH
 
         print(output)
 
