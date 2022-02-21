@@ -59,12 +59,25 @@ except ModuleNotFoundError:
     _HAS_EDITOR = False
 
 try:
-    import ansiwrap as textwrap
+    import ansiwrap
+    wrap_method = ansiwrap.wrap
+    #from blessed import Terminal
+    #term = Terminal()
+    #wrap_method = term.wrap
     _HAS_ANSIWRAP = True
 except ModuleNotFoundError:
     print("Try installing python-ansiwrap for better rendering")
     import textwrap
+    wrap_method = textwrap.wrap
     _HAS_ANSIWRAP = False
+
+# return wrapped text as a list of lines
+def wraplines(*args,**kwargs):
+#    print("will wrap with %s and %s"%(str(args),str(kwargs)))
+    return wrap_method(*args,**kwargs)
+# return wrapped text as one string
+def wrapparagraph(*args,**kwargs):
+    return "\n".join(wraplines(*args,**kwargs))
 
 _HAS_CHAFA = shutil.which('chafa')
 _HAS_XSEL = shutil.which('xsel')
@@ -367,7 +380,7 @@ class GemtextRenderer(AbstractRenderer):
         #This local method takes a line and apply the ansi code given as "color"
         #The whole line is then wrapped and ansi code are ended.
         def wrap_line(line,color=None,i_indent="",s_indent=""):
-            wrapped = textwrap.wrap(line,width,initial_indent=i_indent,\
+            wrapped = wraplines(line,width,initial_indent=i_indent,\
                                     subsequent_indent=s_indent)
             final = ""
             for l in wrapped:
@@ -409,11 +422,11 @@ class GemtextRenderer(AbstractRenderer):
                     rendered_text += wrapped
             elif line.startswith("* "):
                 line = line[1:].lstrip("\t ")
-                rendered_text += textwrap.fill(line, width, initial_indent = "• ", 
+                rendered_text += wrapparagraph(line, width, initial_indent = "• ", 
                                                 subsequent_indent="  ") + "\n"
             elif line.startswith(">"):
                 line = line[1:].lstrip("\t ")
-                rendered_text += textwrap.fill(line,width, initial_indent = "> ", 
+                rendered_text += wrapparagraph(line,width, initial_indent = "> ", 
                                                 subsequent_indent="> ") + "\n"
             elif line.startswith("###"):
                 line = line[3:].lstrip("\t ")
@@ -447,7 +460,7 @@ class GopherRenderer(AbstractRenderer):
             lines = body.split("\n")
             render = ""
             for line in lines:
-                render += textwrap.fill(line,width) + "\n"
+                render += wrapparagraph(line,width) + "\n"
             links = []
         return render,links
 
@@ -462,7 +475,7 @@ class GopherRenderer(AbstractRenderer):
             #    continue
             if line.startswith("i"):
                 towrap = line[1:].split("\t")[0] + "\r\n"
-                rendered_text += textwrap.fill(towrap,width) + "\n"
+                rendered_text += wrapparagraph(towrap,width) + "\n"
             elif not line.strip() in [".",""]:
                 parts = line.split("\t")
                 parts[-1] = parts[-1].strip()
@@ -485,10 +498,10 @@ class GopherRenderer(AbstractRenderer):
                     linkline = url + " " + name
                     links.append(linkline)
                     towrap = "[%s] "%len(links)+ name + "\n"
-                    rendered_text += textwrap.fill(towrap,width) + "\n"
+                    rendered_text += wrapparagraph(towrap,width) + "\n"
                 else:
                     towrap = line +"\n"
-                    rendered_text += textwrap.fill(towrap,width) + "\n"
+                    rendered_text += wrapparagraph(towrap,width) + "\n"
         return rendered_text,links
 
 
@@ -851,7 +864,7 @@ class HtmlRenderer(AbstractRenderer):
                         s_indent = i_indent
                     if line.strip() != "":
                         try:
-                            wrapped = textwrap.fill(line,width,initial_indent=i_indent,
+                            wrapped = wrapparagraph(line,width,initial_indent=i_indent,
                                                 subsequent_indent=s_indent)
                         except Exception as err:
                             wrapped = line
@@ -867,7 +880,7 @@ class HtmlRenderer(AbstractRenderer):
             first_line = lines.pop(0)
         if add_title and self.get_title()[:(width-1)] not in first_line:
             title = "\x1b[1;34m\x1b[4m" + self.get_title() + "\x1b[0m""\n" 
-            title = textwrap.fill(title,width)
+            title = wrapparagraph(title,width)
             r_body = title + "\n" + r_body
         #We try to avoid huge empty gaps in the page
         r_body = r_body.replace("\n\n\n\n","\n\n").replace("\n\n\n","\n\n")
@@ -1136,7 +1149,7 @@ class GeminiItem():
             else:
                 title += " (%s links)    \x1b[0;31m(last accessed on %s)"%(nbr,str_last)
         rendered_title = "\x1b[31m\x1b[1m"+ title + "\x1b[0m"
-        wrapped = textwrap.fill(rendered_title,term_width())
+        wrapped = wrapparagraph(rendered_title,term_width())
         return wrapped + "\n"
 
     def _set_renderer(self,mime=None):
