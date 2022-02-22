@@ -1,5 +1,8 @@
 # Offpunk History
 
+## 0.5 - Unreleased
+- Avoid deprecated SSL methods (thanks Phoebos for the report)
+
 ## 0.4 - Feb 21st 2022
 UPGRADE: Users who subscribed to pages before 0.4 should run once the command "list subscribe subscribed". Without that, the subscribed list will be seen as a normal list by sync.
 - New list command : "list freeze" and "list suscribe"

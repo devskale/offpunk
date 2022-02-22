@@ -1236,7 +1236,9 @@ class GeminiItem():
             return self.mime
         elif self.is_cache_valid():
             path = self.get_cache_path()
-            if os.path.isdir(path):
+            if self.scheme == "mailto":
+                mime = "mailto"
+            elif os.path.isdir(path):
                 mime = "Local Folder"
             elif path.endswith(".gmi"):
                 mime = "text/gemini"
@@ -2760,7 +2762,7 @@ Use "less full" to see a complete html page instead of the article view.
 (the "full" argument has no effect on Gemtext content but doesn’t restore position)."""
         if self.gi and args and args[0] == "full":
             self._go_to_gi(self.gi,readable=False)
-        elif self.gi.is_cache_valid():
+        elif self.gi.is_cache_valid() and self.gi.scheme not in ["mailto"]:
             less_cmd(self._get_active_tmpfile(),histfile=self.less_histfile)
         else:
             self.do_go(self.gi.url)
