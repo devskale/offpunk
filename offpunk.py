@@ -1036,7 +1036,7 @@ class GeminiItem():
         # (use validity = 1 if you want to refresh everything)
         cache = self.get_cache_path()
         if self.local:
-            return True
+            return os.path.exists(cache)
         elif cache :
             # If path is too long, we always return True to avoid
             # fetching it.
@@ -2916,7 +2916,8 @@ To unsubscribe, remove the page from the "subscribed" list."""
             stri = "Multiple feeds have been found :\n\n"
             counter = 0
             for l in subs:
-                stri += "[%s] %s [%s]\n"%(counter+1,l[0],l[1])
+                link = self.gi.absolutise_url(l[0])
+                stri += "[%s] %s [%s]\n"%(counter+1,link,l[1])
                 counter += 1
             stri += "\n\n"
             stri += "Which feed do you want to subsribe ? > "
@@ -2928,6 +2929,7 @@ To unsubscribe, remove the page from the "subscribed" list."""
         else:
             sublink,mime,title = subs[0]
         if sublink:
+            sublink = self.gi.absolutise_url(sublink)
             gi = GeminiItem(sublink,name=title)
             list_path = self.get_list("subscribed")
             added = self.list_add_line("subscribed",gi=gi,verbose=False)
