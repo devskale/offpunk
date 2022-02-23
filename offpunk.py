@@ -3562,7 +3562,13 @@ def main():
         print("Type `help` to get the list of available command.")
         for line in torun_queue:
             gc.onecmd(line)
-        gc.cmdloop()
+        
+        while True:
+            try:
+                gc.cmdloop()
+            except KeyboardInterrupt:
+                print("\n")
+                gc.do_quit(line)
 
 if __name__ == '__main__':
     main()
