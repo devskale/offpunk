@@ -961,7 +961,7 @@ class GeminiItem():
                 elif itemtype == "h":
                     self.mime = "text/html"
                 elif itemtype in ("9","g","I","s"):
-                    self.mime = None
+                    self.mime = "binary"
                 else:
                     self.mime = "text/gopher"
             else:
