@@ -581,7 +581,8 @@ class FeedRenderer(GemtextRenderer):
         if parsed.bozo:
             return False
         else:
-            return True
+            #If no content, then fallback to HTML
+            return len(parsed.entries) > 0
 
     def get_title(self):
         if not self.title:
