@@ -3570,8 +3570,7 @@ def main():
             try:
                 gc.cmdloop()
             except KeyboardInterrupt:
-                print("\n")
-                gc.do_quit(line)
+                print("")
 
 if __name__ == '__main__':
     main()
