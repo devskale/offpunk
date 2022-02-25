@@ -680,8 +680,9 @@ class HtmlRenderer(AbstractRenderer):
         links = soup.find_all("link",rel="alternate",recursive=True)
         for l in links:
             ty = l.get("type")
-            if "rss" in ty or "atom" in ty or "feed" in ty:
-                subs.append([l.get("href"),ty,l.get("title")])
+            if ty :
+                if "rss" in ty or "atom" in ty or "feed" in ty:
+                    subs.append([l.get("href"),ty,l.get("title")])
         return subs
 
     def get_title(self):
