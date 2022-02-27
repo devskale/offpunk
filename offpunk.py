@@ -736,7 +736,8 @@ class HtmlRenderer(AbstractRenderer):
             toreturn = string.replace("\n", " ").replace("\t"," ").strip()
             while "  " in toreturn:
                 toreturn = toreturn.replace("  "," ")
-            toreturn = toreturn.replace("&nbsp","\xa0")
+            toreturn = toreturn.replace("&nbsp;","\xa0").replace("&nbsp","\xa0")
+            toreturn = toreturn.replace("&mldr;","\u2026").replace("&mldr","\u2026")
             if endspace and not toreturn.endswith(" ") and not toreturn.endswith("\xa0"):
                 toreturn += " "
             if startspace and not toreturn.startswith(" ") and not toreturn.startswith("\xa0"):
