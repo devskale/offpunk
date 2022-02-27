@@ -2915,21 +2915,21 @@ fetched and added to your next tour.
 To unsubscribe, remove the page from the "subscribed" list."""
         subs = self.gi.get_subscribe_links()
         if len(subs) > 1:
-            stri = "Multiple feeds have been found :\n\n"
-            counter = 0
-            for l in subs:
-                link = self.gi.absolutise_url(l[0])
-                stri += "[%s] %s [%s]\n"%(counter+1,link,l[1])
-                counter += 1
-            stri += "\n\n"
-            stri += "Which feed do you want to subsribe ? > "
-            ans = input(stri)
-            if ans.isdigit() and 0 < int(ans) <= len(subs):
-                sublink,mime,title = subs[int(ans)-1]
-            else:
-                sublink,title = None,None
+            stri = "Multiple feeds have been found :\n"
         else:
-            sublink,mime,title = subs[0]
+            stri = "No feed detected. You can still watch the page :\n"
+        counter = 0
+        for l in subs:
+            link = self.gi.absolutise_url(l[0])
+            stri += "[%s] %s [%s]\n"%(counter+1,link,l[1])
+            counter += 1
+        stri += "\n"
+        stri += "Which feed do you want to subsribe ? > "
+        ans = input(stri)
+        if ans.isdigit() and 0 < int(ans) <= len(subs):
+            sublink,mime,title = subs[int(ans)-1]
+        else:
+            sublink,title = None,None
         if sublink:
             sublink = self.gi.absolutise_url(sublink)
             gi = GeminiItem(sublink,name=title)
@@ -2939,6 +2939,8 @@ To unsubscribe, remove the page from the "subscribed" list."""
                 print("Subscribed to %s" %sublink)
             else:
                 print("You are already subscribed to %s"%sublink)
+        else:
+            print("No subscription registered")
 
     def do_bookmarks(self, line):
         """Show or access the bookmarks menu.
