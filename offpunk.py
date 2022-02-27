@@ -2921,7 +2921,14 @@ To unsubscribe, remove the page from the "subscribed" list."""
         counter = 0
         for l in subs:
             link = self.gi.absolutise_url(l[0])
+            already = []
+            for li in self.list_lists():
+                if self.list_is_subscribed(li):
+                    if self.list_has_url(link,li):
+                        already.append(li)
             stri += "[%s] %s [%s]\n"%(counter+1,link,l[1])
+            if len(already) > 0:
+                stri += "\t -> (already subscribed through lists %s)\n"%(str(already))
             counter += 1
         stri += "\n"
         stri += "Which feed do you want to subsribe ? > "
