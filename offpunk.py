@@ -842,6 +842,7 @@ class HtmlRenderer(AbstractRenderer):
             readable = Document(body)
             summary = readable.summary()
         soup = BeautifulSoup(summary, 'html.parser')
+        #soup = BeautifulSoup(summary, 'html5lib')
         rendered_body = ""
         if soup :
             if soup.body :
@@ -1544,7 +1545,12 @@ class GeminiClient(cmd.Cmd):
             try:
                 if gi.scheme in ("http", "https"):
                     if self.support_http:
-                        gi = self._fetch_http(gi)
+                        if self.sync_only:
+                            # Let’s cap automatic downloads to 20Mo
+                            max_download = 20000000
+                        else:
+                            max_download = None
+                        gi = self._fetch_http(gi,max_length=max_download)
                     elif handle and not self.sync_only:
                         if not _DO_HTTP:
                             print("Install python3-requests to handle http requests natively")
@@ -1632,12 +1638,25 @@ class GeminiClient(cmd.Cmd):
         return self.idx_filename
 
 
-    def _fetch_http(self,gi):
+    def _fetch_http(self,gi,max_length=None):
         header = {}
         header["User-Agent"] = "Offpunk browser v%s"%_VERSION
-        response = requests.get(gi.url,headers=header)
-        mime = response.headers['content-type']
-        body = response.content
+        with requests.get(gi.url,headers=header, stream=True) as response:
+            mime = response.headers['content-type']
+            if "content-length" in response.headers:
+                length = int(response.headers['content-length'])
+            else:
+                length = 0
+            if max_length and length > max_length:
+                response.close()
+                err = "Size of %s is %s ko\n"%(gi.url,length/1000)
+                err += "Offpunk only download automatically content under %s\n" %max_length
+                err += "To retrieve this content anyway, type 'reload'." 
+                gi.set_error(err)
+                return gi
+            else:
+                body = response.content
+                response.close()
         if "text/" in mime:
             #body = response.text
             body = response.content.decode("UTF-8","replace")
@@ -2650,6 +2669,7 @@ Think of it like marks in vi: 'mark a'='ma' and 'go a'=''a'."""
         out += "Path     :   " + self.gi.path + "\n"
         out += "Mime     :   " + self.gi.get_mime() + "\n"
         out += "Cache    :   " + self.gi.get_cache_path() + "\n"
+        out += "Tempfile :   " + self.idx_filename + "\n"
         if self.gi.renderer :
             rend = str(self.gi.renderer.__class__)
             rend = rend.lstrip("<class '__main__.").rstrip("'>")

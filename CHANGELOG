@@ -1,6 +1,7 @@
 # Offpunk History
 
 ## 0.5 - Unreleased
+- When syncing, deep http links with content above 20Mo are not downloaded.
 - Improving subscriptions with more feedback and better detection
 - Avoid deprecated SSL methods (thanks Phoebos for the report)
 - Fixed multiple crashes
