@@ -1455,7 +1455,8 @@ class GeminiClient(cmd.Cmd):
             "http_proxy": None,
             "https_everywhere": False,
             "archives_size" : 100,
-            "history_size" : 100
+            "history_size" : 100,
+            "max_size_download " : 20,
         }
         global TERM_WIDTH
         TERM_WIDTH = self.options["width"]
@@ -1486,7 +1487,8 @@ class GeminiClient(cmd.Cmd):
             (hostname text, address text, fingerprint text,
             first_seen date, last_seen date, count integer)""")
 
-    def _go_to_gi(self, gi, update_hist=True, check_cache=True, handle=True,readable=True):
+    def _go_to_gi(self, gi, update_hist=True, check_cache=True, handle=True,\
+                                                readable=True,limit_size=False):
         """This method might be considered "the heart of Offpunk".
         Everything involved in fetching a gemini resource happens here:
         sending the request over the network, parsing the response, 
@@ -1545,9 +1547,9 @@ class GeminiClient(cmd.Cmd):
             try:
                 if gi.scheme in ("http", "https"):
                     if self.support_http:
-                        if self.sync_only:
+                        if limit_size:
                             # Let’s cap automatic downloads to 20Mo
-                            max_download = 20000000
+                            max_download = int(self.options["max_size_download"])*1000000
                         else:
                             max_download = None
                         gi = self._fetch_http(gi,max_length=max_download)
@@ -1648,9 +1650,10 @@ class GeminiClient(cmd.Cmd):
             else:
                 length = 0
             if max_length and length > max_length:
+                print("TEST : %s has been cancelled because its size is above limit"%gi.url)
                 response.close()
-                err = "Size of %s is %s ko\n"%(gi.url,length/1000)
-                err += "Offpunk only download automatically content under %s\n" %max_length
+                err = "Size of %s is %s Mo\n"%(gi.url,length/1000000)
+                err += "Offpunk only download automatically content under %s Mo\n" %(max_length/1000000)
                 err += "To retrieve this content anyway, type 'reload'." 
                 gi.set_error(err)
                 return gi
@@ -3405,16 +3408,18 @@ Argument : duration of cache validity (in seconds)."""
                 #Did we already had a cache (even an old one) ?
                 isnew = not gitem.is_cache_valid()
                 print("%s [%s/%s] Fetch "%(strin,count[0],count[1]),gitem.url,end=endline)
-                self._go_to_gi(gitem,update_hist=False)
+                #If not saving to tour, then we should limit download size
+                limit = not savetotour
+                self._go_to_gi(gitem,update_hist=False,limit_size=limit)
                 if savetotour and isnew and gitem.is_cache_valid():
                     #we add to the next tour only if we managed to cache 
                     #the ressource
                     add_to_tour(gitem)
             #Now, recursive call, even if we didn’t refresh the cache
             if depth > 0:
-                #we only savetotour at the first level of recursion
-                if depth > 1:
-                    savetotour=False
+                #we should only savetotour at the first level of recursion
+                # The code for this was removed so, currently, we savetotour
+                # at every level of recursion.
                 links = gitem.get_links()
                 subcount = [0,len(links)]
                 d = depth - 1
