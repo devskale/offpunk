@@ -12,7 +12,7 @@
 #  - Björn Wärmedal <bjorn.warmedal@gmail.com>
 #  - <jake@rmgr.dev>
 
-_VERSION = "0.4"
+_VERSION = "0.9"
 
 import argparse
 import cmd
@@ -252,6 +252,8 @@ _MIME_HANDLERS = {
 # see https://github.com/python/cpython/blob/master/Lib/urllib/parse.py
 urllib.parse.uses_relative.append("gemini")
 urllib.parse.uses_netloc.append("gemini")
+urllib.parse.uses_relative.append("spartan")
+urllib.parse.uses_netloc.append("spartan")
 
 global TERM_WIDTH
 TERM_WIDTH = 80
@@ -1367,8 +1369,8 @@ def looks_like_url(word):
         #sometimes, urllib crashed only when requesting the port
         port = parsed.port
         mailto = word.startswith("mailto:")
-        start = word.startswith("gemini://") or word.startswith("http://")\
-                or word.startswith("https://")
+        scheme = word.split("://")[0]
+        start = scheme in standard_ports
         if not start and not mailto:
             return looks_like_url("gemini://"+word)
         elif mailto:
@@ -1765,7 +1767,6 @@ class GeminiClient(cmd.Cmd):
             parts = response.split(" ",maxsplit=1)
             code,meta = int(parts[0]),parts[1]
             if code == 2:
-                print("spartan file %s "%meta)
                 body = fp.read()
                 if meta.startswith("text"):
                     body = body.decode("UTF-8")

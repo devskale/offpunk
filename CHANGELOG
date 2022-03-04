@@ -1,6 +1,6 @@
 # Offpunk History
 
-## 0.5 - Unreleased
+## 0.9 - March 05th 2022
 - Initial Spartan protocol support
 - Http links with content above 20Mo are not downloaded during sync (except when explicitely requested)
 - Improving subscriptions with more feedback and better detection
