@@ -3457,11 +3457,15 @@ Argument : duration of cache validity (in seconds)."""
                 else:
                     normal_lists.append(l)
         # We start with the "subscribed" as we need to find new items
+        starttime = int(time.time())
         for l in subscriptions:
             fetch_list(l,validity=refresh_time,depth=depth,tourchildren=True)
         #Then the fetch list (item are removed from the list after fetch)
+        # We fetch regarless of the refresh_time
         if "to_fetch" in lists:
-            fetch_list("to_fetch",validity=refresh_time,depth=depth,tourandremove=True)
+            nowtime = int(time.time())
+            short_valid = nowtime - starttime
+            fetch_list("to_fetch",validity=short_valid,depth=depth,tourandremove=True)
         #then we fetch all the rest (including bookmarks and tour)
         for l in normal_lists:
             fetch_list(l,validity=refresh_time,depth=depth)
