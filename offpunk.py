@@ -291,10 +291,11 @@ def fix_ipv6_url(url):
 
 # This list is also used as a list of supported protocols
 standard_ports = {
-        "gemini": 1965,
-        "gopher": 70,
-        "http"  : 80,
-        "https" : 443,
+        "gemini" : 1965,
+        "gopher" : 70,
+        "http"   : 80,
+        "https"  : 443,
+        "spartan": 300,
 }
 
 # First, we define the different content->text renderers, outside of the rest
@@ -1288,7 +1289,7 @@ class GeminiItem():
                     cache.write("ERROR while caching %s\n\n" %self.url)
                     cache.write("*****\n\n")
                     cache.write(str(type(err)) + " = " + str(err))
-                    cache.write("\n" + str(err.with_traceback(None)))
+                    #cache.write("\n" + str(err.with_traceback(None)))
                     cache.write("\n*****\n\n")
                     cache.write("If you believe this error was temporary, type ""reload"".\n")
                     cache.write("The ressource will be tentatively fetched during next sync.\n")
@@ -1450,9 +1451,7 @@ class GeminiClient(cmd.Cmd):
             "short_timeout" : 5,
             "width" : 80,
             "auto_follow_redirects" : True,
-            "gopher_proxy" : None,
             "tls_mode" : "tofu",
-            "http_proxy": None,
             "https_everywhere": False,
             "archives_size" : 100,
             "history_size" : 100,
@@ -1510,7 +1509,7 @@ class GeminiClient(cmd.Cmd):
                         print("Cannot find a mail client to send mail to %s" %gi.path)
                         print("Please install xdg-open (usually from xdg-util package)")
             return
-        elif gi.scheme not in ("file","gemini", "gopher", "http", "https") and not self.sync_only:
+        elif gi.scheme != "file" and gi.scheme not in standard_ports and not self.sync_only:
             print("Sorry, no support for {} links.".format(gi.scheme))
             return
 
@@ -1562,6 +1561,8 @@ class GeminiClient(cmd.Cmd):
                         return
                 elif gi.scheme in ("gopher"):
                     gi = self._fetch_gopher(gi,timeout=self.options["short_timeout"])
+                elif gi.scheme in ("spartan"):
+                    gi = self._fetch_spartan(gi)
                 else:
                     gi = self._fetch_over_network(gi)
             except UserAbortException:
@@ -1740,6 +1741,44 @@ class GeminiClient(cmd.Cmd):
         gi.write_body(response,mime)
         return gi
 
+    # Copied from reference spartan client by Michael Lazar
+    def _fetch_spartan(self,gi):
+        url_parts = urllib.parse.urlparse(gi.url)
+        host = url_parts.hostname
+        port = url_parts.port or 300
+        path = url_parts.path or "/"
+        query = url_parts.query
+
+        redirect_url = None
+
+        with socket.create_connection((host,port)) as sock:
+            if query:
+                data = urllib.parse.unquote_to_bytes(query)
+            else:
+                data = b""
+            encoded_host = host.encode("idna")
+            ascii_path = urllib.parse.unquote_to_bytes(path)
+            encoded_path = urllib.parse.quote_from_bytes(ascii_path).encode("ascii")
+            sock.send(b"%s %s %d\r\n" % (encoded_host,encoded_path,len(data)))
+            fp = sock.makefile("rb")
+            response = fp.readline(4096).decode("ascii").strip("\r\n")
+            parts = response.split(" ",maxsplit=1)
+            code,meta = int(parts[0]),parts[1]
+            if code == 2:
+                print("spartan file %s "%meta)
+                body = fp.read()
+                if meta.startswith("text"):
+                    body = body.decode("UTF-8")
+                gi.write_body(body,meta)
+            elif code == 3:
+                redirect_url = url_parts._replace(path=meta).geturl()
+            else:
+                gi.set_error("Spartan code %s: Error %s"%(code,meta))
+        if redirect_url:
+            gi = GeminiItem(redirect_url)
+            self._fetch_spartan(gi)
+        return gi
+
     # fetch_over_network will modify with gi.write_body(body,mime)
     # before returning the gi
     def _fetch_over_network(self, gi):
@@ -1889,16 +1928,7 @@ class GeminiClient(cmd.Cmd):
     def _send_request(self, gi):
         """Send a selector to a given host and port.
         Returns the resolved address and binary file with the reply."""
-        if gi.scheme == "gemini":
-            # For Gemini requests, connect to the host and port specified in the URL
-            host, port = gi.host, gi.port
-        elif gi.scheme == "gopher":
-            # For Gopher requests, use the configured proxy
-            host, port = self.options["gopher_proxy"].rsplit(":", 1)
-            self._debug("Using gopher proxy: " + self.options["gopher_proxy"])
-        elif gi.scheme in ("http", "https"):
-            host, port = self.options["http_proxy"].rsplit(":",1)
-            self._debug("Using http proxy: " + self.options["http_proxy"])
+        host, port = gi.host, gi.port
         # Do DNS resolution
         addresses = self._get_addresses(host, port)
 
@@ -2380,14 +2410,6 @@ class GeminiClient(cmd.Cmd):
                 print("Unrecognised option %s" % option)
                 return
             # Validate / convert values
-            if option == "gopher_proxy":
-                if ":" not in value:
-                    value += ":1965"
-                else:
-                    host, port = value.rsplit(":",1)
-                    if not port.isnumeric():
-                        print("Invalid proxy port %s" % port)
-                        return
             elif option == "tls_mode":
                 if value.lower() not in ("ca", "tofu"):
                     print("TLS mode must be `ca` or `tofu`!")

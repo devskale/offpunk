@@ -1,9 +1,11 @@
 # Offpunk History
 
 ## 0.5 - Unreleased
+- Initial Spartan protocol support
 - Http links with content above 20Mo are not downloaded during sync (except when explicitely requested)
 - Improving subscriptions with more feedback and better detection
 - Avoid deprecated SSL methods (thanks Phoebos for the report)
+- Links in to_fetch are fetched, no matter the cache
 - Fixed multiple crashes
 
 ## 0.4 - Feb 21st 2022
