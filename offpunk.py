@@ -1456,7 +1456,7 @@ class GeminiClient(cmd.Cmd):
             "https_everywhere": False,
             "archives_size" : 100,
             "history_size" : 100,
-            "max_size_download " : 20,
+            "max_size_download" : 20,
         }
         global TERM_WIDTH
         TERM_WIDTH = self.options["width"]
