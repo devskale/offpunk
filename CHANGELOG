@@ -7,6 +7,7 @@
 - Avoid deprecated SSL methods (thanks Phoebos for the report)
 - Links in to_fetch are fetched, no matter the cache
 - Fixed multiple crashes
+=> gemini://rawtext.club/~ploum/2022-03-05-offpunk09.gmi
 
 ## 0.4 - Feb 21st 2022
 UPGRADE: Users who subscribed to pages before 0.4 should run once the command "list subscribe subscribed". Without that, the subscribed list will be seen as a normal list by sync.

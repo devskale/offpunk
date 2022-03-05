@@ -1455,8 +1455,8 @@ class GeminiClient(cmd.Cmd):
             "auto_follow_redirects" : True,
             "tls_mode" : "tofu",
             "https_everywhere": False,
-            "archives_size" : 100,
-            "history_size" : 100,
+            "archives_size" : 200,
+            "history_size" : 200,
             "max_size_download" : 20,
         }
         global TERM_WIDTH

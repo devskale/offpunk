@@ -1,6 +1,6 @@
 # OFFPUNK
 
-A command-line and offline-first smolnet browser/feed reader for Gemini, Gopher and Web by [Ploum](https://ploum.net).
+A command-line and offline-first smolnet browser/feed reader for Gemini, Gopher, Spartan and Web by [Ploum](https://ploum.net).
 
 The goal of Offpunk is to be able to synchronise your content once (a day, a week, a month) and then browse/organise it while staying disconnected.
 
@@ -89,7 +89,7 @@ Run command `version` in offpunk to see if you are missing some dependencies.
 
 ## Features
 
-* Browse https/gemini/gopher without leaving your keyboard and without distractions
+* Browse https/gemini/gopher/spartan without leaving your keyboard and without distractions
 * Built-in documentation: type `help` to get the list of command or a specific help about a command.
 * Offline mode to browse cached content without a connection. Requested elements are automatically fetched during the next synchronization and are added to your tour.
 * HTML pages are prettified to focus on content. Read without being disturbed.
