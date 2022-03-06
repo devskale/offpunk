@@ -2700,7 +2700,7 @@ Think of it like marks in vi: 'mark a'='ma' and 'go a'=''a'."""
             rend = str(self.gi.renderer.__class__)
             rend = rend.lstrip("<class '__main__.").rstrip("'>")
         else:
-            rende = "None"
+            rend = "None"
         out += "Renderer :   " + rend + "\n\n"
         lists = []
         for l in self.list_lists():
