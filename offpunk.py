@@ -1265,8 +1265,11 @@ class GeminiItem():
             if not mime and not _HAS_MAGIC :
                 print("Cannot guess the mime type of the file. Install Python-magic")
             if mime.startswith("text") and mime not in _FORMAT_RENDERERS:
-                #by default, we consider it’s gemini except for html
-                mime = "text/gemini"
+                if mime2 and mime2 in _FORMAT_RENDERERS:
+                    mime = mime2
+                else:
+                    #by default, we consider it’s gemini except for html
+                    mime = "text/gemini"
             self.mime = mime
         return self.mime
     
