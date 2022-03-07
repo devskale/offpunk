@@ -61,9 +61,6 @@ except ModuleNotFoundError:
 try:
     import ansiwrap
     wrap_method = ansiwrap.wrap
-    #from blessed import Terminal
-    #term = Terminal()
-    #wrap_method = term.wrap
     _HAS_ANSIWRAP = True
 except ModuleNotFoundError:
     print("Try installing python-ansiwrap for better rendering")
@@ -71,10 +68,32 @@ except ModuleNotFoundError:
     wrap_method = textwrap.wrap
     _HAS_ANSIWRAP = False
 
+global TERM_WIDTH
+TERM_WIDTH = 80
+
+def term_width():
+    width = TERM_WIDTH
+    cur = shutil.get_terminal_size()[0]
+    if cur < width:
+        width = cur
+    return width
+
 # return wrapped text as a list of lines
 def wraplines(*args,**kwargs):
 #    print("will wrap with %s and %s"%(str(args),str(kwargs)))
-    return wrap_method(*args,**kwargs)
+    lines = wrap_method(*args,**kwargs)
+    lines2 = []
+    textwidth = TERM_WIDTH
+    termspace = shutil.get_terminal_size()[0]
+    #Following code instert blanck spaces to center the content
+    if termspace > textwidth:
+        margin = int((termspace - textwidth)/2)
+    else:
+        margin = 0
+    for l in lines :
+        lines2.append(margin*" "+l)
+    #line = 30*" " + line
+    return lines2
 # return wrapped text as one string
 def wrapparagraph(*args,**kwargs):
     return "\n".join(wraplines(*args,**kwargs))
@@ -255,16 +274,6 @@ urllib.parse.uses_netloc.append("gemini")
 urllib.parse.uses_relative.append("spartan")
 urllib.parse.uses_netloc.append("spartan")
 
-global TERM_WIDTH
-TERM_WIDTH = 80
-
-def term_width():
-    width = TERM_WIDTH
-    cur = shutil.get_terminal_size()[0] - 1
-    if cur < width:
-        width = cur
-    return width
-
 def fix_ipv6_url(url):
     if not url:
         return
@@ -388,7 +397,11 @@ class GemtextRenderer(AbstractRenderer):
             final = ""
             for l in wrapped:
                 if color:
-                    l = color + l + "\x1b[0m"
+                    spaces = ""
+                    while l.startswith(" "):
+                        l = l[1:]
+                        spaces += " "
+                    l = spaces + color + l + "\x1b[0m"
                 if l.strip() != "":
                     final += l + "\n"
             return final
@@ -409,7 +422,13 @@ class GemtextRenderer(AbstractRenderer):
             if line.startswith("```"):
                 preformatted = not preformatted
             elif preformatted:
-                rendered_text += line + "\n"
+                # infinite line to not wrap preformated
+                l = wraplines(line,100000000)
+                if len(l) > 0:
+                    l = l[0]
+                else:
+                    l = ""
+                rendered_text += l + "\n"
             elif line.startswith("=>"):
                 strippedline = line[2:].strip()
                 if strippedline:
