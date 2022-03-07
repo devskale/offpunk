@@ -861,9 +861,9 @@ class HtmlRenderer(AbstractRenderer):
                     rendered_body = ansi_img + "\x1b[2;33m" + alttext + "\x1b[0m\n\n"
             elif element.name == "br":
                 rendered_body = "\n"
-            elif element.string:
+            elif element.name != "script" and element.string:
                 rendered_body = sanitize_string(element.string)
-            else:
+            elif element.name != "script": #we drop javascript
                 for child in element.children:
                     rendered_body += recursive_render(child,indent=indent)
             return indent + rendered_body
