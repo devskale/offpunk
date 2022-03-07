@@ -87,7 +87,7 @@ def wraplines(*args,**kwargs):
     termspace = shutil.get_terminal_size()[0]
     #Following code instert blanck spaces to center the content
     if termspace > textwidth:
-        margin = int((termspace - textwidth)/2)
+        margin = int((termspace - textwidth)//2)
     else:
         margin = 0
     for l in lines :
@@ -678,6 +678,9 @@ class ImageRenderer(AbstractRenderer):
             return "", []
         if not width:
             width = term_width()
+            spaces = 0
+        else:
+            spaces = int((term_width() - width)//2)
         try:
             img_obj = Image.open(img)
             if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
@@ -688,7 +691,12 @@ class ImageRenderer(AbstractRenderer):
             ansi_img = return_code.stdout.decode()
         except Exception as err:
             ansi_img = "***image failed : %s***\n" %err
-        return ansi_img, []
+        #Now centering the image
+        lines = ansi_img.splitlines()
+        new_img = ""
+        for l in lines:
+            new_img += spaces*" " + l + "\n"
+        return new_img, []
 
 class HtmlRenderer(AbstractRenderer):
     def get_mime(self):
@@ -777,7 +785,7 @@ class HtmlRenderer(AbstractRenderer):
                 div = ""
                 for child in element.children:
                     div += recursive_render(child,indent=indent)
-                rendered_body += div.strip()
+                rendered_body += div#.strip()  (this strip doesn’t play well with centered images)
                 rendered_body += "\n\n"
             elif element.name in ["h1","h2","h3","h4","h5","h6"]:
                 line = sanitize_string(element.get_text())
@@ -848,7 +856,9 @@ class HtmlRenderer(AbstractRenderer):
                 if src:
                     links.append(src+" "+text)
                     link_id = " [%s]"%(len(links))
-                    rendered_body = ansi_img + "\x1b[2;33m" + text + link_id + "\x1b[0m\n\n"
+                    alttext = text + link_id
+                    alttext = alttext.center(term_width())
+                    rendered_body = ansi_img + "\x1b[2;33m" + alttext + "\x1b[0m\n\n"
             elif element.name == "br":
                 rendered_body = "\n"
             elif element.string:
