@@ -1,7 +1,9 @@
 # Offpunk History
 
 ## 1.0 - Unreleased
-- Content is now centered for more elegant reading
+- Content and pictures now centered for more elegant reading
+- "less" has been renamed "view"
+- "view feed" and "view feeds" to see the first/all feeds on a HTML page
 - Fixed a crash when accessing links in list (thanks Matthieu Talbot for the report)
 - Fixed a crash due to a typo in a variable name rarely accessed.
 

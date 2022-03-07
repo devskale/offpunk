@@ -13,9 +13,9 @@ Offpunk is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98)
 
 Offpunk is a single python file. Installation is optional, you can simply download and run "./offpunk.py" or "python3 offpunk.py" in a terminal.
 
-You use the `go` command to visit a URL, e.g. `go gemini.circumlunar.space`. (gemini:// is assumed is no protocol is specified).
+You use the `go` command to visit a URL, e.g. `go gemini.circumlunar.space`. (gemini:// is assumed is no protocol is specified. Supported protocols are gemini, gopher, http, https, mailto, spartan and file).
 
-Links in pages are assigned numerical indices.  Just type an index to follow that link. If page is too long to fit on your screen, the content is displayed in the less pager (by default). Type `q` to quit and go back to Offpunk prompt. Type `less` or `l` to display it again in less. (`less full` or `l full` allows to see the full html page instead of the article view. This only applies to html pages)
+Links in pages are assigned numerical indices.  Just type an index to follow that link. If page is too long to fit on your screen, the content is displayed in the less pager (by default). Type `q` to quit and go back to Offpunk prompt. Type `view` or `v` to display it again. (`view full` or `v full` allows to see the full html page instead of the article view. `v feed` try to display the linked RSS feed and `v feeds`display a list of available fedes. This only applies to html pages)
 
 Use `add` to add a capsule to your bookmarks and `bookmarks` or `bm` to show your bookmarks (you can create multiple bookmarks lists, edit and remove them. See the `list` manual with `help list`).
 
@@ -31,7 +31,7 @@ For example, running
 
 `offpunk --sync --cache-validity 43200`
 
-will refresh your bookmarks if those are at least 12h old. If cache-validity is not set or set to 0, any cache is considered good and only content never cached before will be fetched. 
+will refresh your bookmarks if those are at least 12h old. If cache-validity is not set or set to 0, any cache is considered good and only content never cached before will be fetched. `--assume-yes` will automatically accept SSL certificates with errors instead of refusing them.
 
 Offpunk can also be configured as a browser by other tool. If you want to use offpunk directly with a given URL, simply type:
 
@@ -41,7 +41,7 @@ To have offpunk fetch the URL at next sync and close immediately, run:
 
 `offpunk --fetch-later URL`
 
-## Roadmap to 1.0 (and beyond)
+## Roadmap post 1.0
 
 Known issues in the code:
 * NOT_FIXABLE : consider root file is always index.gmi or index.html
@@ -57,6 +57,9 @@ I would happily mentor anyone willing to implement those:
 See how I browse Web/Gemini offline => gemini://rawtext.club/~ploum/2021-12-17-offline-gemini.gmi
 
 Announces about Offpunk will be made on Ploum’s Gemlog  => gemini://rawtext.club/~ploum/
+
+`go gemini://rawtext.club/~ploum/`
+`subscribe`
 
 
 ## Dependencies
@@ -92,10 +95,10 @@ Run command `version` in offpunk to see if you are missing some dependencies.
 * Browse https/gemini/gopher/spartan without leaving your keyboard and without distractions
 * Built-in documentation: type `help` to get the list of command or a specific help about a command.
 * Offline mode to browse cached content without a connection. Requested elements are automatically fetched during the next synchronization and are added to your tour.
-* HTML pages are prettified to focus on content. Read without being disturbed.
-* RSS/Atom feeds are automatically discovered by `subscribe` and rendered as gemlogs.
+* HTML pages are prettified to focus on content. Read without being disturbed or see the full page with `view full`.
+* RSS/Atom feeds are automatically discovered by `subscribe` and rendered as gemlogs. They can be explored with `view feed` and `view feeds`.
 * Support "subscriptions" to a page. New content seen in subscribed pages are automatically added to your next tour.
-* Complex bookmarks management through multiple lists, built-in edition, subscribing/freezing and archiving.
+* Complex bookmarks management through multiple lists, built-in edition, subscribing/freezing lists and archiving content.
 * Advanced navigation tools like `tour` and `mark` (as per VF-1). Unlike AV-98, tour is saved on disk accross sessions. 
 * Ability to specify external handler programs for different MIME types (use `handler`)
 * Non-interactive cache-building with configurable depth through the --sync command. The cache can easily be used by other software. 

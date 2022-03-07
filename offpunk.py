@@ -238,12 +238,13 @@ _ABBREVS = {
     "bm":   "bookmarks",
     "book": "bookmarks",
     "cp":   "copy",
-    "f":    "fold",
-    "fo":   "forward",
+    "fo":    "fold",
+    "f":   "forward",
     "g":    "go",
     "h":    "history",
     "hist": "history",
-    "l":    "less",
+    "l":    "view",
+    "less": "view",
     "mv":   "move",
     "n":    "next",
     "off":  "offline",
@@ -257,6 +258,7 @@ _ABBREVS = {
     "/":    "search",
     "t":    "tour",
     "u":    "up",
+    "v":    "view",
 }
 
 _MIME_HANDLERS = {
@@ -861,9 +863,9 @@ class HtmlRenderer(AbstractRenderer):
                     rendered_body = ansi_img + "\x1b[2;33m" + alttext + "\x1b[0m\n\n"
             elif element.name == "br":
                 rendered_body = "\n"
-            elif element.name != "script" and element.string:
+            elif element.name not in ["script","style"] and element.string:
                 rendered_body = sanitize_string(element.string)
-            elif element.name != "script": #we drop javascript
+            elif element.name not in ["script","style"]: #we drop javascript and css
                 for child in element.children:
                     rendered_body += recursive_render(child,indent=indent)
             return indent + rendered_body
@@ -1168,7 +1170,13 @@ class GeminiItem():
         if not self.renderer:
             self._set_renderer()
         if self.renderer:
-            return self.renderer.get_subscribe_links()
+            subs = self.renderer.get_subscribe_links()
+            abssubs = []
+            # some rss links are relatives
+            for s in subs:
+                s[0] = self.absolutise_url(s[0])
+                abssubs.append(s)
+            return abssubs
         else:
             return []
 
@@ -2836,13 +2844,35 @@ Use 'ls -l' to see URLs."""
         subprocess.call(shlex.split("cat %s" % self._get_active_tmpfile()))
 
     @needs_gi
-    def do_less(self, *args):
+    def do_view(self, *args):
         """Run most recently visited item through "less" command, restoring \
 previous position.
-Use "less full" to see a complete html page instead of the article view.
-(the "full" argument has no effect on Gemtext content but doesn’t restore position)."""
-        if self.gi and args and args[0] == "full":
-            self._go_to_gi(self.gi,readable=False)
+Use "view full" to see a complete html page instead of the article view.
+Use "view feed" to see the the linked feed of the page (in any).
+Use "view feeds" to see available feeds on this page.
+(full, feed, feeds have no effect on non-html content)."""
+        if self.gi and args and args[0] != "":
+            if args[0] == "full":
+                self._go_to_gi(self.gi,readable=False)
+            elif args[0] == "feed":
+                subs = self.gi.get_subscribe_links()
+                if len(subs) > 1:
+                    self.do_go(subs[1][0])
+                else:
+                    print("No other feed found on %s"%self.gi.url)
+            elif args[0] == "feeds":
+                subs = self.gi.get_subscribe_links()
+                stri = "Available views :\n"
+                counter = 0
+                for s in subs:
+                    counter += 1
+                    stri += "[%s] %s [%s]\n"%(counter,s[0],s[1])
+                stri += "Which view do you want to see ? >"
+                ans = input(stri)
+                if ans.isdigit() and 0 < int(ans) <= len(subs):
+                    self.do_go(subs[int(ans)-1][0])
+            else:
+                print("Valid argument for less are : full, feed, feeds")
         elif self.gi.is_cache_valid() and self.gi.scheme not in ["mailto"]:
             less_cmd(self._get_active_tmpfile(),histfile=self.less_histfile)
         else:
@@ -2999,7 +3029,6 @@ To unsubscribe, remove the page from the "subscribed" list."""
             stri = "No feed detected. You can still watch the page :\n"
         counter = 0
         for l in subs:
-            link = self.gi.absolutise_url(l[0])
             already = []
             for li in self.list_lists():
                 if self.list_is_subscribed(li):
@@ -3374,7 +3403,7 @@ See also :
             print("? is an alias for 'help'")
         elif arg in _ABBREVS:
             full_cmd = _ABBREVS[arg]
-            print("%s is aan alias for '%s'" %(arg,full_cmd))
+            print("%s is an alias for '%s'" %(arg,full_cmd))
             print("See the list of aliases with 'abbrevs'")
             print("'help %s':"%full_cmd)
             cmd.Cmd.do_help(self, full_cmd)
