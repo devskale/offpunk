@@ -1,5 +1,9 @@
 # Offpunk History
 
+## 1.0 - Unreleased
+- Fixed a crash when accessing links in list (thanks Matthieu Talbot for the report)
+- Fixed a crash due to a typo in a variable name rarely accessed.
+
 ## 0.9 - March 05th 2022
 - Initial Spartan protocol support
 - Http links with content above 20Mo are not downloaded during sync (except when explicitely requested)

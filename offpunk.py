@@ -3131,9 +3131,10 @@ archives, which is a special historical list limited in size. It is similar to `
         else:
             gi = GeminiItem("file://" + list_path,list)
             gi = gi.get_link(int(line))
-            display = not self.sync_only 
-            self._go_to_gi(gi,handle=display)
-            return gi.url
+            display = not self.sync_only
+            if gi:
+                self._go_to_gi(gi,handle=display)
+                return gi.url
 
     def list_show(self,list):
         list_path = self.list_path(list)
