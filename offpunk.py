@@ -1693,7 +1693,6 @@ class GeminiClient(cmd.Cmd):
             else:
                 length = 0
             if max_length and length > max_length:
-                print("TEST : %s has been cancelled because its size is above limit"%gi.url)
                 response.close()
                 err = "Size of %s is %s Mo\n"%(gi.url,length/1000000)
                 err += "Offpunk only download automatically content under %s Mo\n" %(max_length/1000000)
