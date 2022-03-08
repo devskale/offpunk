@@ -5,8 +5,10 @@
 - "less" has been renamed "view"
 - "view feed" and "view feeds" to see the first/all feeds on a HTML page
 - "view full" has been improved by dropping inline CSS and JS.
+- "up" can now take integer as argument to go up multiple steps.
 - Fixed a crash when accessing links in list (thanks Matthieu Talbot for the report)
 - Fixed a crash in "info" due to a typo in a variable name rarely accessed.
+- Removed dependancy to python-xdg by implementing the logic (which saved lines of code!)
 
 ## 0.9 - March 05th 2022
 - Initial Spartan protocol support

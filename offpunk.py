@@ -1336,17 +1336,22 @@ class GeminiItem():
     def root(self):
         return GeminiItem(self._derive_url("/"))
 
-    def up(self):
-        pathbits = list(os.path.split(self.path.rstrip('/')))
-        # Don't try to go higher than root or in config
-        if self.local or len(pathbits) == 1 :
-            return self
-        # Get rid of bottom component
-        pathbits.pop()
-        new_path = os.path.join(*pathbits)
+    def up(self,level=1):
+        path = self.path.rstrip('/')
+        count = 0
+        while count < level:
+            pathbits = list(os.path.split(path))
+            # Don't try to go higher than root or in config
+            if self.local or len(pathbits) == 1 :
+                return self
+            # Get rid of bottom component
+            if len(pathbits) > 1:
+                pathbits.pop()
+            path = os.path.join(*pathbits)
+            count += 1
         if self.scheme == "gopher":
-            new_path = "/1" + new_path
-        return GeminiItem(self._derive_url(new_path))
+            path = "/1" + path
+        return GeminiItem(self._derive_url(path))
 
     def query(self, query):
         query = urllib.parse.quote(query)
@@ -2611,8 +2616,14 @@ Use with "raw" to copy the content as seen in your terminal (not gemtext)"""
 
     @needs_gi
     def do_up(self, *args):
-        """Go up one directory in the path."""
-        self._go_to_gi(self.gi.up())
+        """Go up one directory in the path.
+Take an integer as argument to go up multiple times."""
+        level = 1
+        if args[0].isnumeric():
+            level = int(args[0])
+        elif args[0] != "":
+            print("Up only take integer as arguments")
+        self._go_to_gi(self.gi.up(level=level))
 
     def do_back(self, *args):
         """Go back to the previous gemini item."""
@@ -2711,7 +2722,8 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
     def do_mark(self, line):
         """Mark the current item with a single letter.  This letter can then
 be passed to the 'go' command to return to the current item later.
-Think of it like marks in vi: 'mark a'='ma' and 'go a'=''a'."""
+Think of it like marks in vi: 'mark a'='ma' and 'go a'=''a'.
+Marks are temporary until shutdown (not saved to disk)."""
         line = line.strip()
         if not line:
             for mark, gi in self.marks.items():
@@ -2890,7 +2902,8 @@ see "handler" command to set your own."""
     @restricted
     @needs_gi
     def do_shell(self, line):
-        """'cat' most recently visited item through a shell pipeline."""
+        """'cat' most recently visited item through a shell pipeline.
+'!' is an useful shortcut."""
         subprocess.call(("cat %s |" % self._get_active_tmpfile()) + line, shell=True)
 
     @restricted
@@ -3313,7 +3326,8 @@ If current page was not in a list, this command is similar to `add LIST`."""
 See also :
 - add $LIST (to add current page to $LIST or, by default, to bookmarks)
 - move $LIST (to add current page to list while removing from all others)
-- archive (to remove current page from all lists while adding to archives)"""
+- archive (to remove current page from all lists while adding to archives)
+Note: There’s no "delete" on purpose. The use of "archive" is recommended."""
         listdir = os.path.join(_DATA_DIR,"lists")
         os.makedirs(listdir,exist_ok=True)
         if not arg:
