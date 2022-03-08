@@ -157,28 +157,23 @@ except ModuleNotFoundError:
     _DO_FEED = False
 
 ## Config directories
-# There are two conflicting xdg modules, we try to work with both
-try:
-    from xdg import BaseDirectory
-    _HAS_XDG = True
-    _CACHE_PATH = BaseDirectory.save_cache_path("offpunk/")
-    _CONFIG_DIR = BaseDirectory.save_config_path("offpunk/")
-    _DATA_DIR = BaseDirectory.save_data_path("offpunk/")
-except ModuleNotFoundError:
-    _HAS_XDG = False
-    _CACHE_PATH = os.path.expanduser("~/.cache/offpunk/")
-    _CONFIG_DIR = None
-    ## Look for pre-existing config directory, if any
-    for confdir in ("~/.offpunk/", "~/.config/offpunk/"):
-        confdir = os.path.expanduser(confdir)
-        if os.path.exists(confdir):
-            _CONFIG_DIR = confdir
-            break
-    ## Otherwise, make one in .config if it exists
-    if not _CONFIG_DIR and os.path.exists("~/.config/"):
-        _CONFIG_DIR = os.path.expanduser("~/.config/offpunk/")
-    elif not _CONFIG_DIR:
-        _CONFIG_DIR = os.path.expanduser("~/.offpunk/")
+## We implement our own python-xdg to avoid conflict with existing libraries.
+_home = os.path.expanduser('~')
+data_home = os.environ.get('XDG_DATA_HOME') or \
+            os.path.join(_home,'.local','share')
+config_home = os.environ.get('XDG_CONFIG_HOME') or \
+                os.path.join(_home,'.config')
+cache_home = os.environ.get('XDG_CACHE_HOME') or\
+                os.path.join(_home,'.cache')
+_CACHE_PATH = os.path.join(cache_home,"offpunk/")
+_CONFIG_DIR = os.path.join(config_home,"offpunk/")
+_DATA_DIR = os.path.join(data_home,"offpunk/")
+_old_config = os.path.expanduser("~/.offpunk/")
+## Look for pre-existing config directory, if any
+if os.path.exists(_old_config):
+    _CONFIG_DIR = _old_config
+#if no XDG .local/share and not XDG .config, we use the old config
+if not os.path.exists(data_home) and os.path.exists(_old_config):
     _DATA_DIR = _CONFIG_DIR
 for f in [_CONFIG_DIR, _CACHE_PATH, _DATA_DIR]:
     if not os.path.exists(f):
@@ -2780,7 +2775,6 @@ Think of it like marks in vi: 'mark a'='ma' and 'go a'=''a'."""
         output += " - python-feedparser   : " + has(_DO_FEED)
         output += " - python-bs4          : " + has(_HAS_SOUP)
         output += " - python-readability  : " + has(_HAS_READABILITY)
-        output += " - python-xdg          : " + has(_HAS_XDG)
         output += " - python-setproctitle : " + has(_HAS_SETPROCTITLE)
         output += " - xdg-open            : " + has(_HAS_XDGOPEN)
         output += " - chafa               : " + has(_HAS_CHAFA)
