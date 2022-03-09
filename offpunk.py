@@ -3036,6 +3036,7 @@ To unsubscribe, remove the page from the "subscribed" list."""
             stri = "No feed detected. You can still watch the page :\n"
         counter = 0
         for l in subs:
+            link = l[0]
             already = []
             for li in self.list_lists():
                 if self.list_is_subscribed(li):
