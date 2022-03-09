@@ -240,6 +240,7 @@ _ABBREVS = {
     "hist": "history",
     "l":    "view",
     "less": "view",
+    "man":  "help",
     "mv":   "move",
     "n":    "next",
     "off":  "offline",
