@@ -9,6 +9,7 @@
 - Fixed a crash when accessing links in list (thanks Matthieu Talbot for the report)
 - Fixed a crash in "info" due to a typo in a variable name rarely accessed.
 - Removed dependancy to python-xdg by implementing the logic (which saved lines of code!)
+- python-pil is only needed if chafa < 1.10
 
 ## 0.9 - March 05th 2022
 - Initial Spartan protocol support

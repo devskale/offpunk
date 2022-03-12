@@ -99,22 +99,39 @@ def wrapparagraph(*args,**kwargs):
     return "\n".join(wraplines(*args,**kwargs))
 
 _HAS_CHAFA = shutil.which('chafa')
+if _HAS_CHAFA:
+    # starting with 1.10, chafa can return only one frame
+    # which allows us to drop dependancy for PIL
+    return_code = subprocess.run("chafa --version",shell=True, capture_output=True)
+    output = return_code.stdout.decode()
+    if output == '':
+        output = return_code.stderr.decode()
+    words = output.split("\n")[0].split()
+    versions = words[2].split(".")
+    if int(versions[0]) > 1 or (int(versions[0]) == 1 and int(versions[1]) >= 10):
+        _NEW_CHAFA = True
+    else:
+        _NEW_CHAFA = False
+
+if _NEW_CHAFA and _HAS_ANSIWRAP:
+    _RENDER_IMAGE = True
+else:
+    try:
+        from PIL import Image
+        _HAS_PIL = True
+        if _HAS_ANSIWRAP and _HAS_CHAFA:
+            _RENDER_IMAGE = True
+        else:
+            print("chafa and ansiwrap are required to render images in terminal")
+            _RENDER_IMAGE = False
+    except ModuleNotFoundError:
+        print("python-pil, chafa and ansiwrap are required to render images")
+        _RENDER_IMAGE = False
+        _HAS_PIL = False
+
+
 _HAS_XSEL = shutil.which('xsel')
 _HAS_XDGOPEN = shutil.which('xdg-open')
-try:
-    from PIL import Image
-    _HAS_PIL = True
-    if _HAS_ANSIWRAP and _HAS_CHAFA:
-        _RENDER_IMAGE = True
-    else:
-        print("chafa and ansiwrap are required to render images in terminal")
-        _RENDER_IMAGE = False
-except ModuleNotFoundError:
-    print("python-pil, chafa and ansiwrap are required to render images")
-    _RENDER_IMAGE = False
-    _HAS_PIL = False
-
-
 try:
     from cryptography import x509
     from cryptography.hazmat.backends import default_backend
@@ -684,7 +701,10 @@ class ImageRenderer(AbstractRenderer):
             if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
                 # we remove all frames but the first one
                 img_obj.save(img,save_all=False)
-            cmd = "chafa --bg white -s %s -w 1 \"%s\"" %(width,img)
+            if _NEW_CHAFA:
+                cmd = "chafa --animate=off --bg white -s %s -w 1 \"%s\"" %(width,img)
+            else:
+                cmd = "chafa --bg white -s %s -w 1 \"%s\"" %(width,img)
             return_code = subprocess.run(cmd,shell=True, capture_output=True)
             ansi_img = return_code.stdout.decode()
         except Exception as err:
@@ -2781,7 +2801,6 @@ Marks are temporary until shutdown (not saved to disk)."""
         output += "===========\n"
         output += " - python-editor       : " + has(_HAS_EDITOR)
         output += " - python-ansiwrap     : " + has(_HAS_ANSIWRAP)
-        output += " - python-pil          : " + has(_HAS_PIL)
         output += " - python-cryptography : " + has(_HAS_CRYPTOGRAPHY)
         output += " - python-magic        : " + has(_HAS_MAGIC)
         output += " - python-requests     : " + has(_DO_HTTP)
@@ -2790,16 +2809,19 @@ Marks are temporary until shutdown (not saved to disk)."""
         output += " - python-readability  : " + has(_HAS_READABILITY)
         output += " - python-setproctitle : " + has(_HAS_SETPROCTITLE)
         output += " - xdg-open            : " + has(_HAS_XDGOPEN)
-        output += " - chafa               : " + has(_HAS_CHAFA)
         output += " - xsel                : " + has(_HAS_XSEL)
+        output += " - chafa               : " + has(_HAS_CHAFA)
+        output += " Only one needed amongst the followings :\n"
+        output += " - chafa >= 1.10.0     : " + has(_NEW_CHAFA)
+        output += " - python-pil          : " + has(_HAS_PIL)
 
         output += "\nFeatures :\n"
-        output += " - Render images (ansiwrap,pil,chafa) : " + has(_RENDER_IMAGE)
-        output += " - Render HTML (bs4, readability)     : " + has(_DO_HTML)
-        output += " - Render Atom/RSS feeds (feedparser) : " + has(_DO_FEED)
-        output += " - Connect to http/https (requests)   : " + has(_DO_HTTP)
-        output += " - copy to/from clipboard (xsel)      : " + has(_HAS_XSEL)
-        output += " - restore last position (less 572+)  : " + has(_LESS_RESTORE_POSITION) 
+        output += " - Render images (ansiwrap,chafa, pil|chafa > 1.10)  : " + has(_RENDER_IMAGE)
+        output += " - Render HTML (bs4, readability)                    : " + has(_DO_HTML)
+        output += " - Render Atom/RSS feeds (feedparser)                : " + has(_DO_FEED)
+        output += " - Connect to http/https (requests)                  : " + has(_DO_HTTP)
+        output += " - copy to/from clipboard (xsel)                     : " + has(_HAS_XSEL)
+        output += " - restore last position (less 572+)                 : " + has(_LESS_RESTORE_POSITION) 
         output += "\n"
         output += "Config directory    : " +  _CONFIG_DIR + "\n"
         output += "User Data directory : " +  _DATA_DIR + "\n"
