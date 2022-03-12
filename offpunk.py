@@ -69,7 +69,7 @@ except ModuleNotFoundError:
     _HAS_ANSIWRAP = False
 
 global TERM_WIDTH
-TERM_WIDTH = 80
+TERM_WIDTH = 72
 
 def term_width():
     width = TERM_WIDTH
