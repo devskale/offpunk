@@ -12,7 +12,7 @@
 #  - Björn Wärmedal <bjorn.warmedal@gmail.com>
 #  - <jake@rmgr.dev>
 
-_VERSION = "0.9"
+_VERSION = "1.0"
 
 import argparse
 import cmd
@@ -81,12 +81,16 @@ def term_width():
 # return wrapped text as a list of lines
 def wraplines(*args,**kwargs):
 #    print("will wrap with %s and %s"%(str(args),str(kwargs)))
+    if "center" in kwargs:
+        center = kwargs.pop("center")
+    else:
+        center = True
     lines = wrap_method(*args,**kwargs)
     lines2 = []
     textwidth = TERM_WIDTH
     termspace = shutil.get_terminal_size()[0]
     #Following code instert blanck spaces to center the content
-    if termspace > textwidth:
+    if center and termspace > textwidth:
         margin = int((termspace - textwidth)//2)
     else:
         margin = 0
@@ -668,7 +672,7 @@ class FeedRenderer(GemtextRenderer):
                 if mode == "full":
                     if "summary" in i:
                         rendered, links = HtmlRenderer.render(self,i.summary,\
-                                            width=width,mode="full",add_title=False)
+                                            width=width,mode="full",add_title=False,center=False)
                         page += rendered
                         page += "\n"
         return page
@@ -742,7 +746,7 @@ class HtmlRenderer(AbstractRenderer):
     # Our own HTML engine (crazy, isn’t it?)
     # Return [rendered_body, list_of_links]
     # mode is either links_only, readable or full
-    def render(self,body,mode="readable",width=None,add_title=True):
+    def render(self,body,mode="readable",width=None,add_title=True,center=True):
         if not width:
             width = term_width()
         if not _DO_HTML:
@@ -843,7 +847,7 @@ class HtmlRenderer(AbstractRenderer):
                 # support for images nested in links
                 for child in element.children:
                     if child.name == "img":
-                        # recursive rendering seems to displaying images twice
+                        # recursive rendering seems to display some images twice
                         img = recursive_render(child)
                         #src = child.get("src")
                         #img = render_image(src,width=width,mode=mode)
@@ -916,7 +920,7 @@ class HtmlRenderer(AbstractRenderer):
                     if line.strip() != "":
                         try:
                             wrapped = wrapparagraph(line,width,initial_indent=i_indent,
-                                                subsequent_indent=s_indent)
+                                                subsequent_indent=s_indent,center=center)
                         except Exception as err:
                             wrapped = line
                         wrapped += "\n"
@@ -2807,13 +2811,14 @@ Marks are temporary until shutdown (not saved to disk)."""
         output += " - python-setproctitle : " + has(_HAS_SETPROCTITLE)
         output += " - xdg-open            : " + has(_HAS_XDGOPEN)
         output += " - xsel                : " + has(_HAS_XSEL)
-        output += " - chafa               : " + has(_HAS_CHAFA)
-        output += " Only one needed amongst the followings :\n"
-        output += " - chafa >= 1.10.0     : " + has(_NEW_CHAFA)
-        output += " - python-pil          : " + has(_HAS_PIL)
+        if _NEW_CHAFA:
+            output += " - chafa 1.10+         : " + has(_HAS_CHAFA)
+        else:
+            output += " - chafa               : " + has(_HAS_CHAFA)
+            output += " - python-pil          : " + has(_HAS_PIL)
 
         output += "\nFeatures :\n"
-        output += " - Render images (ansiwrap,chafa, pil|chafa > 1.10)  : " + has(_RENDER_IMAGE)
+        output += " - Render images (ansiwrap,chafa, pil|chafa 1.10+ )  : " + has(_RENDER_IMAGE)
         output += " - Render HTML (bs4, readability)                    : " + has(_DO_HTML)
         output += " - Render Atom/RSS feeds (feedparser)                : " + has(_DO_FEED)
         output += " - Connect to http/https (requests)                  : " + has(_DO_HTTP)
@@ -2883,6 +2888,8 @@ Use "view feeds" to see available feeds on this page.
                 subs = self.gi.get_subscribe_links()
                 if len(subs) > 1:
                     self.do_go(subs[1][0])
+                elif "rss" in subs[0][1] or "atom" in subs[0][1]:
+                    print("%s is already a feed" %self.gi.url)
                 else:
                     print("No other feed found on %s"%self.gi.url)
             elif args[0] == "feeds":
@@ -3051,6 +3058,8 @@ To unsubscribe, remove the page from the "subscribed" list."""
         subs = self.gi.get_subscribe_links()
         if len(subs) > 1:
             stri = "Multiple feeds have been found :\n"
+        elif "rss" in subs[0][1] or "atom" in subs[0][1] :
+            stri = "This page is already a feed:\n"
         else:
             stri = "No feed detected. You can still watch the page :\n"
         counter = 0

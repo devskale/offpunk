@@ -1,6 +1,7 @@
 # Offpunk History
 
-## 1.0 - Unreleased
+## 1.0 - March 14th 2022
+- Default width is now the standard 72
 - Content and pictures now centered for more elegant reading
 - "less" has been renamed "view"
 - "view feed" and "view feeds" to see the first/all feeds on a HTML page

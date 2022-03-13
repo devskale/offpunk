@@ -15,7 +15,7 @@ Offpunk is a single python file. Installation is optional, you can simply downlo
 
 You use the `go` command to visit a URL, e.g. `go gemini.circumlunar.space`. (gemini:// is assumed is no protocol is specified. Supported protocols are gemini, gopher, http, https, mailto, spartan and file).
 
-Links in pages are assigned numerical indices.  Just type an index to follow that link. If page is too long to fit on your screen, the content is displayed in the less pager (by default). Type `q` to quit and go back to Offpunk prompt. Type `view` or `v` to display it again. (`view full` or `v full` allows to see the full html page instead of the article view. `v feed` try to display the linked RSS feed and `v feeds`display a list of available fedes. This only applies to html pages)
+Links in pages are assigned numerical indices.  Just type an index to follow that link. If page is too long to fit on your screen, the content is displayed in the less pager (by default). Type `q` to quit and go back to Offpunk prompt. Type `view` or `v` to display it again. (`view full` or `v full` allows to see the full html page instead of the article view. `v feed` try to display the linked RSS feed and `v feeds` displays a list of available feeds. This only applies to html pages)
 
 Use `add` to add a capsule to your bookmarks and `bookmarks` or `bm` to show your bookmarks (you can create multiple bookmarks lists, edit and remove them. See the `list` manual with `help list`).
 
@@ -67,7 +67,7 @@ Announces about Offpunk will be made on Ploum’s Gemlog  => gemini://rawtext.cl
 Offpunk has no "strict dependencies", i.e. it should run and work without anything
 else beyond the Python standard library and the "less" pager.  However, it will "opportunistically
 import" a few other libraries if they are available to offer an improved
-experience or some other features. Python libraries requests, bs4 and readabliity are required for http/html support.
+experience or some other features. Python libraries requests, bs4 and readability are required for http/html support. Images are displayed if python-ansiwrap and chafa are presents (python-pil is needed for chafa version before 1.10).
 
 To avoid using unstable or too recent libraries, the rule of thumb is that a library should be packaged in Debian/Ubuntu. Keep in mind that Offpunk is mainly tested will all libraries installed. If you encounter a crash without one optional dependencies, please report it.
 
@@ -82,11 +82,11 @@ Run command `version` in offpunk to see if you are missing some dependencies.
 * The [cryptography library](https://pypi.org/project/cryptography/) will
   provide a better and slightly more secure experience when using the default
   TOFU certificate validation mode and is highly recommended (apt-get install python3-cryptography).
-* [Python magic](https://github.com/ahupp/python-magic/) is useful to determine the MIME type of cached object. If not present, the file extension will be used but some capsules provide wrong extension or no extension at all. (apt-get install python3-magic)
+* [Python magic](https://github.com/ahupp/python-magic/) is useful to determine the MIME type of cached object. If not present, the file extension will be used but some capsules provide wrong extension or no extension at all. Python-magic is highly recommended. (apt-get install python3-magic)
 * [Python editor](https://github.com/fmoo/python-editor) is used to edit your lists with "list edit". (apt-get install python3-editor)
 * [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). Also needed to use the `copy` command. (apt-get install xsel)
 * [Chafa](https://hpjansson.org/chafa/) allows to display pictures in your console. Install it and browse to an HTML page with picture to see the magic.
-* [Python-pil](http://python-pillow.github.io/) is required to only display the first frame of animated gif with chafa.
+* [Python-pil](http://python-pillow.github.io/) is required to only display the first frame of animated gif with chafa if chafa version is lower than 1.10.
 * [Python-setproctitle](https://github.com/dvarrazzo/py-setproctitle) will change the process name from "python" to "offpunk". Useful to kill it without killing every python service.
 
 ## Features
