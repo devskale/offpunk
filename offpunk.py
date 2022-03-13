@@ -104,14 +104,11 @@ if _HAS_CHAFA:
     # which allows us to drop dependancy for PIL
     return_code = subprocess.run("chafa --version",shell=True, capture_output=True)
     output = return_code.stdout.decode()
+    # with chafa < 1.10, --version was returned to stderr instead of stdout.
     if output == '':
-        output = return_code.stderr.decode()
-    words = output.split("\n")[0].split()
-    versions = words[2].split(".")
-    if int(versions[0]) > 1 or (int(versions[0]) == 1 and int(versions[1]) >= 10):
-        _NEW_CHAFA = True
-    else:
         _NEW_CHAFA = False
+    else:
+        _NEW_CHAFA = True
 
 if _NEW_CHAFA and _HAS_ANSIWRAP:
     _RENDER_IMAGE = True
@@ -697,13 +694,13 @@ class ImageRenderer(AbstractRenderer):
         else:
             spaces = int((term_width() - width)//2)
         try:
-            img_obj = Image.open(img)
-            if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
-                # we remove all frames but the first one
-                img_obj.save(img,save_all=False)
             if _NEW_CHAFA:
                 cmd = "chafa --animate=off --bg white -s %s -w 1 \"%s\"" %(width,img)
             else:
+                img_obj = Image.open(img)
+                if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
+                    # we remove all frames but the first one
+                    img_obj.save(img,save_all=False)
                 cmd = "chafa --bg white -s %s -w 1 \"%s\"" %(width,img)
             return_code = subprocess.run(cmd,shell=True, capture_output=True)
             ansi_img = return_code.stdout.decode()
