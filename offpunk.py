@@ -113,6 +113,8 @@ if _HAS_CHAFA:
         _NEW_CHAFA = False
     else:
         _NEW_CHAFA = True
+else:
+    _NEW_CHAFA = False
 
 if _NEW_CHAFA and _HAS_ANSIWRAP:
     _RENDER_IMAGE = True
