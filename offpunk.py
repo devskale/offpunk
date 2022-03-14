@@ -1681,6 +1681,10 @@ class GeminiClient(cmd.Cmd):
                     tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
                     self.less_histfile = tmpf.name
                     less_cmd(self.idx_filename,histfile=self.less_histfile,cat=True)
+                # Update state (external files are not added to history)
+                self.gi = gi
+                if update_hist and not self.sync_only:
+                    self._update_history(gi)
             elif display :
                 cmd_str = self._get_handler_cmd(gi.get_mime())
                 try:
@@ -1690,10 +1694,6 @@ class GeminiClient(cmd.Cmd):
                 except FileNotFoundError:
                     print("Handler program %s not found!" % shlex.split(cmd_str)[0])
                     print("You can use the ! command to specify another handler program or pipeline.")
-        # Update state
-        self.gi = gi
-        if update_hist and not self.sync_only:
-            self._update_history(gi)
 
 
     def _temp_file(self,content):
