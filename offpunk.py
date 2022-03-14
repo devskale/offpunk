@@ -2576,13 +2576,16 @@ class GeminiClient(cmd.Cmd):
     def do_copy(self, *args):
         """Copy the content of the last visited page as gemtext in the clipboard.
 Use with "url" as argument to only copy the adress.
-Use with "raw" to copy the content as seen in your terminal (not gemtext)"""
+Use with "raw" to copy ANSI content as seen in your terminal (not gemtext).
+Use with "cache" to copy the path of the cached content."""
         if self.gi:
             if _HAS_XSEL:
                 if args and args[0] == "url":
                     subprocess.call(("echo %s |xsel -b -i" % self.gi.url), shell=True)
                 elif args and args[0] == "raw":
                     subprocess.call(("cat %s |xsel -b -i" % self._get_active_tmpfile()), shell=True)
+                elif args and args[0] == "cache":
+                    subprocess.call(("echo %s |xsel -b -i" % self.gi.get_cache_path()), shell=True)
                 else:
                     subprocess.call(("cat %s |xsel -b -i" % self.gi.get_body(as_file=True)), shell=True)
             else:
