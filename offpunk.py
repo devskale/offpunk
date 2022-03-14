@@ -44,6 +44,7 @@ import time
 import urllib.parse
 import uuid
 import webbrowser
+import html
 
 try:
     import setproctitle
@@ -78,9 +79,18 @@ def term_width():
         width = cur
     return width
 
+def test_wrap_method(line,width, initial_indent="", subsequent_indent=""):
+    #TODO : implement indents
+    lines = []
+    while len(line) > width:
+        lines.append(line[:width])
+        line = line[width:]
+    lines.append(line)
+    return lines
+    #ansi = ansiwrap.wrap(line,width,initial_indent=initial_indent,subsequent_indent=subsequent_indent)
+    #return ansi
 # return wrapped text as a list of lines
 def wraplines(*args,**kwargs):
-#    print("will wrap with %s and %s"%(str(args),str(kwargs)))
     if "center" in kwargs:
         center = kwargs.pop("center")
     else:
@@ -96,7 +106,6 @@ def wraplines(*args,**kwargs):
         margin = 0
     for l in lines :
         lines2.append(margin*" "+l)
-    #line = 30*" " + line
     return lines2
 # return wrapped text as one string
 def wrapparagraph(*args,**kwargs):
@@ -787,8 +796,7 @@ class HtmlRenderer(AbstractRenderer):
             toreturn = string.replace("\n", " ").replace("\t"," ").strip()
             while "  " in toreturn:
                 toreturn = toreturn.replace("  "," ")
-            toreturn = toreturn.replace("&nbsp;","\xa0").replace("&nbsp","\xa0")
-            toreturn = toreturn.replace("&mldr;","\u2026").replace("&mldr","\u2026")
+            toreturn = html.unescape(toreturn)
             if endspace and not toreturn.endswith(" ") and not toreturn.endswith("\xa0"):
                 toreturn += " "
             if startspace and not toreturn.startswith(" ") and not toreturn.startswith("\xa0"):
