@@ -779,7 +779,7 @@ class HtmlRenderer(AbstractRenderer):
                     #we sometimes encounter really bad formatted files or URL
                     ansi_img += "[BAD IMG] %s"%src
             return ansi_img
-        def sanitize_string(string):
+        def sanitize_string(string,preformat=False):
             #string = string.lstrip("\n")
             string = string.replace("\n", " ").replace("\t"," ")
             endspace = string.endswith(" ") or string.endswith("\xa0")
@@ -794,7 +794,7 @@ class HtmlRenderer(AbstractRenderer):
             if startspace and not toreturn.startswith(" ") and not toreturn.startswith("\xa0"):
                 toreturn = " " + toreturn
             return toreturn
-        def recursive_render(element,indent=""):
+        def recursive_render(element,indent="",preformatted=False):
             rendered_body = ""
             if element.name == "blockquote":
                 for child in element.children:
@@ -816,10 +816,10 @@ class HtmlRenderer(AbstractRenderer):
                     rendered_body += "\n" + "\x1b[34m" + line + "\x1b[0m" + "\n"
                 else:
                     rendered_body += "\n" + "\x1b[34m\x1b[2m" + line + "\x1b[0m" + "\n"
-            elif element.name == "pre":
+            elif element.name in ["pre","code"]:
                 rendered_body += "\n"
                 for child in element.children:
-                   rendered_body += recursive_render(child,indent=indent)
+                   rendered_body += recursive_render(child,indent=indent,preformatted=True)
                 rendered_body += "\n\n"
             elif element.name in ["li","tr"]:
                 line = ""
@@ -833,16 +833,16 @@ class HtmlRenderer(AbstractRenderer):
                 line += " |"
                 rendered_body += line
             # italics
-            elif element.name in ["code","em","i"]:
+            elif element.name in ["em","i"]:
                 rendered_body += "\x1b[3m"
                 for child in element.children:
-                    rendered_body += recursive_render(child,indent=indent)
+                    rendered_body += recursive_render(child,indent=indent,preformatted=preformatted)
                 rendered_body += "\x1b[23m"
             #bold
             elif element.name in ["b","strong"]:
                 rendered_body += "\x1b[1m"
                 for child in element.children:
-                    rendered_body += recursive_render(child,indent=indent)
+                    rendered_body += recursive_render(child,indent=indent,preformatted=preformatted)
                 rendered_body += "\x1b[22m"
             elif element.name == "a":
                 text = ""
@@ -855,7 +855,7 @@ class HtmlRenderer(AbstractRenderer):
                         #img = render_image(src,width=width,mode=mode)
                         rendered_body += img
                     else:
-                        text += recursive_render(child)
+                        text += recursive_render(child,preformatted=preformatted)
                 link = element.get('href')
                 if link:
                     links.append(link+" "+text)
@@ -883,7 +883,10 @@ class HtmlRenderer(AbstractRenderer):
             elif element.name == "br":
                 rendered_body = "\n"
             elif element.name not in ["script","style"] and element.string:
-                rendered_body = sanitize_string(element.string)
+                if preformatted :
+                    rendered_body = element.string
+                else:
+                    rendered_body = sanitize_string(element.string)
             elif element.name not in ["script","style"]: #we drop javascript and css
                 for child in element.children:
                     rendered_body += recursive_render(child,indent=indent)
