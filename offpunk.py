@@ -364,13 +364,13 @@ class AbstractRenderer():
     def prepare(self,body,mode=None):
         return body
     
-    def get_body(self,readable=True,width=None):
+    def get_body(self,readable=True,width=None,mode=None):
         if not width:
             width = term_width()
         if self.rendered_text == None or not readable:
-            if readable : 
+            if not mode and readable : 
                 mode = "readable" 
-            else :
+            elif not mode :
                 mode = "full"
             prepared_body = self.prepare(self.body,mode=mode)
             result = self.render(prepared_body,width=width,mode=mode)
@@ -378,6 +378,9 @@ class AbstractRenderer():
                 self.rendered_text = result[0]
                 self.links = result[1]
         return self.rendered_text
+
+    def display_cmd(self):
+        return less_cmd
     # An instance of AbstractRenderer should have a self.render(body,width,mode) method.
     # 3 modes are used : readable (by default), full and links_only (the fastest, when
     # rendered content is not used, only the links are needed)
@@ -701,6 +704,8 @@ class ImageRenderer(AbstractRenderer):
     def get_title(self):
         return "Picture file"
     def render(self,img,width=None,mode=None):
+        #with inline, we use symbols to be rendered with less.
+        #else we use the best possible renderer.
         if mode == "links_only":
             return "", []
         if not width:
@@ -709,14 +714,17 @@ class ImageRenderer(AbstractRenderer):
         else:
             spaces = int((term_width() - width)//2)
         try:
+            cmd = "chafa --bg white -s %s -w 1 "%width
+            #if mode=="inline":
+            cmd += "-f symbols "
             if _NEW_CHAFA:
-                cmd = "chafa --animate=off -f symbols --bg white -s %s -w 1 \"%s\"" %(width,img)
+                cmd += "--animate=off "
             else:
                 img_obj = Image.open(img)
                 if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
                     # we remove all frames but the first one
                     img_obj.save(img,save_all=False)
-                cmd = "chafa --bg white -f symbols -s %s -w 1 \"%s\"" %(width,img)
+            cmd += "\"%s\""%img
             return_code = subprocess.run(cmd,shell=True, capture_output=True)
             ansi_img = return_code.stdout.decode()
         except Exception as err:
@@ -783,7 +791,7 @@ class HtmlRenderer(AbstractRenderer):
                             size = 40
                         else:
                             size = width
-                        ansi_img = "\n" + renderer.get_body(width=size)
+                        ansi_img = "\n" + renderer.get_body(width=size,mode="inline")
                 except Exception as err:
                     #we sometimes encounter really bad formatted files or URL
                     ansi_img += "[BAD IMG] %s"%src
