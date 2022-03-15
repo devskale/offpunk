@@ -364,14 +364,10 @@ class AbstractRenderer():
     def prepare(self,body,mode=None):
         return body
     
-    def get_body(self,readable=True,width=None,mode=None):
+    def get_body(self,width=None,mode="readable"):
         if not width:
             width = term_width()
-        if self.rendered_text == None or not readable:
-            if not mode and readable : 
-                mode = "readable" 
-            elif not mode :
-                mode = "full"
+        if self.rendered_text == None or mode == "full":
             prepared_body = self.prepare(self.body,mode=mode)
             result = self.render(prepared_body,width=width,mode=mode)
             if result:
@@ -1264,11 +1260,11 @@ class GeminiItem():
                     self.renderer = None
 
     
-    def get_rendered_body(self,readable=True):
+    def get_rendered_body(self,mode="readable"):
         if not self.renderer:
             self._set_renderer()
         if self.renderer and self.renderer.is_valid():
-            body = self.renderer.get_body(readable=readable)
+            body = self.renderer.get_body(mode=mode)
             self.__make_links(self.renderer.get_links())
             to_return = self._make_terminal_title() + body
             return to_return
@@ -1569,7 +1565,7 @@ class GeminiClient(cmd.Cmd):
             first_seen date, last_seen date, count integer)""")
 
     def _go_to_gi(self, gi, update_hist=True, check_cache=True, handle=True,\
-                                                readable=True,limit_size=False):
+                                                mode="readable",limit_size=False):
         """This method might be considered "the heart of Offpunk".
         Everything involved in fetching a gemini resource happens here:
         sending the request over the network, parsing the response, 
@@ -1683,7 +1679,7 @@ class GeminiClient(cmd.Cmd):
 
         # Pass file to handler, unless we were asked not to
         if gi :
-            rendered_body = gi.get_rendered_body(readable=readable)
+            rendered_body = gi.get_rendered_body(mode=mode)
             display = handle and not self.sync_only
             if rendered_body:
                 self.index = gi.get_links()
@@ -2904,7 +2900,7 @@ Use "view feeds" to see available feeds on this page.
 (full, feed, feeds have no effect on non-html content)."""
         if self.gi and args and args[0] != "":
             if args[0] == "full":
-                self._go_to_gi(self.gi,readable=False)
+                self._go_to_gi(self.gi,mode="full")
             elif args[0] == "feed":
                 subs = self.gi.get_subscribe_links()
                 if len(subs) > 1:
