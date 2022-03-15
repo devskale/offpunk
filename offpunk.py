@@ -2628,11 +2628,14 @@ Use with "cache" to copy the path of the cached content."""
             if shutil.which('xsel'):
                 clipboards = []
                 urls = []
-                clipboards.append(subprocess.check_output(['xsel','-p'],text=True))
-                clipboards.append(subprocess.check_output(['xsel','-s'],text=True))
-                clipboards.append(subprocess.check_output(['xsel','-b'],text=True))
+                for selec in ["-p","-s","-b"]:
+                    try:
+                        clipboards.append(subprocess.check_output(['xsel',selec],text=True))
+                    except Exception as err:
+                        #print("Skippink clipboard %s because %s"%(selec,err))
+                        pass
                 for u in clipboards:
-                    if looks_like_url(u) :
+                    if "://" in u and looks_like_url(u) and u not in urls :
                         urls.append(u)
                 if len(urls) > 1:
                     self.lookup = []
@@ -2643,7 +2646,7 @@ Use with "cache" to copy the path of the cached content."""
                 elif len(urls) == 1:
                     self.do_go(urls[0])
                 else:
-                    print("Go where? (hint: simply copy an URL)")
+                    print("Go where? (hint: simply copy an URL in your clipboard)")
             else:
                 print("Go where? (hint: install xsel to go to copied URLs)")
 
