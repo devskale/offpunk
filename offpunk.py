@@ -355,7 +355,8 @@ class AbstractRenderer():
         return self.validity
     def get_links(self):
         if self.links == None :
-            results = self.render(self.body,mode="links_only")
+            prepared_body = self.prepare(self.body,mode="links_only")
+            results = self.render(prepared_body,mode="links_only")
             if results:
                 self.links = results[1]
         return self.links
@@ -662,7 +663,6 @@ class FeedRenderer(GemtextRenderer):
     def prepare(self,content,mode="readable",width=None):
         if not width:
             width = term_width()
-        self.links = []
         self.title = "RSS/Atom feed"
         page = ""
         if _DO_FEED:
@@ -1733,7 +1733,10 @@ class GeminiClient(cmd.Cmd):
         header = {}
         header["User-Agent"] = "Offpunk browser v%s"%_VERSION
         with requests.get(gi.url,headers=header, stream=True) as response:
-            mime = response.headers['content-type']
+            if "content-type" in response.headers:
+                mime = response.headers['content-type']
+            else:
+                mime = None
             if "content-length" in response.headers:
                 length = int(response.headers['content-length'])
             else:
@@ -1748,7 +1751,7 @@ class GeminiClient(cmd.Cmd):
             else:
                 body = response.content
                 response.close()
-        if "text/" in mime:
+        if mime and "text/" in mime:
             #body = response.text
             body = response.content.decode("UTF-8","replace")
         else:
