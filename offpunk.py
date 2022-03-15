@@ -173,6 +173,7 @@ except ModuleNotFoundError:
 
 try:
     from bs4 import BeautifulSoup
+    from bs4 import Comment
     _HAS_SOUP = True
 except ModuleNotFoundError:
     _HAS_SOUP = False
@@ -891,14 +892,15 @@ class HtmlRenderer(AbstractRenderer):
                     rendered_body = ansi_img + "\x1b[2;33m" + alttext + "\x1b[0m\n\n"
             elif element.name == "br":
                 rendered_body = "\n"
-            elif element.name not in ["script","style"] and element.string:
-                if preformatted :
-                    rendered_body = element.string
+            elif element.name not in ["script","style","template"] and type(element) != Comment:
+                if element.string:
+                    if preformatted :
+                        rendered_body = element.string
+                    else:
+                        rendered_body = sanitize_string(element.string)
                 else:
-                    rendered_body = sanitize_string(element.string)
-            elif element.name not in ["script","style"]: #we drop javascript and css
-                for child in element.children:
-                    rendered_body += recursive_render(child,indent=indent)
+                    for child in element.children:
+                        rendered_body += recursive_render(child,indent=indent)
             return indent + rendered_body
         # the real render_html hearth
         if mode == "full":
