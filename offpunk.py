@@ -346,8 +346,8 @@ class AbstractRenderer():
         self.links = None
         self.title = None
         self.validity = True
-        self.temp_file = None
-        self.less_histfile = None
+        self.temp_file = {}
+        self.less_histfile = {}
    
     def get_subscribe_links(self):
         return [[self.url,self.get_mime(),self.get_title()]]
@@ -383,22 +383,25 @@ class AbstractRenderer():
         if not body:
             return False
         # We actually put the body in a tmpfile before giving it to less
-        if not self.temp_file:
+        if mode not in self.temp_file:
             tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
-            self.temp_file = tmpf.name
+            self.temp_file[mode] = tmpf.name
             tmpf.write(body)
             tmpf.close()
-        if not self.less_histfile:
+        if mode not in self.less_histfile:
             firsttime = True
             tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
-            self.less_histfile = tmpf.name
+            self.less_histfile[mode] = tmpf.name
         else:
             firsttime = False
-        less_cmd(self.temp_file, histfile=self.less_histfile,cat=firsttime)
+        less_cmd(self.temp_file[mode], histfile=self.less_histfile[mode],cat=firsttime)
         return True
     
-    def get_temp_file(self):
-        return self.temp_file
+    def get_temp_file(self,mode="readable"):
+        if mode in self.temp_file:
+            return self.temp_file[mode]
+        else:
+            return None
 
     # An instance of AbstractRenderer should have a self.render(body,width,mode) method.
     # 3 modes are used : readable (by default), full and links_only (the fastest, when
@@ -1302,12 +1305,14 @@ class GeminiItem():
         return filename
 
     def get_temp_filename(self):
+        tmpf = None
         if not self.renderer:
             self._set_renderer()
         if self.renderer and self.renderer.is_valid():
-            return self.renderer.get_temp_file()
-        else:
-            return self.get_filename()
+            tmpf = self.renderer.get_temp_file()
+        if not tmpf:
+            tmpf = self.get_cache_path()
+        return tmpf
 
     def write_body(self,body,mime=None):
         ## body is a copy of the raw gemtext
@@ -2793,7 +2798,9 @@ Marks are temporary until shutdown (not saved to disk)."""
         out += "Path     :   " + self.gi.path + "\n"
         out += "Mime     :   " + self.gi.get_mime() + "\n"
         out += "Cache    :   " + self.gi.get_cache_path() + "\n"
-        out += "Tempfile :   " + self.gi.get_temp_filename() + "\n"
+        tmp = self.gi.get_temp_filename()
+        if tmp != self.gi.get_cache_path():
+            out += "Tempfile :   " + self.gi.get_temp_filename() + "\n"
         if self.gi.renderer :
             rend = str(self.gi.renderer.__class__)
             rend = rend.lstrip("<class '__main__.").rstrip("'>")
