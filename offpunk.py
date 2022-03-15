@@ -710,13 +710,13 @@ class ImageRenderer(AbstractRenderer):
             spaces = int((term_width() - width)//2)
         try:
             if _NEW_CHAFA:
-                cmd = "chafa --animate=off --bg white -s %s -w 1 \"%s\"" %(width,img)
+                cmd = "chafa --animate=off -f symbols --bg white -s %s -w 1 \"%s\"" %(width,img)
             else:
                 img_obj = Image.open(img)
                 if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
                     # we remove all frames but the first one
                     img_obj.save(img,save_all=False)
-                cmd = "chafa --bg white -s %s -w 1 \"%s\"" %(width,img)
+                cmd = "chafa --bg white -f symbols -s %s -w 1 \"%s\"" %(width,img)
             return_code = subprocess.run(cmd,shell=True, capture_output=True)
             ansi_img = return_code.stdout.decode()
         except Exception as err:
@@ -858,10 +858,7 @@ class HtmlRenderer(AbstractRenderer):
                 for child in element.children:
                     if child.name == "img":
                         # recursive rendering seems to display some images twice
-                        img = recursive_render(child)
-                        #src = child.get("src")
-                        #img = render_image(src,width=width,mode=mode)
-                        rendered_body += img
+                        rendered_body += recursive_render(child)
                     else:
                         text += recursive_render(child,preformatted=preformatted)
                 link = element.get('href')
