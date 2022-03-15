@@ -3,6 +3,7 @@
 ## 1.1 - Unreleased
 - "cp cache" put the path of the cached content in clipboard
 - HTML renderering of <pre> has been improved
+- "fold" has been removed as it doesn’t work well anyway with our width.
 - Fixed crash when chafa is not installed (Thanks Xavier Hinault for the report)
 - Fixed crash when python-readability not installed (Thanks Nic for the report)
 

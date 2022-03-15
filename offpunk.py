@@ -263,7 +263,6 @@ _ABBREVS = {
     "bm":   "bookmarks",
     "book": "bookmarks",
     "cp":   "copy",
-    "fo":    "fold",
     "f":   "forward",
     "g":    "go",
     "h":    "history",
@@ -347,6 +346,8 @@ class AbstractRenderer():
         self.links = None
         self.title = None
         self.validity = True
+        self.temp_file = None
+        self.less_histfile = None
    
     def get_subscribe_links(self):
         return [[self.url,self.get_mime(),self.get_title()]]
@@ -376,8 +377,28 @@ class AbstractRenderer():
                 self.links = result[1]
         return self.rendered_text
 
-    def display_cmd(self):
-        return less_cmd
+    def display(self,mode="readable",title=None):
+        body = title + self.get_body(mode=mode)
+        if not body:
+            return False
+        # We actually put the body in a tmpfile before giving it to less
+        if not self.temp_file:
+            tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
+            self.temp_file = tmpf.name
+            tmpf.write(body)
+            tmpf.close()
+        if not self.less_histfile:
+            firsttime = True
+            tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
+            self.less_histfile = tmpf.name
+        else:
+            firsttime = False
+        less_cmd(self.temp_file, histfile=self.less_histfile,cat=firsttime)
+        return True
+    
+    def get_temp_file(self):
+        return self.temp_file
+
     # An instance of AbstractRenderer should have a self.render(body,width,mode) method.
     # 3 modes are used : readable (by default), full and links_only (the fastest, when
     # rendered content is not used, only the links are needed)
@@ -732,6 +753,12 @@ class ImageRenderer(AbstractRenderer):
         for l in lines:
             new_img += spaces*" " + l + "\n"
         return new_img, []
+    def display(self,mode=None,title=None):
+        if title:
+            print(title)
+        cmd = "chafa --bg white -w 1 \"%s\""%self.body
+        subprocess.run(cmd,shell=True)
+        return True
 
 class HtmlRenderer(AbstractRenderer):
     def get_mime(self):
@@ -1192,7 +1219,7 @@ class GeminiItem():
     def get_link(self,nb):
         # == None allows to return False, even if the list is empty
         if self.links == None:
-            r_body = self.get_rendered_body()
+            self.get_links()
         if len(self.links) < nb:
             print("Index too high! No link %s for %s" %(nb,self.url))
             return None
@@ -1261,22 +1288,26 @@ class GeminiItem():
                 if not self.renderer.is_valid():
                     self.renderer = None
 
-    
-    def get_rendered_body(self,mode="readable"):
+    def display(self,mode=None):
         if not self.renderer:
             self._set_renderer()
         if self.renderer and self.renderer.is_valid():
-            body = self.renderer.get_body(mode=mode)
-            self.__make_links(self.renderer.get_links())
-            to_return = self._make_terminal_title() + body
-            return to_return
+            title = self._make_terminal_title()
+            return self.renderer.display(mode=mode,title=title)
         else:
-            self.links = []
-            return None
-        
+            return False
+
     def get_filename(self):
         filename = os.path.basename(self.get_cache_path())
         return filename
+
+    def get_temp_filename(self):
+        if not self.renderer:
+            self._set_renderer()
+        if self.renderer and self.renderer.is_valid():
+            return self.renderer.get_temp_file()
+        else:
+            return self.get_filename()
 
     def write_body(self,body,mime=None):
         ## body is a copy of the raw gemtext
@@ -1499,8 +1530,6 @@ class GeminiClient(cmd.Cmd):
         self.prompt = self.no_cert_prompt
         self.gi = None
         self.hist_index = 0
-        self.idx_filename = ""
-        self.less_histfile = None
         self.index = []
         self.index_index = -1
         self.lookup = self.index
@@ -1510,7 +1539,6 @@ class GeminiClient(cmd.Cmd):
         self.previous_redirectors = set()
         # Sync-only mode is restriced by design
         self.restricted = restricted or synconly
-        self.tmp_filename = ""
         self.visited_hosts = set()
         self.offline_only = False
         self.sync_only = False
@@ -1681,20 +1709,12 @@ class GeminiClient(cmd.Cmd):
 
         # Pass file to handler, unless we were asked not to
         if gi :
-            rendered_body = gi.get_rendered_body(mode=mode)
             display = handle and not self.sync_only
-            if rendered_body:
+            if display and gi.display(mode=mode):
                 self.index = gi.get_links()
                 self.lookup = self.index
                 self.page_index = 0
                 self.index_index = -1
-                if display:
-                    self._temp_file(rendered_body)
-                    if self.less_histfile:
-                        os.unlink(self.less_histfile)
-                    tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
-                    self.less_histfile = tmpf.name
-                    less_cmd(self.idx_filename,histfile=self.less_histfile,cat=True)
                 # Update state (external files are not added to history)
                 self.gi = gi
                 if update_hist and not self.sync_only:
@@ -1708,18 +1728,6 @@ class GeminiClient(cmd.Cmd):
                 except FileNotFoundError:
                     print("Handler program %s not found!" % shlex.split(cmd_str)[0])
                     print("You can use the ! command to specify another handler program or pipeline.")
-
-
-    def _temp_file(self,content):
-        # We actually put the body in a tmpfile before giving it to less
-        if self.idx_filename:
-            os.unlink(self.idx_filename)
-        tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
-        tmpf.write(content)
-        tmpf.close()
-        self.idx_filename = tmpf.name
-        return self.idx_filename
-
 
     def _fetch_http(self,gi,max_length=None):
         header = {}
@@ -2317,12 +2325,6 @@ class GeminiClient(cmd.Cmd):
             self.log["ipv6_requests"] += 1
             self.log["ipv6_bytes_recvd"] += size
 
-    def _get_active_tmpfile(self):
-        if self.gi.get_mime() in _FORMAT_RENDERERS:
-            return self.idx_filename
-        else:
-            return self.tmp_filename
-
     def _debug(self, debug_text):
         if not self.options["debug"]:
             return
@@ -2594,7 +2596,7 @@ Use with "cache" to copy the path of the cached content."""
                 if args and args[0] == "url":
                     subprocess.call(("echo %s |xsel -b -i" % self.gi.url), shell=True)
                 elif args and args[0] == "raw":
-                    subprocess.call(("cat %s |xsel -b -i" % self._get_active_tmpfile()), shell=True)
+                    subprocess.call(("cat %s |xsel -b -i" % self.gi.get_temp_filename()), shell=True)
                 elif args and args[0] == "cache":
                     subprocess.call(("echo %s |xsel -b -i" % self.gi.get_cache_path()), shell=True)
                 else:
@@ -2782,7 +2784,7 @@ Marks are temporary until shutdown (not saved to disk)."""
         out += "Path     :   " + self.gi.path + "\n"
         out += "Mime     :   " + self.gi.get_mime() + "\n"
         out += "Cache    :   " + self.gi.get_cache_path() + "\n"
-        out += "Tempfile :   " + self.idx_filename + "\n"
+        out += "Tempfile :   " + self.gi.get_temp_filename() + "\n"
         if self.gi.renderer :
             rend = str(self.gi.renderer.__class__)
             rend = rend.lstrip("<class '__main__.").rstrip("'>")
@@ -2890,7 +2892,7 @@ Use 'ls -l' to see URLs."""
     @needs_gi
     def do_cat(self, *args):
         """Run most recently visited item through "cat" command."""
-        subprocess.call(shlex.split("cat %s" % self._get_active_tmpfile()))
+        subprocess.call(shlex.split("cat %s" % self.gi.get_temp_filename()))
 
     @needs_gi
     def do_view(self, *args):
@@ -2925,7 +2927,7 @@ Use "view feeds" to see available feeds on this page.
             else:
                 print("Valid argument for less are : full, feed, feeds")
         elif self.gi.is_cache_valid() and self.gi.scheme not in ["mailto"]:
-            less_cmd(self._get_active_tmpfile(),histfile=self.less_histfile)
+            self.gi.display()
         else:
             self.do_go(self.gi.url)
 
@@ -2938,19 +2940,12 @@ see "handler" command to set your own."""
         cmd_str = cmd_str % file_path 
         subprocess.call(cmd_str,shell=True)
 
-
-    @needs_gi
-    def do_fold(self, *args):
-        """Run most recently visited item through "fold" command."""
-        cmd_str = _DEFAULT_LESS % self._get_active_tmpfile()
-        subprocess.call("%s | fold -w 70 -s" % cmd_str, shell=True)
-
     @restricted
     @needs_gi
     def do_shell(self, line):
         """'cat' most recently visited item through a shell pipeline.
 '!' is an useful shortcut."""
-        subprocess.call(("cat %s |" % self._get_active_tmpfile()) + line, shell=True)
+        subprocess.call(("cat %s |" % self.gi.get_temp_filename()) + line, shell=True)
 
     @restricted
     @needs_gi
@@ -3627,9 +3622,6 @@ Argument : duration of cache validity (in seconds)."""
         self.db_conn.commit()
         self.db_conn.close()
         # Clean up after ourself
-        unlink(self.tmp_filename)
-        unlink(self.idx_filename)
-        unlink(self.less_histfile)
 
         for cert in self.transient_certs_created:
             for ext in (".crt", ".key"):
