@@ -2589,15 +2589,21 @@ class GeminiClient(cmd.Cmd):
         else:
             print("Already online. Try offline.")
 
-    def do_copy(self, *args):
+    def do_copy(self, arg):
         """Copy the content of the last visited page as gemtext in the clipboard.
 Use with "url" as argument to only copy the adress.
 Use with "raw" to copy ANSI content as seen in your terminal (not gemtext).
 Use with "cache" to copy the path of the cached content."""
         if self.gi:
             if _HAS_XSEL:
+                args = arg.split()
                 if args and args[0] == "url":
-                    subprocess.call(("echo %s |xsel -b -i" % self.gi.url), shell=True)
+                    if len(args) > 1 and args[1].isdecimal():
+                        gi = self.index[int(args[1])-1]
+                        url = gi.url
+                    else:
+                        url = self.gi.url
+                    subprocess.call(("echo %s |xsel -b -i" % url), shell=True)
                 elif args and args[0] == "raw":
                     subprocess.call(("cat %s |xsel -b -i" % self.gi.get_temp_filename()), shell=True)
                 elif args and args[0] == "cache":
