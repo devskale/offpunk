@@ -353,10 +353,10 @@ class AbstractRenderer():
         return [[self.url,self.get_mime(),self.get_title()]]
     def is_valid(self):
         return self.validity
-    def get_links(self):
+    def get_links(self,mode="links_only"):
         if self.links == None :
-            prepared_body = self.prepare(self.body,mode="links_only")
-            results = self.render(prepared_body,mode="links_only")
+            prepared_body = self.prepare(self.body,mode=mode)
+            results = self.render(prepared_body,mode=mode)
             if results:
                 self.links = results[1]
         return self.links
@@ -1018,7 +1018,6 @@ class GeminiItem():
         self.name = name
         self.mime = None
         self.renderer = None
-        self.links = None
         self.body = None
         parsed = urllib.parse.urlparse(self.url)
         if "./" in url or url[0] == "/":
@@ -1142,7 +1141,6 @@ class GeminiItem():
             # If path is too long, we always return True to avoid
             # fetching it.
             if len(cache) > 259:
-                self.links = []
                 print("We return False because path is too long")
                 return False
             if os.path.exists(cache) and not os.path.isdir(cache):
@@ -1196,8 +1194,13 @@ class GeminiItem():
     
     # This method is used to load once the list of links in a gi
     # Links can be followed, after a space, by a description/title
-    def __make_links(self,links):
-        self.links = []
+    def get_links(self):
+        links = []
+        toreturn = []
+        if not self.renderer:
+            self._set_renderer()
+        if self.renderer:
+            links = self.renderer.get_links()
         for l in links:
             #split between link and potential name
             splitted = l.split(maxsplit=1)
@@ -1207,27 +1210,17 @@ class GeminiItem():
                     newgi = GeminiItem(url,splitted[1])
                 else:
                     newgi = GeminiItem(url)
-                self.links.append(newgi)
-
-    def get_links(self):
-        if self.links == None:
-            if not self.renderer:
-                self._set_renderer()
-            if self.renderer:
-                self.__make_links(self.renderer.get_links())
-            else:
-                self.links = []
-        return self.links
+                toreturn.append(newgi)
+        return toreturn
 
     def get_link(self,nb):
         # == None allows to return False, even if the list is empty
-        if self.links == None:
-            self.get_links()
-        if len(self.links) < nb:
+        links = self.get_links()
+        if len(links) < nb:
             print("Index too high! No link %s for %s" %(nb,self.url))
             return None
         else:
-            return self.links[nb-1]
+            return links[nb-1]
 
     def get_subscribe_links(self):
         if not self.renderer:
@@ -1565,7 +1558,6 @@ class GeminiClient(cmd.Cmd):
             "width" : 80,
             "auto_follow_redirects" : True,
             "tls_mode" : "tofu",
-            "https_everywhere": False,
             "archives_size" : 200,
             "history_size" : 200,
             "max_size_download" : 20,
@@ -1632,12 +1624,6 @@ class GeminiClient(cmd.Cmd):
             self._go_to_gi(new_gi)
             return
         
-        if gi.scheme == "http" and self.options["https_everywhere"] :
-            newurl = "https" + gi.url[4:]
-            new_gi = GeminiItem(newurl,name=gi.name)
-            self._go_to_gi(new_gi)
-            return
-
         # Use cache or mark as to_fetch if resource is not cached
         # Why is this code useful ? It set the mimetype !
         if self.offline_only:
@@ -1648,7 +1634,6 @@ class GeminiClient(cmd.Cmd):
                     print("%s not available, marked for syncing"%gi.url)
                 else:
                     print("%s already marked for syncing"%gi.url)
-                #self.gi = gi
                 return
         # check if local file exists.
         if gi.local and not os.path.exists(gi.path):

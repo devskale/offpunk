@@ -6,6 +6,7 @@
 - "cp url X" will copy the URL of link X (suggested by Eoin Carney)
 - HTML renderering of <pre> has been improved
 - "fold" has been removed as it doesn’t work well anyway with our width.
+- Improved clipboard URL detection an fixed crash when binary in clipboard
 - Fixed crash when chafa is not installed (Thanks Xavier Hinault for the report)
 - Fixed crash when python-readability not installed (Thanks Nic for the report)
 
