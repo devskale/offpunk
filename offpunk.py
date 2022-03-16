@@ -342,8 +342,9 @@ class AbstractRenderer():
     def __init__(self,content,url):
         self.url = url
         self.body = content
-        self.rendered_text = None
-        self.links = None
+        #there’s one rendered text and one links table per mode
+        self.rendered_text = {}
+        self.links = {}
         self.title = None
         self.validity = True
         self.temp_file = {}
@@ -354,12 +355,12 @@ class AbstractRenderer():
     def is_valid(self):
         return self.validity
     def get_links(self,mode="links_only"):
-        if self.links == None :
+        if mode not in self.links :
             prepared_body = self.prepare(self.body,mode=mode)
             results = self.render(prepared_body,mode=mode)
             if results:
-                self.links = results[1]
-        return self.links
+                self.links[mode] = results[1]
+        return self.links[mode]
     def get_title(self):
         return "Abstract title"
     
@@ -370,13 +371,13 @@ class AbstractRenderer():
     def get_body(self,width=None,mode="readable"):
         if not width:
             width = term_width()
-        if self.rendered_text == None or mode == "full":
+        if mode not in self.rendered_text:
             prepared_body = self.prepare(self.body,mode=mode)
             result = self.render(prepared_body,width=width,mode=mode)
             if result:
-                self.rendered_text = result[0]
-                self.links = result[1]
-        return self.rendered_text
+                self.rendered_text[mode] = result[0]
+                self.links[mode] = result[1]
+        return self.rendered_text[mode]
 
     def display(self,mode="readable",title=None):
         body = title + self.get_body(mode=mode)
@@ -1019,6 +1020,7 @@ class GeminiItem():
         self.mime = None
         self.renderer = None
         self.body = None
+        self.last_mode = None
         parsed = urllib.parse.urlparse(self.url)
         if "./" in url or url[0] == "/":
             self.scheme = "file"
@@ -1194,13 +1196,15 @@ class GeminiItem():
     
     # This method is used to load once the list of links in a gi
     # Links can be followed, after a space, by a description/title
-    def get_links(self):
+    def get_links(self,mode=None):
         links = []
         toreturn = []
         if not self.renderer:
             self._set_renderer()
         if self.renderer:
-            links = self.renderer.get_links()
+            if not mode:
+                mode = self.last_mode
+            links = self.renderer.get_links(mode=mode)
         for l in links:
             #split between link and potential name
             splitted = l.split(maxsplit=1)
@@ -1284,10 +1288,11 @@ class GeminiItem():
                 if not self.renderer.is_valid():
                     self.renderer = None
 
-    def display(self,mode=None):
+    def display(self,mode="readable"):
         if not self.renderer:
             self._set_renderer()
         if self.renderer and self.renderer.is_valid():
+            self.last_mode = mode
             title = self._make_terminal_title()
             return self.renderer.display(mode=mode,title=title)
         else:
@@ -1701,7 +1706,7 @@ class GeminiClient(cmd.Cmd):
         if gi :
             display = handle and not self.sync_only
             if display and gi.display(mode=mode):
-                self.index = gi.get_links()
+                self.index = gi.get_links(mode=mode)
                 self.lookup = self.index
                 self.page_index = 0
                 self.index_index = -1
@@ -2932,6 +2937,10 @@ Use "view feeds" to see available feeds on this page.
                 print("Valid argument for less are : full, feed, feeds")
         elif self.gi.is_cache_valid() and self.gi.scheme not in ["mailto"]:
             self.gi.display()
+            self.index = self.gi.get_links(mode="readable")
+            self.lookup = self.index
+            self.page_index = 0
+            self.index_index = -1
         else:
             self.do_go(self.gi.url)
 
