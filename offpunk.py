@@ -16,10 +16,8 @@ _VERSION = "1.0"
 
 import argparse
 import cmd
-#import cmd2 as cmd
 import cgi
 import codecs
-import collections
 import datetime
 import fnmatch
 import getpass
@@ -301,28 +299,21 @@ urllib.parse.uses_netloc.append("gemini")
 urllib.parse.uses_relative.append("spartan")
 urllib.parse.uses_netloc.append("spartan")
 
+#An IPV6 URL should be put between []  
+#We try to detect them has location with more than 2 ":"
 def fix_ipv6_url(url):
-    if not url:
-        return
-    if not url.count(":") > 2: # Best way to detect them?
+    if not url or url.startswith("mailto"):
         return url
-    if url.startswith("mailto"):
-        return url
-    # If there's a pair of []s in there, it's probably fine as is.
-    if "[" in url and "]" in url:
-        return url
-    # Easiest case is a raw address, no schema, no path.
-    # Just wrap it in square brackets and whack a slash on the end
-    if "/" not in url:
-        return "[" + url + "]/"
-    # Now the trickier cases...
     if "://" in url:
         schema, schemaless = url.split("://",maxsplit=1)
     else:
         schema, schemaless = None, url
     if "/" in schemaless:
         netloc, rest = schemaless.split("/",1)
-        schemaless = "[" + netloc + "]" + "/" + rest
+        if netloc.count(":") > 2 and "[" not in netloc and "]" not in netloc:
+            schemaless = "[" + netloc + "]" + "/" + rest
+    elif schemaless.count(":") > 2:
+        schemaless = "[" + schemaless + "]/"
     if schema:
         return schema + "://" + schemaless
     return schemaless
