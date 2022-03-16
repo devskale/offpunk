@@ -721,7 +721,7 @@ class ImageRenderer(AbstractRenderer):
             return True
         else:
             return False
-    def get_links(self):
+    def get_links(self,mode=None):
         return []
     def get_title(self):
         return "Picture file"
