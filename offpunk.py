@@ -109,35 +109,50 @@ def wraplines(*args,**kwargs):
 def wrapparagraph(*args,**kwargs):
     return "\n".join(wraplines(*args,**kwargs))
 
-_HAS_CHAFA = shutil.which('chafa')
-if _HAS_CHAFA:
-    # starting with 1.10, chafa can return only one frame
-    # which allows us to drop dependancy for PIL
-    return_code = subprocess.run("chafa --version",shell=True, capture_output=True)
-    output = return_code.stdout.decode()
-    # with chafa < 1.10, --version was returned to stderr instead of stdout.
-    if output == '':
-        _NEW_CHAFA = False
-    else:
-        _NEW_CHAFA = True
-else:
-    _NEW_CHAFA = False
+_HAS_PIL = False
+_RENDER_IMAGE = False
+_HAS_TIMG = False
+#_HAS_TIMG = shutil.which('timg')
+if _HAS_TIMG:
+    chafa_inline = "timg --frames=1 -p q -g %sx1000"
+    chafa_cmd = "timg --frames=1 -C"
+    if _HAS_ANSIWRAP:
+        _RENDER_IMAGE = True
 
-if _NEW_CHAFA and _HAS_ANSIWRAP:
-    _RENDER_IMAGE = True
-else:
-    try:
-        from PIL import Image
-        _HAS_PIL = True
-        if _HAS_ANSIWRAP and _HAS_CHAFA:
-            _RENDER_IMAGE = True
+
+_HAS_CHAFA = shutil.which('chafa')
+if not _RENDER_IMAGE:
+    if _HAS_CHAFA:
+        # starting with 1.10, chafa can return only one frame
+        # which allows us to drop dependancy for PIL
+        return_code = subprocess.run("chafa --version",shell=True, capture_output=True)
+        output = return_code.stdout.decode()
+        # with chafa < 1.10, --version was returned to stderr instead of stdout.
+        if output == '':
+            _NEW_CHAFA = False
+            chafa_inline = "chafa --bg white -s %s -w 1 -f symbols"
+            chafa_cmd = "chafa --bg white -w 1"
         else:
-            print("chafa and ansiwrap are required to render images in terminal")
+            _NEW_CHAFA = True
+            chafa_inline += "--animate=off "
+    else:
+        _NEW_CHAFA = False
+
+    if _NEW_CHAFA and _HAS_ANSIWRAP:
+        _RENDER_IMAGE = True
+    else:
+        try:
+            from PIL import Image
+            _HAS_PIL = True
+            if _HAS_ANSIWRAP and _HAS_CHAFA:
+                _RENDER_IMAGE = True
+            else:
+                print("chafa and ansiwrap are required to render images in terminal")
+                _RENDER_IMAGE = False
+        except ModuleNotFoundError:
+            print("python-pil, chafa and ansiwrap are required to render images")
             _RENDER_IMAGE = False
-    except ModuleNotFoundError:
-        print("python-pil, chafa and ansiwrap are required to render images")
-        _RENDER_IMAGE = False
-        _HAS_PIL = False
+            _HAS_PIL = False
 
 
 _HAS_XSEL = shutil.which('xsel')
@@ -727,17 +742,12 @@ class ImageRenderer(AbstractRenderer):
         else:
             spaces = int((term_width() - width)//2)
         try:
-            cmd = "chafa --bg white -s %s -w 1 "%width
-            #if mode=="inline":
-            cmd += "-f symbols "
-            if _NEW_CHAFA:
-                cmd += "--animate=off "
-            else:
+            if _HAS_PIL:
                 img_obj = Image.open(img)
                 if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
                     # we remove all frames but the first one
                     img_obj.save(img,save_all=False)
-            cmd += "\"%s\""%img
+            cmd = chafa_inline%width+ " \"%s\""%img
             return_code = subprocess.run(cmd,shell=True, capture_output=True)
             ansi_img = return_code.stdout.decode()
         except Exception as err:
@@ -751,7 +761,7 @@ class ImageRenderer(AbstractRenderer):
     def display(self,mode=None,title=None):
         if title:
             print(title)
-        cmd = "chafa --bg white -w 1 \"%s\""%self.body
+        cmd = chafa_cmd + " \"%s\""%self.body
         subprocess.run(cmd,shell=True)
         return True
 
@@ -2832,6 +2842,7 @@ Marks are temporary until shutdown (not saved to disk)."""
         output += " - python-setproctitle : " + has(_HAS_SETPROCTITLE)
         output += " - xdg-open            : " + has(_HAS_XDGOPEN)
         output += " - xsel                : " + has(_HAS_XSEL)
+        output += " - timg                : " + has(_HAS_TIMG)
         if _NEW_CHAFA:
             output += " - chafa 1.10+         : " + has(_HAS_CHAFA)
         else:
@@ -2839,7 +2850,7 @@ Marks are temporary until shutdown (not saved to disk)."""
             output += " - python-pil          : " + has(_HAS_PIL)
 
         output += "\nFeatures :\n"
-        output += " - Render images (ansiwrap,chafa, pil|chafa 1.10+ )  : " + has(_RENDER_IMAGE)
+        output += " - Render images (ansiwrap, chafa|timg)              : " + has(_RENDER_IMAGE)
         output += " - Render HTML (bs4, readability)                    : " + has(_DO_HTML)
         output += " - Render Atom/RSS feeds (feedparser)                : " + has(_DO_FEED)
         output += " - Connect to http/https (requests)                  : " + has(_DO_HTTP)
