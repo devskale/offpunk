@@ -67,7 +67,7 @@ Announces about Offpunk will be made on Ploum’s Gemlog  => gemini://rawtext.cl
 Offpunk has no "strict dependencies", i.e. it should run and work without anything
 else beyond the Python standard library and the "less" pager.  However, it will "opportunistically
 import" a few other libraries if they are available to offer an improved
-experience or some other features. Python libraries requests, bs4 and readability are required for http/html support. Images are displayed if python-ansiwrap and chafa are presents (python-pil is needed for chafa version before 1.10).
+experience or some other features. Python libraries requests, bs4 and readability are required for http/html support. Images are displayed if python-ansiwrap and chafa or timg are presents (python-pil is needed for chafa version before 1.10). When displaying only a picture (not inline), rendering will be pixel perfect in compatible terminals (such as Kitty) if chafa is at least version 1.8 or if timg is used.
 
 To avoid using unstable or too recent libraries, the rule of thumb is that a library should be packaged in Debian/Ubuntu. Keep in mind that Offpunk is mainly tested will all libraries installed. If you encounter a crash without one optional dependencies, please report it.
 
@@ -86,6 +86,7 @@ Run command `version` in offpunk to see if you are missing some dependencies.
 * [Python editor](https://github.com/fmoo/python-editor) is used to edit your lists with "list edit". (apt-get install python3-editor)
 * [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). Also needed to use the `copy` command. (apt-get install xsel)
 * [Chafa](https://hpjansson.org/chafa/) allows to display pictures in your console. Install it and browse to an HTML page with picture to see the magic.
+* [Timg](https://github.com/hzeller/timg) is a slower alternative to chafa for inline images. But it has better rendering when displaying only the image. Install both to get the best of both world. 
 * [Python-pil](http://python-pillow.github.io/) is required to only display the first frame of animated gif with chafa if chafa version is lower than 1.10.
 * [Python-setproctitle](https://github.com/dvarrazzo/py-setproctitle) will change the process name from "python" to "offpunk". Useful to kill it without killing every python service.
 

@@ -1,14 +1,16 @@
 # Offpunk History
 
 ## 1.1 - Unreleased
-- Perfect rendering of pictures with chafa 1.8+ and compatible terminal
+- Perfect rendering of pictures with chafa 1.8+ and compatible terminal (Kitty)
+- timg is supported as an alternative to chafa (with a little glitch)
 - "cp cache" put the path of the cached content in clipboard
 - "cp url X" will copy the URL of link X (suggested by Eoin Carney)
 - HTML renderering of <pre> has been improved
-- "fold" has been removed as it doesn’t work well anyway with our width.
+- "fold" has been removed as it doesn’t work well and can be replaced with "!fold".
 - Improved clipboard URL detection an fixed crash when binary in clipboard
 - Fixed crash when chafa is not installed (Thanks Xavier Hinault for the report)
 - Fixed crash when python-readability not installed (Thanks Nic for the report)
+- Fixed some URL being wronlgy interpreted as IPv6
 
 ## 1.0 - March 14th 2022
 - Default width is now the standard 72

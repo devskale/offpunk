@@ -109,50 +109,73 @@ def wraplines(*args,**kwargs):
 def wrapparagraph(*args,**kwargs):
     return "\n".join(wraplines(*args,**kwargs))
 
-_HAS_PIL = False
-_RENDER_IMAGE = False
-_HAS_TIMG = False
-#_HAS_TIMG = shutil.which('timg')
-if _HAS_TIMG:
-    chafa_inline = "timg --frames=1 -p q -g %sx1000"
-    chafa_cmd = "timg --frames=1 -C"
-    if _HAS_ANSIWRAP:
-        _RENDER_IMAGE = True
-
-
+try:
+    from PIL import Image
+    _HAS_PIL = True
+except ModuleNotFoundError:
+    _HAS_PIL = False
+_HAS_TIMG = shutil.which('timg')
 _HAS_CHAFA = shutil.which('chafa')
-if not _RENDER_IMAGE:
-    if _HAS_CHAFA:
-        # starting with 1.10, chafa can return only one frame
-        # which allows us to drop dependancy for PIL
-        return_code = subprocess.run("chafa --version",shell=True, capture_output=True)
-        output = return_code.stdout.decode()
-        # with chafa < 1.10, --version was returned to stderr instead of stdout.
-        if output == '':
-            _NEW_CHAFA = False
-            chafa_inline = "chafa --bg white -s %s -w 1 -f symbols"
-            chafa_cmd = "chafa --bg white -w 1"
-        else:
-            _NEW_CHAFA = True
-            chafa_inline += "--animate=off "
-    else:
-        _NEW_CHAFA = False
+_NEW_CHAFA = False
 
-    if _NEW_CHAFA and _HAS_ANSIWRAP:
-        _RENDER_IMAGE = True
-    else:
+# All this code to know if we render image inline or not
+if _HAS_CHAFA:
+    # starting with 1.10, chafa can return only one frame
+    # which allows us to drop dependancy for PIL
+    return_code = subprocess.run("chafa --version",shell=True, capture_output=True)
+    output = return_code.stdout.decode()
+    # with chafa < 1.10, --version was returned to stderr instead of stdout.
+    if output != '':
+        _NEW_CHAFA = True
+if _NEW_CHAFA and _HAS_ANSIWRAP:
+    _RENDER_IMAGE = True
+elif _HAS_TIMG and _HAS_ANSIWRAP:
+    _RENDER_IMAGE = True
+elif _HAS_CHAFA and _HAS_PIL and _HAS_ANSIWRAP:
+    _RENDER_IMAGE = True
+else:
+    _RENDER_IMAGE = False
+    print("To render images inline, you need either chafa or timg and ansiwrap.")
+    if not _NEW_CHAFA and not _HAS_TIMG:
+        print("Before Chafa 1.10, you also need python-pil")
+
+#return ANSI text that can be show by less
+def inline_image(img_file,width):
+    #Chafa is faster than timg inline. Let use that one by default
+    inline = None
+    ansi_img = ""
+    if _HAS_CHAFA and _HAS_ANSIWRAP:
+        if _HAS_PIL and not _NEW_CHAFA:
+            # this code is a hack to remove frames from animated gif
+            img_obj = Image.open(img_file)
+            if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
+                # we remove all frames but the first one
+                img_obj.save(img_file,save_all=False)
+            inline = "chafa --bg white -s %s -w 1 -f symbols"
+        elif _NEW_CHAFA:
+            inline = "chafa --bg white -s %s -w 1 -f symbols --animate=off"
+    if not inline and _HAS_TIMG and _HAS_ANSIWRAP:
+        inline = "timg --frames=1 -p q -g %sx1000"
+    if inline:
+        cmd = inline%width+ " \"%s\""%img_file
         try:
-            from PIL import Image
-            _HAS_PIL = True
-            if _HAS_ANSIWRAP and _HAS_CHAFA:
-                _RENDER_IMAGE = True
-            else:
-                print("chafa and ansiwrap are required to render images in terminal")
-                _RENDER_IMAGE = False
-        except ModuleNotFoundError:
-            print("python-pil, chafa and ansiwrap are required to render images")
-            _RENDER_IMAGE = False
-            _HAS_PIL = False
+            return_code = subprocess.run(cmd,shell=True, capture_output=True)
+            ansi_img = return_code.stdout.decode()
+        except Exception as err:
+            ansi_img = "***image failed : %s***\n" %err
+    return ansi_img
+
+def terminal_image(img_file):
+    #Render by timg is better than old chafa.
+    # it is also centered
+    cmd = None
+    if _HAS_TIMG:
+        cmd = "timg --frames=1 -C"
+    elif _HAS_CHAFA:
+        cmd = "chafa --bg white -w 1"
+    if cmd:
+        cmd = cmd + " \"%s\""%img_file
+        subprocess.run(cmd,shell=True)
 
 
 _HAS_XSEL = shutil.which('xsel')
@@ -741,17 +764,7 @@ class ImageRenderer(AbstractRenderer):
             spaces = 0
         else:
             spaces = int((term_width() - width)//2)
-        try:
-            if _HAS_PIL:
-                img_obj = Image.open(img)
-                if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
-                    # we remove all frames but the first one
-                    img_obj.save(img,save_all=False)
-            cmd = chafa_inline%width+ " \"%s\""%img
-            return_code = subprocess.run(cmd,shell=True, capture_output=True)
-            ansi_img = return_code.stdout.decode()
-        except Exception as err:
-            ansi_img = "***image failed : %s***\n" %err
+        ansi_img = inline_image(img,width)
         #Now centering the image
         lines = ansi_img.splitlines()
         new_img = ""
@@ -761,8 +774,7 @@ class ImageRenderer(AbstractRenderer):
     def display(self,mode=None,title=None):
         if title:
             print(title)
-        cmd = chafa_cmd + " \"%s\""%self.body
-        subprocess.run(cmd,shell=True)
+        terminal_image(self.body)
         return True
 
 class HtmlRenderer(AbstractRenderer):
