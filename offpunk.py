@@ -866,13 +866,15 @@ class HtmlRenderer(AbstractRenderer):
                 rendered_body += div#.strip()  (this strip doesn’t play well with centered images)
                 rendered_body += "\n\n"
             elif element.name in ["h1","h2","h3","h4","h5","h6"]:
-                line = sanitize_string(element.get_text())
+                #line = sanitize_string(element.get_text())
                 if element.name in ["h1","h2"]:
-                    rendered_body += "\n"+"\x1b[1;34m\x1b[4m" + line + "\x1b[0m"+"\n"
+                    title_tag = "\x1b[1;34m\x1b[4m"
                 elif element.name in ["h3","h4"]:
-                    rendered_body += "\n" + "\x1b[34m" + line + "\x1b[0m" + "\n"
+                    title_tag = "\x1b[34m"
                 else:
-                    rendered_body += "\n" + "\x1b[34m\x1b[2m" + line + "\x1b[0m" + "\n"
+                    title_tag = "\x1b[34m\x1b[2m"
+                for child in element.children:
+                    rendered_body += "\n" + title_tag + recursive_render(child) + "\x1b[0m" + "\n"
             elif element.name in ["pre","code"]:
                 rendered_body += "\n"
                 for child in element.children:
