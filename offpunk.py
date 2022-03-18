@@ -77,16 +77,6 @@ def term_width():
         width = cur
     return width
 
-def test_wrap_method(line,width, initial_indent="", subsequent_indent=""):
-    #TODO : implement indents
-    lines = []
-    while len(line) > width:
-        lines.append(line[:width])
-        line = line[width:]
-    lines.append(line)
-    return lines
-    #ansi = ansiwrap.wrap(line,width,initial_indent=initial_indent,subsequent_indent=subsequent_indent)
-    #return ansi
 # return wrapped text as a list of lines
 def wraplines(*args,**kwargs):
     if "center" in kwargs:
@@ -408,7 +398,7 @@ class AbstractRenderer():
                 self.links[mode] = result[1]
         return self.rendered_text[mode]
 
-    def display(self,mode="readable",title=None):
+    def display(self,mode="readable",title=""):
         body = title + self.get_body(mode=mode)
         if not body:
             return False
@@ -802,6 +792,76 @@ class HtmlRenderer(AbstractRenderer):
             readable = Document(self.body)
             self.title = readable.short_title()
             return self.title
+    
+    #This class hold an internal representation of the HTML text
+    class representation:
+        def __init__(self,width):
+            self.final_text = ""
+            self.opened = []
+            self.width = width
+            self.last_line = ""
+            # each color is an [open,close] pair code
+            self.colors = { "italic" : ["3","23"],
+                            "bold"   : ["1","22"],
+                            "blue"   : ["34","39"],
+                            "underline": ["4","24"],
+                            "faint"  : ["2","22"],
+                       }
+
+        def _insert(self,color,open=True):
+            if open: o = 0 
+            else: o = 1
+            self.last_line += "\x1b["+self.colors[color][o]+"m"
+
+        def _endline(self):
+            self.final_text += self.last_line
+            self.last_line = ""
+            for c in self.opened:
+                self._insert(c,open=False)
+            self.final_text += "\n"
+            for c in self.opened:
+                self._insert(c,open=True)
+
+        def open_color(self,color):
+            if color in self.colors and color not in self.opened:
+                self._insert(color,open=True)
+                self.opened.append(color)
+
+        def close_color(self,color):
+            if color in self.colors and color in self.opened:
+                self._insert(color,open=False)
+                self.opened.remove(color)
+
+        def close_all(self):
+            self.last_line += "\x1b[0m"
+            self.opened.clear()
+
+        def add_block(self,intext):
+            self._endline()
+            for l in intext.splitlines():
+                self.final_text += l
+                self._endline()
+
+        def add_text(self,intext):
+            #print("will add %s" %intext)
+            #print("current_line is %s" %self.current_line)
+            lines = []
+            last = self.last_line + intext
+            self.last_line = ""
+            lines = ansiwrap.wrap(last,self.width,drop_whitespace=False) #initial_indent=None,subsequent_indent=None)
+            while len(lines) > 1:
+                l = lines.pop(0)
+                self.last_line += l
+                self._endline()
+            if len(lines) == 1:
+                self.last_line = lines[0]
+
+        def get_final(self):
+            self.close_all()
+            self.final_text += self.last_line
+            self.final_text = self.final_text.replace("\n\n\n\n","\n\n").replace("\n\n\n","\n\n")
+            self.last_line = ""
+            return self.final_text
 
     # Our own HTML engine (crazy, isn’t it?)
     # Return [rendered_body, list_of_links]
@@ -814,6 +874,7 @@ class HtmlRenderer(AbstractRenderer):
             return
         # This method recursively parse the HTML
         r_body = ""
+        r = self.representation(width)
         links = []
         # You know how bad html is when you realize that space sometimes meaningful, somtimes not.
         # CR are not meaniningful. Except that, somethimes, they should be interpreted as spaces.
@@ -837,8 +898,7 @@ class HtmlRenderer(AbstractRenderer):
                     #we sometimes encounter really bad formatted files or URL
                     ansi_img += "[BAD IMG] %s"%src
             return ansi_img
-        def sanitize_string(string,preformat=False):
-            #string = string.lstrip("\n")
+        def sanitize_string(string):
             string = string.replace("\n", " ").replace("\t"," ")
             endspace = string.endswith(" ") or string.endswith("\xa0")
             startspace = string.startswith(" ") or string.startswith("\xa0")
@@ -856,30 +916,44 @@ class HtmlRenderer(AbstractRenderer):
             if element.name == "blockquote":
                 for child in element.children:
                     rendered_body += "\x1b[3m"
+                    r.open_color("italic")
                     rendered_body +=  recursive_render(child,indent="\t").rstrip("\t")
                     rendered_body += "\x1b[23m"
+                    r.close_color("italic")
             elif element.name in ["div","p"]:
                 rendered_body += "\n"
+                #r.add_block("\n")
                 div = ""
                 for child in element.children:
                     div += recursive_render(child,indent=indent)
                 rendered_body += div#.strip()  (this strip doesn’t play well with centered images)
+                #r.add_block("\n\n")
                 rendered_body += "\n\n"
             elif element.name in ["h1","h2","h3","h4","h5","h6"]:
-                #line = sanitize_string(element.get_text())
                 if element.name in ["h1","h2"]:
                     title_tag = "\x1b[1;34m\x1b[4m"
+                    r.open_color("bold")
+                    r.open_color("blue")
+                    r.open_color("underline")
                 elif element.name in ["h3","h4"]:
                     title_tag = "\x1b[34m"
+                    r.open_color("blue")
                 else:
                     title_tag = "\x1b[34m\x1b[2m"
+                    r.open_color("blue")
+                    r.open_color("faint")
                 for child in element.children:
+                    #r.add_block("\n")
                     rendered_body += "\n" + title_tag + recursive_render(child) + "\x1b[0m" + "\n"
+                    #r.add_block("\n")
+                    r.close_all()
             elif element.name in ["pre","code"]:
                 rendered_body += "\n"
+                #r.add_block("\n")
                 for child in element.children:
                    rendered_body += recursive_render(child,indent=indent,preformatted=True)
                 rendered_body += "\n\n"
+                #r.add_block("\n\n")
             elif element.name in ["li","tr"]:
                 line = ""
                 for child in element.children:
@@ -894,17 +968,25 @@ class HtmlRenderer(AbstractRenderer):
             # italics
             elif element.name in ["em","i"]:
                 rendered_body += "\x1b[3m"
+                r.open_color("italic")
                 for child in element.children:
                     rendered_body += recursive_render(child,indent=indent,preformatted=preformatted)
                 rendered_body += "\x1b[23m"
+                r.close_color("italic")
             #bold
             elif element.name in ["b","strong"]:
                 rendered_body += "\x1b[1m"
+                r.open_color("bold")
                 for child in element.children:
                     rendered_body += recursive_render(child,indent=indent,preformatted=preformatted)
                 rendered_body += "\x1b[22m"
+                r.close_color("bold")
             elif element.name == "a":
                 text = ""
+                link = element.get('href')
+                if link:
+                    r.open_color("blue")
+                    r.open_color("faint")
                 # support for images nested in links
                 for child in element.children:
                     if child.name == "img":
@@ -912,14 +994,16 @@ class HtmlRenderer(AbstractRenderer):
                         rendered_body += recursive_render(child)
                     else:
                         text += recursive_render(child,preformatted=preformatted)
-                link = element.get('href')
                 if link:
                     links.append(link+" "+text)
                     link_id = " [%s]"%(len(links))
                     rendered_body += "\x1b[2;34m" + text + link_id + "\x1b[0m"
+                    #r.add_text(link_id)
+                    r.close_color("blue")
+                    r.close_color("faint")
                 else:
                     #No real link found
-                    rendered_body = text
+                    rendered_body += text
             elif element.name == "img":
                 src = element.get("src")
                 text = ""
@@ -935,15 +1019,20 @@ class HtmlRenderer(AbstractRenderer):
                     link_id = " [%s]"%(len(links))
                     alttext = text + link_id
                     alttext = alttext.center(term_width())
+                    #r.add_block(ansi_img)
                     rendered_body = ansi_img + "\x1b[2;33m" + alttext + "\x1b[0m\n\n"
             elif element.name == "br":
                 rendered_body = "\n"
+                #r.add_block("\n")
             elif element.name not in ["script","style","template"] and type(element) != Comment:
                 if element.string:
                     if preformatted :
                         rendered_body = element.string
+                        #r.add_block(element.string)
                     else:
-                        rendered_body = sanitize_string(element.string)
+                        s = sanitize_string(element.string)
+                        rendered_body = s
+                        #r.add_text(s)
                 else:
                     for child in element.children:
                         rendered_body += recursive_render(child,indent=indent)
@@ -1001,6 +1090,9 @@ class HtmlRenderer(AbstractRenderer):
             r_body = title + "\n" + r_body
         #We try to avoid huge empty gaps in the page
         r_body = r_body.replace("\n\n\n\n","\n\n").replace("\n\n\n","\n\n")
+        #print("***** Internal representation:\n")
+        #print(r.get_final()[:3000])
+        #print("\n***** end of Internal representation")
         return r_body,links
 
 # Mapping mimetypes with renderers
