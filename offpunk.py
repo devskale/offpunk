@@ -358,7 +358,7 @@ standard_ports = {
 # First, we define the different content->text renderers, outside of the rest
 # (They could later be factorized in other files or replaced)
 class AbstractRenderer():
-    def __init__(self,content,url):
+    def __init__(self,content,url,center=None):
         self.url = url
         self.body = content
         #there’s one rendered text and one links table per mode
@@ -368,6 +368,7 @@ class AbstractRenderer():
         self.validity = True
         self.temp_file = {}
         self.less_histfile = {}
+        self.center = center
    
     def get_subscribe_links(self):
         return [[self.url,self.get_mime(),self.get_title()]]
@@ -726,8 +727,8 @@ class FeedRenderer(GemtextRenderer):
                 page += line + "\n"
                 if mode == "full":
                     if "summary" in i:
-                        rendered, links = HtmlRenderer.render(self,i.summary,\
-                                            width=width,mode="full",add_title=False,center=False)
+                        html = HtmlRenderer(i.summary,self.url,center=False)
+                        rendered = html.get_body(width=None,mode="full")
                         page += rendered
                         page += "\n"
         return page
@@ -926,7 +927,7 @@ class HtmlRenderer(AbstractRenderer):
     # Our own HTML engine (crazy, isn’t it?)
     # Return [rendered_body, list_of_links]
     # mode is either links_only, readable or full
-    def render(self,body,mode="readable",width=None,add_title=True,center=True):
+    def render(self,body,mode="readable",width=None,add_title=True):
         if not width:
             width = term_width()
         if not _DO_HTML:
@@ -1147,7 +1148,7 @@ class HtmlRenderer(AbstractRenderer):
                     if line.strip() != "":
                         try:
                             wrapped = wrapparagraph(line,width,initial_indent=i_indent,
-                                                subsequent_indent=s_indent,center=center)
+                                                subsequent_indent=s_indent,center=self.center)
                         except Exception as err:
                             wrapped = line
                         wrapped += "\n"
