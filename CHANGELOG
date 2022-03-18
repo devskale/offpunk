@@ -1,6 +1,6 @@
 # Offpunk History
 
-## 1.1 - Unreleased
+## 1.1 - March 18th 2022
 - Perfect rendering of pictures with chafa 1.8+ and compatible terminal (Kitty)
 - timg is supported as an alternative to chafa (with a little glitch)
 - "cp cache" put the path of the cached content in clipboard
