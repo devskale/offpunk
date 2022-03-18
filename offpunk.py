@@ -1072,7 +1072,8 @@ class HtmlRenderer(AbstractRenderer):
                             r.close_color("faint")
                 else:
                     #No real link found
-                    rendered_body += recursive_render(child,preformatted=preformatted)
+                    for child in element.children:
+                        rendered_body += recursive_render(child,preformatted=preformatted)
             elif element.name == "img":
                 src = element.get("src")
                 text = ""
