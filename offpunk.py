@@ -838,29 +838,32 @@ class HtmlRenderer(AbstractRenderer):
             self.last_line_colors[pos].append("\x1b["+self.colors[color][o]+"m")
 
         def _endline(self):
-            for c in self.opened:
-                self._insert(c,open=False)
-            newline = ""
-            #we insert the color code at the saved positions
-            while len (self.last_line_colors) > 0:
-                pos,colors = self.last_line_colors.popitem()
-                #popitem itterates LIFO. 
-                #So we go, backward, to the pos (starting at the end of last_line)
-                newline = self.last_line[pos:] + newline
-                for c in colors:
-                    newline = c + newline
-                self.last_line = self.last_line[:pos]
-            newline = self.last_line + newline
-            if self.last_line_center:
-                newline = newline.strip().center(term_width())
-                self.last_line_center = False
+            if len(self.last_line) >= 0:
+                for c in self.opened:
+                    self._insert(c,open=False)
+                newline = ""
+                #we insert the color code at the saved positions
+                while len (self.last_line_colors) > 0:
+                    pos,colors = self.last_line_colors.popitem()
+                    #popitem itterates LIFO. 
+                    #So we go, backward, to the pos (starting at the end of last_line)
+                    newline = self.last_line[pos:] + newline
+                    for c in colors:
+                        newline = c + newline
+                    self.last_line = self.last_line[:pos]
+                newline = self.last_line + newline
+                if self.last_line_center:
+                    newline = newline.strip().center(term_width())
+                    self.last_line_center = False
+                else:
+                    newline = newline.lstrip()
+                self.final_text += newline
+                self.last_line = ""
+                self.final_text += "\n"
+                for c in self.opened:
+                    self._insert(c,open=True)
             else:
-                newline = newline.lstrip()
-            self.final_text += newline
-            self.last_line = ""
-            self.final_text += "\n"
-            for c in self.opened:
-                self._insert(c,open=True)
+                self.last_line = ""
         
         @debug
         def center_line(self):
@@ -1359,7 +1362,7 @@ class GeminiItem():
     
     # This method is used to load once the list of links in a gi
     # Links can be followed, after a space, by a description/title
-    def get_links(self,mode=None):
+    def get_links(self,mode="links_only"):
         links = []
         toreturn = []
         if not self.renderer:
@@ -1410,7 +1413,7 @@ class GeminiItem():
         if self.is_cache_valid(): #and self.offline_only and not self.local:
             last_modification = self.cache_last_modified()
             str_last = time.ctime(last_modification)
-            nbr = len(self.get_links())
+            nbr = len(self.get_links(mode="links_only"))
             if self.local:
                 title += " (%s items)    \x1b[0;31m(local file)"%nbr
             else:
