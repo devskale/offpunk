@@ -794,30 +794,48 @@ class HtmlRenderer(AbstractRenderer):
             return self.title
     
     #This class hold an internal representation of the HTML text
+    #This is an experiment to rewrite the HTML renderer. Currently not used.
     class representation:
         def __init__(self,width):
             self.final_text = ""
             self.opened = []
             self.width = width
             self.last_line = ""
+            self.last_line_colors = {}
             # each color is an [open,close] pair code
             self.colors = { "italic" : ["3","23"],
                             "bold"   : ["1","22"],
                             "blue"   : ["34","39"],
                             "underline": ["4","24"],
                             "faint"  : ["2","22"],
+                            "yellow" : ["33","39"],
                        }
 
         def _insert(self,color,open=True):
             if open: o = 0 
             else: o = 1
-            self.last_line += "\x1b["+self.colors[color][o]+"m"
+            #if color == "faint" and o == 1:
+            #   print(self.last_line.replace("\x1b","x1b"))
+            #self.last_line += "\x1b["+self.colors[color][o]+"m"
+            pos = len(self.last_line)
+            if not pos in self.last_line_colors:
+                self.last_line_colors[pos] = []
+            self.last_line_colors[pos].append("\x1b["+self.colors[color][o]+"m")
 
         def _endline(self):
-            self.final_text += self.last_line
-            self.last_line = ""
             for c in self.opened:
                 self._insert(c,open=False)
+            newline = ""
+            while len (self.last_line_colors) > 0:
+                pos,colors = self.last_line_colors.popitem()
+                #we go, backward, to the pos (starting at the end of last_line)
+                newline = self.last_line[pos:] + newline
+                for c in colors:
+                    newline = c + newline
+                self.last_line = self.last_line[:pos]
+            newline = self.last_line + newline
+            self.final_text += newline.lstrip()
+            self.last_line = ""
             self.final_text += "\n"
             for c in self.opened:
                 self._insert(c,open=True)
@@ -843,15 +861,16 @@ class HtmlRenderer(AbstractRenderer):
                 self._endline()
 
         def add_text(self,intext):
-            #print("will add %s" %intext)
             #print("current_line is %s" %self.current_line)
             lines = []
             last = self.last_line + intext
             self.last_line = ""
-            lines = ansiwrap.wrap(last,self.width,drop_whitespace=False) #initial_indent=None,subsequent_indent=None)
+            import textwrap
+            lines = textwrap.wrap(last,self.width,drop_whitespace=False) #initial_indent=None,subsequent_indent=None)
+            #lines = ansiwrap.wrap(last,self.width,drop_whitespace=False) #initial_indent=None,subsequent_indent=None)
             while len(lines) > 1:
                 l = lines.pop(0)
-                self.last_line += l
+                self.last_line += l.strip()
                 self._endline()
             if len(lines) == 1:
                 self.last_line = lines[0]
@@ -859,6 +878,8 @@ class HtmlRenderer(AbstractRenderer):
         def get_final(self):
             self.close_all()
             self.final_text += self.last_line
+            #paragraphs = self.final_text.split("\n\n")
+            #self.final_text = "\n".join(paragraphs)
             self.final_text = self.final_text.replace("\n\n\n\n","\n\n").replace("\n\n\n","\n\n")
             self.last_line = ""
             return self.final_text
@@ -922,12 +943,12 @@ class HtmlRenderer(AbstractRenderer):
                     r.close_color("italic")
             elif element.name in ["div","p"]:
                 rendered_body += "\n"
-                #r.add_block("\n")
+                r.add_block("\n")
                 div = ""
                 for child in element.children:
                     div += recursive_render(child,indent=indent)
                 rendered_body += div#.strip()  (this strip doesn’t play well with centered images)
-                #r.add_block("\n\n")
+                r.add_block("\n\n")
                 rendered_body += "\n\n"
             elif element.name in ["h1","h2","h3","h4","h5","h6"]:
                 if element.name in ["h1","h2"]:
@@ -943,17 +964,17 @@ class HtmlRenderer(AbstractRenderer):
                     r.open_color("blue")
                     r.open_color("faint")
                 for child in element.children:
-                    #r.add_block("\n")
+                    r.add_block("\n")
                     rendered_body += "\n" + title_tag + recursive_render(child) + "\x1b[0m" + "\n"
-                    #r.add_block("\n")
+                    r.add_block("\n")
                     r.close_all()
             elif element.name in ["pre","code"]:
                 rendered_body += "\n"
-                #r.add_block("\n")
+                r.add_block("\n")
                 for child in element.children:
                    rendered_body += recursive_render(child,indent=indent,preformatted=True)
                 rendered_body += "\n\n"
-                #r.add_block("\n\n")
+                r.add_block("\n\n")
             elif element.name in ["li","tr"]:
                 line = ""
                 for child in element.children:
@@ -998,7 +1019,7 @@ class HtmlRenderer(AbstractRenderer):
                     links.append(link+" "+text)
                     link_id = " [%s]"%(len(links))
                     rendered_body += "\x1b[2;34m" + text + link_id + "\x1b[0m"
-                    #r.add_text(link_id)
+                    r.add_text(link_id)
                     r.close_color("blue")
                     r.close_color("faint")
                 else:
@@ -1019,20 +1040,25 @@ class HtmlRenderer(AbstractRenderer):
                     link_id = " [%s]"%(len(links))
                     alttext = text + link_id
                     alttext = alttext.center(term_width())
-                    #r.add_block(ansi_img)
+                    r.add_block(ansi_img)
+                    r.open_color("faint")
+                    r.open_color("yellow")
                     rendered_body = ansi_img + "\x1b[2;33m" + alttext + "\x1b[0m\n\n"
+                    r.add_text(alttext)
+                    r.close_color("faint")
+                    r.close_color("yellow")
             elif element.name == "br":
                 rendered_body = "\n"
-                #r.add_block("\n")
+                r.add_block("\n")
             elif element.name not in ["script","style","template"] and type(element) != Comment:
                 if element.string:
                     if preformatted :
                         rendered_body = element.string
-                        #r.add_block(element.string)
+                        r.add_block(element.string)
                     else:
                         s = sanitize_string(element.string)
                         rendered_body = s
-                        #r.add_text(s)
+                        r.add_text(s)
                 else:
                     for child in element.children:
                         rendered_body += recursive_render(child,indent=indent)
@@ -1090,9 +1116,9 @@ class HtmlRenderer(AbstractRenderer):
             r_body = title + "\n" + r_body
         #We try to avoid huge empty gaps in the page
         r_body = r_body.replace("\n\n\n\n","\n\n").replace("\n\n\n","\n\n")
-        #print("***** Internal representation:\n")
-        #print(r.get_final()[:3000])
-        #print("\n***** end of Internal representation")
+        print("***** Internal representation:\n")
+        print(r.get_final()[:20000])
+        print("\n***** end of Internal representation")
         return r_body,links
 
 # Mapping mimetypes with renderers
