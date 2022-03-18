@@ -797,11 +797,16 @@ class HtmlRenderer(AbstractRenderer):
     #This is an experiment to rewrite the HTML renderer. Currently not used.
     class representation:
         def __init__(self,width):
+            #The following is just there to disable this class while developing it.
+            #This should result in very minimal performance fee for users while 
+            #having the code directly at hand (git branches? What git branches…)
+            self.debug_enabled = False
             self.final_text = ""
             self.opened = []
             self.width = width
             self.last_line = ""
             self.last_line_colors = {}
+            self.last_line_center = False
             # each color is an [open,close] pair code
             self.colors = { "italic" : ["3","23"],
                             "bold"   : ["1","22"],
@@ -811,13 +816,23 @@ class HtmlRenderer(AbstractRenderer):
                             "yellow" : ["33","39"],
                        }
 
+
+        def debug(inner):
+            def outer(self, *args, **kwargs):
+                if not self.debug_enabled:
+                    return ""
+                else:
+                    return inner(self, *args, **kwargs)
+            outer.__doc__ = inner.__doc__
+            return outer
+        
         def _insert(self,color,open=True):
             if open: o = 0 
             else: o = 1
             #if color == "faint" and o == 1:
             #   print(self.last_line.replace("\x1b","x1b"))
-            #self.last_line += "\x1b["+self.colors[color][o]+"m"
             pos = len(self.last_line)
+            #we remember the position where to insert color codes
             if not pos in self.last_line_colors:
                 self.last_line_colors[pos] = []
             self.last_line_colors[pos].append("\x1b["+self.colors[color][o]+"m")
@@ -826,40 +841,52 @@ class HtmlRenderer(AbstractRenderer):
             for c in self.opened:
                 self._insert(c,open=False)
             newline = ""
+            #we insert the color code at the saved positions
             while len (self.last_line_colors) > 0:
                 pos,colors = self.last_line_colors.popitem()
-                #we go, backward, to the pos (starting at the end of last_line)
+                #popitem itterates LIFO. 
+                #So we go, backward, to the pos (starting at the end of last_line)
                 newline = self.last_line[pos:] + newline
                 for c in colors:
                     newline = c + newline
                 self.last_line = self.last_line[:pos]
             newline = self.last_line + newline
-            self.final_text += newline.lstrip()
+            if self.last_line_center:
+                newline = newline.strip().center(term_width())
+                self.last_line_center = False
+            else:
+                newline = newline.lstrip()
+            self.final_text += newline
             self.last_line = ""
             self.final_text += "\n"
             for c in self.opened:
                 self._insert(c,open=True)
-
+        
+        @debug
+        def center_line(self):
+            self.last_line_center = True
+        
+        @debug
         def open_color(self,color):
             if color in self.colors and color not in self.opened:
                 self._insert(color,open=True)
                 self.opened.append(color)
-
+        @debug
         def close_color(self,color):
             if color in self.colors and color in self.opened:
                 self._insert(color,open=False)
                 self.opened.remove(color)
-
+        @debug
         def close_all(self):
             self.last_line += "\x1b[0m"
             self.opened.clear()
-
+        @debug
         def add_block(self,intext):
             self._endline()
             for l in intext.splitlines():
                 self.final_text += l
                 self._endline()
-
+        @debug
         def add_text(self,intext):
             #print("current_line is %s" %self.current_line)
             lines = []
@@ -873,8 +900,9 @@ class HtmlRenderer(AbstractRenderer):
                 self.last_line += l.strip()
                 self._endline()
             if len(lines) == 1:
-                self.last_line = lines[0]
-
+                li = lines[0]
+                self.last_line = li
+        @debug
         def get_final(self):
             self.close_all()
             self.final_text += self.last_line
@@ -947,7 +975,7 @@ class HtmlRenderer(AbstractRenderer):
                 div = ""
                 for child in element.children:
                     div += recursive_render(child,indent=indent)
-                rendered_body += div#.strip()  (this strip doesn’t play well with centered images)
+                rendered_body += div
                 r.add_block("\n\n")
                 rendered_body += "\n\n"
             elif element.name in ["h1","h2","h3","h4","h5","h6"]:
@@ -1043,6 +1071,7 @@ class HtmlRenderer(AbstractRenderer):
                     r.add_block(ansi_img)
                     r.open_color("faint")
                     r.open_color("yellow")
+                    r.center_line()
                     rendered_body = ansi_img + "\x1b[2;33m" + alttext + "\x1b[0m\n\n"
                     r.add_text(alttext)
                     r.close_color("faint")
@@ -1116,9 +1145,10 @@ class HtmlRenderer(AbstractRenderer):
             r_body = title + "\n" + r_body
         #We try to avoid huge empty gaps in the page
         r_body = r_body.replace("\n\n\n\n","\n\n").replace("\n\n\n","\n\n")
-        print("***** Internal representation:\n")
-        print(r.get_final()[:20000])
-        print("\n***** end of Internal representation")
+        #print("***** Internal representation:\n")
+        if r.debug_enabled:
+            print(r.get_final()[:30000])
+        #print("\n***** end of Internal representation")
         return r_body,links
 
 # Mapping mimetypes with renderers
