@@ -835,13 +835,14 @@ class HtmlRenderer(AbstractRenderer):
             #we remember the position where to insert color codes
             if not pos in self.last_line_colors:
                 self.last_line_colors[pos] = []
-            self.last_line_colors[pos].append("\x1b["+self.colors[color][o]+"m")
+            self.last_line_colors[pos].append("\x1b["+self.colors[color][o]+"m")#+color+str(o))
 
         def _endline(self):
-            if len(self.last_line) >= 0:
+            if len(self.last_line) > 0:
                 for c in self.opened:
                     self._insert(c,open=False)
                 newline = ""
+                added_char = 0
                 #we insert the color code at the saved positions
                 while len (self.last_line_colors) > 0:
                     pos,colors = self.last_line_colors.popitem()
@@ -850,10 +851,13 @@ class HtmlRenderer(AbstractRenderer):
                     newline = self.last_line[pos:] + newline
                     for c in colors:
                         newline = c + newline
+                        added_char += len(c)
                     self.last_line = self.last_line[:pos]
                 newline = self.last_line + newline
                 if self.last_line_center:
-                    newline = newline.strip().center(term_width())
+                    #we have to care about the ansi char while centering
+                    width = term_width() + added_char
+                    newline = newline.strip().center(width)
                     self.last_line_center = False
                 else:
                     newline = newline.lstrip()
@@ -864,6 +868,7 @@ class HtmlRenderer(AbstractRenderer):
                     self._insert(c,open=True)
             else:
                 self.last_line = ""
+
         
         @debug
         def center_line(self):
@@ -881,14 +886,17 @@ class HtmlRenderer(AbstractRenderer):
                 self.opened.remove(color)
         @debug
         def close_all(self):
-            self.last_line += "\x1b[0m"
-            self.opened.clear()
+            if len(self.colors) > 0:
+                self.last_line += "\x1b[0m"
+                self.opened.clear()
         @debug
         def add_block(self,intext):
-            self._endline()
-            for l in intext.splitlines():
-                self.final_text += l
+            if intext.strip("\n") != "":
                 self._endline()
+                self.final_text += intext
+            #for l in intext.splitlines():
+            #    self.final_text += l
+            self._endline()
         @debug
         def add_text(self,intext):
             #print("current_line is %s" %self.current_line)
@@ -997,7 +1005,7 @@ class HtmlRenderer(AbstractRenderer):
                 for child in element.children:
                     r.add_block("\n")
                     rendered_body += "\n" + title_tag + recursive_render(child) + "\x1b[0m" + "\n"
-                    r.add_block("\n")
+                    #r.add_block("\n")
                     r.close_all()
             elif element.name in ["pre","code"]:
                 rendered_body += "\n"
@@ -1036,26 +1044,35 @@ class HtmlRenderer(AbstractRenderer):
             elif element.name == "a":
                 text = ""
                 link = element.get('href')
-                if link:
-                    r.open_color("blue")
-                    r.open_color("faint")
                 # support for images nested in links
-                for child in element.children:
-                    if child.name == "img":
-                        # recursive rendering seems to display some images twice
-                        rendered_body += recursive_render(child)
-                    else:
-                        text += recursive_render(child,preformatted=preformatted)
                 if link:
-                    links.append(link+" "+text)
-                    link_id = " [%s]"%(len(links))
-                    rendered_body += "\x1b[2;34m" + text + link_id + "\x1b[0m"
-                    r.add_text(link_id)
-                    r.close_color("blue")
-                    r.close_color("faint")
+                    for child in element.children:
+                        if child.name == "img":
+                            # recursive rendering seems to display some images twice
+                            rendered_body += recursive_render(child)
+                            r.open_color("blue")
+                            r.open_color("faint")
+                            text += "[IMG LINK]"
+                            links.append(link+" "+text)
+                            link_id = " [%s]"%(len(links))
+                            rendered_body += "\x1b[2;34m" + text + link_id + "\x1b[0m"
+                            r.center_line()
+                            r.add_text(text+link_id)
+                            r.close_color("blue")
+                            r.close_color("faint")
+                        else:
+                            r.open_color("blue")
+                            r.open_color("faint")
+                            text += recursive_render(child,preformatted=preformatted)
+                            links.append(link+" "+text)
+                            link_id = " [%s]"%(len(links))
+                            rendered_body += "\x1b[2;34m" + text + link_id + "\x1b[0m"
+                            r.add_text(link_id)
+                            r.close_color("blue")
+                            r.close_color("faint")
                 else:
                     #No real link found
-                    rendered_body += text
+                    rendered_body += recursive_render(child,preformatted=preformatted)
             elif element.name == "img":
                 src = element.get("src")
                 text = ""
@@ -1150,7 +1167,7 @@ class HtmlRenderer(AbstractRenderer):
         r_body = r_body.replace("\n\n\n\n","\n\n").replace("\n\n\n","\n\n")
         #print("***** Internal representation:\n")
         if r.debug_enabled:
-            print(r.get_final()[:30000])
+            print(r.get_final()[:40000])
         #print("\n***** end of Internal representation")
         return r_body,links
 
