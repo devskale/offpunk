@@ -358,7 +358,7 @@ standard_ports = {
 # First, we define the different content->text renderers, outside of the rest
 # (They could later be factorized in other files or replaced)
 class AbstractRenderer():
-    def __init__(self,content,url,center=None):
+    def __init__(self,content,url,center=True):
         self.url = url
         self.body = content
         #there’s one rendered text and one links table per mode
