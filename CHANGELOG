@@ -11,6 +11,7 @@
 - HTML: links in titles were previously missed
 - Fixed crash when chafa is not installed (Thanks Xavier Hinault for the report)
 - Fixed crash when python-readability not installed (Thanks Nic for the report)
+- Fixed some gif not being displayed
 - Fixed some URL being wronlgy interpreted as IPv6
 
 ## 1.0 - March 14th 2022

@@ -140,7 +140,7 @@ def inline_image(img_file,width):
             img_obj = Image.open(img_file)
             if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
                 # we remove all frames but the first one
-                img_obj.save(img_file,save_all=False)
+                img_obj.save(img_file,format="gif",save_all=False)
             inline = "chafa --bg white -s %s -w 1 -f symbols"
         elif _NEW_CHAFA:
             inline = "chafa --bg white -s %s -w 1 -f symbols --animate=off"
