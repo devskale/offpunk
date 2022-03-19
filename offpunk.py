@@ -3214,8 +3214,12 @@ see "handler" command to set your own."""
             # Don't use _get_active_tmpfile() here, because we want to save the
             # "source code" of menus, not the rendered view - this way Offpunk
             # can navigate to it later.
-            print("Saved to %s" % filename)
-            shutil.copyfile(gi.get_body(as_file=True), filename)
+            path = gi.get_body(as_file=True)
+            if os.path.isdir(path):
+                print("Can’t save %s because it’s a folder, not a file"%path)
+            else:
+                print("Saved to %s" % filename)
+                shutil.copyfile(path, filename)
 
         # Restore gi if necessary
         if index != None:

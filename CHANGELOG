@@ -1,5 +1,8 @@
 # Offpunk History
 
+## 1.2 - Unreleased
+- Fixed a crash when trying to save a folder
+
 ## 1.1 - March 18th 2022
 - Perfect rendering of pictures with chafa 1.8+ and compatible terminal (Kitty)
 - timg is supported as an alternative to chafa (with a little glitch)
