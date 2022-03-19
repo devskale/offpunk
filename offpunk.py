@@ -814,6 +814,7 @@ class HtmlRenderer(AbstractRenderer):
             self.new_paragraph = True
             self.i_indent = ""
             self.s_indent = ""
+            self.r_indent = ""
             self.current_indent = ""
             # each color is an [open,close] pair code
             self.colors = { "italic" : ["3","23"],
@@ -875,7 +876,7 @@ class HtmlRenderer(AbstractRenderer):
                     newline = newline.strip().center(width)
                     self.last_line_center = False
                 else:
-                    newline = self.current_indent + newline.lstrip()
+                    newline = self.current_indent + newline.lstrip() + self.r_indent
                     self.current_indent = self.s_indent
                 self.final_text += newline
                 self.last_line = ""
@@ -908,7 +909,7 @@ class HtmlRenderer(AbstractRenderer):
                 self.opened.clear()
 
         @debug
-        def startindent(self,indent,sub=None):
+        def startindent(self,indent,sub=None,reverse=None):
             self._endline()
             self.i_indent = indent
             self.current_indent = indent
@@ -916,12 +917,15 @@ class HtmlRenderer(AbstractRenderer):
                 self.s_indent = sub
             else:
                 self.s_indent = indent
+            if reverse:
+                self.r_indent = reverse
 
 
         def endindent(self):
             self._endline()
             self.i_indent = ""
             self.s_indent = ""
+            self.r_indent = ""
             self.current_indent = ""
 
         @debug
@@ -965,15 +969,15 @@ class HtmlRenderer(AbstractRenderer):
             if len(last) > 0:
                 self.new_paragraph = False
             if len(last) > self.width:
-                width = self.width - len(self.current_indent)
+                width = self.width - len(self.current_indent) - len(self.r_indent)
                 lines = textwrap.wrap(last,width,drop_whitespace=False)
                 while len(lines) > 1:
                     l = lines.pop(0)
-                    self.last_line += l
+                    self.last_line = l.lstrip()
                     self._endline()
                 if len(lines) == 1:
                     li = lines[0]
-                    self.last_line = li
+                    self.last_line = li.lstrip()
             else:
                 self.last_line = last
 
@@ -1028,7 +1032,7 @@ class HtmlRenderer(AbstractRenderer):
                         ansi_img = "\n" + renderer.get_body(width=size,mode="inline")
                 except Exception as err:
                     #we sometimes encounter really bad formatted files or URL
-                    ansi_img += "[BAD IMG] %s"%src
+                    ansi_img = textwrap.fill("[BAD IMG] %s"%src,width) + "\n"
             return ansi_img
         def sanitize_string(string):
             string = string.replace("\n", " ").replace("\t"," ")
@@ -1049,7 +1053,7 @@ class HtmlRenderer(AbstractRenderer):
                 for child in element.children:
                     rendered_body += "\x1b[3m"
                     r.open_color("italic")
-                    r.startindent("    ")
+                    r.startindent("   ",reverse="     ")
                     rendered_body +=  recursive_render(child,indent="\t").rstrip("\t")
                     rendered_body += "\x1b[23m"
                     r.close_color("italic")
@@ -1162,15 +1166,16 @@ class HtmlRenderer(AbstractRenderer):
                     links.append(src+" "+text)
                     link_id = " [%s]"%(len(links))
                     alttext = text + link_id
-                    alttext = alttext.center(term_width())
+                    alttext2 = alttext.center(term_width())
                     r.add_block(ansi_img)
                     r.open_color("faint")
                     r.open_color("yellow")
                     r.center_line()
-                    rendered_body = ansi_img + "\x1b[2;33m" + alttext + "\x1b[0m\n\n"
+                    rendered_body = ansi_img + "\x1b[2;33m" + alttext2 + "\x1b[0m\n\n"
                     r.add_text(alttext)
                     r.close_color("faint")
                     r.close_color("yellow")
+                    r.newline()
             elif element.name == "br":
                 rendered_body = "\n"
                 r.newline()
