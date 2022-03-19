@@ -808,6 +808,10 @@ class HtmlRenderer(AbstractRenderer):
             self.last_line = ""
             self.last_line_colors = {}
             self.last_line_center = False
+            self.new_paragraph = True
+            self.i_indent = ""
+            self.s_indent = ""
+            self.current_indent = ""
             # each color is an [open,close] pair code
             self.colors = { "italic" : ["3","23"],
                             "bold"   : ["1","22"],
@@ -838,8 +842,8 @@ class HtmlRenderer(AbstractRenderer):
                 self.last_line_colors[pos] = []
             self.last_line_colors[pos].append("\x1b["+self.colors[color][o]+"m")#+color+str(o))
 
-        def _endline(self):
-            if len(self.last_line) > 0:
+        def _endline(self,newline=True):
+            if len(self.last_line.strip()) > 0:
                 for c in self.opened:
                     self._insert(c,open=False)
                 newline = ""
@@ -861,12 +865,14 @@ class HtmlRenderer(AbstractRenderer):
                     newline = newline.strip().center(width)
                     self.last_line_center = False
                 else:
-                    newline = newline.lstrip()
+                    newline = self.current_indent + newline.lstrip()
+                    self.current_indent = self.s_indent
                 self.final_text += newline
                 self.last_line = ""
-                self.final_text += "\n"
-                for c in self.opened:
-                    self._insert(c,open=True)
+                if newline:
+                    self.final_text += "\n"
+                    for c in self.opened:
+                        self._insert(c,open=True)
             else:
                 self.last_line = ""
 
@@ -890,39 +896,87 @@ class HtmlRenderer(AbstractRenderer):
             if len(self.colors) > 0:
                 self.last_line += "\x1b[0m"
                 self.opened.clear()
+
+        @debug
+        def startindent(self,indent,sub=None):
+            self._endline()
+            self.i_indent = indent
+            self.current_indent = indent
+            if sub:
+                self.s_indent = sub
+            else:
+                self.s_indent = indent
+
+
+        def endindent(self):
+            self._endline()
+            self.i_indent = ""
+            self.s_indent = ""
+            self.current_indent = ""
+
+        @debug
+        def newline(self):
+            self._endline()
+
+        @debug
+        #A new paragraph implies 2 newlines
+        #But it is only used if didn’t already started one
+        #new_paragraph becomes false as soon as text is entered into it
+        def newparagraph(self):
+            if not self.new_paragraph:
+                self._endline()
+                self.final_text += "\n"
+                self.new_paragraph = True
+
         @debug
         def add_block(self,intext):
             if intext.strip("\n") != "":
-                self._endline()
-                self.final_text += intext
+                self._endline(newline=False)
+                self.final_text += self.current_indent + intext
             #for l in intext.splitlines():
             #    self.final_text += l
-            self._endline()
+            #self._endline()
+                #self.new_paragraph = True
+
         @debug
         def add_text(self,intext):
-            #print("current_line is %s" %self.current_line)
             lines = []
             last = self.last_line + intext
             self.last_line = ""
-            import textwrap
-            lines = textwrap.wrap(last,self.width,drop_whitespace=False) #initial_indent=None,subsequent_indent=None)
-            #lines = ansiwrap.wrap(last,self.width,drop_whitespace=False) #initial_indent=None,subsequent_indent=None)
-            while len(lines) > 1:
-                l = lines.pop(0)
-                self.last_line += l.strip()
-                self._endline()
-            if len(lines) == 1:
-                li = lines[0]
-                self.last_line = li
+            if len(last) > 0:
+                self.new_paragraph = False
+            if len(last) > self.width:
+                import textwrap
+                width = self.width - len(self.current_indent)
+                lines = textwrap.wrap(last,width,drop_whitespace=False)
+                                    #initial_indent=self.i_indent,subsequent_indent=self.s_indent)
+                while len(lines) > 1:
+                    l = lines.pop(0)
+                    self.last_line += l#.strip()
+                    self._endline()
+                if len(lines) == 1:
+                    li = lines[0]
+                    self.last_line = li
+            else:
+                self.last_line = last
+
         @debug
         def get_final(self):
             self.close_all()
             self.final_text += self.last_line
-            #paragraphs = self.final_text.split("\n\n")
-            #self.final_text = "\n".join(paragraphs)
-            self.final_text = self.final_text.replace("\n\n\n\n","\n\n").replace("\n\n\n","\n\n")
+            #self.final_text = self.final_text.replace("\n\n\n\n","\n\n").replace("\n\n\n","\n\n")
             self.last_line = ""
-            return self.final_text
+            lines = self.final_text.splitlines()
+            lines2 = []
+            termspace = shutil.get_terminal_size()[0]
+            #Following code instert blanck spaces to center the content
+            if termspace > term_width():
+                margin = int((termspace - term_width())//2)
+            else:
+                margin = 0
+            for l in lines :
+                lines2.append(margin*" "+l)
+            return "\n".join(lines2)
 
     # Our own HTML engine (crazy, isn’t it?)
     # Return [rendered_body, list_of_links]
@@ -978,17 +1032,19 @@ class HtmlRenderer(AbstractRenderer):
                 for child in element.children:
                     rendered_body += "\x1b[3m"
                     r.open_color("italic")
+                    r.startindent("    ")
                     rendered_body +=  recursive_render(child,indent="\t").rstrip("\t")
                     rendered_body += "\x1b[23m"
                     r.close_color("italic")
+                    r.endindent()
             elif element.name in ["div","p"]:
                 rendered_body += "\n"
-                r.add_block("\n")
+                r.newparagraph()
                 div = ""
                 for child in element.children:
                     div += recursive_render(child,indent=indent)
                 rendered_body += div
-                r.add_block("\n\n")
+                #r.add_block("\n\n")
                 rendered_body += "\n\n"
             elif element.name in ["h1","h2","h3","h4","h5","h6"]:
                 if element.name in ["h1","h2"]:
@@ -1004,22 +1060,25 @@ class HtmlRenderer(AbstractRenderer):
                     r.open_color("blue")
                     r.open_color("faint")
                 for child in element.children:
-                    r.add_block("\n")
+                    r.newparagraph()
                     rendered_body += "\n" + title_tag + recursive_render(child) + "\x1b[0m" + "\n"
+                    #r.newline()
                     #r.add_block("\n")
                     r.close_all()
             elif element.name in ["pre","code"]:
                 rendered_body += "\n"
-                r.add_block("\n")
+                #r.newparagraph()
                 for child in element.children:
                    rendered_body += recursive_render(child,indent=indent,preformatted=True)
                 rendered_body += "\n\n"
-                r.add_block("\n\n")
+                #r.add_block("\n\n")
             elif element.name in ["li","tr"]:
                 line = ""
+                r.startindent(" * ",sub="   ")
                 for child in element.children:
                     line += recursive_render(child,indent=indent).strip("\n")
                 rendered_body += " * " + line.strip() + "\n"
+                r.endindent()
             elif element.name in ["td"]:
                 line = "| "
                 for child in element.children:
@@ -1100,7 +1159,7 @@ class HtmlRenderer(AbstractRenderer):
                     r.close_color("yellow")
             elif element.name == "br":
                 rendered_body = "\n"
-                r.add_block("\n")
+                r.newline()
             elif element.name not in ["script","style","template"] and type(element) != Comment:
                 if element.string:
                     if preformatted :
@@ -1109,7 +1168,8 @@ class HtmlRenderer(AbstractRenderer):
                     else:
                         s = sanitize_string(element.string)
                         rendered_body = s
-                        r.add_text(s)
+                        if len(s.strip()) > 0:
+                            r.add_text(s)
                 else:
                     for child in element.children:
                         rendered_body += recursive_render(child,indent=indent)
@@ -1168,8 +1228,8 @@ class HtmlRenderer(AbstractRenderer):
         #We try to avoid huge empty gaps in the page
         r_body = r_body.replace("\n\n\n\n","\n\n").replace("\n\n\n","\n\n")
         #print("***** Internal representation:\n")
-        if r.debug_enabled:
-            print(r.get_final()[:40000])
+        if mode == "debug":
+            r_body = r.get_final()
         #print("\n***** end of Internal representation")
         return r_body,links
 
@@ -1745,7 +1805,7 @@ class GeminiClient(cmd.Cmd):
             "ipv6" : True,
             "timeout" : 600,
             "short_timeout" : 5,
-            "width" : 80,
+            "width" : 72,
             "auto_follow_redirects" : True,
             "tls_mode" : "tofu",
             "archives_size" : 200,
@@ -3098,8 +3158,8 @@ Use "view feed" to see the the linked feed of the page (in any).
 Use "view feeds" to see available feeds on this page.
 (full, feed, feeds have no effect on non-html content)."""
         if self.gi and args and args[0] != "":
-            if args[0] == "full":
-                self._go_to_gi(self.gi,mode="full")
+            if args[0] in ["full","debug"]:
+                self._go_to_gi(self.gi,mode=args[0])
             elif args[0] == "feed":
                 subs = self.gi.get_subscribe_links()
                 if len(subs) > 1:
