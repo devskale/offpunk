@@ -799,11 +799,12 @@ class HtmlRenderer(AbstractRenderer):
     #This class hold an internal representation of the HTML text
     #This is an experiment to rewrite the HTML renderer. Currently not used.
     class representation:
-        def __init__(self,width):
+        def __init__(self,width,title=None):
             #The following is just there to disable this class while developing it.
             #This should result in very minimal performance fee for users while 
             #having the code directly at hand (git branches? What git branches…)
             self.debug_enabled = BETA
+            self.title=title
             self.final_text = ""
             self.opened = []
             self.width = width
@@ -942,6 +943,15 @@ class HtmlRenderer(AbstractRenderer):
 
         @debug
         def add_text(self,intext):
+            if self.title:
+                if not self.title[:(self.width-1)] in intext:
+                    self.open_color("blue")
+                    self.open_color("bold")
+                    self.open_color("underline")
+                    self.add_text(self.title)
+                    self.close_all()
+                    self.newparagraph()
+                self.title = None
             lines = []
             last = self.last_line + intext
             self.last_line = ""
@@ -989,7 +999,7 @@ class HtmlRenderer(AbstractRenderer):
             return
         # This method recursively parse the HTML
         r_body = ""
-        r = self.representation(width)
+        r = self.representation(width,title=self.get_title())
         links = []
         # You know how bad html is when you realize that space sometimes meaningful, somtimes not.
         # CR are not meaniningful. Except that, somethimes, they should be interpreted as spaces.
