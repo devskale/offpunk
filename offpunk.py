@@ -1116,30 +1116,31 @@ class HtmlRenderer(AbstractRenderer):
                 link = element.get('href')
                 # support for images nested in links
                 if link:
+                    text = ""
+                    imgtext = ""
+                    #we display images first in a link 
                     for child in element.children:
                         if child.name == "img":
                             # recursive rendering seems to display some images twice
                             rendered_body += recursive_render(child)
-                            r.open_color("blue")
-                            r.open_color("faint")
-                            text += "[IMG LINK]"
-                            links.append(link+" "+text)
-                            link_id = " [%s]"%(len(links))
-                            rendered_body += "\x1b[2;34m" + text + link_id + "\x1b[0m"
-                            r.center_line()
-                            r.add_text(text+link_id)
-                            r.close_color("blue")
-                            r.close_color("faint")
-                        else:
-                            r.open_color("blue")
-                            r.open_color("faint")
+                            imgtext = "[IMG LINK %s]"
+                    links.append(link+" "+text)
+                    link_id = str(len(links))
+                    r.open_color("blue")
+                    r.open_color("faint")
+                    for child in element.children:
+                        if child.name != "img":
                             text += recursive_render(child,preformatted=preformatted)
-                            links.append(link+" "+text)
-                            link_id = " [%s]"%(len(links))
-                            rendered_body += "\x1b[2;34m" + text + link_id + "\x1b[0m"
-                            r.add_text(link_id)
-                            r.close_color("blue")
-                            r.close_color("faint")
+                    if text == "" and imgtext != "":
+                        text = imgtext%link_id
+                        r.center_line()
+                        r.add_text(imgtext%link_id)
+                    else:
+                        r.add_text(" [%s]"%link_id)
+                        text += " [%s]"%link_id
+                    rendered_body += "\x1b[2;34m" + text + "\x1b[0m"
+                    r.close_color("blue")
+                    r.close_color("faint")
                 else:
                     #No real link found
                     for child in element.children:
