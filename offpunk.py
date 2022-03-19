@@ -3730,7 +3730,11 @@ Argument : duration of cache validity (in seconds)."""
         # - savetotour : if True, newly cached items are added to tour
         def add_to_tour(gitem):
             if gitem.is_cache_valid():
-                print("  -> adding to tour: %s" %gitem.url)
+                toprint = "  -> adding to tour: %s" %gitem.url
+                width = term_width() - 1
+                toprint = toprint[:width]
+                toprint += " "*(width-len(toprint))
+                print(toprint)
                 self.list_add_line("tour",gi=gitem,verbose=False)
                 return True
             else:
@@ -3746,7 +3750,11 @@ Argument : duration of cache validity (in seconds)."""
                     endline = None
                 #Did we already had a cache (even an old one) ?
                 isnew = not gitem.is_cache_valid()
-                print("%s [%s/%s] Fetch "%(strin,count[0],count[1]),gitem.url,end=endline)
+                toprint = "%s [%s/%s] Fetch "%(strin,count[0],count[1]) + gitem.url
+                width = term_width() - 1
+                toprint = toprint[:width]
+                toprint += " "*(width-len(toprint))
+                print(toprint,end=endline)
                 #If not saving to tour, then we should limit download size
                 limit = not savetotour
                 self._go_to_gi(gitem,update_hist=False,limit_size=limit)
