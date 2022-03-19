@@ -843,7 +843,11 @@ class HtmlRenderer(AbstractRenderer):
             #we remember the position where to insert color codes
             if not pos in self.last_line_colors:
                 self.last_line_colors[pos] = []
-            self.last_line_colors[pos].append("\x1b["+self.colors[color][o]+"m")#+color+str(o))
+            #Two inverse code cancel each other
+            if [color,int(not o)] in self.last_line_colors[pos]:
+                self.last_line_colors[pos].remove([color,int(not o)])
+            else:
+                self.last_line_colors[pos].append([color,o])#+color+str(o))
 
         def _endline(self,newline=True):
             if len(self.last_line.strip()) > 0:
@@ -857,9 +861,12 @@ class HtmlRenderer(AbstractRenderer):
                     #popitem itterates LIFO. 
                     #So we go, backward, to the pos (starting at the end of last_line)
                     newline = self.last_line[pos:] + newline
-                    for c in colors:
-                        newline = c + newline
-                        added_char += len(c)
+                    ansicol = "\x1b["
+                    for c,o in colors:
+                        ansicol += self.colors[c][o] + ";"
+                    ansicol = ansicol[:-1]+"m"
+                    newline = ansicol + newline
+                    added_char += len(ansicol)
                     self.last_line = self.last_line[:pos]
                 newline = self.last_line + newline
                 if self.last_line_center:
@@ -938,7 +945,7 @@ class HtmlRenderer(AbstractRenderer):
                 self.final_text += self.current_indent + intext
             #for l in intext.splitlines():
             #    self.final_text += l
-            #self._endline()
+            self._endline()
                 #self.new_paragraph = True
 
         @debug
@@ -1054,7 +1061,6 @@ class HtmlRenderer(AbstractRenderer):
                 for child in element.children:
                     div += recursive_render(child,indent=indent)
                 rendered_body += div
-                #r.add_block("\n\n")
                 rendered_body += "\n\n"
             elif element.name in ["h1","h2","h3","h4","h5","h6"]:
                 if element.name in ["h1","h2"]:
@@ -1072,8 +1078,6 @@ class HtmlRenderer(AbstractRenderer):
                 for child in element.children:
                     r.newparagraph()
                     rendered_body += "\n" + title_tag + recursive_render(child) + "\x1b[0m" + "\n"
-                    #r.newline()
-                    #r.add_block("\n")
                     r.close_all()
             elif element.name in ["pre","code"]:
                 rendered_body += "\n"
@@ -1081,7 +1085,6 @@ class HtmlRenderer(AbstractRenderer):
                 for child in element.children:
                    rendered_body += recursive_render(child,indent=indent,preformatted=True)
                 rendered_body += "\n\n"
-                #r.add_block("\n\n")
             elif element.name in ["li","tr"]:
                 line = ""
                 r.startindent(" • ",sub="   ")
@@ -1175,7 +1178,11 @@ class HtmlRenderer(AbstractRenderer):
                 if element.string:
                     if preformatted :
                         rendered_body = element.string
-                        r.add_block(element.string)
+                        r.open_color("italic")
+                        r.open_color("faint")
+                        r.add_text(element.string)
+                        r.close_color("italic")
+                        r.close_color("faint")
                     else:
                         s = sanitize_string(element.string)
                         rendered_body = s
