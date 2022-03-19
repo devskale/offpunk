@@ -1,6 +1,7 @@
 # Offpunk History
 
 ## 1.2 - Unreleased
+- "set beta true" allows to test the new HTML renderer
 - Limit width of --sync output
 - Fixed a crash when trying to save a folder
 

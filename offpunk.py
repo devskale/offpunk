@@ -13,6 +13,8 @@
 #  - <jake@rmgr.dev>
 
 _VERSION = "1.1"
+global BETA
+BETA = False
 
 import argparse
 import cmd
@@ -57,13 +59,13 @@ try:
 except ModuleNotFoundError:
     _HAS_EDITOR = False
 
+import textwrap
 try:
     import ansiwrap
     wrap_method = ansiwrap.wrap
     _HAS_ANSIWRAP = True
 except ModuleNotFoundError:
     print("Try installing python-ansiwrap for better rendering")
-    import textwrap
     wrap_method = textwrap.wrap
     _HAS_ANSIWRAP = False
 
@@ -801,7 +803,7 @@ class HtmlRenderer(AbstractRenderer):
             #The following is just there to disable this class while developing it.
             #This should result in very minimal performance fee for users while 
             #having the code directly at hand (git branches? What git branches…)
-            self.debug_enabled = False
+            self.debug_enabled = BETA
             self.final_text = ""
             self.opened = []
             self.width = width
@@ -946,13 +948,11 @@ class HtmlRenderer(AbstractRenderer):
             if len(last) > 0:
                 self.new_paragraph = False
             if len(last) > self.width:
-                import textwrap
                 width = self.width - len(self.current_indent)
                 lines = textwrap.wrap(last,width,drop_whitespace=False)
-                                    #initial_indent=self.i_indent,subsequent_indent=self.s_indent)
                 while len(lines) > 1:
                     l = lines.pop(0)
-                    self.last_line += l#.strip()
+                    self.last_line += l
                     self._endline()
                 if len(lines) == 1:
                     li = lines[0]
@@ -1074,7 +1074,7 @@ class HtmlRenderer(AbstractRenderer):
                 #r.add_block("\n\n")
             elif element.name in ["li","tr"]:
                 line = ""
-                r.startindent(" * ",sub="   ")
+                r.startindent(" • ",sub="   ")
                 for child in element.children:
                     line += recursive_render(child,indent=indent).strip("\n")
                 rendered_body += " * " + line.strip() + "\n"
@@ -1228,7 +1228,7 @@ class HtmlRenderer(AbstractRenderer):
         #We try to avoid huge empty gaps in the page
         r_body = r_body.replace("\n\n\n\n","\n\n").replace("\n\n\n","\n\n")
         #print("***** Internal representation:\n")
-        if mode == "debug":
+        if BETA:
             r_body = r.get_final()
         #print("\n***** end of Internal representation")
         return r_body,links
@@ -1802,6 +1802,7 @@ class GeminiClient(cmd.Cmd):
 
         self.options = {
             "debug" : False,
+            "beta" : False,
             "ipv6" : True,
             "timeout" : 600,
             "short_timeout" : 5,
@@ -2745,6 +2746,16 @@ class GeminiClient(cmd.Cmd):
                     TERM_WIDTH = value
                 else:
                     print("%s is not a valid width (integer required)"%value)
+            elif option == "beta":
+                if value.lower() == "true":
+                    global BETA
+                    BETA = True
+                    print("Experimental features are enabled.")
+                else:
+                   # global BETA
+                    BETA = False
+                    print("Experimental features are disabled.")
+                self.options["beta"] = BETA
             elif value.isnumeric():
                 value = int(value)
             elif value.lower() == "false":
@@ -3058,10 +3069,10 @@ Marks are temporary until shutdown (not saved to disk)."""
                         status = "subscription"
                     elif self.list_is_frozen(l):
                         status = "frozen list"
-                    out += " * %s\t(%s)\n" %(l,status)
+                    out += " • %s\t(%s)\n" %(l,status)
             for l in lists:
                 if self.list_is_system(l):
-                    out += " * %s\n" %l
+                    out += " • %s\n" %l
         else:
             out += "Page is not save in any list"
         print(out)
