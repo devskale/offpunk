@@ -264,11 +264,13 @@ else:
 # -M : long prompt (to have info about where you are in the file)
 # -w : hilite the new first line after a page skip (space)
 # -i : ignore case in search
+# -S : do not wrap long lines. Wrapping is done by offpunk, longlines
+# are there on purpose (surch in asciiart)
 #--incsearch : incremental search starting rev581
 if less_version >= 581:
-    less_base = "less --incsearch --save-marks -XRfMwi"
+    less_base = "less --incsearch --save-marks -~ -XRfMwiS"
 else:
-    less_base = "less --save-marks -XRfMwi"
+    less_base = "less --save-marks -XRfMwiS"
 _DEFAULT_LESS = less_base + " \"+''\" %s"
 _DEFAULT_CAT = less_base + " -EF %s"
 def less_cmd(file, histfile=None,cat=False):
@@ -816,6 +818,7 @@ class HtmlRenderer(AbstractRenderer):
             self.s_indent = ""
             self.r_indent = ""
             self.current_indent = ""
+            self.disabled_indents = None
             # each color is an [open,close] pair code
             self.colors = { "italic" : ["3","23"],
                             "bold"   : ["1","22"],
@@ -838,8 +841,6 @@ class HtmlRenderer(AbstractRenderer):
         def _insert(self,color,open=True):
             if open: o = 0 
             else: o = 1
-            #if color == "faint" and o == 1:
-            #   print(self.last_line.replace("\x1b","x1b"))
             pos = len(self.last_line)
             #we remember the position where to insert color codes
             if not pos in self.last_line_colors:
@@ -849,8 +850,12 @@ class HtmlRenderer(AbstractRenderer):
                 self.last_line_colors[pos].remove([color,int(not o)])
             else:
                 self.last_line_colors[pos].append([color,o])#+color+str(o))
-
+        
+        # Take self.last line and add ANSI codes to it before adding it to 
+        # self.final_text.
         def _endline(self,newline=True):
+            if "Date Prev" in self.last_line:
+                print("We end **%s**"%self.last_line)
             if len(self.last_line.strip()) > 0:
                 for c in self.opened:
                     self._insert(c,open=False)
@@ -930,6 +935,22 @@ class HtmlRenderer(AbstractRenderer):
             self.r_indent = ""
             self.current_indent = ""
 
+        def _disable_indents(self):
+            self.disabled_indents = []
+            self.disabled_indents.append(self.current_indent)
+            self.disabled_indents.append(self.i_indent)
+            self.disabled_indents.append(self.s_indent)
+            self.disabled_indents.append(self.r_indent)
+            self.endindent()
+
+        def _enable_indents(self):
+            if self.disabled_indents:
+                self.current_indent = self.disabled_indents[0]
+                self.i_indent = self.disabled_indents[1]
+                self.s_indent = self.disabled_indents[2]
+                self.r_indent = self.disabled_indents[3]
+            self.disabled_indents = None
+
         @debug
         def newline(self):
             self._endline()
@@ -944,33 +965,40 @@ class HtmlRenderer(AbstractRenderer):
                 self.final_text += "\n"
                 self.new_paragraph = True
 
-        def _title_first(self,intext):
+        def _title_first(self,intext=None):
             if self.title:
                 if not self.title == intext:
+                    self._disable_indents()
                     self.open_color("blue")
                     self.open_color("bold")
                     self.open_color("underline")
                     self.add_text(self.title)
                     self.close_all()
                     self.newparagraph()
+                    self._enable_indents()
                 self.title = None
 
+
+
         @debug
-        # Beware, blocks are not wrapped and left untouched!
+        # Beware, blocks are not wrapped nor indented and left untouched!
         # They are mostly useful for pictures
         def add_block(self,intext):
             # We always add the title before a block
-            self._title_first(None)
-            if intext.strip("\n") != "":
-                self._endline(newline=False)
+            self._title_first()
+            # we don’t want to indent blocks
+            self._endline(newline=False)
+            self._disable_indents()
+            if intext.strip("\n").strip() != "":
                 self.final_text += self.current_indent + intext
             self._endline()
-
+            self._enable_indents()
+        
         @debug
         def add_text(self,intext):
-            self._title_first(intext)
+            self._title_first(intext=intext)
             lines = []
-            last = self.last_line + intext
+            last = (self.last_line + intext).lstrip()
             self.last_line = ""
             if len(last) > 0:
                 self.new_paragraph = False
@@ -985,14 +1013,14 @@ class HtmlRenderer(AbstractRenderer):
                     li = lines[0]
                     self.last_line = li.lstrip()
             else:
-                self.last_line = last
+                self.last_line = last.lstrip()
 
         @debug
         def get_final(self):
             self.close_all()
-            self.final_text += self.last_line
-            #self.final_text = self.final_text.replace("\n\n\n\n","\n\n").replace("\n\n\n","\n\n")
-            self.last_line = ""
+            self._endline()
+            #if no content, we still add the title
+            self._title_first()
             lines = self.final_text.splitlines()
             lines2 = []
             termspace = shutil.get_terminal_size()[0]
@@ -1056,14 +1084,15 @@ class HtmlRenderer(AbstractRenderer):
         def recursive_render(element,indent="",preformatted=False):
             rendered_body = ""
             if element.name == "blockquote":
+                r.newparagraph()
+                r.startindent("   ",reverse="     ")
                 for child in element.children:
                     rendered_body += "\x1b[3m"
                     r.open_color("italic")
-                    r.startindent("   ",reverse="     ")
                     rendered_body +=  recursive_render(child,indent="\t").rstrip("\t")
                     rendered_body += "\x1b[23m"
                     r.close_color("italic")
-                    r.endindent()
+                r.endindent()
             elif element.name in ["div","p"]:
                 rendered_body += "\n"
                 r.newparagraph()
@@ -1089,24 +1118,37 @@ class HtmlRenderer(AbstractRenderer):
                     r.newparagraph()
                     rendered_body += "\n" + title_tag + recursive_render(child) + "\x1b[0m" + "\n"
                     r.close_all()
-            elif element.name in ["pre","code"]:
+            elif element.name in ["code","tt"]:
                 rendered_body += "\n"
-                #r.newparagraph()
                 for child in element.children:
                    rendered_body += recursive_render(child,indent=indent,preformatted=True)
                 rendered_body += "\n\n"
-            elif element.name in ["li","tr"]:
+            elif element.name in ["pre"]:
+                rendered_body += "\n"
+                rendered_body += element.text
+                r.add_block(element.text)
+                rendered_body += "\n\n"
+            elif element.name in ["li"]:
                 line = ""
                 r.startindent(" • ",sub="   ")
                 for child in element.children:
                     line += recursive_render(child,indent=indent).strip("\n")
                 rendered_body += " * " + line.strip() + "\n"
                 r.endindent()
-            elif element.name in ["td"]:
+            elif element.name in ["tr"]:
+                line = ""
+                r.startindent("|",reverse="|")
+                for child in element.children:
+                    line += recursive_render(child,indent=indent).strip("\n")
+                rendered_body += "   " + line.strip() + "\n"
+                r.endindent()
+            elif element.name in ["td","th"]:
                 line = "| "
+                r.add_text("| ")
                 for child in element.children:
                     line += recursive_render(child)
                 line += " |"
+                r.add_text(" |")
                 rendered_body += line
             # italics
             elif element.name in ["em","i"]:
@@ -1189,10 +1231,8 @@ class HtmlRenderer(AbstractRenderer):
                 if element.string:
                     if preformatted :
                         rendered_body = element.string
-                        r.open_color("italic")
                         r.open_color("faint")
                         r.add_text(element.string)
-                        r.close_color("italic")
                         r.close_color("faint")
                     else:
                         s = sanitize_string(element.string)
@@ -1256,10 +1296,8 @@ class HtmlRenderer(AbstractRenderer):
             r_body = title + "\n" + r_body
         #We try to avoid huge empty gaps in the page
         r_body = r_body.replace("\n\n\n\n","\n\n").replace("\n\n\n","\n\n")
-        #print("***** Internal representation:\n")
         if BETA:
             r_body = r.get_final()
-        #print("\n***** end of Internal representation")
         return r_body,links
 
 # Mapping mimetypes with renderers
