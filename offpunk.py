@@ -919,6 +919,8 @@ class HtmlRenderer(AbstractRenderer):
                 self.s_indent = indent
             if reverse:
                 self.r_indent = reverse
+            else:
+                self.r_indent = ""
 
 
         def endindent(self):
@@ -942,20 +944,9 @@ class HtmlRenderer(AbstractRenderer):
                 self.final_text += "\n"
                 self.new_paragraph = True
 
-        @debug
-        def add_block(self,intext):
-            if intext.strip("\n") != "":
-                self._endline(newline=False)
-                self.final_text += self.current_indent + intext
-            #for l in intext.splitlines():
-            #    self.final_text += l
-            self._endline()
-                #self.new_paragraph = True
-
-        @debug
-        def add_text(self,intext):
+        def _title_first(self,intext):
             if self.title:
-                if not self.title[:(self.width-1)] in intext:
+                if not self.title == intext:
                     self.open_color("blue")
                     self.open_color("bold")
                     self.open_color("underline")
@@ -963,6 +954,21 @@ class HtmlRenderer(AbstractRenderer):
                     self.close_all()
                     self.newparagraph()
                 self.title = None
+
+        @debug
+        # Beware, blocks are not wrapped and left untouched!
+        # They are mostly useful for pictures
+        def add_block(self,intext):
+            # We always add the title before a block
+            self._title_first(None)
+            if intext.strip("\n") != "":
+                self._endline(newline=False)
+                self.final_text += self.current_indent + intext
+            self._endline()
+
+        @debug
+        def add_text(self,intext):
+            self._title_first(intext)
             lines = []
             last = self.last_line + intext
             self.last_line = ""
