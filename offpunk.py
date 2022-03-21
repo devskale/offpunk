@@ -1020,7 +1020,6 @@ class HtmlRenderer(AbstractRenderer):
             print("HTML document detected. Please install python-bs4 and python-readability.")
             return
         # This method recursively parse the HTML
-        r_body = ""
         r = self.representation(width,title=self.get_title())
         links = []
         # You know how bad html is when you realize that space sometimes meaningful, somtimes not.
@@ -1059,92 +1058,64 @@ class HtmlRenderer(AbstractRenderer):
                 toreturn = " " + toreturn
             return toreturn
         def recursive_render(element,indent="",preformatted=False):
-            rendered_body = ""
             if element.name == "blockquote":
                 r.newparagraph()
                 r.startindent("   ",reverse="     ")
                 for child in element.children:
-                    rendered_body += "\x1b[3m"
                     r.open_color("italic")
-                    rendered_body +=  recursive_render(child,indent="\t").rstrip("\t")
-                    rendered_body += "\x1b[23m"
+                    recursive_render(child,indent="\t")
                     r.close_color("italic")
                 r.endindent()
             elif element.name in ["div","p"]:
-                rendered_body += "\n"
                 r.newparagraph()
-                div = ""
                 for child in element.children:
-                    div += recursive_render(child,indent=indent)
-                rendered_body += div
-                rendered_body += "\n\n"
+                    recursive_render(child,indent=indent)
             elif element.name in ["h1","h2","h3","h4","h5","h6"]:
-                if element.name in ["h1","h2"]:
-                    title_tag = "\x1b[1;34m\x1b[4m"
+                r.open_color("blue")
+                if element.name in ["h1"]:
                     r.open_color("bold")
-                    r.open_color("blue")
                     r.open_color("underline")
-                elif element.name in ["h3","h4"]:
-                    title_tag = "\x1b[34m"
-                    r.open_color("blue")
-                else:
-                    title_tag = "\x1b[34m\x1b[2m"
-                    r.open_color("blue")
+                elif element.name in ["h2"]:
+                    r.open_color("bold")
+                elif element.name in ["h5","h6"]:
                     r.open_color("faint")
                 for child in element.children:
                     r.newparagraph()
-                    rendered_body += "\n" + title_tag + recursive_render(child) + "\x1b[0m" + "\n"
+                    recursive_render(child)
                     r.close_all()
             elif element.name in ["code","tt"]:
-                rendered_body += "\n"
                 for child in element.children:
-                   rendered_body += recursive_render(child,indent=indent,preformatted=True)
-                rendered_body += "\n\n"
+                   recursive_render(child,indent=indent,preformatted=True)
             elif element.name in ["pre"]:
-                rendered_body += "\n"
-                rendered_body += element.text
                 r.add_block(element.text)
-                rendered_body += "\n\n"
             elif element.name in ["li"]:
-                line = ""
                 r.startindent(" • ",sub="   ")
                 for child in element.children:
-                    line += recursive_render(child,indent=indent).strip("\n")
-                rendered_body += " * " + line.strip() + "\n"
+                    recursive_render(child,indent=indent)
                 r.endindent()
             elif element.name in ["tr"]:
-                line = ""
                 r.startindent("|",reverse="|")
                 for child in element.children:
-                    line += recursive_render(child,indent=indent).strip("\n")
-                rendered_body += "   " + line.strip() + "\n"
+                    recursive_render(child,indent=indent)
                 r.endindent()
             elif element.name in ["td","th"]:
-                line = "| "
                 r.add_text("| ")
                 for child in element.children:
-                    line += recursive_render(child)
-                line += " |"
+                    recursive_render(child)
                 r.add_text(" |")
-                rendered_body += line
             # italics
             elif element.name in ["em","i"]:
-                rendered_body += "\x1b[3m"
                 r.open_color("italic")
                 for child in element.children:
-                    rendered_body += recursive_render(child,indent=indent,preformatted=preformatted)
-                rendered_body += "\x1b[23m"
+                    recursive_render(child,indent=indent,preformatted=preformatted)
                 r.close_color("italic")
             #bold
             elif element.name in ["b","strong"]:
-                rendered_body += "\x1b[1m"
                 r.open_color("bold")
                 for child in element.children:
-                    rendered_body += recursive_render(child,indent=indent,preformatted=preformatted)
-                rendered_body += "\x1b[22m"
+                    recursive_render(child,indent=indent,preformatted=preformatted)
                 r.close_color("bold")
             elif element.name == "a":
-                text = ""
                 link = element.get('href')
                 # support for images nested in links
                 if link:
@@ -1153,8 +1124,7 @@ class HtmlRenderer(AbstractRenderer):
                     #we display images first in a link 
                     for child in element.children:
                         if child.name == "img":
-                            # recursive rendering seems to display some images twice
-                            rendered_body += recursive_render(child)
+                            recursive_render(child)
                             imgtext = "[IMG LINK %s]"
                     links.append(link+" "+text)
                     link_id = str(len(links))
@@ -1162,21 +1132,18 @@ class HtmlRenderer(AbstractRenderer):
                     r.open_color("faint")
                     for child in element.children:
                         if child.name != "img":
-                            text += recursive_render(child,preformatted=preformatted)
-                    if text == "" and imgtext != "":
-                        text = imgtext%link_id
+                            recursive_render(child,preformatted=preformatted)
+                    if imgtext != "":
                         r.center_line()
                         r.add_text(imgtext%link_id)
                     else:
                         r.add_text(" [%s]"%link_id)
-                        text += " [%s]"%link_id
-                    rendered_body += "\x1b[2;34m" + text + "\x1b[0m"
                     r.close_color("blue")
                     r.close_color("faint")
                 else:
                     #No real link found
                     for child in element.children:
-                        rendered_body += recursive_render(child,preformatted=preformatted)
+                        recursive_render(child,preformatted=preformatted)
             elif element.name == "img":
                 src = element.get("src")
                 text = ""
@@ -1190,36 +1157,29 @@ class HtmlRenderer(AbstractRenderer):
                 if src:
                     links.append(src+" "+text)
                     link_id = " [%s]"%(len(links))
-                    alttext = text + link_id
-                    alttext2 = alttext.center(term_width())
                     r.add_block(ansi_img)
                     r.open_color("faint")
                     r.open_color("yellow")
                     r.center_line()
-                    rendered_body = ansi_img + "\x1b[2;33m" + alttext2 + "\x1b[0m\n\n"
-                    r.add_text(alttext)
+                    r.add_text(text + link_id)
                     r.close_color("faint")
                     r.close_color("yellow")
                     r.newline()
             elif element.name == "br":
-                rendered_body = "\n"
                 r.newline()
             elif element.name not in ["script","style","template"] and type(element) != Comment:
                 if element.string:
                     if preformatted :
-                        rendered_body = element.string
                         r.open_color("faint")
                         r.add_text(element.string)
                         r.close_color("faint")
                     else:
                         s = sanitize_string(element.string)
-                        rendered_body = s
                         if len(s.strip()) > 0:
                             r.add_text(s)
                 else:
                     for child in element.children:
-                        rendered_body += recursive_render(child,indent=indent)
-            return indent + rendered_body
+                        recursive_render(child,indent=indent)
         # the real render_html hearth
         if mode == "full":
             summary = body
@@ -1228,40 +1188,13 @@ class HtmlRenderer(AbstractRenderer):
             summary = readable.summary()
         soup = BeautifulSoup(summary, 'html.parser')
         #soup = BeautifulSoup(summary, 'html5lib')
-        rendered_body = ""
         if soup :
             if soup.body :
                 contents = soup.body.contents
             else:
                 contents = soup.contents
             for el in contents:
-                rendered_body += recursive_render(el)
-            paragraphs = rendered_body.split("\n\n")
-            for par in paragraphs:
-                lines = par.splitlines()
-                for line in lines:
-                    if line.startswith("\t"):
-                        i_indent = "   "
-                        s_indent = i_indent
-                        line = line.strip("\t")
-                    elif line.lstrip().startswith("* "):
-                        line = line.lstrip()
-                        i_indent = " "  # we keep the initial bullet)
-                        s_indent = "   "
-                    else:
-                        i_indent = ""
-                        s_indent = i_indent
-                    if line.strip() != "":
-                        try:
-                            wrapped = wrapparagraph(line,width,initial_indent=i_indent,
-                                                subsequent_indent=s_indent,center=self.center)
-                        except Exception as err:
-                            wrapped = line
-                        wrapped += "\n"
-                    else:
-                        wrapped = ""
-                    r_body += wrapped
-                r_body += "\n"
+                recursive_render(el)
         return r.get_final(),links
 
 # Mapping mimetypes with renderers
