@@ -425,7 +425,7 @@ class AbstractRenderer():
         
         # Take self.last line and add ANSI codes to it before adding it to 
         # self.final_text.
-        def _endline(self,newline=True):
+        def _endline(self):
             if len(self.last_line.strip()) > 0:
                 for c in self.opened:
                     self._insert(c,open=False)
@@ -451,14 +451,14 @@ class AbstractRenderer():
                     nextline = nextline.strip().center(width)
                     self.last_line_center = False
                 else:
-                    nextline = self.current_indent + nextline.lstrip() + self.r_indent
+                    #should we lstrip the nextline in the addition ?
+                    nextline = self.current_indent + nextline + self.r_indent
                     self.current_indent = self.s_indent
                 self.final_text += nextline
                 self.last_line = ""
-                if newline:
-                    self.final_text += "\n"
-                    for c in self.opened:
-                        self._insert(c,open=True)
+                self.final_text += "\n"
+                for c in self.opened:
+                    self._insert(c,open=True)
             else:
                 self.last_line = ""
 
@@ -520,10 +520,10 @@ class AbstractRenderer():
             self._endline()
 
         #A new paragraph implies 2 newlines
-        #But it is only used if didn’t already started one
+        #But it is only used if didn’t already started one (except if forced)
         #new_paragraph becomes false as soon as text is entered into it
-        def newparagraph(self):
-            if not self.new_paragraph:
+        def newparagraph(self,force=False):
+            if force or not self.new_paragraph:
                 self._endline()
                 self.final_text += "\n"
                 self.new_paragraph = True
@@ -543,38 +543,43 @@ class AbstractRenderer():
 
         # Beware, blocks are not wrapped nor indented and left untouched!
         # They are mostly useful for pictures
-        def add_block(self,intext,wrap=False):
+        def add_block(self,intext):
             # We always add the title before a block
             self._title_first()
             # we don’t want to indent blocks
-            self._endline(newline=False)
+            self._endline()
             self._disable_indents()
-            if intext.strip("\n").strip() != "":
-                if wrap:
-                    intext = textwrap.fill(intext)
+            #if intext.strip("\n").strip() != "":
+            #    if wrap:
+            #        intext = textwrap.fill(intext)
+            if True:
                 self.final_text += self.current_indent + intext
+                self.new_paragraph = False
             self._endline()
             self._enable_indents()
         
         def add_text(self,intext):
             self._title_first(intext=intext)
             lines = []
-            last = (self.last_line + intext).lstrip()
+            last = (self.last_line + intext)#.lstrip()
             self.last_line = ""
             if len(last) > 0:
                 self.new_paragraph = False
             if len(last) > self.width:
                 width = self.width - len(self.current_indent) - len(self.r_indent)
-                lines = textwrap.wrap(last,width,drop_whitespace=False)
+                spaces_left = len(last) - len(last.lstrip())
+                spaces_right = len(last) - len(last.rstrip())
+                lines = textwrap.wrap(last,width,drop_whitespace=True)
+                self.last_line += spaces_left*" "
                 while len(lines) > 1:
                     l = lines.pop(0)
-                    self.last_line = l.lstrip()
+                    self.last_line += l#.lstrip()
                     self._endline()
                 if len(lines) == 1:
                     li = lines[0]
-                    self.last_line = li.lstrip()
+                    self.last_line += li + spaces_right*" "
             else:
-                self.last_line = last.lstrip()
+                self.last_line = last#.lstrip()
 
         def get_final(self):
             self.close_all()
@@ -685,23 +690,6 @@ class GemtextRenderer(AbstractRenderer):
         r = self.representation(width)
         links = []
         preformatted = False
-        rendered_text = ""
-        #This local method takes a line and apply the ansi code given as "color"
-        #The whole line is then wrapped and ansi code are ended.
-        def wrap_line(line,color=None,i_indent="",s_indent=""):
-            wrapped = wraplines(line,width,initial_indent=i_indent,\
-                                    subsequent_indent=s_indent)
-            final = ""
-            for l in wrapped:
-                if color:
-                    spaces = ""
-                    while l.startswith(" "):
-                        l = l[1:]
-                        spaces += " "
-                    l = spaces + color + l + "\x1b[0m"
-                if l.strip() != "":
-                    final += l + "\n"
-            return final
         def format_link(url,index,name=None):
             if "://" in url:
                 protocol,adress = url.split("://",maxsplit=1)
@@ -716,20 +704,14 @@ class GemtextRenderer(AbstractRenderer):
             line = "[%d%s] %s" % (index, protocol, name)
             return line
         for line in gemtext.splitlines():
+            r.newline()
             if line.startswith("```"):
                 preformatted = not preformatted
             elif preformatted:
                 # infinite line to not wrap preformated
-                r.add_block(line)
-                l = wraplines(line,100000000)
-                if len(l) > 0:
-                    l = l[0]
-                else:
-                    l = ""
-                rendered_text += l + "\n"
+                r.add_block(line+"\n")
             elif len(line.strip()) == 0:
-                r.newparagraph()
-                rendered_text += "\n"
+                r.newparagraph(force=True)
             elif line.startswith("=>"):
                 strippedline = line[2:].strip()
                 if strippedline:
@@ -748,43 +730,30 @@ class GemtextRenderer(AbstractRenderer):
                     r.add_text(link)
                     r.endindent()
                     #r.close_all()
-                    wrapped = wrap_line(link,s_indent=startpos*" ")
-                    rendered_text += wrapped
             elif line.startswith("* "):
                 line = line[1:].lstrip("\t ")
                 r.startindent("• ",sub="  ")
                 r.add_text(line)
                 r.endindent()
-                rendered_text += wrapparagraph(line, width, initial_indent = "• ", 
-                                                subsequent_indent="  ") + "\n"
             elif line.startswith(">"):
                 line = line[1:].lstrip("\t ")
                 r.startindent("> ")
                 r.add_text(line)
                 r.endindent()
-                rendered_text += wrapparagraph(line,width, initial_indent = "> ", 
-                                                subsequent_indent="> ") + "\n"
             elif line.startswith("###"):
                 line = line[3:].lstrip("\t ")
-                r.newparagraph()
                 r.open_color("blue")
-                r.open_color("faint")
                 r.add_text(line)
                 r.close_color("blue")
-                r.close_color("faint")
-                rendered_text += wrap_line(line, color="\x1b[34m\x1b[2m")
             elif line.startswith("##"):
                 line = line[2:].lstrip("\t ")
-                r.newparagraph()
                 r.open_color("blue")
                 r.add_text(line)
                 r.close_color("blue")
-                rendered_text += wrap_line(line, color="\x1b[34m")
             elif line.startswith("#"):
                 line = line[1:].lstrip("\t ")
                 if not self.title:
                     self.title = line
-                r.newparagraph()
                 r.open_color("bold")
                 r.open_color("blue")
                 r.open_color("underline")
@@ -792,16 +761,12 @@ class GemtextRenderer(AbstractRenderer):
                 r.close_color("underline")
                 r.close_color("bold")
                 r.close_color("blue")
-                rendered_text += wrap_line(line,color="\x1b[1;34m\x1b[4m")
             else:
-                rendered_text += wrap_line(line).rstrip() + "\n"
                 # with the add_block, we keep leading spaces and handmade formatting.
                 #r.add_block(line.rstrip(),wrap=True)
                 # while with add_text, we justify on the left margin
                 r.add_text(line.rstrip())
-        if BETA:
-            rendered_text = r.get_final()
-        return rendered_text, links
+        return r.get_final(), links
 
 class GopherRenderer(AbstractRenderer):
     def get_mime(self):
