@@ -131,6 +131,12 @@ else:
     if not _NEW_CHAFA and not _HAS_TIMG:
         print("Before Chafa 1.10, you also need python-pil")
 
+# Test with https://www.valerybonneau.com/romans/nouvelles-noires-pour-se-rire-du-desespoir/
+# Chafa 1.8 without -w: 9s
+# Chafa 1.8 with -w 1 : 9s
+# Chafa 1.8 with -w 5 : 9s
+# Chafa 1.8 with -w 9 : 9s 
+# Timg                : 22s
 #return ANSI text that can be show by less
 def inline_image(img_file,width):
     #Chafa is faster than timg inline. Let use that one by default
@@ -143,9 +149,9 @@ def inline_image(img_file,width):
             if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
                 # we remove all frames but the first one
                 img_obj.save(img_file,format="gif",save_all=False)
-            inline = "chafa --bg white -s %s -w 1 -f symbols"
+            inline = "chafa --bg white -s %s -f symbols"
         elif _NEW_CHAFA:
-            inline = "chafa --bg white -s %s -w 1 -f symbols --animate=off"
+            inline = "chafa --bg white -s %s -f symbols --animate=off"
     if not inline and _HAS_TIMG and _HAS_ANSIWRAP:
         inline = "timg --frames=1 -p q -g %sx1000"
     if inline:
@@ -377,11 +383,12 @@ class AbstractRenderer():
     #This class hold an internal representation of the HTML text
     #This is an experiment to rewrite the HTML renderer. Currently not used.
     class representation:
-        def __init__(self,width,title=None):
+        def __init__(self,width,title=None,center=True):
             #The following is just there to disable this class while developing it.
             #This should result in very minimal performance fee for users while 
             #having the code directly at hand (git branches? What git branches…)
             self.title=title
+            self.center = center
             self.final_text = ""
             self.opened = []
             self.width = width
@@ -419,36 +426,34 @@ class AbstractRenderer():
         # Take self.last line and add ANSI codes to it before adding it to 
         # self.final_text.
         def _endline(self,newline=True):
-            if "Date Prev" in self.last_line:
-                print("We end **%s**"%self.last_line)
             if len(self.last_line.strip()) > 0:
                 for c in self.opened:
                     self._insert(c,open=False)
-                newline = ""
+                nextline = ""
                 added_char = 0
                 #we insert the color code at the saved positions
                 while len (self.last_line_colors) > 0:
                     pos,colors = self.last_line_colors.popitem()
                     #popitem itterates LIFO. 
                     #So we go, backward, to the pos (starting at the end of last_line)
-                    newline = self.last_line[pos:] + newline
+                    nextline = self.last_line[pos:] + nextline
                     ansicol = "\x1b["
                     for c,o in colors:
                         ansicol += self.colors[c][o] + ";"
                     ansicol = ansicol[:-1]+"m"
-                    newline = ansicol + newline
+                    nextline = ansicol + nextline
                     added_char += len(ansicol)
                     self.last_line = self.last_line[:pos]
-                newline = self.last_line + newline
+                nextline = self.last_line + nextline
                 if self.last_line_center:
                     #we have to care about the ansi char while centering
                     width = term_width() + added_char
-                    newline = newline.strip().center(width)
+                    nextline = nextline.strip().center(width)
                     self.last_line_center = False
                 else:
-                    newline = self.current_indent + newline.lstrip() + self.r_indent
+                    nextline = self.current_indent + nextline.lstrip() + self.r_indent
                     self.current_indent = self.s_indent
-                self.final_text += newline
+                self.final_text += nextline
                 self.last_line = ""
                 if newline:
                     self.final_text += "\n"
@@ -489,7 +494,7 @@ class AbstractRenderer():
 
 
         def endindent(self):
-            self._endline()
+            self._endline(newline=False)
             self.i_indent = ""
             self.s_indent = ""
             self.r_indent = ""
@@ -578,7 +583,7 @@ class AbstractRenderer():
             lines2 = []
             termspace = shutil.get_terminal_size()[0]
             #Following code instert blanck spaces to center the content
-            if termspace > term_width():
+            if self.center and termspace > term_width():
                 margin = int((termspace - term_width())//2)
             else:
                 margin = 0
@@ -675,6 +680,7 @@ class GemtextRenderer(AbstractRenderer):
     def render(self,gemtext, width=None,mode=None):
         if not width:
             width = term_width()
+        r = self.representation(width)
         links = []
         preformatted = False
         rendered_text = ""
@@ -712,6 +718,7 @@ class GemtextRenderer(AbstractRenderer):
                 preformatted = not preformatted
             elif preformatted:
                 # infinite line to not wrap preformated
+                r.add_block(line)
                 l = wraplines(line,100000000)
                 if len(l) > 0:
                     l = l[0]
@@ -728,30 +735,60 @@ class GemtextRenderer(AbstractRenderer):
                     if len(splitted) > 1:
                         name = splitted[1]
                     link = format_link(url,len(links),name=name)
+                    #r.open_color("blue")
+                    #r.open_color("faint")
+                    #r.open_color("underline")
                     startpos = link.find("] ") + 2
+                    r.startindent("",sub=startpos*" ")
+                    r.add_text(link)
+                    r.endindent()
+                    #r.close_all()
                     wrapped = wrap_line(link,s_indent=startpos*" ")
                     rendered_text += wrapped
             elif line.startswith("* "):
                 line = line[1:].lstrip("\t ")
+                r.startindent("• ",sub="  ")
+                r.add_text(line)
+                r.endindent()
                 rendered_text += wrapparagraph(line, width, initial_indent = "• ", 
                                                 subsequent_indent="  ") + "\n"
             elif line.startswith(">"):
                 line = line[1:].lstrip("\t ")
+                r.startindent("> ")
+                r.add_text(line)
+                r.endindent()
                 rendered_text += wrapparagraph(line,width, initial_indent = "> ", 
                                                 subsequent_indent="> ") + "\n"
             elif line.startswith("###"):
                 line = line[3:].lstrip("\t ")
+                r.open_color("blue")
+                r.open_color("faint")
+                r.add_text(line)
+                r.close_color("blue")
+                r.close_color("faint")
                 rendered_text += wrap_line(line, color="\x1b[34m\x1b[2m")
             elif line.startswith("##"):
                 line = line[2:].lstrip("\t ")
+                r.open_color("blue")
+                r.add_text(line)
+                r.close_color("blue")
                 rendered_text += wrap_line(line, color="\x1b[34m")
             elif line.startswith("#"):
                 line = line[1:].lstrip("\t ")
                 if not self.title:
                     self.title = line
+                r.open_color("bold")
+                r.open_color("blue")
+                r.open_color("underline")
+                r.add_text(line)
+                r.close_color("underline")
+                r.close_color("bold")
+                r.close_color("blue")
                 rendered_text += wrap_line(line,color="\x1b[1;34m\x1b[4m")
             else:
                 rendered_text += wrap_line(line).rstrip() + "\n"
+                r.add_text(line.rstrip())
+            rendered_text = r.get_final()
         return rendered_text, links
 
 class GopherRenderer(AbstractRenderer):
@@ -1020,7 +1057,7 @@ class HtmlRenderer(AbstractRenderer):
             print("HTML document detected. Please install python-bs4 and python-readability.")
             return
         # This method recursively parse the HTML
-        r = self.representation(width,title=self.get_title())
+        r = self.representation(width,title=self.get_title(),center=self.center)
         links = []
         # You know how bad html is when you realize that space sometimes meaningful, somtimes not.
         # CR are not meaniningful. Except that, somethimes, they should be interpreted as spaces.
@@ -1190,11 +1227,9 @@ class HtmlRenderer(AbstractRenderer):
         #soup = BeautifulSoup(summary, 'html5lib')
         if soup :
             if soup.body :
-                contents = soup.body.contents
+                recursive_render(soup.body)
             else:
-                contents = soup.contents
-            for el in contents:
-                recursive_render(el)
+                recursive_render(soup)
         return r.get_final(),links
 
 # Mapping mimetypes with renderers
