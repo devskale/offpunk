@@ -494,7 +494,7 @@ class AbstractRenderer():
 
 
         def endindent(self):
-            self._endline(newline=False)
+            self._endline()
             self.i_indent = ""
             self.s_indent = ""
             self.r_indent = ""
@@ -727,6 +727,9 @@ class GemtextRenderer(AbstractRenderer):
                 else:
                     l = ""
                 rendered_text += l + "\n"
+            elif len(line.strip()) == 0:
+                r.newparagraph()
+                rendered_text += "\n"
             elif line.startswith("=>"):
                 strippedline = line[2:].strip()
                 if strippedline:
@@ -763,6 +766,7 @@ class GemtextRenderer(AbstractRenderer):
                                                 subsequent_indent="> ") + "\n"
             elif line.startswith("###"):
                 line = line[3:].lstrip("\t ")
+                r.newparagraph()
                 r.open_color("blue")
                 r.open_color("faint")
                 r.add_text(line)
@@ -771,6 +775,7 @@ class GemtextRenderer(AbstractRenderer):
                 rendered_text += wrap_line(line, color="\x1b[34m\x1b[2m")
             elif line.startswith("##"):
                 line = line[2:].lstrip("\t ")
+                r.newparagraph()
                 r.open_color("blue")
                 r.add_text(line)
                 r.close_color("blue")
@@ -779,6 +784,7 @@ class GemtextRenderer(AbstractRenderer):
                 line = line[1:].lstrip("\t ")
                 if not self.title:
                     self.title = line
+                r.newparagraph()
                 r.open_color("bold")
                 r.open_color("blue")
                 r.open_color("underline")
@@ -793,8 +799,8 @@ class GemtextRenderer(AbstractRenderer):
                 #r.add_block(line.rstrip(),wrap=True)
                 # while with add_text, we justify on the left margin
                 r.add_text(line.rstrip())
-            if BETA:
-                rendered_text = r.get_final()
+        if BETA:
+            rendered_text = r.get_final()
         return rendered_text, links
 
 class GopherRenderer(AbstractRenderer):
