@@ -374,6 +374,218 @@ class AbstractRenderer():
         self.less_histfile = {}
         self.center = center
    
+    #This class hold an internal representation of the HTML text
+    #This is an experiment to rewrite the HTML renderer. Currently not used.
+    class representation:
+        def __init__(self,width,title=None):
+            #The following is just there to disable this class while developing it.
+            #This should result in very minimal performance fee for users while 
+            #having the code directly at hand (git branches? What git branches…)
+            self.title=title
+            self.final_text = ""
+            self.opened = []
+            self.width = width
+            self.last_line = ""
+            self.last_line_colors = {}
+            self.last_line_center = False
+            self.new_paragraph = True
+            self.i_indent = ""
+            self.s_indent = ""
+            self.r_indent = ""
+            self.current_indent = ""
+            self.disabled_indents = None
+            # each color is an [open,close] pair code
+            self.colors = { "italic" : ["3","23"],
+                            "bold"   : ["1","22"],
+                            "blue"   : ["34","39"],
+                            "underline": ["4","24"],
+                            "faint"  : ["2","22"],
+                            "yellow" : ["33","39"],
+                       }
+
+        def _insert(self,color,open=True):
+            if open: o = 0 
+            else: o = 1
+            pos = len(self.last_line)
+            #we remember the position where to insert color codes
+            if not pos in self.last_line_colors:
+                self.last_line_colors[pos] = []
+            #Two inverse code cancel each other
+            if [color,int(not o)] in self.last_line_colors[pos]:
+                self.last_line_colors[pos].remove([color,int(not o)])
+            else:
+                self.last_line_colors[pos].append([color,o])#+color+str(o))
+        
+        # Take self.last line and add ANSI codes to it before adding it to 
+        # self.final_text.
+        def _endline(self,newline=True):
+            if "Date Prev" in self.last_line:
+                print("We end **%s**"%self.last_line)
+            if len(self.last_line.strip()) > 0:
+                for c in self.opened:
+                    self._insert(c,open=False)
+                newline = ""
+                added_char = 0
+                #we insert the color code at the saved positions
+                while len (self.last_line_colors) > 0:
+                    pos,colors = self.last_line_colors.popitem()
+                    #popitem itterates LIFO. 
+                    #So we go, backward, to the pos (starting at the end of last_line)
+                    newline = self.last_line[pos:] + newline
+                    ansicol = "\x1b["
+                    for c,o in colors:
+                        ansicol += self.colors[c][o] + ";"
+                    ansicol = ansicol[:-1]+"m"
+                    newline = ansicol + newline
+                    added_char += len(ansicol)
+                    self.last_line = self.last_line[:pos]
+                newline = self.last_line + newline
+                if self.last_line_center:
+                    #we have to care about the ansi char while centering
+                    width = term_width() + added_char
+                    newline = newline.strip().center(width)
+                    self.last_line_center = False
+                else:
+                    newline = self.current_indent + newline.lstrip() + self.r_indent
+                    self.current_indent = self.s_indent
+                self.final_text += newline
+                self.last_line = ""
+                if newline:
+                    self.final_text += "\n"
+                    for c in self.opened:
+                        self._insert(c,open=True)
+            else:
+                self.last_line = ""
+
+        
+        def center_line(self):
+            self.last_line_center = True
+        
+        def open_color(self,color):
+            if color in self.colors and color not in self.opened:
+                self._insert(color,open=True)
+                self.opened.append(color)
+        def close_color(self,color):
+            if color in self.colors and color in self.opened:
+                self._insert(color,open=False)
+                self.opened.remove(color)
+        def close_all(self):
+            if len(self.colors) > 0:
+                self.last_line += "\x1b[0m"
+                self.opened.clear()
+
+        def startindent(self,indent,sub=None,reverse=None):
+            self._endline()
+            self.i_indent = indent
+            self.current_indent = indent
+            if sub:
+                self.s_indent = sub
+            else:
+                self.s_indent = indent
+            if reverse:
+                self.r_indent = reverse
+            else:
+                self.r_indent = ""
+
+
+        def endindent(self):
+            self._endline()
+            self.i_indent = ""
+            self.s_indent = ""
+            self.r_indent = ""
+            self.current_indent = ""
+
+        def _disable_indents(self):
+            self.disabled_indents = []
+            self.disabled_indents.append(self.current_indent)
+            self.disabled_indents.append(self.i_indent)
+            self.disabled_indents.append(self.s_indent)
+            self.disabled_indents.append(self.r_indent)
+            self.endindent()
+
+        def _enable_indents(self):
+            if self.disabled_indents:
+                self.current_indent = self.disabled_indents[0]
+                self.i_indent = self.disabled_indents[1]
+                self.s_indent = self.disabled_indents[2]
+                self.r_indent = self.disabled_indents[3]
+            self.disabled_indents = None
+
+        def newline(self):
+            self._endline()
+
+        #A new paragraph implies 2 newlines
+        #But it is only used if didn’t already started one
+        #new_paragraph becomes false as soon as text is entered into it
+        def newparagraph(self):
+            if not self.new_paragraph:
+                self._endline()
+                self.final_text += "\n"
+                self.new_paragraph = True
+
+        def _title_first(self,intext=None):
+            if self.title:
+                if not self.title == intext:
+                    self._disable_indents()
+                    self.open_color("blue")
+                    self.open_color("bold")
+                    self.open_color("underline")
+                    self.add_text(self.title)
+                    self.close_all()
+                    self.newparagraph()
+                    self._enable_indents()
+                self.title = None
+
+        # Beware, blocks are not wrapped nor indented and left untouched!
+        # They are mostly useful for pictures
+        def add_block(self,intext):
+            # We always add the title before a block
+            self._title_first()
+            # we don’t want to indent blocks
+            self._endline(newline=False)
+            self._disable_indents()
+            if intext.strip("\n").strip() != "":
+                self.final_text += self.current_indent + intext
+            self._endline()
+            self._enable_indents()
+        
+        def add_text(self,intext):
+            self._title_first(intext=intext)
+            lines = []
+            last = (self.last_line + intext).lstrip()
+            self.last_line = ""
+            if len(last) > 0:
+                self.new_paragraph = False
+            if len(last) > self.width:
+                width = self.width - len(self.current_indent) - len(self.r_indent)
+                lines = textwrap.wrap(last,width,drop_whitespace=False)
+                while len(lines) > 1:
+                    l = lines.pop(0)
+                    self.last_line = l.lstrip()
+                    self._endline()
+                if len(lines) == 1:
+                    li = lines[0]
+                    self.last_line = li.lstrip()
+            else:
+                self.last_line = last.lstrip()
+
+        def get_final(self):
+            self.close_all()
+            self._endline()
+            #if no content, we still add the title
+            self._title_first()
+            lines = self.final_text.splitlines()
+            lines2 = []
+            termspace = shutil.get_terminal_size()[0]
+            #Following code instert blanck spaces to center the content
+            if termspace > term_width():
+                margin = int((termspace - term_width())//2)
+            else:
+                margin = 0
+            for l in lines :
+                lines2.append(margin*" "+l)
+            return "\n".join(lines2)
+
     def get_subscribe_links(self):
         return [[self.url,self.get_mime(),self.get_title()]]
     def is_valid(self):
@@ -798,241 +1010,6 @@ class HtmlRenderer(AbstractRenderer):
             self.title = readable.short_title()
             return self.title
     
-    #This class hold an internal representation of the HTML text
-    #This is an experiment to rewrite the HTML renderer. Currently not used.
-    class representation:
-        def __init__(self,width,title=None):
-            #The following is just there to disable this class while developing it.
-            #This should result in very minimal performance fee for users while 
-            #having the code directly at hand (git branches? What git branches…)
-            self.debug_enabled = BETA
-            self.title=title
-            self.final_text = ""
-            self.opened = []
-            self.width = width
-            self.last_line = ""
-            self.last_line_colors = {}
-            self.last_line_center = False
-            self.new_paragraph = True
-            self.i_indent = ""
-            self.s_indent = ""
-            self.r_indent = ""
-            self.current_indent = ""
-            self.disabled_indents = None
-            # each color is an [open,close] pair code
-            self.colors = { "italic" : ["3","23"],
-                            "bold"   : ["1","22"],
-                            "blue"   : ["34","39"],
-                            "underline": ["4","24"],
-                            "faint"  : ["2","22"],
-                            "yellow" : ["33","39"],
-                       }
-
-
-        def debug(inner):
-            def outer(self, *args, **kwargs):
-                if not self.debug_enabled:
-                    return ""
-                else:
-                    return inner(self, *args, **kwargs)
-            outer.__doc__ = inner.__doc__
-            return outer
-        
-        def _insert(self,color,open=True):
-            if open: o = 0 
-            else: o = 1
-            pos = len(self.last_line)
-            #we remember the position where to insert color codes
-            if not pos in self.last_line_colors:
-                self.last_line_colors[pos] = []
-            #Two inverse code cancel each other
-            if [color,int(not o)] in self.last_line_colors[pos]:
-                self.last_line_colors[pos].remove([color,int(not o)])
-            else:
-                self.last_line_colors[pos].append([color,o])#+color+str(o))
-        
-        # Take self.last line and add ANSI codes to it before adding it to 
-        # self.final_text.
-        def _endline(self,newline=True):
-            if "Date Prev" in self.last_line:
-                print("We end **%s**"%self.last_line)
-            if len(self.last_line.strip()) > 0:
-                for c in self.opened:
-                    self._insert(c,open=False)
-                newline = ""
-                added_char = 0
-                #we insert the color code at the saved positions
-                while len (self.last_line_colors) > 0:
-                    pos,colors = self.last_line_colors.popitem()
-                    #popitem itterates LIFO. 
-                    #So we go, backward, to the pos (starting at the end of last_line)
-                    newline = self.last_line[pos:] + newline
-                    ansicol = "\x1b["
-                    for c,o in colors:
-                        ansicol += self.colors[c][o] + ";"
-                    ansicol = ansicol[:-1]+"m"
-                    newline = ansicol + newline
-                    added_char += len(ansicol)
-                    self.last_line = self.last_line[:pos]
-                newline = self.last_line + newline
-                if self.last_line_center:
-                    #we have to care about the ansi char while centering
-                    width = term_width() + added_char
-                    newline = newline.strip().center(width)
-                    self.last_line_center = False
-                else:
-                    newline = self.current_indent + newline.lstrip() + self.r_indent
-                    self.current_indent = self.s_indent
-                self.final_text += newline
-                self.last_line = ""
-                if newline:
-                    self.final_text += "\n"
-                    for c in self.opened:
-                        self._insert(c,open=True)
-            else:
-                self.last_line = ""
-
-        
-        @debug
-        def center_line(self):
-            self.last_line_center = True
-        
-        @debug
-        def open_color(self,color):
-            if color in self.colors and color not in self.opened:
-                self._insert(color,open=True)
-                self.opened.append(color)
-        @debug
-        def close_color(self,color):
-            if color in self.colors and color in self.opened:
-                self._insert(color,open=False)
-                self.opened.remove(color)
-        @debug
-        def close_all(self):
-            if len(self.colors) > 0:
-                self.last_line += "\x1b[0m"
-                self.opened.clear()
-
-        @debug
-        def startindent(self,indent,sub=None,reverse=None):
-            self._endline()
-            self.i_indent = indent
-            self.current_indent = indent
-            if sub:
-                self.s_indent = sub
-            else:
-                self.s_indent = indent
-            if reverse:
-                self.r_indent = reverse
-            else:
-                self.r_indent = ""
-
-
-        def endindent(self):
-            self._endline()
-            self.i_indent = ""
-            self.s_indent = ""
-            self.r_indent = ""
-            self.current_indent = ""
-
-        def _disable_indents(self):
-            self.disabled_indents = []
-            self.disabled_indents.append(self.current_indent)
-            self.disabled_indents.append(self.i_indent)
-            self.disabled_indents.append(self.s_indent)
-            self.disabled_indents.append(self.r_indent)
-            self.endindent()
-
-        def _enable_indents(self):
-            if self.disabled_indents:
-                self.current_indent = self.disabled_indents[0]
-                self.i_indent = self.disabled_indents[1]
-                self.s_indent = self.disabled_indents[2]
-                self.r_indent = self.disabled_indents[3]
-            self.disabled_indents = None
-
-        @debug
-        def newline(self):
-            self._endline()
-
-        @debug
-        #A new paragraph implies 2 newlines
-        #But it is only used if didn’t already started one
-        #new_paragraph becomes false as soon as text is entered into it
-        def newparagraph(self):
-            if not self.new_paragraph:
-                self._endline()
-                self.final_text += "\n"
-                self.new_paragraph = True
-
-        def _title_first(self,intext=None):
-            if self.title:
-                if not self.title == intext:
-                    self._disable_indents()
-                    self.open_color("blue")
-                    self.open_color("bold")
-                    self.open_color("underline")
-                    self.add_text(self.title)
-                    self.close_all()
-                    self.newparagraph()
-                    self._enable_indents()
-                self.title = None
-
-
-
-        @debug
-        # Beware, blocks are not wrapped nor indented and left untouched!
-        # They are mostly useful for pictures
-        def add_block(self,intext):
-            # We always add the title before a block
-            self._title_first()
-            # we don’t want to indent blocks
-            self._endline(newline=False)
-            self._disable_indents()
-            if intext.strip("\n").strip() != "":
-                self.final_text += self.current_indent + intext
-            self._endline()
-            self._enable_indents()
-        
-        @debug
-        def add_text(self,intext):
-            self._title_first(intext=intext)
-            lines = []
-            last = (self.last_line + intext).lstrip()
-            self.last_line = ""
-            if len(last) > 0:
-                self.new_paragraph = False
-            if len(last) > self.width:
-                width = self.width - len(self.current_indent) - len(self.r_indent)
-                lines = textwrap.wrap(last,width,drop_whitespace=False)
-                while len(lines) > 1:
-                    l = lines.pop(0)
-                    self.last_line = l.lstrip()
-                    self._endline()
-                if len(lines) == 1:
-                    li = lines[0]
-                    self.last_line = li.lstrip()
-            else:
-                self.last_line = last.lstrip()
-
-        @debug
-        def get_final(self):
-            self.close_all()
-            self._endline()
-            #if no content, we still add the title
-            self._title_first()
-            lines = self.final_text.splitlines()
-            lines2 = []
-            termspace = shutil.get_terminal_size()[0]
-            #Following code instert blanck spaces to center the content
-            if termspace > term_width():
-                margin = int((termspace - term_width())//2)
-            else:
-                margin = 0
-            for l in lines :
-                lines2.append(margin*" "+l)
-            return "\n".join(lines2)
-
     # Our own HTML engine (crazy, isn’t it?)
     # Return [rendered_body, list_of_links]
     # mode is either links_only, readable or full
@@ -1285,20 +1262,7 @@ class HtmlRenderer(AbstractRenderer):
                         wrapped = ""
                     r_body += wrapped
                 r_body += "\n"
-        #check if we need to add the title or if already in content
-        lines = r_body.splitlines()
-        first_line = ""
-        while first_line == "" and len(lines) > 0:
-            first_line = lines.pop(0)
-        if add_title and self.get_title()[:(width-1)] not in first_line:
-            title = "\x1b[1;34m\x1b[4m" + self.get_title() + "\x1b[0m""\n" 
-            title = wrapparagraph(title,width)
-            r_body = title + "\n" + r_body
-        #We try to avoid huge empty gaps in the page
-        r_body = r_body.replace("\n\n\n\n","\n\n").replace("\n\n\n","\n\n")
-        if BETA:
-            r_body = r.get_final()
-        return r_body,links
+        return r.get_final(),links
 
 # Mapping mimetypes with renderers
 # (any content with a mimetype text/* not listed here will be rendered with as GemText)
