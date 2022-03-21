@@ -67,7 +67,7 @@ Announces about Offpunk will be made on Ploum’s Gemlog  => gemini://rawtext.cl
 Offpunk has no "strict dependencies", i.e. it should run and work without anything
 else beyond the Python standard library and the "less" pager.  However, it will "opportunistically
 import" a few other libraries if they are available to offer an improved
-experience or some other features. Python libraries requests, bs4 and readability are required for http/html support. Images are displayed if python-ansiwrap and chafa or timg are presents (python-pil is needed for chafa version before 1.10). When displaying only a picture (not inline), rendering will be pixel perfect in compatible terminals (such as Kitty) if chafa is at least version 1.8 or if timg is used.
+experience or some other features. Python libraries requests, bs4 and readability are required for http/html support. Images are displayed if chafa or timg are presents (python-pil is needed for chafa version before 1.10). When displaying only a picture (not inline), rendering will be pixel perfect in compatible terminals (such as Kitty) if chafa is at least version 1.8 or if timg is used.
 
 To avoid using unstable or too recent libraries, the rule of thumb is that a library should be packaged in Debian/Ubuntu. Keep in mind that Offpunk is mainly tested will all libraries installed. If you encounter a crash without one optional dependencies, please report it.
 
@@ -77,8 +77,6 @@ Run command `version` in offpunk to see if you are missing some dependencies.
 * [Python-requests](http://python-requests.org) is needed to handle http/https requests natively (apt-get install python3-requests). Without it, http links will be opened in an external browser
 * [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup) and [Readability](https://github.com/buriy/python-readability) are both needed to render HTML. Without them, HTML will not be rendered or be sent to an external parser like Lynx. (apt-get install python3-bs4 python3-readability or pip3 install readability-lxml)
 * [Python-feedparser](https://github.com/kurtmckee/feedparser) will allow parsing of RSS/Atom feeds and thus subscriptions to them. (apt-get install python3-feedparser)
-* The [ansiwrap library](https://pypi.org/project/ansiwrap/) may result in
-  neater display of text which makes use of ANSI escape codes to control colour. Ansiwrap is also required to display pictures in HTML pages (together with Chafa and python-pil) (not in Debian?).
 * The [cryptography library](https://pypi.org/project/cryptography/) will
   provide a better and slightly more secure experience when using the default
   TOFU certificate validation mode and is highly recommended (apt-get install python3-cryptography).
@@ -86,7 +84,7 @@ Run command `version` in offpunk to see if you are missing some dependencies.
 * [Python editor](https://github.com/fmoo/python-editor) is used to edit your lists with "list edit". (apt-get install python3-editor)
 * [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). Also needed to use the `copy` command. (apt-get install xsel)
 * [Chafa](https://hpjansson.org/chafa/) allows to display pictures in your console. Install it and browse to an HTML page with picture to see the magic.
-* [Timg](https://github.com/hzeller/timg) is a slower alternative to chafa for inline images. But it has better rendering when displaying only the image. Install both to get the best of both world. 
+* [Timg](https://github.com/hzeller/timg) is a slower alternative to chafa for inline images. But it has better rendering when displaying only the image. Install both to get the best of both world but if you need to choose one, choose Chafa. 
 * [Python-pil](http://python-pillow.github.io/) is required to only display the first frame of animated gif with chafa if chafa version is lower than 1.10.
 * [Python-setproctitle](https://github.com/dvarrazzo/py-setproctitle) will change the process name from "python" to "offpunk". Useful to kill it without killing every python service.
 

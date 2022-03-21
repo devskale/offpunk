@@ -60,14 +60,6 @@ except ModuleNotFoundError:
     _HAS_EDITOR = False
 
 import textwrap
-try:
-    import ansiwrap
-    wrap_method = ansiwrap.wrap
-    _HAS_ANSIWRAP = True
-except ModuleNotFoundError:
-    print("Try installing python-ansiwrap for better rendering")
-    wrap_method = textwrap.wrap
-    _HAS_ANSIWRAP = False
 
 global TERM_WIDTH
 TERM_WIDTH = 72
@@ -78,28 +70,6 @@ def term_width():
     if cur < width:
         width = cur
     return width
-
-# return wrapped text as a list of lines
-def wraplines(*args,**kwargs):
-    if "center" in kwargs:
-        center = kwargs.pop("center")
-    else:
-        center = True
-    lines = wrap_method(*args,**kwargs)
-    lines2 = []
-    textwidth = TERM_WIDTH
-    termspace = shutil.get_terminal_size()[0]
-    #Following code instert blanck spaces to center the content
-    if center and termspace > textwidth:
-        margin = int((termspace - textwidth)//2)
-    else:
-        margin = 0
-    for l in lines :
-        lines2.append(margin*" "+l)
-    return lines2
-# return wrapped text as one string
-def wrapparagraph(*args,**kwargs):
-    return "\n".join(wraplines(*args,**kwargs))
 
 try:
     from PIL import Image
@@ -119,15 +89,15 @@ if _HAS_CHAFA:
     # with chafa < 1.10, --version was returned to stderr instead of stdout.
     if output != '':
         _NEW_CHAFA = True
-if _NEW_CHAFA and _HAS_ANSIWRAP:
+if _NEW_CHAFA :
     _RENDER_IMAGE = True
-elif _HAS_TIMG and _HAS_ANSIWRAP:
+elif _HAS_TIMG :
     _RENDER_IMAGE = True
-elif _HAS_CHAFA and _HAS_PIL and _HAS_ANSIWRAP:
+elif _HAS_CHAFA and _HAS_PIL:
     _RENDER_IMAGE = True
 else:
     _RENDER_IMAGE = False
-    print("To render images inline, you need either chafa or timg and ansiwrap.")
+    print("To render images inline, you need either chafa or timg.")
     if not _NEW_CHAFA and not _HAS_TIMG:
         print("Before Chafa 1.10, you also need python-pil")
 
@@ -142,7 +112,7 @@ def inline_image(img_file,width):
     #Chafa is faster than timg inline. Let use that one by default
     inline = None
     ansi_img = ""
-    if _HAS_CHAFA and _HAS_ANSIWRAP:
+    if _HAS_CHAFA:
         if _HAS_PIL and not _NEW_CHAFA:
             # this code is a hack to remove frames from animated gif
             img_obj = Image.open(img_file)
@@ -152,7 +122,7 @@ def inline_image(img_file,width):
             inline = "chafa --bg white -s %s -f symbols"
         elif _NEW_CHAFA:
             inline = "chafa --bg white -s %s -f symbols --animate=off"
-    if not inline and _HAS_TIMG and _HAS_ANSIWRAP:
+    if not inline and _HAS_TIMG:
         inline = "timg --frames=1 -p q -g %sx1000"
     if inline:
         cmd = inline%width+ " \"%s\""%img_file
@@ -402,12 +372,14 @@ class AbstractRenderer():
             self.current_indent = ""
             self.disabled_indents = None
             # each color is an [open,close] pair code
-            self.colors = { "italic" : ["3","23"],
+            self.colors = { 
                             "bold"   : ["1","22"],
-                            "blue"   : ["34","39"],
-                            "underline": ["4","24"],
                             "faint"  : ["2","22"],
+                            "italic" : ["3","23"],
+                            "underline": ["4","24"],
+                            "red"    : ["31","39"],
                             "yellow" : ["33","39"],
+                            "blue"   : ["34","39"],
                        }
 
         def _insert(self,color,open=True):
@@ -627,8 +599,20 @@ class AbstractRenderer():
                 self.links[mode] = result[1]
         return self.rendered_text[mode]
 
-    def display(self,mode="readable",title=""):
-        body = title + self.get_body(mode=mode)
+    def _window_title(self,title,info=None):
+        title_r = self.representation(term_width())
+        title_r.open_color("red")
+        title_r.open_color("bold")
+        title_r.add_text(title)
+        title_r.close_color("bold")
+        if info:
+            title_r.add_text("   (%s)"%info)
+        title_r.close_color("red")
+        return title_r.get_final() 
+
+    def display(self,mode="readable",window_title="",window_info=None):
+        wtitle = self._window_title(window_title,info=window_info)
+        body = wtitle + "\n" + self.get_body(mode=mode)
         if not body:
             return False
         # We actually put the body in a tmpfile before giving it to less
@@ -772,33 +756,43 @@ class GopherRenderer(AbstractRenderer):
     def get_mime(self):
         return "text/gopher"
     def get_title(self):
-        return "Gopher - No Title"
+        if not self.title:
+            if self.body:
+                firstline = self.body.splitlines()[0]
+                firstline = firstline.split("\t")[0]
+                if firstline.startswith("i"):
+                    firstline = firstline[1:]
+                self.title = firstline
+        return self.title
 
     #menu_or_text
     def render(self,body,width=None,mode=None):
         if not width:
             width = term_width()
         try:
-            render,links = self._render_goph(width=width,mode=mode)
+            render,links = self._render_goph(body,width=width,mode=mode)
         except Exception as err:
-            print("Error ",err)
-            lines = body.split("\n")
-            render = ""
-            for line in lines:
-                render += wrapparagraph(line,width) + "\n"
+            print("Error rendering Gopher ",err)
+            r = self.representation(width)
+            r.add_block(body)
+            render = r.get_final()
             links = []
         return render,links
 
-    def _render_goph(self,width=None,mode=None):
+    def _render_goph(self,body,width=None,mode=None):
         if not width:
             width = term_width()
-        # This is copied straight from Agena (and thus from VF1)
-        rendered_text = ""
+        # This was copied straight from Agena (then later adapted)
         links = []
+        r = self.representation(width)
         for line in self.body.split("\n"):
+            r.newline()
             if line.startswith("i"):
-                towrap = line[1:].split("\t")[0] + "\r\n"
-                rendered_text += wrapparagraph(towrap,width) + "\n"
+                towrap = line[1:].split("\t")[0]
+                if len(towrap.strip()) > 0:
+                    r.add_text(towrap)
+                else:
+                    r.newparagraph()
             elif not line.strip() in [".",""]:
                 parts = line.split("\t")
                 parts[-1] = parts[-1].strip()
@@ -820,12 +814,11 @@ class GopherRenderer(AbstractRenderer):
                         url = "gopher://%s%s/%s%s" %(host,port,itemtype,path)
                     linkline = url + " " + name
                     links.append(linkline)
-                    towrap = "[%s] "%len(links)+ name + "\n"
-                    rendered_text += wrapparagraph(towrap,width) + "\n"
+                    towrap = "[%s] "%len(links)+ name
+                    r.add_text(towrap)
                 else:
-                    towrap = line +"\n"
-                    rendered_text += wrapparagraph(towrap,width) + "\n"
-        return rendered_text,links
+                    r.add_text(line)
+        return r.get_final(),links
 
 
 class FolderRenderer(GemtextRenderer):
@@ -990,9 +983,9 @@ class ImageRenderer(AbstractRenderer):
         for l in lines:
             new_img += spaces*" " + l + "\n"
         return new_img, []
-    def display(self,mode=None,title=None):
-        if title:
-            print(title)
+    def display(self,mode=None,window_title=None,window_info=None):
+        if window_title:
+            print(self._window_title(window_title,info=window_info))
         terminal_image(self.body)
         return True
 
@@ -1459,22 +1452,6 @@ class GeminiItem():
         else:
             return []
 
-    # Red title above rendered content
-    def _make_terminal_title(self):
-        title = self.get_capsule_title()
-        #FIXME : how do I know that I’m offline_only ?
-        if self.is_cache_valid(): #and self.offline_only and not self.local:
-            last_modification = self.cache_last_modified()
-            str_last = time.ctime(last_modification)
-            nbr = len(self.get_links(mode="links_only"))
-            if self.local:
-                title += " (%s items)    \x1b[0;31m(local file)"%nbr
-            else:
-                title += " (%s links)    \x1b[0;31m(last accessed on %s)"%(nbr,str_last)
-        rendered_title = "\x1b[31m\x1b[1m"+ title + "\x1b[0m"
-        wrapped = wrapparagraph(rendered_title,term_width())
-        return wrapped + "\n"
-
     def _set_renderer(self,mime=None):
         if self.local and os.path.isdir(self.get_cache_path()):
             self.renderer = FolderRenderer("",self.get_cache_path())
@@ -1512,8 +1489,16 @@ class GeminiItem():
             self._set_renderer()
         if self.renderer and self.renderer.is_valid():
             self.last_mode = mode
-            title = self._make_terminal_title()
-            return self.renderer.display(mode=mode,title=title)
+            title = self.get_capsule_title()
+            if self.is_cache_valid(): #and self.offline_only and not self.local:
+                nbr = len(self.get_links(mode="links_only"))
+                if self.local:
+                    title += " (%s items)"%nbr
+                    str_last = "local file)"
+                else:
+                    str_last = "last accessed on %s" %time.ctime(self.cache_last_modified())
+                    title += " (%s links)"%nbr
+            return self.renderer.display(mode=mode,window_title=title,window_info=str_last)
         else:
             return False
 
@@ -3061,7 +3046,6 @@ Marks are temporary until shutdown (not saved to disk)."""
         output = "Offpunk " + _VERSION + "\n"
         output += "===========\n"
         output += " - python-editor       : " + has(_HAS_EDITOR)
-        output += " - python-ansiwrap     : " + has(_HAS_ANSIWRAP)
         output += " - python-cryptography : " + has(_HAS_CRYPTOGRAPHY)
         output += " - python-magic        : " + has(_HAS_MAGIC)
         output += " - python-requests     : " + has(_DO_HTTP)
@@ -3079,12 +3063,12 @@ Marks are temporary until shutdown (not saved to disk)."""
             output += " - python-pil          : " + has(_HAS_PIL)
 
         output += "\nFeatures :\n"
-        output += " - Render images (ansiwrap, chafa|timg)              : " + has(_RENDER_IMAGE)
-        output += " - Render HTML (bs4, readability)                    : " + has(_DO_HTML)
-        output += " - Render Atom/RSS feeds (feedparser)                : " + has(_DO_FEED)
-        output += " - Connect to http/https (requests)                  : " + has(_DO_HTTP)
-        output += " - copy to/from clipboard (xsel)                     : " + has(_HAS_XSEL)
-        output += " - restore last position (less 572+)                 : " + has(_LESS_RESTORE_POSITION) 
+        output += " - Render images (chafa|timg)                 : " + has(_RENDER_IMAGE)
+        output += " - Render HTML (bs4, readability)             : " + has(_DO_HTML)
+        output += " - Render Atom/RSS feeds (feedparser)         : " + has(_DO_FEED)
+        output += " - Connect to http/https (requests)           : " + has(_DO_HTTP)
+        output += " - copy to/from clipboard (xsel)              : " + has(_HAS_XSEL)
+        output += " - restore last position (less 572+)          : " + has(_LESS_RESTORE_POSITION) 
         output += "\n"
         output += "Config directory    : " +  _CONFIG_DIR + "\n"
         output += "User Data directory : " +  _DATA_DIR + "\n"
