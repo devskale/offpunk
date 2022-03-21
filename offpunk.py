@@ -543,13 +543,15 @@ class AbstractRenderer():
 
         # Beware, blocks are not wrapped nor indented and left untouched!
         # They are mostly useful for pictures
-        def add_block(self,intext):
+        def add_block(self,intext,wrap=False):
             # We always add the title before a block
             self._title_first()
             # we don’t want to indent blocks
             self._endline(newline=False)
             self._disable_indents()
             if intext.strip("\n").strip() != "":
+                if wrap:
+                    intext = textwrap.fill(intext)
                 self.final_text += self.current_indent + intext
             self._endline()
             self._enable_indents()
@@ -787,8 +789,12 @@ class GemtextRenderer(AbstractRenderer):
                 rendered_text += wrap_line(line,color="\x1b[1;34m\x1b[4m")
             else:
                 rendered_text += wrap_line(line).rstrip() + "\n"
+                # with the add_block, we keep leading spaces and handmade formatting.
+                #r.add_block(line.rstrip(),wrap=True)
+                # while with add_text, we justify on the left margin
                 r.add_text(line.rstrip())
-            rendered_text = r.get_final()
+            if BETA:
+                rendered_text = r.get_final()
         return rendered_text, links
 
 class GopherRenderer(AbstractRenderer):
@@ -819,8 +825,6 @@ class GopherRenderer(AbstractRenderer):
         rendered_text = ""
         links = []
         for line in self.body.split("\n"):
-            #if line.strip() == ".":
-            #    continue
             if line.startswith("i"):
                 towrap = line[1:].split("\t")[0] + "\r\n"
                 rendered_text += wrapparagraph(towrap,width) + "\n"
