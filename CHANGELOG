@@ -2,7 +2,7 @@
 
 ## 1.2 - Unreleased
 - Completely rewritten the HMTL, Gemtext and Gopher renderer. Tests needed!
-- Removed dependancy to ansiwrap. We don’t use it anymore (which is important)
+- Removed dependancy to ansiwrap. We don’t use it anymore (which is an important achievement)
 - Limit width of --sync output
 - Fixed a crash when trying to save a folder
 

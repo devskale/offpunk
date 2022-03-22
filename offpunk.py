@@ -491,8 +491,9 @@ class AbstractRenderer():
         def newline(self):
             self._endline()
 
-        #A new paragraph implies 2 newlines
-        #But it is only used if didn’t already started one (except if forced)
+        #A new paragraph implies 2 newlines (1 blank line between paragraphs)
+        #But it is only used if didn’t already started one to avoid plenty 
+        #of blank lines. force=True allows to bypass that limit.
         #new_paragraph becomes false as soon as text is entered into it
         def newparagraph(self,force=False):
             if force or not self.new_paragraph:
@@ -514,26 +515,22 @@ class AbstractRenderer():
                 self.title = None
 
         # Beware, blocks are not wrapped nor indented and left untouched!
-        # They are mostly useful for pictures
+        # They are mostly useful for pictures and preformatted text.
         def add_block(self,intext):
-            # We always add the title before a block
+            # If necessary, we add the title before a block
             self._title_first()
             # we don’t want to indent blocks
             self._endline()
             self._disable_indents()
-            #if intext.strip("\n").strip() != "":
-            #    if wrap:
-            #        intext = textwrap.fill(intext)
-            if True:
-                self.final_text += self.current_indent + intext
-                self.new_paragraph = False
+            self.final_text += self.current_indent + intext
+            self.new_paragraph = False
             self._endline()
             self._enable_indents()
         
         def add_text(self,intext):
             self._title_first(intext=intext)
             lines = []
-            last = (self.last_line + intext)#.lstrip()
+            last = (self.last_line + intext)
             self.last_line = ""
             if len(last) > 0:
                 self.new_paragraph = False
@@ -545,13 +542,13 @@ class AbstractRenderer():
                 self.last_line += spaces_left*" "
                 while len(lines) > 1:
                     l = lines.pop(0)
-                    self.last_line += l#.lstrip()
+                    self.last_line += l
                     self._endline()
                 if len(lines) == 1:
                     li = lines[0]
                     self.last_line += li + spaces_right*" "
             else:
-                self.last_line = last#.lstrip()
+                self.last_line = last
 
         def get_final(self):
             self.close_all()
