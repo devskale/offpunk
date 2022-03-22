@@ -3063,7 +3063,10 @@ Marks are temporary until shutdown (not saved to disk)."""
             output += " - python-pil          : " + has(_HAS_PIL)
 
         output += "\nFeatures :\n"
-        output += " - Render images (chafa|timg)                 : " + has(_RENDER_IMAGE)
+        if _NEW_CHAFA:
+            output += " - Render images (chafa or timg)              : " + has(_RENDER_IMAGE)
+        else:
+            output += " - Render images (python-pil, chafa or timg)  : " + has(_RENDER_IMAGE)
         output += " - Render HTML (bs4, readability)             : " + has(_DO_HTML)
         output += " - Render Atom/RSS feeds (feedparser)         : " + has(_DO_FEED)
         output += " - Connect to http/https (requests)           : " + has(_DO_HTTP)
