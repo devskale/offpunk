@@ -678,7 +678,7 @@ class GemtextRenderer(AbstractRenderer):
             else:
                 adress = url
                 protocol = ""
-            if "gemini" in protocol:
+            if "gemini" in protocol or "list" in protocol:
                 protocol = ""
             if not name:
                 name = adress
@@ -834,8 +834,8 @@ class FolderRenderer(GemtextRenderer):
         def write_list(l):
             body = ""
             for li in l:
-                path = os.path.join(listdir,li+".gmi")
-                gi = GeminiItem("file://" + path)
+                path = "list:///%s"%li
+                gi = GeminiItem(path)
                 size = len(gi.get_links())
                 body += "=> %s %s (%s items)\n" %(str(path),li,size)
             return body
@@ -1086,6 +1086,7 @@ class HtmlRenderer(AbstractRenderer):
                 for child in element.children:
                     r.newparagraph()
                     recursive_render(child)
+                    r.newparagraph()
                     r.close_all()
             elif element.name in ["code","tt"]:
                 for child in element.children:
@@ -1233,11 +1234,11 @@ class GeminiItem():
         self.body = None
         self.last_mode = None
         parsed = urllib.parse.urlparse(self.url)
-        if "./" in url or url[0] == "/":
+        if url[0] == "/" or url.startswith("./"):
             self.scheme = "file"
         else:
             self.scheme = parsed.scheme
-        if self.scheme in ["file","mailto"]:
+        if self.scheme in ["file","mailto","list"]:
             self.local = True
             self.host = ""
             self.port = None
@@ -1246,6 +1247,15 @@ class GeminiItem():
                 self.path = self.url[7:]
             elif self.scheme == "mailto":
                 self.path = parsed.path
+            elif self.url.startswith("list://"):
+                listdir = os.path.join(_DATA_DIR,"lists")
+                listname = self.url[7:].lstrip("/")
+                if listname in [""]:
+                    self.name = "My Lists"
+                    self.path = listdir
+                else:
+                    self.name = listname
+                    self.path = os.path.join(listdir, "%s.gmi"%listname)
             else:
                 self.path = self.url
         else:
@@ -1341,7 +1351,17 @@ class GeminiItem():
                         if pp.startswith("~"):
                             red_title = pp[1:]
             return red_title
-    
+   
+    def get_page_title(self):
+        if not self.renderer:
+            self._set_renderer()
+        title = self.renderer.get_title()
+        if len(title) == 0:
+            title = self.get_capsule_title()
+        else:
+            title += " (%s)" %self.get_capsule_title()
+        return title
+
     def is_cache_valid(self,validity=0):
         # Validity is the acceptable time for 
         # a cache to be valid  (in seconds)
@@ -1422,7 +1442,11 @@ class GeminiItem():
             url = self.absolutise_url(splitted[0])
             if looks_like_url(url):
                 if len(splitted) > 1:
-                    newgi = GeminiItem(url,splitted[1])
+                    #We add a name only for Gopher items
+                    if url.startswith("gopher://"):
+                        newgi = GeminiItem(url,name=splitted[1])
+                    else:
+                        newgi = GeminiItem(url)
                 else:
                     newgi = GeminiItem(url)
                 toreturn.append(newgi)
@@ -1493,7 +1517,7 @@ class GeminiItem():
                 nbr = len(self.get_links(mode="links_only"))
                 if self.local:
                     title += " (%s items)"%nbr
-                    str_last = "local file)"
+                    str_last = "local file"
                 else:
                     str_last = "last accessed on %s" %time.ctime(self.cache_last_modified())
                     title += " (%s links)"%nbr
@@ -1650,27 +1674,9 @@ class GeminiItem():
         """
         abs_url = urllib.parse.urljoin(self.url, relative_url)
         return abs_url
-
-    def full_title(self):
-        if self.renderer:
-            title = self.renderer.get_title()
-        elif self.name:
-            title = self.name
-        else:
-            # we take the last component of url as title
-            if self.local:
-                title = self.url.split("/")[-1]
-            else:
-                parsed = urllib.parse.urlparse(self.url)
-                if parsed.path:
-                    title = parsed.path.strip("/").split("/")[-1]
-                else:
-                    title = parsed.netloc
-        title += " (%s)"%self.get_capsule_title()
-        return title
         
     def to_map_line(self):
-        return "=> {} {}\n".format(self.url, self.full_title())
+        return "=> {} {}\n".format(self.url, self.get_page_title())
 
 CRLF = '\r\n'
 
@@ -1686,12 +1692,15 @@ def looks_like_url(word):
         mailto = word.startswith("mailto:")
         scheme = word.split("://")[0]
         start = scheme in standard_ports
-        if not start and not mailto:
+        local = scheme in ["file","list"]
+        if not start and not local and not mailto:
             return looks_like_url("gemini://"+word)
         elif mailto:
             return "@" in word
-        else:
+        elif not local:
             return "." in word
+        else:
+            return "/" in word
     except ValueError:
         return False
 
@@ -1823,7 +1832,8 @@ class GeminiClient(cmd.Cmd):
                         print("Cannot find a mail client to send mail to %s" %gi.path)
                         print("Please install xdg-open (usually from xdg-util package)")
             return
-        elif gi.scheme != "file" and gi.scheme not in standard_ports and not self.sync_only:
+        elif gi.scheme not in ["file","list"] and gi.scheme not in standard_ports \
+                                                                and not self.sync_only:
             print("Sorry, no support for {} links.".format(gi.scheme))
             return
 
@@ -2864,6 +2874,8 @@ Use with "cache" to copy the path of the cached content."""
         # If this isn't a mark, treat it as a URL
         elif looks_like_url(line):
             self._go_to_gi(GeminiItem(line))
+        else:
+            print("%s is not a valid URL to go"%line)
 
     @needs_gi
     def do_reload(self, *args):
@@ -3000,7 +3012,7 @@ Marks are temporary until shutdown (not saved to disk)."""
     @needs_gi
     def do_info(self,line):
         """Display information about current page."""
-        out = self.gi.full_title() + "\n\n"
+        out = self.gi.get_page_title() + "\n\n"
         out += "URL      :   " + self.gi.url + "\n"
         out += "Path     :   " + self.gi.path + "\n"
         out += "Mime     :   " + self.gi.get_mime() + "\n"
@@ -3364,7 +3376,7 @@ archives, which is a special historical list limited in size. It is similar to `
                 if deleted:
                     print("Removed from %s"%li)
         self.list_add_top("archives",limit=self.options["archives_size"])
-        print("Archiving: %s"%self.gi.full_title())
+        print("Archiving: %s"%self.gi.get_page_title())
         print("\x1b[2;34mCurrent maximum size of archives : %s\x1b[0m" %self.options["archives_size"])
 
     def list_add_line(self,list,gi=None,verbose=True):
@@ -3408,15 +3420,19 @@ archives, which is a special historical list limited in size. It is similar to `
             lines = l_file.readlines()
             l_file.close()
         with open(list_path,"w") as l_file:
+            l_file.write("#%s\n"%list)
             l_file.write(stri)
             counter = 0
+            # Truncating is useful in case we open a new branch
+            # after a few back in history
             to_truncate = truncate_lines
             for l in lines:
-                if to_truncate > 0:
-                    to_truncate -= 1
-                elif limit == 0 or counter < limit:
-                    l_file.write(l)
-                    counter += 1
+                if not l.startswith("#"):
+                    if to_truncate > 0:
+                        to_truncate -= 1
+                    elif limit == 0 or counter < limit:
+                        l_file.write(l)
+                        counter += 1
             l_file.close()
 
 
@@ -3459,7 +3475,7 @@ archives, which is a special historical list limited in size. It is similar to `
     def list_get_links(self,list):
         list_path = self.list_path(list)
         if list_path:
-            gi = GeminiItem("file://" + list_path)
+            gi = GeminiItem("list:///%s"%list)
             return gi.get_links()
         else:
             return []
@@ -3471,7 +3487,7 @@ archives, which is a special historical list limited in size. It is similar to `
         elif not line.isnumeric():
             print("go_to_line requires a number as parameter")
         else:
-            gi = GeminiItem("file://" + list_path,list)
+            gi = GeminiItem("list:///%s"%list)
             gi = gi.get_link(int(line))
             display = not self.sync_only
             if gi:
@@ -3483,7 +3499,7 @@ archives, which is a special historical list limited in size. It is similar to `
         if not list_path:
             print("List %s does not exist. Create it with ""list create %s"""%(list,list))
         else:
-            gi = GeminiItem("file://" + list_path,list)
+            gi = GeminiItem("list:///%s"%list)
             display = not self.sync_only 
             self._go_to_gi(gi,handle=display)
 
@@ -3611,7 +3627,7 @@ Note: There’s no "delete" on purpose. The use of "archive" is recommended."""
         if not arg:
             lists = self.list_lists()
             if len(lists) > 0:
-                lgi = GeminiItem(listdir, "My lists")
+                lgi = GeminiItem("list:///")
                 self._go_to_gi(lgi)
             else:
                 print("No lists yet. Use `list create`")

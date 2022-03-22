@@ -3,7 +3,9 @@
 ## 1.2 - Unreleased
 - Completely rewritten the HMTL, Gemtext and Gopher renderer. Tests needed!
 - Removed dependancy to ansiwrap. We don’t use it anymore (which is an important achievement)
+- Lists are now accessed via the protocol "list://".
 - Limit width of --sync output
+- Solved list names becoming very long in the history
 - Fixed a crash when trying to save a folder
 
 ## 1.1 - March 18th 2022
