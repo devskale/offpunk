@@ -424,7 +424,7 @@ class AbstractRenderer():
                     self.last_line_center = False
                 else:
                     #should we lstrip the nextline in the addition ?
-                    nextline = self.current_indent + nextline + self.r_indent
+                    nextline = self.current_indent + nextline.lstrip() + self.r_indent
                     self.current_indent = self.s_indent
                 self.final_text += nextline
                 self.last_line = ""
@@ -1047,7 +1047,9 @@ class HtmlRenderer(AbstractRenderer):
                     ansi_img = textwrap.fill("[BAD IMG] %s"%src,width) + "\n"
             return ansi_img
         def sanitize_string(string):
-            string = string.replace("\n", " ").replace("\t"," ")
+            #never start with a "\n"
+            string = string.lstrip("\n")
+            string = string.replace("\r","").replace("\n", " ").replace("\t"," ")
             endspace = string.endswith(" ") or string.endswith("\xa0")
             startspace = string.startswith(" ") or string.startswith("\xa0")
             toreturn = string.replace("\n", " ").replace("\t"," ").strip()
@@ -1719,7 +1721,7 @@ def restricted(inner):
 
 class GeminiClient(cmd.Cmd):
 
-    def __init__(self, restricted=False, synconly=False):
+    def __init__(self, completekey="tab", restricted=False, synconly=False):
         cmd.Cmd.__init__(self)
 
         # Set umask so that nothing we create can be read by anybody else.
@@ -3678,6 +3680,9 @@ Note: There’s no "delete" on purpose. The use of "archive" is recommended."""
             else:
                 self.list_go_to_line(args[1],args[0].lower())
 
+    def completedefault(self,index,line,begidx,endidx):
+        print("completeing %s + %s" %index,line)
+        return ["bépo","auc"]
     def do_help(self, arg):
         """ALARM! Recursion detected! ALARM! Prepare to eject!"""
         if arg == "!":
