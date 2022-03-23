@@ -1353,9 +1353,11 @@ class GeminiItem():
             return red_title
    
     def get_page_title(self):
+        title = ""
         if not self.renderer:
             self._set_renderer()
-        title = self.renderer.get_title()
+        if self.renderer:
+            title = self.renderer.get_title()
         if len(title) == 0:
             title = self.get_capsule_title()
         else:
