@@ -3154,6 +3154,7 @@ Use 'ls -l' to see URLs."""
     def do_view(self, *args):
         """Run most recently visited item through "less" command, restoring \
 previous position.
+Use "view normal" to see the default article view on html page.
 Use "view full" to see a complete html page instead of the article view.
 Use "view feed" to see the the linked feed of the page (in any).
 Use "view feeds" to see available feeds on this page.
@@ -3161,6 +3162,8 @@ Use "view feeds" to see available feeds on this page.
         if self.gi and args and args[0] != "":
             if args[0] in ["full","debug"]:
                 self._go_to_gi(self.gi,mode=args[0])
+            elif args[0] in ["normal","readable"]:
+                self._go_to_gi(self.gi,mode="readable")
             elif args[0] == "feed":
                 subs = self.gi.get_subscribe_links()
                 if len(subs) > 1:
@@ -3181,16 +3184,10 @@ Use "view feeds" to see available feeds on this page.
                 if ans.isdigit() and 0 < int(ans) <= len(subs):
                     self.do_go(subs[int(ans)-1][0])
             else:
-                print("Valid argument for less are : full, feed, feeds")
-        elif self.gi.is_cache_valid() and self.gi.scheme not in ["mailto"]:
-            self.gi.display()
-            self.index = self.gi.get_links()
-            self.lookup = self.index
-            self.page_index = 0
-            self.index_index = -1
+                print("Valid argument for view are : normal, full, feed, feeds")
         else:
-            self.do_go(self.gi.url)
-
+            self._go_to_gi(self.gi)
+                
     @needs_gi
     def do_open(self, *args):
         """Open current item with the configured handler or xdg-open.

@@ -4,6 +4,8 @@
 - Completely rewritten the HMTL, Gemtext and Gopher renderer. Tests needed!
 - Removed dependancy to ansiwrap. We don’t use it anymore (which is an important achievement)
 - Lists are now accessed via the protocol "list://".
+- "view full" can now be bookmarked/synchronized as a separate entity.
+- "view normal" introduced to get back to the normal view.
 - Limit width of --sync output
 - Solved list names becoming very long in the history
 - Fixed a crash when trying to save a folder
