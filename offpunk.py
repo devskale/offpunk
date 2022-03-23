@@ -1226,13 +1226,20 @@ class GeminiItem():
         if "://" not in url and ("./" not in url and url[0] != "/"):
             if not url.startswith("mailto:"):
                 url = "gemini://" + url
-        self.url = fix_ipv6_url(url).strip()
+        self.last_mode = None
+        findmode = url.split("##offpunk_mode=")
+        if len(findmode) > 1:
+            self.url = findmode[0]
+            if findmode[1] in ["full"] or findmode[1].isnumeric():
+                self.last_mode = findmode[1]
+        else:
+            self.url = url
+        self.url = fix_ipv6_url(self.url).strip()
         self._cache_path = None
         self.name = name
         self.mime = None
         self.renderer = None
         self.body = None
-        self.last_mode = None
         parsed = urllib.parse.urlparse(self.url)
         if url[0] == "/" or url.startswith("./"):
             self.scheme = "file"
@@ -1429,7 +1436,7 @@ class GeminiItem():
     
     # This method is used to load once the list of links in a gi
     # Links can be followed, after a space, by a description/title
-    def get_links(self,mode="links_only"):
+    def get_links(self,mode=None):
         links = []
         toreturn = []
         if not self.renderer:
@@ -1509,14 +1516,17 @@ class GeminiItem():
                 if not self.renderer.is_valid():
                     self.renderer = None
 
-    def display(self,mode="readable"):
+    def display(self,mode=None):
         if not self.renderer:
             self._set_renderer()
         if self.renderer and self.renderer.is_valid():
-            self.last_mode = mode
+            if not mode:
+                mode = self.last_mode
+            else:
+                self.last_mode = mode
             title = self.get_capsule_title()
             if self.is_cache_valid(): #and self.offline_only and not self.local:
-                nbr = len(self.get_links(mode="links_only"))
+                nbr = len(self.get_links(mode=mode))
                 if self.local:
                     title += " (%s items)"%nbr
                     str_last = "local file"
@@ -1676,9 +1686,15 @@ class GeminiItem():
         """
         abs_url = urllib.parse.urljoin(self.url, relative_url)
         return abs_url
-        
+
+    def url_mode(self):
+        url = self.url 
+        if self.last_mode and self.last_mode != "readable":
+            url += "##offpunk_mode=" + self.last_mode
+        return url
+
     def to_map_line(self):
-        return "=> {} {}\n".format(self.url, self.get_page_title())
+        return "=> {} {}\n".format(self.url_mode(), self.get_page_title())
 
 CRLF = '\r\n'
 
@@ -1812,7 +1828,7 @@ class GeminiClient(cmd.Cmd):
             first_seen date, last_seen date, count integer)""")
 
     def _go_to_gi(self, gi, update_hist=True, check_cache=True, handle=True,\
-                                                mode="readable",limit_size=False):
+                                                mode=None,limit_size=False):
         """This method might be considered "the heart of Offpunk".
         Everything involved in fetching a gemini resource happens here:
         sending the request over the network, parsing the response, 
@@ -1922,7 +1938,7 @@ class GeminiClient(cmd.Cmd):
         if gi :
             display = handle and not self.sync_only
             if display and gi.display(mode=mode):
-                self.index = gi.get_links(mode=mode)
+                self.index = gi.get_links()
                 self.lookup = self.index
                 self.page_index = 0
                 self.index_index = -1
@@ -2960,7 +2976,7 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
             self.list_show("tour")
         elif line == "clear":
             for l in self.list_get_links("tour"):
-                self.list_rm_url(l.url,"tour")
+                self.list_rm_url(l.url_mode(),"tour")
         elif line == "*":
             for l in self.lookup:
                 self.list_add_line("tour",gi=l,verbose=False)
@@ -3168,7 +3184,7 @@ Use "view feeds" to see available feeds on this page.
                 print("Valid argument for less are : full, feed, feeds")
         elif self.gi.is_cache_valid() and self.gi.scheme not in ["mailto"]:
             self.gi.display()
-            self.index = self.gi.get_links(mode="readable")
+            self.index = self.gi.get_links()
             self.lookup = self.index
             self.page_index = 0
             self.index_index = -1
@@ -3374,7 +3390,7 @@ Bookmarks are stored using the 'add' command."""
 archives, which is a special historical list limited in size. It is similar to `move archives`."""
         for li in self.list_lists():
             if li not in ["archives", "history"]:
-                deleted = self.list_rm_url(self.gi.url,li)
+                deleted = self.list_rm_url(self.gi.url_mode(),li)
                 if deleted:
                     print("Removed from %s"%li)
         self.list_add_top("archives",limit=self.options["archives_size"])
@@ -3395,7 +3411,7 @@ archives, which is a special historical list limited in size. It is similar to `
                 l_file.close()
                 for l in lines:
                     sp = l.split()
-                    if gi.url in sp:
+                    if gi.url_mode() in sp:
                         if verbose:
                             print("%s already in %s."%(gi.url,list))
                         return False
@@ -3494,7 +3510,7 @@ archives, which is a special historical list limited in size. It is similar to `
             display = not self.sync_only
             if gi:
                 self._go_to_gi(gi,handle=display)
-                return gi.url
+                return gi.url_mode()
 
     def list_show(self,list):
         list_path = self.list_path(list)
@@ -3550,7 +3566,7 @@ If current page was not in a list, this command is similar to `add LIST`."""
                 lists = self.list_lists()
                 for l in lists:
                     if l != args[0] and l not in ["archives", "history"]:
-                        isremoved = self.list_rm_url(self.gi.url,l)
+                        isremoved = self.list_rm_url(self.gi.url_mode(),l)
                         if isremoved:
                             print("Removed from %s"%l)
                 self.list_add_line(args[0])
@@ -3838,7 +3854,7 @@ Argument : duration of cache validity (in seconds)."""
                 fetch_gitem(l,depth=depth,validity=validity,savetotour=tourchildren,count=[counter,end])
                 if tourandremove:
                     if add_to_tour(l):
-                        self.list_rm_url(l.url,list)
+                        self.list_rm_url(l.url_mode(),list)
             
         self.sync_only = True
         lists = self.list_lists()
