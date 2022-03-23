@@ -219,10 +219,16 @@ _MAX_CACHE_SIZE = 10
 _MAX_CACHE_AGE_SECS = 180
 
 less_version = 0
+if not shutil.which("less"):
+    print("Please install the pager \"less\" to run Offpunk.")
+    print("If you wish to use another pager, send your request to offpunk@ploum.eu.")
+    print("(I’m really curious to hear about people not having \"less\" on their system.)")
+    sys.exit()
 return_code = subprocess.run("less --version",shell=True, capture_output=True)
 output = return_code.stdout.decode()
 # We get less Version (which is the only integer on the first line)
 words = output.split("\n")[0].split()
+less_version = 0
 for w in words:
     if w.isdigit():
         less_version = int(w)
