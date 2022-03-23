@@ -1,14 +1,17 @@
 # Offpunk History
 
-## 1.2 - Unreleased
+## 1.2 - Marche 24th 2022
+Very experimental release:
 - Completely rewritten the HMTL, Gemtext and Gopher renderer. Tests needed!
 - Removed dependancy to ansiwrap. We don’t use it anymore (which is an important achievement)
 - Lists are now accessed via the protocol "list://".
 - "view full" can now be bookmarked/synchronized as a separate entity.
 - "view normal" introduced to get back to the normal view.
+Small improvements:
 - Limit width of --sync output
 - Solved list names becoming very long in the history
 - Fixed a crash when trying to save a folder
+=> gemini://rawtext.club/~ploum/2022-03-24-ansi_html.gmi
 
 ## 1.1 - March 18th 2022
 - Perfect rendering of pictures with chafa 1.8+ and compatible terminal (Kitty)

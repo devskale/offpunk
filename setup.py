@@ -2,8 +2,8 @@ from setuptools import setup
 
 setup(
     name='offpunk',
-    version='1.1',
-    description="Offline Command line Gemini client forked from AV-98.",
+    version='1.2',
+    description="Offline-First Gemini/Web/Gopher/RSS reader and browser",
     author="Ploum",
     author_email="offpunk@ploum.eu",
     url='https://tildegit.org/ploum/AV-98-offline/',
