@@ -1808,7 +1808,7 @@ class GeminiClient(cmd.Cmd):
             "tls_mode" : "tofu",
             "archives_size" : 200,
             "history_size" : 200,
-            "max_size_download" : 20,
+            "max_size_download" : 10,
         }
         global TERM_WIDTH
         TERM_WIDTH = self.options["width"]
@@ -1969,9 +1969,17 @@ class GeminiClient(cmd.Cmd):
                     print("You can use the ! command to specify another handler program or pipeline.")
 
     def _fetch_http(self,gi,max_length=None):
+        def set_error(item,length,max_length):
+            err = "Size of %s is %s Mo\n"%(item.url,length)
+            err += "Offpunk only download automatically content under %s Mo\n" %(max_length/1000000)
+            err += "To retrieve this content anyway, type 'reload'." 
+            item.set_error(err)
+            return item
         header = {}
         header["User-Agent"] = "Offpunk browser v%s"%_VERSION
-        with requests.get(gi.url,headers=header, stream=True) as response:
+        with requests.get(gi.url,headers=header, stream=True,timeout=5) as response:
+            #print("This is header for %s"%gi.url)
+            #print(response.headers)
             if "content-type" in response.headers:
                 mime = response.headers['content-type']
             else:
@@ -1982,11 +1990,17 @@ class GeminiClient(cmd.Cmd):
                 length = 0
             if max_length and length > max_length:
                 response.close()
-                err = "Size of %s is %s Mo\n"%(gi.url,length/1000000)
-                err += "Offpunk only download automatically content under %s Mo\n" %(max_length/1000000)
-                err += "To retrieve this content anyway, type 'reload'." 
-                gi.set_error(err)
-                return gi
+                return set_error(gi,str(length/1000000),max_length)
+            elif max_length and length == 0:
+                body = b''
+                for r in response.iter_content():
+                    body += r
+                    #We divide max_size for streamed content
+                    #in order to catch them faster
+                    if sys.getsizeof(body) > max_length/2:
+                        response.close()
+                        return set_error(gi,"streaming",max_length)
+                response.close()
             else:
                 body = response.content
                 response.close()
