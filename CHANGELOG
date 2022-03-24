@@ -1,6 +1,9 @@
 # Offpunk History
 
-## 1.2 - Marche 24th 2022
+## 1.3 - Unreleased
+- Fixed a crash when the cache is already a dir inside a dir.
+
+## 1.2 - March 24th 2022
 Very experimental release:
 - Completely rewritten the HMTL, Gemtext and Gopher renderer. Tests needed!
 - Removed dependancy to ansiwrap. We don’t use it anymore (which is an important achievement)

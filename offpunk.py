@@ -1340,6 +1340,11 @@ class GeminiItem():
                     self.url += "/"
             if self._cache_path.endswith("/"):
                 self._cache_path += index
+            #sometimes, the index itself is a dir
+            #like when folder/index.gmi?param has been created
+            #and we try to access folder
+            if os.path.isdir(self._cache_path):
+                self._cache_path += "/" + index
         return self._cache_path
             
     def get_capsule_title(self):
