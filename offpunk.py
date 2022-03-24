@@ -760,6 +760,7 @@ class GopherRenderer(AbstractRenderer):
         return "text/gopher"
     def get_title(self):
         if not self.title:
+            self.title = ""
             if self.body:
                 firstline = self.body.splitlines()[0]
                 firstline = firstline.split("\t")[0]
@@ -905,7 +906,7 @@ class FeedRenderer(GemtextRenderer):
 
     def get_title(self):
         if not self.title:
-            self.render(self.body)
+            self.get_body()
         return self.title
 
     def prepare(self,content,mode="readable",width=None):
