@@ -62,7 +62,7 @@ except ModuleNotFoundError:
 import textwrap
 
 global TERM_WIDTH
-TERM_WIDTH = 72
+TERM_WIDTH = 80
 
 def term_width():
     width = TERM_WIDTH
