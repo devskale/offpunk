@@ -69,7 +69,7 @@ else beyond the Python standard library and the "less" pager.  However, it will 
 import" a few other libraries if they are available to offer an improved
 experience or some other features. Python libraries requests, bs4 and readability are required for http/html support. Images are displayed if chafa or timg are presents (python-pil is needed for chafa version before 1.10). When displaying only a picture (not inline), rendering will be pixel perfect in compatible terminals (such as Kitty) if chafa is at least version 1.8 or if timg is used.
 
-To avoid using unstable or too recent libraries, the rule of thumb is that a library should be packaged in Debian/Ubuntu. Keep in mind that Offpunk is mainly tested will all libraries installed. If you encounter a crash without one optional dependencies, please report it.
+To avoid using unstable or too recent libraries, the rule of thumb is that a library should be packaged in Debian/Ubuntu. Keep in mind that Offpunk is mainly tested will all libraries installed. If you encounter a crash without one optional dependencies, please report it. Patches and contributions to remove dependencies or support alternatives are highly appreciated.
 
 Run command `version` in offpunk to see if you are missing some dependencies.
 
@@ -81,12 +81,13 @@ Run command `version` in offpunk to see if you are missing some dependencies.
   provide a better and slightly more secure experience when using the default
   TOFU certificate validation mode and is highly recommended (apt-get install python3-cryptography).
 * [Python magic](https://github.com/ahupp/python-magic/) is useful to determine the MIME type of cached object. If not present, the file extension will be used but some capsules provide wrong extension or no extension at all. Python-magic is highly recommended. (apt-get install python3-magic)
-* [Python editor](https://github.com/fmoo/python-editor) is used to edit your lists with "list edit". (apt-get install python3-editor)
+* [Python editor](https://github.com/fmoo/python-editor) is used to edit your lists with "list edit". Removing this dependency is on the roadmap (apt-get install python3-editor)
 * [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). Also needed to use the `copy` command. (apt-get install xsel)
 * [Chafa](https://hpjansson.org/chafa/) allows to display pictures in your console. Install it and browse to an HTML page with picture to see the magic.
 * [Timg](https://github.com/hzeller/timg) is a slower alternative to chafa for inline images. But it has better rendering when displaying only the image. Install both to get the best of both world but if you need to choose one, choose Chafa. 
 * [Python-pil](http://python-pillow.github.io/) is required to only display the first frame of animated gif with chafa if chafa version is lower than 1.10.
 * [Python-setproctitle](https://github.com/dvarrazzo/py-setproctitle) will change the process name from "python" to "offpunk". Useful to kill it without killing every python service.
+* [RipGrep](https://github.com/BurntSushi/ripgrep) is used, if found, to add colours to your in-page searches ("find" or "/"). 
 
 ## Features
 

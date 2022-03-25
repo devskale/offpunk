@@ -218,6 +218,9 @@ _MAX_REDIRECTS = 5
 _MAX_CACHE_SIZE = 10
 _MAX_CACHE_AGE_SECS = 180
 
+_GREP = "grep"
+if shutil.which("rg"):
+    _GREP = "rg"
 less_version = 0
 if not shutil.which("less"):
     print("Please install the pager \"less\" to run Offpunk.")
@@ -244,24 +247,30 @@ else:
 # -R : interpret ANSI colors correctly
 # -f : suppress warning for some contents
 # -M : long prompt (to have info about where you are in the file)
-# -w : hilite the new first line after a page skip (space)
+# -W : hilite the new first line after a page skip (space)
 # -i : ignore case in search
 # -S : do not wrap long lines. Wrapping is done by offpunk, longlines
 # are there on purpose (surch in asciiart)
 #--incsearch : incremental search starting rev581
 if less_version >= 581:
-    less_base = "less --incsearch --save-marks -~ -XRfMwiS"
+    less_base = "less --incsearch --save-marks -~ -XRfMWiS"
 else:
-    less_base = "less --save-marks -XRfMwiS"
+    less_base = "less --save-marks -XRfMWiS"
 _DEFAULT_LESS = less_base + " \"+''\" %s"
 _DEFAULT_CAT = less_base + " -EF %s"
-def less_cmd(file, histfile=None,cat=False):
+def less_cmd(file, histfile=None,cat=False,grep=None):
     if histfile:
         prefix = "LESSHISTFILE=%s "%histfile
     else:
         prefix = ""
     if cat:
         cmd_str = prefix + _DEFAULT_CAT % file 
+    elif grep:
+        grep_cmd = _GREP
+        #case insensitive for lowercase search
+        if grep.islower():
+            grep_cmd += " -i"
+        cmd_str = prefix + _DEFAULT_CAT % file + "|" + grep_cmd + " %s"%grep
     else:
         cmd_str = prefix + _DEFAULT_LESS % file
     subprocess.call(cmd_str,shell=True)
@@ -613,7 +622,7 @@ class AbstractRenderer():
         title_r.close_color("red")
         return title_r.get_final() 
 
-    def display(self,mode="readable",window_title="",window_info=None):
+    def display(self,mode="readable",window_title="",window_info=None,grep=None):
         wtitle = self._window_title(window_title,info=window_info)
         body = wtitle + "\n" + self.get_body(mode=mode)
         if not body:
@@ -630,7 +639,7 @@ class AbstractRenderer():
             self.less_histfile[mode] = tmpf.name
         else:
             firsttime = False
-        less_cmd(self.temp_file[mode], histfile=self.less_histfile[mode],cat=firsttime)
+        less_cmd(self.temp_file[mode], histfile=self.less_histfile[mode],cat=firsttime,grep=grep)
         return True
     
     def get_temp_file(self,mode="readable"):
@@ -987,7 +996,7 @@ class ImageRenderer(AbstractRenderer):
         for l in lines:
             new_img += spaces*" " + l + "\n"
         return new_img, []
-    def display(self,mode=None,window_title=None,window_info=None):
+    def display(self,mode=None,window_title=None,window_info=None,grep=None):
         if window_title:
             print(self._window_title(window_title,info=window_info))
         terminal_image(self.body)
@@ -1528,7 +1537,7 @@ class GeminiItem():
                 if not self.renderer.is_valid():
                     self.renderer = None
 
-    def display(self,mode=None):
+    def display(self,mode=None,grep=None):
         if not self.renderer:
             self._set_renderer()
         if self.renderer and self.renderer.is_valid():
@@ -1545,7 +1554,7 @@ class GeminiItem():
                 else:
                     str_last = "last accessed on %s" %time.ctime(self.cache_last_modified())
                     title += " (%s links)"%nbr
-            return self.renderer.display(mode=mode,window_title=title,window_info=str_last)
+            return self.renderer.display(mode=mode,window_title=title,window_info=str_last,grep=grep)
         else:
             return False
 
@@ -3109,6 +3118,7 @@ Marks are temporary until shutdown (not saved to disk)."""
         output += " - python-readability  : " + has(_HAS_READABILITY)
         output += " - python-setproctitle : " + has(_HAS_SETPROCTITLE)
         output += " - xdg-open            : " + has(_HAS_XDGOPEN)
+        output += " - ripgrep             : " + has(shutil.which("rg"))
         output += " - xsel                : " + has(_HAS_XSEL)
         output += " - timg                : " + has(_HAS_TIMG)
         if _NEW_CHAFA:
@@ -3151,16 +3161,10 @@ Use 'ls -l' to see URLs."""
         """Display history."""
         self.list_show("history")
 
+    @needs_gi
     def do_find(self, searchterm):
-        """Find in the list of links (case insensitive)."""
-        results = [
-            gi for gi in self.lookup if searchterm.lower() in gi.name.lower()]
-        if results:
-            self.lookup = results
-            self._show_lookup()
-            self.page_index = 0
-        else:
-            print("No results found.")
+        """Find in current page by displaying only relevant lines (grep)."""
+        self.gi.display(grep=searchterm) 
 
     def emptyline(self):
         """Page through index ten lines at a time."""
