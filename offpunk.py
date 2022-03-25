@@ -2026,10 +2026,7 @@ class GeminiClient(cmd.Cmd):
                 body = response.content
                 response.close()
         if mime and "text/" in mime:
-            #body = response.text
-            body = response.content.decode("UTF-8","replace")
-        else:
-            body = response.content
+            body = body.decode("UTF-8","replace")
         gi.write_body(body,mime)
         return gi
 
