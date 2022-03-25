@@ -516,6 +516,10 @@ class AbstractRenderer():
                 self.final_text += "\n"
                 self.new_paragraph = True
 
+        def add_space(self):
+            if len(self.last_line) > 0 and self.last_line[-1] != " ":
+                self.last_line += " "
+
         def _title_first(self,intext=None):
             if self.title:
                 if not self.title == intext:
@@ -1090,6 +1094,12 @@ class HtmlRenderer(AbstractRenderer):
                 r.newparagraph()
                 for child in element.children:
                     recursive_render(child,indent=indent)
+                r.newparagraph()
+            elif element.name in ["span"]:
+                r.add_space()
+                for child in element.children:
+                    recursive_render(child,indent=indent)
+                r.add_space()
             elif element.name in ["h1","h2","h3","h4","h5","h6"]:
                 r.open_color("blue")
                 if element.name in ["h1"]:
@@ -1108,7 +1118,9 @@ class HtmlRenderer(AbstractRenderer):
                 for child in element.children:
                    recursive_render(child,indent=indent,preformatted=True)
             elif element.name in ["pre"]:
+                r.newparagraph()
                 r.add_block(element.text)
+                r.newparagraph()
             elif element.name in ["li"]:
                 r.startindent(" • ",sub="   ")
                 for child in element.children:
