@@ -672,7 +672,7 @@ class GemtextRenderer(AbstractRenderer):
     def get_title(self):
         if self.title:
             return self.title
-        else:
+        elif self.body:
             lines = self.body.splitlines()
             for line in lines:
                 if line.startswith("#"):
@@ -689,6 +689,8 @@ class GemtextRenderer(AbstractRenderer):
             else:
                 self.title = "Empty Page"
                 return self.title
+        else:
+            return "Unknown Gopher Page"
     
     #render_gemtext
     def render(self,gemtext, width=None,mode=None):
@@ -1471,8 +1473,8 @@ class GeminiItem():
                     f.close()
                 return body
         else:
-            print("ERROR: NO CACHE for %s" %self._cache_path)
-            return error
+            #print("ERROR: NO CACHE for %s" %self._cache_path)
+            return None
     
     # This method is used to load once the list of links in a gi
     # Links can be followed, after a space, by a description/title
