@@ -549,10 +549,17 @@ class AbstractRenderer():
         def add_text(self,intext):
             self._title_first(intext=intext)
             lines = []
-            last = (self.last_line + intext)
+            if self.last_line == "":
+                last = (self.last_line + intext.lstrip())
+            else:
+                last = (self.last_line + intext)
             self.last_line = ""
-            if len(last) > 0:
+            # With the following, we basically cancel adding only spaces
+            # on an empty line
+            if len(last.strip()) > 0:
                 self.new_paragraph = False
+            else:
+                last = last.strip()
             if len(last) > self.width:
                 width = self.width - len(self.current_indent) - len(self.r_indent)
                 spaces_left = len(last) - len(last.lstrip())
