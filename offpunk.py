@@ -101,12 +101,6 @@ else:
     if not _NEW_CHAFA and not _HAS_TIMG:
         print("Before Chafa 1.10, you also need python-pil")
 
-# Test with https://www.valerybonneau.com/romans/nouvelles-noires-pour-se-rire-du-desespoir/
-# Chafa 1.8 without -w: 9s
-# Chafa 1.8 with -w 1 : 9s
-# Chafa 1.8 with -w 5 : 9s
-# Chafa 1.8 with -w 9 : 9s 
-# Timg                : 22s
 #return ANSI text that can be show by less
 def inline_image(img_file,width):
     #Chafa is faster than timg inline. Let use that one by default
@@ -254,8 +248,10 @@ else:
 #--incsearch : incremental search starting rev581
 if less_version >= 581:
     less_base = "less --incsearch --save-marks -~ -XRfMWiS"
-else:
+elif less_version >= 572:
     less_base = "less --save-marks -XRfMWiS"
+else:
+    less_base = "less -XRfMWiS"
 _DEFAULT_LESS = less_base + " \"+''\" %s"
 _DEFAULT_CAT = less_base + " -EF %s"
 def less_cmd(file, histfile=None,cat=False,grep=None):
