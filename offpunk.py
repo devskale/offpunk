@@ -2449,6 +2449,31 @@ class GeminiClient(cmd.Cmd):
             # to the properties of even self-signed certs, unlike in
             # the standard ssl library...
             c = x509.load_der_x509_certificate(cert, _BACKEND)
+            # Check certificate validity dates
+            if c.not_valid_before >= now:
+                raise CertificateError("Certificate not valid until: {}!".format(c.not_valid_before))
+            elif c.not_valid_after <= now:
+                raise CertificateError("Certificate expired as of: {})!".format(c.not_valid_after))
+
+            # Check certificate hostnames
+            names = []
+            common_name = c.subject.get_attributes_for_oid(x509.oid.NameOID.COMMON_NAME)
+            if common_name:
+                names.append(common_name[0].value)
+            try:
+                names.extend([alt.value for alt in c.extensions.get_extension_for_oid(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME).value])
+            except x509.ExtensionNotFound:
+                pass
+            names = set(names)
+            for name in names:
+                try:
+                    ssl._dnsname_match(name, host)
+                    break
+                except CertificateError:
+                    continue
+            else:
+                # If we didn't break out, none of the names were valid
+                raise CertificateError("Hostname does not match certificate common name or any alternative names.")
 
         sha = hashlib.sha256()
         sha.update(cert)

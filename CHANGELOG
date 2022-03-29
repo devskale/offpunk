@@ -6,6 +6,7 @@
 - New behaviour for "find" (or "/") which is to grep through current page (ripgrep used if detected)
 - Default width set to 80 as many gopherholes and gemini capsules have it hardcoded
 - Streaming URL without valid content-length are now closed after 5Mo of download (thanks to Eoin Carney for reporting the issue)
+- Restored some AV-98 certificate validation code that was lost I don’t know how.
 - Improved clarity of dependencies in "version"
 - Fixed a crash when the cache is already a dir inside a dir.
 - Fixed a crash when manually entering an unknown gopher URL while offline
