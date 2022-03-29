@@ -3118,22 +3118,25 @@ Marks are temporary until shutdown (not saved to disk)."""
                 return "\t\x1b[1;31mNot Installed\x1b[0m\n"
         output = "Offpunk " + _VERSION + "\n"
         output += "===========\n"
+        output += "Highly recommended:\n"
         output += " - python-cryptography : " + has(_HAS_CRYPTOGRAPHY)
         output += " - python-magic        : " + has(_HAS_MAGIC)
+        output += " - xdg-open            : " + has(_HAS_XDGOPEN)
+        output += "\nWeb browsing:\n"
         output += " - python-requests     : " + has(_DO_HTTP)
         output += " - python-feedparser   : " + has(_DO_FEED)
         output += " - python-bs4          : " + has(_HAS_SOUP)
         output += " - python-readability  : " + has(_HAS_READABILITY)
-        output += " - python-setproctitle : " + has(_HAS_SETPROCTITLE)
-        output += " - xdg-open            : " + has(_HAS_XDGOPEN)
-        output += " - ripgrep             : " + has(shutil.which("rg"))
-        output += " - xsel                : " + has(_HAS_XSEL)
         output += " - timg                : " + has(_HAS_TIMG)
         if _NEW_CHAFA:
             output += " - chafa 1.10+         : " + has(_HAS_CHAFA)
         else:
             output += " - chafa               : " + has(_HAS_CHAFA)
             output += " - python-pil          : " + has(_HAS_PIL)
+        output += "\nNice to have:\n"
+        output += " - python-setproctitle : " + has(_HAS_SETPROCTITLE)
+        output += " - ripgrep             : " + has(shutil.which("rg"))
+        output += " - xsel                : " + has(_HAS_XSEL)
 
         output += "\nFeatures :\n"
         if _NEW_CHAFA:
