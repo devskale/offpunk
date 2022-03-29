@@ -145,13 +145,6 @@ except ModuleNotFoundError:
     _HAS_CRYPTOGRAPHY = False
 
 try:
-    import magic
-    _HAS_MAGIC = True
-except ModuleNotFoundError:
-    print("Python-magic is recommended for better detection of mimetypes")
-    _HAS_MAGIC = False
-
-try:
     import requests
     _DO_HTTP = True
 except ModuleNotFoundError:
@@ -1614,6 +1607,7 @@ class GeminiItem():
                 f.close()
          
     def get_mime(self):
+        #Beware, this one is really a shaddy ad-hoc function
         if self.mime:
             return self.mime
         elif self.is_cache_valid():
@@ -1624,8 +1618,10 @@ class GeminiItem():
                 mime = "Local Folder"
             elif path.endswith(".gmi"):
                 mime = "text/gemini"
-            elif _HAS_MAGIC :
-                mime = magic.from_file(path,mime=True)
+            elif shutil.which("file") :
+                #mime = magic.from_file(path,mime=True)
+                output = subprocess.run("file -b --mime-type %s"%path,shell=True,capture_output=True)
+                mime = output.stdout.decode().strip()
                 mime2,encoding = mimetypes.guess_type(path,strict=False)
                 #If we hesitate between html and xml, takes the xml one
                 #because the FeedRendered fallback to HtmlRenderer
@@ -1637,8 +1633,9 @@ class GeminiItem():
             else:
                 mime,encoding = mimetypes.guess_type(path,strict=False)
             #gmi Mimetype is not recognized yet
-            if not mime and not _HAS_MAGIC :
-                print("Cannot guess the mime type of the file. Install Python-magic")
+            if not mime and not shutil.which("file") :
+                print("Cannot guess the mime type of the file. Please install \"file\".")
+                print("(and send me an email, I’m curious of systems without \"file\" installed!")
             if mime.startswith("text") and mime not in _FORMAT_RENDERERS:
                 if mime2 and mime2 in _FORMAT_RENDERERS:
                     mime = mime2
@@ -3120,7 +3117,6 @@ Marks are temporary until shutdown (not saved to disk)."""
         output += "===========\n"
         output += "Highly recommended:\n"
         output += " - python-cryptography : " + has(_HAS_CRYPTOGRAPHY)
-        output += " - python-magic        : " + has(_HAS_MAGIC)
         output += " - xdg-open            : " + has(_HAS_XDGOPEN)
         output += "\nWeb browsing:\n"
         output += " - python-requests     : " + has(_DO_HTTP)

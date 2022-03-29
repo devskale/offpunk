@@ -76,12 +76,12 @@ To avoid using unstable or too recent libraries, the rule of thumb is that a lib
 
 Run command `version` in offpunk to see if you are missing some dependencies.
 
-Highly recommended:
+Highly recommended (packagers should probably make those mandatory):
 * [xdg-utils](https://www.freedesktop.org/wiki/Software/xdg-utils/) provides xdg-open which is highly recommended to open files without a renderer or a handler. It is also used for mailto: command.
 * The [cryptography library](https://pypi.org/project/cryptography/) will provide a better and slightly more secure experience when using the default TOFU certificate validation mode and is highly recommended (apt-get install python3-cryptography).
-* [Python magic](https://github.com/ahupp/python-magic/) is useful to determine the MIME type of cached object. If not present, the file extension will be used but some capsules provide wrong extension or no extension at all. Python-magic is highly recommended. (apt-get install python3-magic)
+* [file](https://www.darwinsys.com/file/) is used to get the MIME type of cached objects. But it should already be on your system.
 
-Dependencies to enable web browsing.
+Dependencies to enable web browsing (packagers should put those in an offpunk-web meta-package)
 * [Python-requests](http://python-requests.org) is needed to handle http/https requests natively (apt-get install python3-requests). Without it, http links will be opened in an external browser
 * [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup) and [Readability](https://github.com/buriy/python-readability) are both needed to render HTML. Without them, HTML will not be rendered or be sent to an external parser like Lynx. (apt-get install python3-bs4 python3-readability or pip3 install readability-lxml)
 * [Python-feedparser](https://github.com/kurtmckee/feedparser) will allow parsing of RSS/Atom feeds and thus subscriptions to them. (apt-get install python3-feedparser)
@@ -89,7 +89,7 @@ Dependencies to enable web browsing.
 * [Timg](https://github.com/hzeller/timg) is a slower alternative to chafa for inline images. But it has better rendering when displaying only the image. Install both to get the best of both world but if you need to choose one, choose Chafa. 
 * [Python-pil](http://python-pillow.github.io/) is required to only display the first frame of animated gif with chafa if chafa version is lower than 1.10.
 
-Nice to have:
+Nice to have (packagers should probaly make those optional):
 * [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). Also needed to use the `copy` command. (apt-get install xsel)
 * [Python-setproctitle](https://github.com/dvarrazzo/py-setproctitle) will change the process name from "python" to "offpunk". Useful to kill it without killing every python service.
 * [RipGrep](https://github.com/BurntSushi/ripgrep) is used, if found, to add colours to your in-page searches ("find" or "/"). 
