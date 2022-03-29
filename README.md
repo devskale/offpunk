@@ -81,7 +81,6 @@ Run command `version` in offpunk to see if you are missing some dependencies.
   provide a better and slightly more secure experience when using the default
   TOFU certificate validation mode and is highly recommended (apt-get install python3-cryptography).
 * [Python magic](https://github.com/ahupp/python-magic/) is useful to determine the MIME type of cached object. If not present, the file extension will be used but some capsules provide wrong extension or no extension at all. Python-magic is highly recommended. (apt-get install python3-magic)
-* [Python editor](https://github.com/fmoo/python-editor) is used to edit your lists with "list edit". Removing this dependency is on the roadmap (apt-get install python3-editor)
 * [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). Also needed to use the `copy` command. (apt-get install xsel)
 * [Chafa](https://hpjansson.org/chafa/) allows to display pictures in your console. Install it and browse to an HTML page with picture to see the magic.
 * [Timg](https://github.com/hzeller/timg) is a slower alternative to chafa for inline images. But it has better rendering when displaying only the image. Install both to get the best of both world but if you need to choose one, choose Chafa. 

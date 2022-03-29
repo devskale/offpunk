@@ -53,12 +53,6 @@ try:
 except ModuleNotFoundError:
     _HAS_SETPROCTITLE = False
 
-try:
-    import editor
-    _HAS_EDITOR = True
-except ModuleNotFoundError:
-    _HAS_EDITOR = False
-
 import textwrap
 
 global TERM_WIDTH
@@ -1835,6 +1829,7 @@ class GeminiClient(cmd.Cmd):
             "archives_size" : 200,
             "history_size" : 200,
             "max_size_download" : 10,
+            "editor" : None,
         }
         global TERM_WIDTH
         TERM_WIDTH = self.options["width"]
@@ -3123,7 +3118,6 @@ Marks are temporary until shutdown (not saved to disk)."""
                 return "\t\x1b[1;31mNot Installed\x1b[0m\n"
         output = "Offpunk " + _VERSION + "\n"
         output += "===========\n"
-        output += " - python-editor       : " + has(_HAS_EDITOR)
         output += " - python-cryptography : " + has(_HAS_CRYPTOGRAPHY)
         output += " - python-magic        : " + has(_HAS_MAGIC)
         output += " - python-requests     : " + has(_DO_HTTP)
@@ -3701,16 +3695,28 @@ Note: There’s no "delete" on purpose. The use of "archive" is recommended."""
                 else:
                     print("A name is required to create a new list. Use `list create NAME`")
             elif args[0] == "edit":
-                if not _HAS_EDITOR:
-                    print("Please install python-editor to edit you lists")
-                elif len(args) > 1:
-                    if args[1] in self.list_lists():
+                editor = None
+                if "editor" in self.options and self.options["editor"]:
+                    editor = self.options["editor"]
+                elif os.environ.get("VISUAL"):
+                    editor = os.environ.get("VISUAL")
+                elif os.environ.get("EDITOR"):
+                    editor = os.environ.get("EDITOR")
+                if editor:
+                    if len(args) > 1 and args[1] in self.list_lists():
                         path = os.path.join(listdir,args[1]+".gmi")
-                        editor.edit(path)
+                        try:
+                            subprocess.call("%s %s"%(editor,path),shell=True)
+                        except Exception as err:
+                            print(err)
+                            print("Please set a valid editor with \"set editor\"")
                     else:
                         print("A valid list name is required to edit a list")
                 else:
-                    print("A valid list name is required to edit a list")
+                    print("No valid editor has been found.")
+                    print("You can use the following command to set your favourite editor:")
+                    print("set editor EDITOR")
+                    print("or use the $VISUAL or $EDITOR environment variables.")
             elif args[0] == "delete":
                 if len(args) > 1:
                     if self.list_is_system(args[1]):

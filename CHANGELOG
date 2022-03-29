@@ -1,11 +1,13 @@
 # Offpunk History
 
 ## 1.3 - Unreleased
+- Removed dependency to python editor. If no $VISUAL or $EDITOR, please use "set editor" in Offpunk.
 - New behaviour for "find" (or "/") which is to grep through current page (ripgrep used if detected)
 - Default width set to 80 as many gopherhole and gemini capsule have it hardcoded
 - Streaming URL without valid content-length are now closed after 5Mo of download (thanks to Eoin Carney for reporting the issue)
 - Fixed a crash when the cache is already a dir inside a dir.
 - Fixed a crash when manually entering an unknown gopher URL while offline
+- Fixed an error with older less version
 
 ## 1.2 - March 24th 2022
 Very experimental release:
