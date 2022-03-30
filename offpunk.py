@@ -1852,6 +1852,16 @@ class GeminiClient(cmd.Cmd):
             "max_size_download" : 10,
             "editor" : None,
             "download_images_first" : True,
+            "redirects" : True,
+        }
+        
+        self.redirects = {
+            "twitter.com" : "nitter.42l.fr",
+            "youtube.com" : "yewtu.be",
+            "reddit.com"  : "libredd.it",
+            "old.reddit.com": "libredd.it",
+            "medium.com"  : "scribe.rip",
+
         }
         global TERM_WIDTH
         TERM_WIDTH = self.options["width"]
@@ -2034,7 +2044,16 @@ class GeminiClient(cmd.Cmd):
             return item
         header = {}
         header["User-Agent"] = "Offpunk browser v%s"%_VERSION
-        with requests.get(gi.url,headers=header, stream=True,timeout=5) as response:
+        parsed = urllib.parse.urlparse(gi.url)
+        # Code to translate URLs to better frontends (think twitter.com -> nitter)
+        if self.options["redirects"]:
+            netloc = parsed.netloc
+            if netloc.startswith("www."):
+                netloc = netloc[4:]
+            if netloc in self.redirects:
+                parsed = parsed._replace(netloc = self.redirects[netloc])
+        url = urllib.parse.urlunparse(parsed)
+        with requests.get(url,headers=header, stream=True,timeout=5) as response:
             #print("This is header for %s"%gi.url)
             #print(response.headers)
             if "content-type" in response.headers:
@@ -2811,10 +2830,21 @@ class GeminiClient(cmd.Cmd):
             # Show all current settings
             for option in sorted(self.options.keys()):
                 print("%s   %s" % (option, self.options[option]))
-        elif len(line.split()) == 1:
+        elif len(line.split()) == 1 :
             # Show current value of one specific setting
             option = line.strip()
-            if option in self.options:
+            if option == "redirects":
+                print("redirects : %s" %self.options["redirects"])
+                if self.options["redirects"]:
+                    toprint = "Redirections are enabled. (disable with \"set redirects false\")\n"
+                else:
+                    toprint = "Redirections are disabled. (enable with \"set redirects true\")\n"
+                toprint += "--------------------------\n"
+                for r in self.redirects:
+                    toprint += ("%s\t->\t%s\n" %(r,self.redirects[r]))
+                toprint +="\nTo add new, use \"set redirects origine.com destination.org\""
+                print(toprint)
+            elif option in self.options:
                 print("%s   %s" % (option, self.options[option]))
             else:
                 print("Unrecognised option %s" % option)
@@ -2837,6 +2867,27 @@ class GeminiClient(cmd.Cmd):
                     TERM_WIDTH = value
                 else:
                     print("%s is not a valid width (integer required)"%value)
+            elif option == "redirects" and len(value.split(" ")) > 1:
+                if len(value.split(" ")) <= 1:
+                    if value.lower() in ["true","false"]:
+                        if value.lower() == "true":
+                            value = True
+                            toprint = "Redirections are enabled\n"
+                            toprint = "------------------------\n"
+                            for r in self.redirects:
+                                toprint += ("%s\t->\t%s\n" %(r,self.redirects[r]))
+                            print(toprint)
+                        else:
+                            value = False
+                            print("Redirections are disabled")
+                    elif value in self.redirects:
+                        print("%s is redirected to %s" %(value,self.redirects[value]))
+                    else:
+                        print("Please add a destination where to redirect %s" %value)
+                else:
+                    orig, dest = value.split(" ",1)
+                    self.redirects[orig] = dest
+                    print("%s will now be redirected to %s" %(orig,dest))
             elif option == "beta":
                 if value.lower() == "true":
                     global BETA

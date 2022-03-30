@@ -4,6 +4,7 @@
 - Removed dependency to python-magic. File is now used directly (and should be on every system).
 - Removed dependency to python-editor. If no $VISUAL or $EDITOR, please use "set editor" in Offpunk.
 - Images are now downloaded before displaying an HTML page (can be disabled with "set download_images_first False")
+- Introduced "set redirects" which redirects twitter,youtube,medium,reddit to alternative frontends.
 - New behaviour for "find" (or "/") which is to grep through current page (ripgrep used if detected)
 - Default width set to 80 as many gopherholes and gemini capsules have it hardcoded
 - Streaming URL without valid content-length are now closed after 5Mo of download (thanks to Eoin Carney for reporting the issue)
