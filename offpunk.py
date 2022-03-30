@@ -126,9 +126,9 @@ def terminal_image(img_file):
     # it is also centered
     cmd = None
     if _HAS_TIMG:
-        cmd = "timg --frames=1 -C"
+        cmd = "timg --loops=1 -C"
     elif _HAS_CHAFA:
-        cmd = "chafa --bg white -w 1"
+        cmd = "chafa -d 0 --bg white -w 1"
     if cmd:
         cmd = cmd + " \"%s\""%img_file
         subprocess.run(cmd,shell=True)
