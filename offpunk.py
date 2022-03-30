@@ -342,6 +342,7 @@ class AbstractRenderer():
         #there’s one rendered text and one links table per mode
         self.rendered_text = {}
         self.links = {}
+        self.images = {}
         self.title = None
         self.validity = True
         self.temp_file = {}
@@ -589,7 +590,18 @@ class AbstractRenderer():
         return self.links[mode]
     def get_title(self):
         return "Abstract title"
-    
+   
+    # This function return a list of URL which should be downloaded
+    # before displaying the page (images in HTML pages, typically)
+    def get_images(self,mode="readable"):
+        if not mode in self.images:
+            self.get_body(mode=mode)
+            # we also invalidate the body that was done without images
+            self.rendered_text.pop(mode)
+        if mode in self.images:
+            return self.images[mode]
+        else:
+            return []
     #This function will give gemtext to the gemtext renderer
     def prepare(self,body,mode=None):
         return body
@@ -1041,8 +1053,8 @@ class HtmlRenderer(AbstractRenderer):
         # HTML is real crap. At least the one people are generating.
         def render_image(src,width=40,mode=None):
             ansi_img = ""
+            abs_url = urllib.parse.urljoin(self.url, src)
             if _RENDER_IMAGE and mode != "links_only" and src:
-                abs_url = urllib.parse.urljoin(self.url, src)
                 try:
                     g = GeminiItem(abs_url)
                     if g.is_cache_valid():
@@ -1181,6 +1193,10 @@ class HtmlRenderer(AbstractRenderer):
                     text += "[IMG]"
                 if src:
                     links.append(src+" "+text)
+                    if not mode in self.images:
+                        self.images[mode] = []
+                    abs_url = urllib.parse.urljoin(self.url, src)
+                    self.images[mode].append(abs_url)
                     link_id = " [%s]"%(len(links))
                     r.add_block(ansi_img)
                     r.open_color("faint")
@@ -1458,7 +1474,15 @@ class GeminiItem():
         else:
             #print("ERROR: NO CACHE for %s" %self._cache_path)
             return None
-    
+   
+    def get_images(self,mode=None):
+        if not self.renderer:
+            self._set_renderer()
+        if self.renderer:
+            return self.renderer.get_images(mode=mode)
+        else:
+            return []
+
     # This method is used to load once the list of links in a gi
     # Links can be followed, after a space, by a description/title
     def get_links(self,mode=None):
@@ -1827,6 +1851,7 @@ class GeminiClient(cmd.Cmd):
             "history_size" : 200,
             "max_size_download" : 10,
             "editor" : None,
+            "download_images_first" : True,
         }
         global TERM_WIDTH
         TERM_WIDTH = self.options["width"]
@@ -1967,6 +1992,19 @@ class GeminiClient(cmd.Cmd):
         # Pass file to handler, unless we were asked not to
         if gi :
             display = handle and not self.sync_only
+            if display and self.options["download_images_first"] and not self.offline_only:
+                # We download images first
+                for image in gi.get_images(mode=mode):
+                    if image:
+                        img_gi = GeminiItem(image)
+                        if not img_gi.is_cache_valid():
+                            width = term_width() - 1
+                            toprint = "Downloading %s" %image
+                            toprint = toprint[:width]
+                            toprint += " "*(width-len(toprint))
+                            print(toprint,end="\r")
+                            self._go_to_gi(img_gi, update_hist=False, check_cache=True, \
+                                                handle=False,limit_size=True)
             if display and gi.display(mode=mode):
                 self.index = gi.get_links()
                 self.lookup = self.index
