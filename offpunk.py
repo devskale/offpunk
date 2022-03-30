@@ -256,7 +256,7 @@ def less_cmd(file, histfile=None,cat=False,grep=None):
         cmd_str = prefix + _DEFAULT_CAT % file + "|" + grep_cmd + " %s"%grep
     else:
         cmd_str = prefix + _DEFAULT_LESS % file
-    subprocess.call(cmd_str,shell=True)
+    subprocess.run(cmd_str,shell=True)
 
 
 # Command abbreviations
@@ -1910,7 +1910,7 @@ class GeminiClient(cmd.Cmd):
                 if resp.strip().lower() in ("y", "yes"):
                     if _HAS_XDGOPEN :
                         cmd = "xdg-open mailto:%s" %gi.path
-                        subprocess.call(shlex.split(cmd))
+                        subprocess.run(cmd,shell=True)
                     else:
                         print("Cannot find a mail client to send mail to %s" %gi.path)
                         print("Please install xdg-open (usually from xdg-util package)")
@@ -2030,7 +2030,7 @@ class GeminiClient(cmd.Cmd):
                 try:
                     # get tmpfile from gi !
                     tmpfile = gi.get_body(as_file=True)
-                    subprocess.call(shlex.split(cmd_str % tmpfile))
+                    subprocess.run(cmd_str % tmpfile,shell=True)
                 except FileNotFoundError:
                     print("Handler program %s not found!" % shlex.split(cmd_str)[0])
                     print("You can use the ! command to specify another handler program or pipeline.")
@@ -2996,13 +2996,13 @@ Use with "cache" to copy the path of the cached content."""
                         url = gi.url
                     else:
                         url = self.gi.url
-                    subprocess.call(("echo %s |xsel -b -i" % url), shell=True)
+                    subprocess.run(("echo %s |xsel -b -i" % url), shell=True)
                 elif args and args[0] == "raw":
-                    subprocess.call(("cat %s |xsel -b -i" % self.gi.get_temp_filename()), shell=True)
+                    subprocess.run(("cat %s |xsel -b -i" % self.gi.get_temp_filename()), shell=True)
                 elif args and args[0] == "cache":
-                    subprocess.call(("echo %s |xsel -b -i" % self.gi.get_cache_path()), shell=True)
+                    subprocess.run(("echo %s |xsel -b -i" % self.gi.get_cache_path()), shell=True)
                 else:
-                    subprocess.call(("cat %s |xsel -b -i" % self.gi.get_body(as_file=True)), shell=True)
+                    subprocess.run(("cat %s |xsel -b -i" % self.gi.get_body(as_file=True)), shell=True)
             else:
                 print("Please install xsel to use copy")
         else:
@@ -3300,7 +3300,7 @@ Use 'ls -l' to see URLs."""
     @needs_gi
     def do_cat(self, *args):
         """Run most recently visited item through "cat" command."""
-        subprocess.call(shlex.split("cat %s" % self.gi.get_temp_filename()))
+        subprocess.run("cat %s" % self.gi.get_temp_filename(),shell=True)
 
     @needs_gi
     def do_view(self, *args):
@@ -3347,14 +3347,14 @@ see "handler" command to set your own."""
         cmd_str = self._get_handler_cmd(self.gi.get_mime())
         file_path = "\"%s\"" %self.gi.get_body(as_file=True)
         cmd_str = cmd_str % file_path 
-        subprocess.call(cmd_str,shell=True)
+        subprocess.run(cmd_str,shell=True)
 
     @restricted
     @needs_gi
     def do_shell(self, line):
         """'cat' most recently visited item through a shell pipeline.
 '!' is an useful shortcut."""
-        subprocess.call(("cat %s |" % self.gi.get_temp_filename()) + line, shell=True)
+        subprocess.run(("cat %s |" % self.gi.get_temp_filename()) + line, shell=True)
 
     @restricted
     @needs_gi
@@ -3820,7 +3820,7 @@ Note: There’s no "delete" on purpose. The use of "archive" is recommended."""
                     if len(args) > 1 and args[1] in self.list_lists():
                         path = os.path.join(listdir,args[1]+".gmi")
                         try:
-                            subprocess.call("%s %s"%(editor,path),shell=True)
+                            subprocess.run("%s %s"%(editor,path),shell=True)
                         except Exception as err:
                             print(err)
                             print("Please set a valid editor with \"set editor\"")
