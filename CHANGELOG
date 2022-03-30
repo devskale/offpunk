@@ -14,6 +14,7 @@
 - Fixed a crash when the cache is already a dir inside a dir.
 - Fixed a crash when manually entering an unknown gopher URL while offline
 - Fixed an error with older less version
+- Call to shell commands has been refactorised to improve compatibility with python 3.6
 
 ## 1.2 - March 24th 2022
 Very experimental release:

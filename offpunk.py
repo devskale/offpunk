@@ -37,7 +37,6 @@ import socket
 import sqlite3
 import ssl
 from ssl import CertificateError
-import subprocess
 import sys
 import tempfile
 import time
@@ -45,6 +44,13 @@ import urllib.parse
 import uuid
 import webbrowser
 import html
+import subprocess
+def run(cmd,direct_output=False):
+    if not direct_output:
+        result = subprocess.check_output(cmd,shell=True)
+        return result.decode()
+    else:
+        subprocess.run(cmd,shell=True)
 
 try:
     import setproctitle
@@ -78,8 +84,7 @@ _NEW_CHAFA = False
 if _HAS_CHAFA:
     # starting with 1.10, chafa can return only one frame
     # which allows us to drop dependancy for PIL
-    return_code = subprocess.run("chafa --version",shell=True, capture_output=True)
-    output = return_code.stdout.decode()
+    output = run("chafa --version")
     # with chafa < 1.10, --version was returned to stderr instead of stdout.
     if output != '':
         _NEW_CHAFA = True
@@ -115,8 +120,7 @@ def inline_image(img_file,width):
     if inline:
         cmd = inline%width+ " \"%s\""%img_file
         try:
-            return_code = subprocess.run(cmd,shell=True, capture_output=True)
-            ansi_img = return_code.stdout.decode()
+            ansi_img = run(cmd)
         except Exception as err:
             ansi_img = "***image failed : %s***\n" %err
     return ansi_img
@@ -131,7 +135,7 @@ def terminal_image(img_file):
         cmd = "chafa -d 0 --bg white -w 1"
     if cmd:
         cmd = cmd + " \"%s\""%img_file
-        subprocess.run(cmd,shell=True)
+        run(cmd,direct_output=True)
 
 
 _HAS_XSEL = shutil.which('xsel')
@@ -208,8 +212,7 @@ if not shutil.which("less"):
     print("If you wish to use another pager, send your request to offpunk@ploum.eu.")
     print("(I’m really curious to hear about people not having \"less\" on their system.)")
     sys.exit()
-return_code = subprocess.run("less --version",shell=True, capture_output=True)
-output = return_code.stdout.decode()
+output = run("less --version")
 # We get less Version (which is the only integer on the first line)
 words = output.split("\n")[0].split()
 less_version = 0
@@ -256,7 +259,7 @@ def less_cmd(file, histfile=None,cat=False,grep=None):
         cmd_str = prefix + _DEFAULT_CAT % file + "|" + grep_cmd + " %s"%grep
     else:
         cmd_str = prefix + _DEFAULT_LESS % file
-    subprocess.run(cmd_str,shell=True)
+    run(cmd_str,direct_output=True)
 
 
 # Command abbreviations
@@ -1644,8 +1647,7 @@ class GeminiItem():
                 mime = "text/gemini"
             elif shutil.which("file") :
                 #mime = magic.from_file(path,mime=True)
-                output = subprocess.run("file -b --mime-type %s"%path,shell=True,capture_output=True)
-                mime = output.stdout.decode().strip()
+                mime = run("file -b --mime-type %s"%path).strip()
                 mime2,encoding = mimetypes.guess_type(path,strict=False)
                 #If we hesitate between html and xml, takes the xml one
                 #because the FeedRendered fallback to HtmlRenderer
@@ -1910,7 +1912,7 @@ class GeminiClient(cmd.Cmd):
                 if resp.strip().lower() in ("y", "yes"):
                     if _HAS_XDGOPEN :
                         cmd = "xdg-open mailto:%s" %gi.path
-                        subprocess.run(cmd,shell=True)
+                        run(cmd,direct_output=True)
                     else:
                         print("Cannot find a mail client to send mail to %s" %gi.path)
                         print("Please install xdg-open (usually from xdg-util package)")
@@ -2030,7 +2032,7 @@ class GeminiClient(cmd.Cmd):
                 try:
                     # get tmpfile from gi !
                     tmpfile = gi.get_body(as_file=True)
-                    subprocess.run(cmd_str % tmpfile,shell=True)
+                    run(cmd_str%tmpfile,direct_output=True)
                 except FileNotFoundError:
                     print("Handler program %s not found!" % shlex.split(cmd_str)[0])
                     print("You can use the ! command to specify another handler program or pipeline.")
@@ -2996,13 +2998,13 @@ Use with "cache" to copy the path of the cached content."""
                         url = gi.url
                     else:
                         url = self.gi.url
-                    subprocess.run(("echo %s |xsel -b -i" % url), shell=True)
+                    run("echo %s |xsel -b -i" % url,direct_output=True)
                 elif args and args[0] == "raw":
-                    subprocess.run(("cat %s |xsel -b -i" % self.gi.get_temp_filename()), shell=True)
+                    run("cat %s |xsel -b -i" % self.gi.get_temp_filename(),direct_output=True)
                 elif args and args[0] == "cache":
-                    subprocess.run(("echo %s |xsel -b -i" % self.gi.get_cache_path()), shell=True)
+                    run("echo %s |xsel -b -i" % self.gi.get_cache_path(), direct_output=True)
                 else:
-                    subprocess.run(("cat %s |xsel -b -i" % self.gi.get_body(as_file=True)), shell=True)
+                    run("cat %s |xsel -b -i" % self.gi.get_body(as_file=True), direct_output=True)
             else:
                 print("Please install xsel to use copy")
         else:
@@ -3018,7 +3020,7 @@ Use with "cache" to copy the path of the cached content."""
                 urls = []
                 for selec in ["-p","-s","-b"]:
                     try:
-                        clipboards.append(subprocess.check_output(['xsel',selec],text=True))
+                        clipboards.append(run("xsel "+selec))
                     except Exception as err:
                         #print("Skippink clipboard %s because %s"%(selec,err))
                         pass
@@ -3300,7 +3302,7 @@ Use 'ls -l' to see URLs."""
     @needs_gi
     def do_cat(self, *args):
         """Run most recently visited item through "cat" command."""
-        subprocess.run("cat %s" % self.gi.get_temp_filename(),shell=True)
+        run("cat %s" % self.gi.get_temp_filename(),direct_output=True)
 
     @needs_gi
     def do_view(self, *args):
@@ -3347,14 +3349,14 @@ see "handler" command to set your own."""
         cmd_str = self._get_handler_cmd(self.gi.get_mime())
         file_path = "\"%s\"" %self.gi.get_body(as_file=True)
         cmd_str = cmd_str % file_path 
-        subprocess.run(cmd_str,shell=True)
+        run(cmd_str,direct_output=True)
 
     @restricted
     @needs_gi
     def do_shell(self, line):
         """'cat' most recently visited item through a shell pipeline.
 '!' is an useful shortcut."""
-        subprocess.run(("cat %s |" % self.gi.get_temp_filename()) + line, shell=True)
+        run("cat %s |" % self.gi.get_temp_filename() + line,direct_output=True)
 
     @restricted
     @needs_gi
@@ -3820,7 +3822,7 @@ Note: There’s no "delete" on purpose. The use of "archive" is recommended."""
                     if len(args) > 1 and args[1] in self.list_lists():
                         path = os.path.join(listdir,args[1]+".gmi")
                         try:
-                            subprocess.run("%s %s"%(editor,path),shell=True)
+                            run("%s %s"%(editor,path),direct_output=True)
                         except Exception as err:
                             print(err)
                             print("Please set a valid editor with \"set editor\"")
