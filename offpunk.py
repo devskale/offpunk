@@ -1992,7 +1992,8 @@ class GeminiClient(cmd.Cmd):
         # Pass file to handler, unless we were asked not to
         if gi :
             display = handle and not self.sync_only
-            if display and self.options["download_images_first"] and not self.offline_only:
+            if display and _RENDER_IMAGE and self.options["download_images_first"] \
+                                                        and not self.offline_only:
                 # We download images first
                 for image in gi.get_images(mode=mode):
                     if image:
