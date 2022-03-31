@@ -357,9 +357,6 @@ class AbstractRenderer():
     #This is an experiment to rewrite the HTML renderer. Currently not used.
     class representation:
         def __init__(self,width,title=None,center=True):
-            #The following is just there to disable this class while developing it.
-            #This should result in very minimal performance fee for users while 
-            #having the code directly at hand (git branches? What git branches…)
             self.title=title
             self.center = center
             self.final_text = ""
@@ -537,10 +534,7 @@ class AbstractRenderer():
         def add_text(self,intext):
             self._title_first(intext=intext)
             lines = []
-            if self.last_line == "":
-                last = (self.last_line + intext.lstrip())
-            else:
-                last = (self.last_line + intext)
+            last = (self.last_line + intext)
             self.last_line = ""
             # With the following, we basically cancel adding only spaces
             # on an empty line
@@ -770,9 +764,6 @@ class GemtextRenderer(AbstractRenderer):
                 r.close_color("bold")
                 r.close_color("blue")
             else:
-                # with the add_block, we keep leading spaces and handmade formatting.
-                #r.add_block(line.rstrip(),wrap=True)
-                # while with add_text, we justify on the left margin
                 r.add_text(line.rstrip())
         return r.get_final(), links
 
@@ -1061,6 +1052,7 @@ class HtmlRenderer(AbstractRenderer):
             abs_url = urllib.parse.urljoin(self.url, src)
             if _RENDER_IMAGE and mode != "links_only" and src:
                 try:
+                    #4 followings line are there to translate the URL into cache path
                     g = GeminiItem(abs_url)
                     if g.is_cache_valid():
                         img = g.get_cache_path()
@@ -1258,7 +1250,8 @@ _FORMAT_RENDERERS = {
 # - There’s only one GeminiClient. Each page is a GeminiItem (name is historical, as
 # it could be non-gemini content)
 # - A GeminiItem is created with an URL from which it will derives content.
-# - Content include : a title, a body, an ansi-rendered-body and a list of links.
+# - Content include : a title, a body (raw source) and a renderer. The renderer will provide
+#                     ANSI rendered version of the content and a list of links
 # - Each GeminiItem generates a "cache_path" in which it maintains a cached version of its content.
 
 class GeminiItem():
