@@ -836,6 +836,7 @@ class GopherRenderer(AbstractRenderer):
                         if not path.startswith("/"):
                             path = "/"+path
                         url = "gopher://%s%s/%s%s" %(host,port,itemtype,path)
+                    url = url.replace(" ","%20")
                     linkline = url + " " + name
                     links.append(linkline)
                     towrap = "[%s] "%len(links)+ name
@@ -3450,7 +3451,10 @@ see "handler" command to set your own."""
 If no argument given, URL is added to Bookmarks."""
         args = line.split()
         if len(args) < 1 :
-            self.list_add_line("bookmarks")
+            list = "bookmarks"
+            if not self.list_path(list):
+                self.list_create(list)
+            self.list_add_line(list)
         else:
             self.list_add_line(args[0])
     
