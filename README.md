@@ -71,7 +71,8 @@ experience or some other features. Python libraries requests, bs4 and readabilit
 
 To avoid using unstable or too recent libraries, the rule of thumb is that a library should be packaged in Debian/Ubuntu. Keep in mind that Offpunk is mainly tested will all libraries installed. If you encounter a crash without one optional dependencies, please report it. Patches and contributions to remove dependencies or support alternatives are highly appreciated.
 
-* [command to install all optional dependencies on Ubuntu/Debian](ubuntu_dependencies.txt)
+* [requirements file to install dependencies with pip](requirements.txt)
+* [command to install dependencies  on Ubuntu/Debian without pip](ubuntu_dependencies.txt)
 * (please contribute commands for other systems)
 
 Run command `version` in offpunk to see if you are missing some dependencies.
