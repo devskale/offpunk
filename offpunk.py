@@ -245,6 +245,7 @@ else:
 _DEFAULT_LESS = less_base + " \"+''\" %s"
 _DEFAULT_CAT = less_base + " -EF %s"
 def less_cmd(file, histfile=None,cat=False,grep=None):
+    file = "\"%s\""%file
     if histfile:
         prefix = "LESSHISTFILE=%s "%histfile
     else:
@@ -1648,7 +1649,7 @@ class GeminiItem():
                 mime = "text/gemini"
             elif shutil.which("file") :
                 #mime = magic.from_file(path,mime=True)
-                mime = run("file -b --mime-type %s"%path).strip()
+                mime = run("file -b --mime-type \"%s\""%path).strip()
                 mime2,encoding = mimetypes.guess_type(path,strict=False)
                 #If we hesitate between html and xml, takes the xml one
                 #because the FeedRendered fallback to HtmlRenderer
@@ -1912,7 +1913,7 @@ class GeminiClient(cmd.Cmd):
                 self.gi = gi
                 if resp.strip().lower() in ("y", "yes"):
                     if _HAS_XDGOPEN :
-                        cmd = "xdg-open mailto:%s" %gi.path
+                        cmd = "xdg-open \"mailto:%s\"" %gi.path
                         run(cmd,direct_output=True)
                     else:
                         print("Cannot find a mail client to send mail to %s" %gi.path)
@@ -2032,7 +2033,7 @@ class GeminiClient(cmd.Cmd):
                 cmd_str = self._get_handler_cmd(gi.get_mime())
                 try:
                     # get tmpfile from gi !
-                    tmpfile = gi.get_body(as_file=True)
+                    tmpfile = "\"%s\""%gi.get_body(as_file=True)
                     run(cmd_str%tmpfile,direct_output=True)
                 except FileNotFoundError:
                     print("Handler program %s not found!" % shlex.split(cmd_str)[0])
@@ -2631,7 +2632,7 @@ class GeminiClient(cmd.Cmd):
         else:
             # Use "xdg-open" as a last resort.
             if _HAS_XDGOPEN:
-                cmd_str = "xdg-open %s"
+                cmd_str = "xdg-open \"%s\""
             else:
                 cmd_str = "echo ""Can’t find how to open %s"""
                 print("Please install xdg-open (usually from xdg-util package)")
@@ -3001,11 +3002,11 @@ Use with "cache" to copy the path of the cached content."""
                         url = self.gi.url
                     run("echo %s |xsel -b -i" % url,direct_output=True)
                 elif args and args[0] == "raw":
-                    run("cat %s |xsel -b -i" % self.gi.get_temp_filename(),direct_output=True)
+                    run("cat \"%s\" |xsel -b -i" % self.gi.get_temp_filename(),direct_output=True)
                 elif args and args[0] == "cache":
                     run("echo %s |xsel -b -i" % self.gi.get_cache_path(), direct_output=True)
                 else:
-                    run("cat %s |xsel -b -i" % self.gi.get_body(as_file=True), direct_output=True)
+                    run("cat \"%s\" |xsel -b -i" % self.gi.get_body(as_file=True), direct_output=True)
             else:
                 print("Please install xsel to use copy")
         else:
@@ -3303,7 +3304,7 @@ Use 'ls -l' to see URLs."""
     @needs_gi
     def do_cat(self, *args):
         """Run most recently visited item through "cat" command."""
-        run("cat %s" % self.gi.get_temp_filename(),direct_output=True)
+        run("cat \"%s\"" % self.gi.get_temp_filename(),direct_output=True)
 
     @needs_gi
     def do_view(self, *args):
@@ -3357,7 +3358,7 @@ see "handler" command to set your own."""
     def do_shell(self, line):
         """'cat' most recently visited item through a shell pipeline.
 '!' is an useful shortcut."""
-        run("cat %s |" % self.gi.get_temp_filename() + line,direct_output=True)
+        run("cat \"%s\" |" % self.gi.get_temp_filename() + line,direct_output=True)
 
     @restricted
     @needs_gi
@@ -3826,7 +3827,7 @@ Note: There’s no "delete" on purpose. The use of "archive" is recommended."""
                     if len(args) > 1 and args[1] in self.list_lists():
                         path = os.path.join(listdir,args[1]+".gmi")
                         try:
-                            run("%s %s"%(editor,path),direct_output=True)
+                            run("%s \"%s\""%(editor,path),direct_output=True)
                         except Exception as err:
                             print(err)
                             print("Please set a valid editor with \"set editor\"")
