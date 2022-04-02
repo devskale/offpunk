@@ -12,7 +12,7 @@
 #  - Björn Wärmedal <bjorn.warmedal@gmail.com>
 #  - <jake@rmgr.dev>
 
-_VERSION = "1.2"
+_VERSION = "1.3"
 global BETA
 BETA = False
 
