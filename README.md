@@ -78,9 +78,10 @@ To avoid using unstable or too recent libraries, the rule of thumb is that a lib
 Run command `version` in offpunk to see if you are missing some dependencies.
 
 Highly recommended (packagers should probably make those mandatory):
+* [less](http://www.greenwoodsoftware.com/less/): mandatory but is probably already on your system
+* [file](https://www.darwinsys.com/file/) is used to get the MIME type of cached objects. Should already be on your system.
 * [xdg-utils](https://www.freedesktop.org/wiki/Software/xdg-utils/) provides xdg-open which is highly recommended to open files without a renderer or a handler. It is also used for mailto: command.
 * The [cryptography library](https://pypi.org/project/cryptography/) will provide a better and slightly more secure experience when using the default TOFU certificate validation mode and is highly recommended (apt-get install python3-cryptography).
-* [file](https://www.darwinsys.com/file/) is used to get the MIME type of cached objects. But it should already be on your system.
 
 Dependencies to enable web browsing (packagers should put those in an offpunk-web meta-package)
 * [Python-requests](http://python-requests.org) is needed to handle http/https requests natively (apt-get install python3-requests). Without it, http links will be opened in an external browser
