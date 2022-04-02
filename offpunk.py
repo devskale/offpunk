@@ -1027,10 +1027,15 @@ class HtmlRenderer(AbstractRenderer):
     def get_title(self):
         if self.title:
             return self.title
+        elif self.body:
+            try:
+                readable = Document(self.body)
+                self.title = readable.short_title()
+                return self.title
+            except Exception as err:
+                return None
         else:
-            readable = Document(self.body)
-            self.title = readable.short_title()
-            return self.title
+            return ""
     
     # Our own HTML engine (crazy, isn’t it?)
     # Return [rendered_body, list_of_links]
@@ -1222,8 +1227,11 @@ class HtmlRenderer(AbstractRenderer):
         if mode == "full":
             summary = body
         else:
-            readable = Document(body)
-            summary = readable.summary()
+            try:
+                readable = Document(body)
+                summary = readable.summary()
+            except Exception as err:
+                summary = body
         soup = BeautifulSoup(summary, 'html.parser')
         #soup = BeautifulSoup(summary, 'html5lib')
         if soup :
@@ -1404,7 +1412,7 @@ class GeminiItem():
             self._set_renderer()
         if self.renderer:
             title = self.renderer.get_title()
-        if len(title) == 0:
+        if not title or len(title) == 0:
             title = self.get_capsule_title()
         else:
             title += " (%s)" %self.get_capsule_title()
@@ -1580,7 +1588,9 @@ class GeminiItem():
                 else:
                     str_last = "last accessed on %s" %time.ctime(self.cache_last_modified())
                     title += " (%s links)"%nbr
-            return self.renderer.display(mode=mode,window_title=title,window_info=str_last,grep=grep)
+                return self.renderer.display(mode=mode,window_title=title,window_info=str_last,grep=grep)
+            else:
+                return False
         else:
             return False
 
