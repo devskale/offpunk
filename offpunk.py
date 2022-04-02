@@ -167,7 +167,10 @@ try:
 except ModuleNotFoundError:
     _HAS_SOUP = False
 
-_DO_HTML = _HAS_SOUP and _HAS_READABILITY
+_DO_HTML = _HAS_SOUP #and _HAS_READABILITY
+if _DO_HTML and not _HAS_READABILITY:
+    print("To improve your web experience (less cruft in webpages),")
+    print("please install python3-reability or readability-lxml")
 
 try:
     import feedparser
@@ -1028,12 +1031,15 @@ class HtmlRenderer(AbstractRenderer):
         if self.title:
             return self.title
         elif self.body:
-            try:
-                readable = Document(self.body)
-                self.title = readable.short_title()
-                return self.title
-            except Exception as err:
-                return None
+            if _HAS_READABILITY:
+                try:
+                    readable = Document(self.body)
+                    self.title = readable.short_title()
+                    return self.title
+                except Exception as err:
+                    pass
+            soup = BeautifulSoup(self.body,"html.parser")
+            self.title = str(soup.title.string)
         else:
             return ""
     
@@ -1226,12 +1232,14 @@ class HtmlRenderer(AbstractRenderer):
         # the real render_html hearth
         if mode == "full":
             summary = body
-        else:
+        elif _HAS_READABILITY:
             try:
                 readable = Document(body)
                 summary = readable.summary()
             except Exception as err:
                 summary = body
+        else:
+            summary = body
         soup = BeautifulSoup(summary, 'html.parser')
         #soup = BeautifulSoup(summary, 'html5lib')
         if soup :

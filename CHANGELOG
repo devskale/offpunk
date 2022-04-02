@@ -1,7 +1,8 @@
 # Offpunk History
 
 ## 1.4 - Unreleased
-- Fixing a stupid crash when accessing an http ressource online for the first time
+- Making python-readability optional
+- Fixing a crash when accessing an empty html page
 
 ## 1.3 - April 2th 2022
 - Removed dependency to python-magic. File is now used directly (and should be on every system).
