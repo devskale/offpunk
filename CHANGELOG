@@ -17,6 +17,7 @@
 - Fixed bookmarks not being automatically created at first "add"
 - Call to shell commands has been refactorised to improve compatibility with python 3.6 (with testing from Pelle Nilsson)
 - requirements.txt has been contributed by Toby Kurien. Thanks!
+=> gemini://rawtext.club/~ploum/2022-04-02-offpunk13.gmi
 
 ## 1.2 - March 24th 2022
 Very experimental release:
