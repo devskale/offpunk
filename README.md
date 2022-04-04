@@ -73,7 +73,8 @@ To avoid using unstable or too recent libraries, the rule of thumb is that a lib
 
 * [requirements file to install dependencies with pip](requirements.txt)
 * [command to install dependencies  on Ubuntu/Debian without pip](ubuntu_dependencies.txt)
-* (please contribute commands for other systems)
+* [AUR package for Arch Linux, maintained by kseistrup](https://aur.archlinux.org/packages/offpunk-git)
+* (please contribute commands/packages for other systems)
 
 Run command `version` in offpunk to see if you are missing some dependencies.
 
