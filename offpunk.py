@@ -1080,7 +1080,7 @@ class HtmlRenderer(AbstractRenderer):
             return ansi_img
         def sanitize_string(string):
             #never start with a "\n"
-            string = string.lstrip("\n")
+            #string = string.lstrip("\n")
             string = string.replace("\r","").replace("\n", " ").replace("\t"," ")
             endspace = string.endswith(" ") or string.endswith("\xa0")
             startspace = string.startswith(" ") or string.startswith("\xa0")
