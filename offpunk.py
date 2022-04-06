@@ -3110,14 +3110,14 @@ Take an integer as argument to go up multiple times."""
         gi = links[self.hist_index]
         self._go_to_gi(gi, update_hist=False)
 
-    def do_next(self, *args):
-        """Go to next item after current in index."""
-        return self.onecmd(str(self.index_index+1))
+    #def do_next(self, *args):
+    #    """Go to next item after current in index."""
+    #    return self.onecmd(str(self.index_index+1))
 
-    def do_previous(self, *args):
-        """Go to previous item before current in index."""
-        self.lookup = self.index
-        return self.onecmd(str(self.index_index-1))
+    #def do_previous(self, *args):
+    #    """Go to previous item before current in index."""
+    #    self.lookup = self.index
+    #    return self.onecmd(str(self.index_index-1))
 
     @needs_gi
     def do_root(self, *args):
@@ -3128,6 +3128,7 @@ Take an integer as argument to go up multiple times."""
         """Add index items as waypoints on a tour, which is basically a FIFO
 queue of gemini items.
 
+`tour` or `t` alone brings you to the next item in your tour.
 Items can be added with `tour 1 2 3 4` or ranges like `tour 1-4`.
 All items in current menu can be added with `tour *`.
 Current item can be added back to the end of the tour with `tour .`.

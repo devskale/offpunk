@@ -2,6 +2,7 @@
 
 ## 1.4 - Unreleased
 - Making python-readability optional
+- Removing "next" and "previous" which are quite confusing and not obvious
 - Fixing a crash when accessing an empty html page
 
 ## 1.3 - April 2th 2022
