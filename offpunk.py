@@ -105,6 +105,11 @@ def inline_image(img_file,width):
     #Chafa is faster than timg inline. Let use that one by default
     inline = None
     ansi_img = ""
+    #We avoid errors by not trying to render non-image files
+    if shutil.which("file"):
+        mime = run("file -b --mime-type \"%s\""%img_file).strip()
+        if not "image" in mime:
+            return ansi_img
     if _HAS_CHAFA:
         if _HAS_PIL and not _NEW_CHAFA:
             # this code is a hack to remove frames from animated gif
