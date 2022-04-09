@@ -4,6 +4,8 @@ A command-line and offline-first smolnet browser/feed reader for Gemini, Gopher,
 
 The goal of Offpunk is to be able to synchronise your content once (a day, a week, a month) and then browse/organise it while staying disconnected.
 
+Official repository : https://notabug.org/ploum/offpunk/
+
 ![Screenshot HTML page with picture](/screenshot_offpunk1.png)
 ![Screenshot Gemini page](/screenshot_offpunk2.png)
 
