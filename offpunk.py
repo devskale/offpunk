@@ -3642,13 +3642,18 @@ archives, which is a special historical list limited in size. It is similar to `
                 lines = lf.readlines()
                 lf.close()
             to_write = []
+            # let’s remove the mode
+            url = url.split("##offpunk_mode=")[0]
             for l in lines:
                 # we separate components of the line
                 # to ensure we identify a complete URL, not a part of it
                 splitted = l.split()
-                if url not in splitted:
+                if url not in splitted and len(splitted) > 0:
+                    current = splitted[1].split("##offpunk_mode=")[0]
                     #sometimes, we must remove the ending "/"
-                    if url.endswith("/") and url[:-1] in splitted:
+                    if url == current:
+                        to_return = True
+                    elif url.endswith("/") and url[:-1] == current:
                         to_return = True
                     else:
                         to_write.append(l)

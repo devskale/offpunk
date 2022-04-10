@@ -3,6 +3,7 @@
 ## 1.4 - Unreleased
 - Making python-readability optional
 - Removing "next" and "previous" which are quite confusing and not obvious
+- Archiving now works regardless of the view you are in.
 - Fixing a crash when accessing an empty html page
 - Not trying to display non-image files to avoid errors. (this requires "file")
 
