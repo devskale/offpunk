@@ -3648,7 +3648,7 @@ archives, which is a special historical list limited in size. It is similar to `
                 # we separate components of the line
                 # to ensure we identify a complete URL, not a part of it
                 splitted = l.split()
-                if url not in splitted and len(splitted) > 0:
+                if url not in splitted and len(splitted) > 1:
                     current = splitted[1].split("##offpunk_mode=")[0]
                     #sometimes, we must remove the ending "/"
                     if url == current:
