@@ -119,7 +119,7 @@ def inline_image(img_file,width):
                 img_obj.save(img_file,format="gif",save_all=False)
             inline = "chafa --bg white -s %s -f symbols"
         elif _NEW_CHAFA:
-            inline = "chafa --bg white -s %s -f symbols --animate=off"
+            inline = "chafa --bg white -t 1 -s %s -f symbols --animate=off"
     if not inline and _HAS_TIMG:
         inline = "timg --frames=1 -p q -g %sx1000"
     if inline:
@@ -137,7 +137,7 @@ def terminal_image(img_file):
     if _HAS_TIMG:
         cmd = "timg --loops=1 -C"
     elif _HAS_CHAFA:
-        cmd = "chafa -d 0 --bg white -w 1"
+        cmd = "chafa -d 0 --bg white -t 1 -w 1"
     if cmd:
         cmd = cmd + " \"%s\""%img_file
         run(cmd,direct_output=True)
