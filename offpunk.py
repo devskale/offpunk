@@ -211,9 +211,7 @@ _MAX_REDIRECTS = 5
 _MAX_CACHE_SIZE = 10
 _MAX_CACHE_AGE_SECS = 180
 
-_GREP = "grep"
-if shutil.which("rg"):
-    _GREP = "rg"
+_GREP = "grep --color=auto"
 less_version = 0
 if not shutil.which("less"):
     print("Please install the pager \"less\" to run Offpunk.")
@@ -3267,7 +3265,6 @@ Marks are temporary until shutdown (not saved to disk)."""
             output += " - python-pil          : " + has(_HAS_PIL)
         output += "\nNice to have:\n"
         output += " - python-setproctitle : " + has(_HAS_SETPROCTITLE)
-        output += " - ripgrep             : " + has(shutil.which("rg"))
         output += " - xsel                : " + has(_HAS_XSEL)
 
         output += "\nFeatures :\n"

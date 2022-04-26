@@ -97,7 +97,6 @@ Dependencies to enable web browsing (packagers should put those in an offpunk-we
 Nice to have (packagers should probaly make those optional):
 * [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). Also needed to use the `copy` command. (apt-get install xsel)
 * [Python-setproctitle](https://github.com/dvarrazzo/py-setproctitle) will change the process name from "python" to "offpunk". Useful to kill it without killing every python service.
-* [RipGrep](https://github.com/BurntSushi/ripgrep) is used, if found, to add colours to your in-page searches ("find" or "/"). 
 
 ## Features
 

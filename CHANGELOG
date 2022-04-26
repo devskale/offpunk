@@ -1,5 +1,8 @@
 # Offpunk History
 
+## 1.5 - Unreleased
+- Removed optional dependency to ripgrep. "grep --color=auto" is good enough.
+
 ## 1.4 - April 25th 2022
 - Making python-readability optional
 - Removing "next" and "previous" which are quite confusing and not obvious
