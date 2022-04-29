@@ -3352,11 +3352,15 @@ Use "view feeds" to see available feeds on this page.
     @needs_gi
     def do_open(self, *args):
         """Open current item with the configured handler or xdg-open.
-see "handler" command to set your own."""
-        cmd_str = self._get_handler_cmd(self.gi.get_mime())
-        file_path = "\"%s\"" %self.gi.get_body(as_file=True)
-        cmd_str = cmd_str % file_path 
-        run(cmd_str,direct_output=True)
+Uses "open url" to open current URL in a browser.
+see "handler" command to set your handler."""
+        if args[0] == "url":
+            run("xdg-open %s" %self.gi.url,direct_output=True)
+        else:
+            cmd_str = self._get_handler_cmd(self.gi.get_mime())
+            file_path = "\"%s\"" %self.gi.get_body(as_file=True)
+            cmd_str = cmd_str % file_path 
+            run(cmd_str,direct_output=True)
 
     @restricted
     @needs_gi
