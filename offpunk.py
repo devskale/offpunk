@@ -1662,7 +1662,6 @@ class GeminiItem():
             elif path.endswith(".gmi"):
                 mime = "text/gemini"
             elif shutil.which("file") :
-                #mime = magic.from_file(path,mime=True)
                 mime = run("file -b --mime-type \"%s\""%path).strip()
                 mime2,encoding = mimetypes.guess_type(path,strict=False)
                 #If we hesitate between html and xml, takes the xml one
