@@ -202,11 +202,6 @@ if os.path.exists(_old_config):
 #if no XDG .local/share and not XDG .config, we use the old config
 if not os.path.exists(data_home) and os.path.exists(_old_config):
     _DATA_DIR = _CONFIG_DIR
-for f in [_CONFIG_DIR, _CACHE_PATH, _DATA_DIR]:
-    if not os.path.exists(f):
-        print("Creating config directory {}".format(f))
-        os.makedirs(f)
-
 _MAX_REDIRECTS = 5
 _MAX_CACHE_SIZE = 10
 _MAX_CACHE_AGE_SECS = 180
@@ -4127,6 +4122,11 @@ def main():
     if args.version:
         print("Offpunk " + _VERSION)
         sys.exit()
+    else:
+        for f in [_CONFIG_DIR, _CACHE_PATH, _DATA_DIR]:
+            if not os.path.exists(f):
+                print("Creating config directory {}".format(f))
+                os.makedirs(f)
 
     # Instantiate client
     gc = GeminiClient(restricted=args.restricted,synconly=args.sync)
