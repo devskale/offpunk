@@ -4114,6 +4114,8 @@ def main():
                         help='duration for which a cache is valid before sync (seconds)')
     parser.add_argument('--version', action='store_true',
                         help='display version information and quit')
+    parser.add_argument('--features', action='store_true',
+                        help='display available features and dependancies then quit')
     parser.add_argument('url', metavar='URL', nargs='*',
                         help='start with this URL')
     args = parser.parse_args()
@@ -4122,6 +4124,9 @@ def main():
     if args.version:
         print("Offpunk " + _VERSION)
         sys.exit()
+    elif args.features:
+        GeminiClient.do_version(None,None)
+        sys.exit() 
     else:
         for f in [_CONFIG_DIR, _CACHE_PATH, _DATA_DIR]:
             if not os.path.exists(f):
