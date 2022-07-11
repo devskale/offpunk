@@ -76,6 +76,7 @@ To avoid using unstable or too recent libraries, the rule of thumb is that a lib
 * [requirements file to install dependencies with pip](requirements.txt)
 * [command to install dependencies  on Ubuntu/Debian without pip](ubuntu_dependencies.txt)
 * [AUR package for Arch Linux, maintained by kseistrup](https://aur.archlinux.org/packages/offpunk-git)
+* [Nix](https://nixos.org/) [package](https://github.com/NixOS/nixpkgs/blob/master/pkgs/applications/networking/browsers/offpunk/default.nix), maintained by [DamienCassou](https://github.com/DamienCassou)
 * (please contribute commands/packages for other systems)
 
 Run command `version` in offpunk to see if you are missing some dependencies.
