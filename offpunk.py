@@ -3512,7 +3512,7 @@ To unsubscribe, remove the page from the "subscribed" list."""
                 stri += "\t -> (already subscribed through lists %s)\n"%(str(already))
             counter += 1
         stri += "\n"
-        stri += "Which feed do you want to subsribe ? > "
+        stri += "Which feed do you want to subscribe ? > "
         ans = input(stri)
         if ans.isdigit() and 0 < int(ans) <= len(subs):
             sublink,mime,title = subs[int(ans)-1]
