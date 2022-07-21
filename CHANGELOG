@@ -3,6 +3,7 @@
 ## 1.5 - Unreleased
 - Removed optional dependency to ripgrep. "grep --color=auto" is good enough.
 - "open url" to open current URL in a browser with xdg-open
+- "redirect" now replaces "set redirects" to improve discoverability
 
 ## 1.4 - April 25th 2022
 - Making python-readability optional

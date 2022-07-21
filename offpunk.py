@@ -2063,7 +2063,13 @@ class GeminiClient(cmd.Cmd):
             if netloc.startswith("www."):
                 netloc = netloc[4:]
             if netloc in self.redirects:
-                parsed = parsed._replace(netloc = self.redirects[netloc])
+                if self.redirects[netloc] == "blocked":
+                    text = "This website has been blocked.\n"
+                    text += "Use the redirect command to unblock it."
+                    gi.write_body(text,"text/gemini")
+                    return gi
+                else:
+                    parsed = parsed._replace(netloc = self.redirects[netloc])
         url = urllib.parse.urlunparse(parsed)
         with requests.get(url,headers=header, stream=True,timeout=5) as response:
             #print("This is header for %s"%gi.url)
@@ -2836,6 +2842,37 @@ class GeminiClient(cmd.Cmd):
 
     ### Settings
     @restricted
+    def do_redirect(self,line):
+        """Display and manage the list of redirected URLs. This features is mostly useful to use privacy-friendly frontends for popular websites."""
+        if len(line.split()) == 1:
+            if line in self.redirects:
+                print("%s is redirected to %s" %(line,self.redirects[line]))
+            else:
+                print("Please add a destination to redirect %s" %line)
+        elif len(line.split()) >= 2:
+            orig, dest = line.split(" ",1)
+            if dest.lower() == "none":
+                if orig in self.redirects:
+                    self.redirects.pop(orig)
+                    print("Redirection for %s has been removed"%orig)
+                else:
+                    print("%s was not redirected. Nothing has changed."%orig)
+            elif dest.lower() == "block":
+                self.redirects[orig] = "blocked"
+                print("%s will now be blocked"%orig)
+            else:
+                self.redirects[orig] = dest
+                print("%s will now be redirected to %s" %(orig,dest))
+        else:
+            toprint="Current redirections:\n"
+            toprint+="--------------------\n"
+            for r in self.redirects:
+                toprint += ("%s\t->\t%s\n" %(r,self.redirects[r]))
+            toprint +="\nTo add new, use \"redirect origine.com destination.org\""
+            toprint +="\nTo remove a redirect, use \"redirect origine.com NONE\""
+            toprint +="\nTo completely block a website, use \"redirect origine.com BLOCK\""
+            print(toprint)
+    @restricted
     def do_set(self, line):
         """View or set various options."""
         if not line.strip():
@@ -2845,18 +2882,7 @@ class GeminiClient(cmd.Cmd):
         elif len(line.split()) == 1 :
             # Show current value of one specific setting
             option = line.strip()
-            if option == "redirects":
-                print("redirects : %s" %self.options["redirects"])
-                if self.options["redirects"]:
-                    toprint = "Redirections are enabled. (disable with \"set redirects false\")\n"
-                else:
-                    toprint = "Redirections are disabled. (enable with \"set redirects true\")\n"
-                toprint += "--------------------------\n"
-                for r in self.redirects:
-                    toprint += ("%s\t->\t%s\n" %(r,self.redirects[r]))
-                toprint +="\nTo add new, use \"set redirects origine.com destination.org\""
-                print(toprint)
-            elif option in self.options:
+            if option in self.options:
                 print("%s   %s" % (option, self.options[option]))
             else:
                 print("Unrecognised option %s" % option)
@@ -2879,27 +2905,6 @@ class GeminiClient(cmd.Cmd):
                     TERM_WIDTH = value
                 else:
                     print("%s is not a valid width (integer required)"%value)
-            elif option == "redirects" and len(value.split(" ")) > 1:
-                if len(value.split(" ")) <= 1:
-                    if value.lower() in ["true","false"]:
-                        if value.lower() == "true":
-                            value = True
-                            toprint = "Redirections are enabled\n"
-                            toprint = "------------------------\n"
-                            for r in self.redirects:
-                                toprint += ("%s\t->\t%s\n" %(r,self.redirects[r]))
-                            print(toprint)
-                        else:
-                            value = False
-                            print("Redirections are disabled")
-                    elif value in self.redirects:
-                        print("%s is redirected to %s" %(value,self.redirects[value]))
-                    else:
-                        print("Please add a destination where to redirect %s" %value)
-                else:
-                    orig, dest = value.split(" ",1)
-                    self.redirects[orig] = dest
-                    print("%s will now be redirected to %s" %(orig,dest))
             elif option == "beta":
                 if value.lower() == "true":
                     global BETA
