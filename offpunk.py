@@ -1869,6 +1869,8 @@ class GeminiClient(cmd.Cmd):
         
         self.redirects = {
             "twitter.com" : "nitter.42l.fr",
+            "facebook.com" : "blocked",
+            "google-analytics.com" : "blocked",
             "youtube.com" : "yewtu.be",
             "reddit.com"  : "libredd.it",
             "old.reddit.com": "libredd.it",
@@ -2018,7 +2020,7 @@ class GeminiClient(cmd.Cmd):
                                                         and not self.offline_only:
                 # We download images first
                 for image in gi.get_images(mode=mode):
-                    if image:
+                    if image and image.startswith("http"):
                         img_gi = GeminiItem(image)
                         if not img_gi.is_cache_valid():
                             width = term_width() - 1
