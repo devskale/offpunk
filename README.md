@@ -110,6 +110,7 @@ Nice to have (packagers should probaly make those optional):
 * Complex bookmarks management through multiple lists, built-in edition, subscribing/freezing lists and archiving content.
 * Advanced navigation tools like `tour` and `mark` (as per VF-1). Unlike AV-98, tour is saved on disk accross sessions. 
 * Ability to specify external handler programs for different MIME types (use `handler`)
+* Enhanced privacy with `redirect` which allows to block a http domain or to redirect all request to a privacy friendly frontent (such as nitter for twitter).
 * Non-interactive cache-building with configurable depth through the --sync command. The cache can easily be used by other software. 
 * IPv6 support
 * Supports any character encoding recognised by Python

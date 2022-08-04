@@ -6,6 +6,7 @@
 - "redirect" now replaces "set redirects" to improve discoverability
 - "redirect" now allows urls to be blocked. By default, facebook.com and google-analytics.com are blocked
 - Fixed a bug when trying to download base64 image
+=> gemini://rawtext.club/~ploum/2022-08-04-offpunk15.gmi
 
 ## 1.4 - April 25th 2022
 - Making python-readability optional
