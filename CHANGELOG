@@ -1,6 +1,6 @@
 # Offpunk History
 
-## 1.5 - Unreleased
+## 1.5 - August 4th 2022
 - Removed optional dependency to ripgrep. "grep --color=auto" is good enough.
 - "open url" to open current URL in a browser with xdg-open
 - "redirect" now replaces "set redirects" to improve discoverability
