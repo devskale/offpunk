@@ -45,9 +45,6 @@ To have offpunk fetch the URL at next sync and close immediately, run:
 
 ## Roadmap post 1.0
 
-Known issues in the code:
-* NOT_FIXABLE : consider root file is always index.gmi or index.html
-
 I would happily mentor anyone willing to implement those:
 * TODO0: Hard - Make a manual within the git repository and have it automatically deployed as a website.
 * TODO1: Easy - Update blackbox to reflect cache hits.
@@ -63,6 +60,7 @@ Announces about Offpunk will be made on Ploum’s Gemlog  => gemini://rawtext.cl
 `go gemini://rawtext.club/~ploum/`
 `subscribe`
 
+Important news and releases will be announced on the offpunk-devel mailing list => https://lists.sr.ht/~lioploum/offpunk-devel
 
 ## Dependencies
 

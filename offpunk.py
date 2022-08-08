@@ -355,7 +355,6 @@ class AbstractRenderer():
         self.center = center
    
     #This class hold an internal representation of the HTML text
-    #This is an experiment to rewrite the HTML renderer. Currently not used.
     class representation:
         def __init__(self,width,title=None,center=True):
             self.title=title
