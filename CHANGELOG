@@ -1,5 +1,8 @@
 # Offpunk History
 
+## 1.6 - Unreleased
+- A list can be added to a tour with "tour $LIST_NAME".
+
 ## 1.5 - August 4th 2022
 - Removed optional dependency to ripgrep. "grep --color=auto" is good enough.
 - "open url" to open current URL in a browser with xdg-open

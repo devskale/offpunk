@@ -3125,6 +3125,7 @@ queue of gemini items.
 `tour` or `t` alone brings you to the next item in your tour.
 Items can be added with `tour 1 2 3 4` or ranges like `tour 1-4`.
 All items in current menu can be added with `tour *`.
+All items in $LIST can be added with `tour $LIST`.
 Current item can be added back to the end of the tour with `tour .`.
 Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
         # Creating the tour list if needed
@@ -3150,6 +3151,16 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
             self.list_add_line("tour",verbose=False)
         elif looks_like_url(line):
             self.list_add_line("tour",gi=GeminiItem(line))
+        elif line in self.list_lists():
+            list_path = self.list_path(line)
+            if not list_path:
+                print("List %s does not exist. Cannot add it to tour"%(list))
+            else:
+                gi = GeminiItem("list:///%s"%line)
+                display = not self.sync_only
+                if gi:
+                    for l in gi.get_links():
+                        self.list_add_line("tour",gi=l,verbose=False)
         else:
             for index in line.split():
                 try:
