@@ -57,7 +57,7 @@ See how I browse Web/Gemini offline => gemini://rawtext.club/~ploum/2021-12-17-o
 
 Announces about Offpunk will be made on Ploum’s Gemlog  => gemini://rawtext.club/~ploum/
 
-`go gemini://rawtext.club/~ploum/`
+`go gemini://rawtext.club/~ploum/`  
 `subscribe`
 
 Important news and releases will be announced on the offpunk-devel mailing list => https://lists.sr.ht/~lioploum/offpunk-devel
