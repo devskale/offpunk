@@ -590,6 +590,8 @@ class AbstractRenderer():
             results = self.render(prepared_body,mode=mode)
             if results:
                 self.links[mode] = results[1]
+                for l in self.get_subscribe_links()[1:]:
+                    self.links[mode].append(l[0])
         return self.links[mode]
     def get_title(self):
         return "Abstract title"
