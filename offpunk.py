@@ -79,6 +79,7 @@ except ModuleNotFoundError:
 _HAS_TIMG = shutil.which('timg')
 _HAS_CHAFA = shutil.which('chafa')
 _NEW_CHAFA = False
+_NEW_TIMG = False
 
 # All this code to know if we render image inline or not
 if _HAS_CHAFA:
@@ -91,7 +92,11 @@ if _HAS_CHAFA:
 if _NEW_CHAFA :
     _RENDER_IMAGE = True
 elif _HAS_TIMG :
-    _RENDER_IMAGE = True
+    output = run("timg --version")
+    # We don’t deal with timg before 1.3.2 (looping options)
+    if output[5:10] > "1.3.2":
+        _NEW_TIMG = True
+        _RENDER_IMAGE = True
 elif _HAS_CHAFA and _HAS_PIL:
     _RENDER_IMAGE = True
 else:
@@ -120,7 +125,7 @@ def inline_image(img_file,width):
             inline = "chafa --bg white -s %s -f symbols"
         elif _NEW_CHAFA:
             inline = "chafa --bg white -t 1 -s %s -f symbols --animate=off"
-    if not inline and _HAS_TIMG:
+    if not inline and _HAS_TIMG and _NEW_TIMG:
         inline = "timg --frames=1 -p q -g %sx1000"
     if inline:
         cmd = inline%width+ " \"%s\""%img_file

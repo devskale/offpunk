@@ -2,6 +2,7 @@
 
 ## 1.6 - Unreleased
 - A list can be added to a tour with "tour $LIST_NAME".
+- Check for timg > 1.3.2 to avoid dealing with old versions (bug reported by Valvin)
 - Removed default redirection to libredd.it as the server seems down
 
 ## 1.5 - August 4th 2022
