@@ -1063,20 +1063,9 @@ class HtmlRenderer(AbstractRenderer):
         # CR are not meaniningful. Except that, somethimes, they should be interpreted as spaces.
         # HTML is real crap. At least the one people are generating.
 
-        # This method return the image URL or invent it if it’s a base64 inline image
-        # It returns [url,image_data] where image_data is None for normal image
-        def image_url(src):
-            imgdata = None
-            if src.startswith("data:image/") and ";base64," in src:
-                splitted = src.split(";base64,")
-                extension = splitted[0].strip("data:image/")[:3]
-                imgdata = splitted[1]
-                src = imgdata[:20] + "." + extension
-            abs_url = urllib.parse.urljoin(self.url, src)
-            return abs_url,imgdata
         def render_image(src,width=40,mode=None):
             ansi_img = ""
-            imgurl,imgdata = image_url(src)
+            imgurl,imgdata = looks_like_base64(src,self.url)
             if _RENDER_IMAGE and mode != "links_only" and imgurl:
                 try:
                     #4 followings line are there to translate the URL into cache path
@@ -1542,6 +1531,12 @@ class GeminiItem():
                 else:
                     newgi = GeminiItem(url)
                 toreturn.append(newgi)
+            elif url.startswith("data:image/"): 
+                imgurl,imgdata = looks_like_base64(url,self.url)
+                toreturn.append(GeminiItem(imgurl))
+            else:
+                # We must include a None item to keep the link count valid
+                toreturn.append(None)
         return toreturn
 
     def get_link(self,nb):
@@ -1808,6 +1803,19 @@ def looks_like_url(word):
             return "/" in word
     except ValueError:
         return False
+
+# This method return the image URL or invent it if it’s a base64 inline image
+# It returns [url,image_data] where image_data is None for normal image
+def looks_like_base64(src,baseurl):
+    imgdata = None
+    imgname = src
+    if src.startswith("data:image/") and ";base64," in src:
+        splitted = src.split(";base64,")
+        extension = splitted[0].strip("data:image/")[:3]
+        imgdata = splitted[1]
+        imgname = imgdata[:20] + "." + extension
+    imgurl = urllib.parse.urljoin(baseurl, imgname)
+    return imgurl,imgdata
 
 class UserAbortException(Exception):
     pass

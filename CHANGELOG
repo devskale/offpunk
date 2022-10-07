@@ -6,6 +6,7 @@
 - Check for timg > 1.3.2 to avoid dealing with old versions (bug reported by Valvin)
 - Redirect are now honoured also when --sync (bug #15, thanks kelbot)
 - RSS feeds are now automatically downloaded with a webpage (bug #14)
+- Solved the bug where an invalid URL would break correspondance between url and numbers
 - Removed default redirection to libredd.it as the server seems down
 
 ## 1.5 - August 4th 2022
