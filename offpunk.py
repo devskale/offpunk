@@ -44,6 +44,7 @@ import urllib.parse
 import uuid
 import webbrowser
 import html
+import base64
 import subprocess
 def run(cmd,direct_output=False):
     if not direct_output:
@@ -305,7 +306,6 @@ _MIME_HANDLERS = {
     "audio/mpeg":           "mpg123 %s",
     "audio/ogg":            "ogg123 %s",
     "image/*":              "feh -. %s",
-    #"text/html":            "lynx -dump -force_html %s",
 }
 
 # monkey-patch Gemini support in urllib.parse
@@ -1064,13 +1064,24 @@ class HtmlRenderer(AbstractRenderer):
         # HTML is real crap. At least the one people are generating.
         def render_image(src,width=40,mode=None):
             ansi_img = ""
+            imgdata = None
+            # handling base64 img by creating a fake filename for them
+            if src.startswith("data:image/") and ";base64," in src:
+                splitted = src.split(";base64,")
+                extension = splitted[0].strip("data:image/")[:3]
+                imgdata = splitted[1]
+                src = imgdata[:20] + "." + extension
             abs_url = urllib.parse.urljoin(self.url, src)
             if _RENDER_IMAGE and mode != "links_only" and src:
                 try:
                     #4 followings line are there to translate the URL into cache path
                     g = GeminiItem(abs_url)
+                    img = g.get_cache_path()
+                    if imgdata:
+                        with open(img,"wb") as cached:
+                            cached.write(base64.b64decode(imgdata))
+                            cached.close()
                     if g.is_cache_valid():
-                        img = g.get_cache_path()
                         renderer = ImageRenderer(img,abs_url)
                         # Image are 40px wide except if terminal is smaller
                         if width > 40:
@@ -1080,7 +1091,7 @@ class HtmlRenderer(AbstractRenderer):
                         ansi_img = "\n" + renderer.get_body(width=size,mode="inline")
                 except Exception as err:
                     #we sometimes encounter really bad formatted files or URL
-                    ansi_img = textwrap.fill("[BAD IMG] %s"%src,width) + "\n"
+                    ansi_img = textwrap.fill("[BAD IMG] %s - %s"%(err,src),width) + "\n"
             return ansi_img
         def sanitize_string(string):
             #never start with a "\n"
