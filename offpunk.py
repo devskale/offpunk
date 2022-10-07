@@ -1062,27 +1062,32 @@ class HtmlRenderer(AbstractRenderer):
         # You know how bad html is when you realize that space sometimes meaningful, somtimes not.
         # CR are not meaniningful. Except that, somethimes, they should be interpreted as spaces.
         # HTML is real crap. At least the one people are generating.
-        def render_image(src,width=40,mode=None):
-            ansi_img = ""
+
+        # This method return the image URL or invent it if it’s a base64 inline image
+        # It returns [url,image_data] where image_data is None for normal image
+        def image_url(src):
             imgdata = None
-            # handling base64 img by creating a fake filename for them
             if src.startswith("data:image/") and ";base64," in src:
                 splitted = src.split(";base64,")
                 extension = splitted[0].strip("data:image/")[:3]
                 imgdata = splitted[1]
                 src = imgdata[:20] + "." + extension
             abs_url = urllib.parse.urljoin(self.url, src)
-            if _RENDER_IMAGE and mode != "links_only" and src:
+            return abs_url,imgdata
+        def render_image(src,width=40,mode=None):
+            ansi_img = ""
+            imgurl,imgdata = image_url(src)
+            if _RENDER_IMAGE and mode != "links_only" and imgurl:
                 try:
                     #4 followings line are there to translate the URL into cache path
-                    g = GeminiItem(abs_url)
+                    g = GeminiItem(imgurl)
                     img = g.get_cache_path()
                     if imgdata:
                         with open(img,"wb") as cached:
                             cached.write(base64.b64decode(imgdata))
                             cached.close()
                     if g.is_cache_valid():
-                        renderer = ImageRenderer(img,abs_url)
+                        renderer = ImageRenderer(img,imgurl)
                         # Image are 40px wide except if terminal is smaller
                         if width > 40:
                             size = 40
