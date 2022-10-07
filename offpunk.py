@@ -1852,7 +1852,6 @@ class GeminiClient(cmd.Cmd):
         self.hist_index = 0
         self.index = []
         self.index_index = -1
-        self.lookup = self.index
         self.marks = {}
         self.page_index = 0
         self.permanent_redirects = {}
@@ -2054,7 +2053,6 @@ class GeminiClient(cmd.Cmd):
                                                 handle=False,limit_size=True)
             if display and gi.display(mode=mode):
                 self.index = gi.get_links()
-                self.lookup = self.index
                 self.page_index = 0
                 self.index_index = -1
                 # Update state (external files are not added to history)
@@ -2686,7 +2684,7 @@ class GeminiClient(cmd.Cmd):
         return line
 
     def _show_lookup(self, offset=0, end=None, url=False):
-        for n, gi in enumerate(self.lookup[offset:end]):
+        for n, gi in enumerate(self.gi.get_links()[offset:end]):
             print(self._format_geminiitem(n+offset+1, gi, url))
 
     def _update_history(self, gi):
@@ -2856,7 +2854,7 @@ class GeminiClient(cmd.Cmd):
             print("What?")
             return
         try:
-            gi = self.lookup[n-1]
+            gi = self.gi.get_link(n)
         except IndexError:
             print ("Index too high!")
             return
@@ -3066,11 +3064,15 @@ Use with "cache" to copy the path of the cached content."""
                     if "://" in u and looks_like_url(u) and u not in urls :
                         urls.append(u)
                 if len(urls) > 1:
-                    self.lookup = []
+                    stri = "URLs in your clipboard\n" 
+                    counter = 0
                     for u in urls:
-                        self.lookup.append(GeminiItem(u))
-                    print("Where do you want to go today?")
-                    self._show_lookup()
+                        counter += 1
+                        stri += "[%s] %s\n"%(counter,u)
+                    stri += "Where do you want to go today ?> "
+                    ans = input(stri)
+                    if ans.isdigit() and 0 < int(ans) <= len(urls):
+                        self.do_go(urls[int(ans)-1])
                 elif len(urls) == 1:
                     self.do_go(urls[0])
                 else:
@@ -3167,7 +3169,7 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
             for l in self.list_get_links("tour"):
                 self.list_rm_url(l.url_mode(),"tour")
         elif line == "*":
-            for l in self.lookup:
+            for l in self.gi.get_links():
                 self.list_add_line("tour",gi=l,verbose=False)
         elif line == ".":
             self.list_add_line("tour",verbose=False)
@@ -3190,17 +3192,17 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
                     if len(pair) == 1:
                         # Just a single index
                         n = int(index)
-                        gi = self.lookup[n-1]
+                        gi = self.gi.get_link(n)
                         self.list_add_line("tour",gi=gi,verbose=False)
                     elif len(pair) == 2:
                         # Two endpoints for a range of indices
                         if int(pair[0]) < int(pair[1]):
                             for n in range(int(pair[0]), int(pair[1]) + 1):
-                                gi = self.lookup[n-1]
+                                gi = self.gi.get_link(n)
                                 self.list_add_line("tour",gi=gi,verbose=False)
                         else:
                             for n in range(int(pair[0]), int(pair[1]) - 1, -1):
-                                gi = self.lookup[n-1]
+                                gi = self.gi.get_link(n)
                                 self.list_add_line("tour",gi=gi,verbose=False)
 
                     else:
@@ -3312,7 +3314,6 @@ Marks are temporary until shutdown (not saved to disk)."""
     def do_ls(self, line):
         """List contents of current index.
 Use 'ls -l' to see URLs."""
-        self.lookup = self.index
         self._show_lookup(url = "-l" in line)
         self.page_index = 0
 
@@ -3333,7 +3334,7 @@ Use 'ls -l' to see URLs."""
     def emptyline(self):
         """Page through index ten lines at a time."""
         i = self.page_index
-        if i > len(self.lookup):
+        if not self.gi or i > len(self.gi.get_links()):
             return
         self._show_lookup(offset=i, end=i+10)
         self.page_index += 10
@@ -3368,7 +3369,7 @@ Use "view feeds" to see available feeds on this page.
                     print("No other feed found on %s"%self.gi.url)
             elif args[0] == "feeds":
                 subs = self.gi.get_subscribe_links()
-                stri = "Available views :\n"
+                stri = "Available views :\n" 
                 counter = 0
                 for s in subs:
                     counter += 1
@@ -3451,7 +3452,7 @@ see "handler" command to set your handler."""
         if index:
             last_gi = self.gi
             try:
-                gi = self.lookup[index-1]
+                gi = self.gi.get_link(index)
                 self._go_to_gi(gi, update_hist = False, handle = False)
             except IndexError:
                 print ("Index too high!")
@@ -3929,9 +3930,6 @@ Note: There’s no "delete" on purpose. The use of "archive" is recommended."""
             else:
                 self.list_go_to_line(args[1],args[0].lower())
 
-    def completedefault(self,index,line,begidx,endidx):
-        print("completeing %s + %s" %index,line)
-        return ["bépo","auc"]
     def do_help(self, arg):
         """ALARM! Recursion detected! ALARM! Prepare to eject!"""
         if arg == "!":
