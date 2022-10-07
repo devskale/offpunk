@@ -7,7 +7,7 @@
 - Redirect are now honoured also when --sync (bug #15, thanks kelbot)
 - RSS feeds are now automatically downloaded with a webpage (bug #14)
 - Solved the bug where an invalid URL would break correspondance between url and numbers
-- Removed default redirection to libredd.it as the server seems down
+- Replaced default libreddit.com redirection to teddit.net (bug #12 by kelbot)
 
 ## 1.5 - August 4th 2022
 - Removed optional dependency to ripgrep. "grep --color=auto" is good enough.

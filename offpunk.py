@@ -1901,8 +1901,8 @@ class GeminiClient(cmd.Cmd):
             "facebook.com" : "blocked",
             "google-analytics.com" : "blocked",
             "youtube.com" : "yewtu.be",
-            #"reddit.com"  : "libredd.it",
-            #"old.reddit.com": "libredd.it",
+            "reddit.com"  : "teddit.net",
+            "old.reddit.com": "teddit.net",
             "medium.com"  : "scribe.rip",
 
         }
