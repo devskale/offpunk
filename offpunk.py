@@ -93,9 +93,12 @@ if _HAS_CHAFA:
 if _NEW_CHAFA :
     _RENDER_IMAGE = True
 elif _HAS_TIMG :
-    output = run("timg --version")
+    try:
+        output = run("timg --version")
+    except CalledProcessError:
+        output = False
     # We don’t deal with timg before 1.3.2 (looping options)
-    if output[5:10] > "1.3.2":
+    if output and output[5:10] > "1.3.2":
         _NEW_TIMG = True
         _RENDER_IMAGE = True
 elif _HAS_CHAFA and _HAS_PIL:
