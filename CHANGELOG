@@ -1,7 +1,7 @@
 # Offpunk History
 
 ## 1.6 - Unreleased
-- Support for base64 encoded pictures in HTML pages
+- Support for base64 encoded pictures in HTML pages (opening them full screen only works offline)
 - A list can be added to a tour with "tour $LIST_NAME".
 - Check for timg > 1.3.2 to avoid dealing with old versions (bug reported by Valvin)
 - Redirect are now honoured also when --sync (bug #15, thanks kelbot)

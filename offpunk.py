@@ -1531,7 +1531,7 @@ class GeminiItem():
                 else:
                     newgi = GeminiItem(url)
                 toreturn.append(newgi)
-            elif url.startswith("data:image/"): 
+            elif mode != "links_only" and url.startswith("data:image/"): 
                 imgurl,imgdata = looks_like_base64(url,self.url)
                 toreturn.append(GeminiItem(imgurl))
             else:
@@ -1809,7 +1809,7 @@ def looks_like_url(word):
 def looks_like_base64(src,baseurl):
     imgdata = None
     imgname = src
-    if src.startswith("data:image/") and ";base64," in src:
+    if src and src.startswith("data:image/") and ";base64," in src:
         splitted = src.split(";base64,")
         extension = splitted[0].strip("data:image/")[:3]
         imgdata = splitted[1]
@@ -4032,6 +4032,7 @@ Argument : duration of cache validity (in seconds)."""
             #savetotour = True will save to tour newly cached content
             # else, do not save to tour
             #regardless of valitidy
+            if not gitem: return
             if not gitem.is_cache_valid(validity=validity):
                 if strin != "":
                     endline = '\r'
