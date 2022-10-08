@@ -48,7 +48,7 @@ import base64
 import subprocess
 def run(cmd,direct_output=False):
     if not direct_output:
-        result = subprocess.check_output(cmd,shell=True)
+        result = subprocess.check_output(cmd,shell=True,stderr=subprocess.STDOUT)
         return result.decode()
     else:
         subprocess.run(cmd,shell=True)
@@ -81,6 +81,7 @@ _HAS_TIMG = shutil.which('timg')
 _HAS_CHAFA = shutil.which('chafa')
 _NEW_CHAFA = False
 _NEW_TIMG = False
+_RENDER_IMAGE = False
 
 # All this code to know if we render image inline or not
 if _HAS_CHAFA:
@@ -92,10 +93,10 @@ if _HAS_CHAFA:
         _NEW_CHAFA = True
 if _NEW_CHAFA :
     _RENDER_IMAGE = True
-elif _HAS_TIMG :
+if _HAS_TIMG :
     try:
         output = run("timg --version")
-    except CalledProcessError:
+    except subprocess.CalledProcessError:
         output = False
     # We don’t deal with timg before 1.3.2 (looping options)
     if output and output[5:10] > "1.3.2":
@@ -103,10 +104,9 @@ elif _HAS_TIMG :
         _RENDER_IMAGE = True
 elif _HAS_CHAFA and _HAS_PIL:
     _RENDER_IMAGE = True
-else:
-    _RENDER_IMAGE = False
+if not _RENDER_IMAGE:
     print("To render images inline, you need either chafa or timg.")
-    if not _NEW_CHAFA and not _HAS_TIMG:
+    if not _NEW_CHAFA and not _NEW_TIMG:
         print("Before Chafa 1.10, you also need python-pil")
 
 #return ANSI text that can be show by less
@@ -129,7 +129,7 @@ def inline_image(img_file,width):
             inline = "chafa --bg white -s %s -f symbols"
         elif _NEW_CHAFA:
             inline = "chafa --bg white -t 1 -s %s -f symbols --animate=off"
-    if not inline and _HAS_TIMG and _NEW_TIMG:
+    if not inline and _NEW_TIMG:
         inline = "timg --frames=1 -p q -g %sx1000"
     if inline:
         cmd = inline%width+ " \"%s\""%img_file
@@ -143,7 +143,7 @@ def terminal_image(img_file):
     #Render by timg is better than old chafa.
     # it is also centered
     cmd = None
-    if _HAS_TIMG:
+    if _NEW_TIMG:
         cmd = "timg --loops=1 -C"
     elif _HAS_CHAFA:
         cmd = "chafa -d 0 --bg white -t 1 -w 1"
@@ -3294,7 +3294,7 @@ Marks are temporary until shutdown (not saved to disk)."""
         output += " - python-feedparser   : " + has(_DO_FEED)
         output += " - python-bs4          : " + has(_HAS_SOUP)
         output += " - python-readability  : " + has(_HAS_READABILITY)
-        output += " - timg                : " + has(_HAS_TIMG)
+        output += " - timg 1.3.2+         : " + has(_NEW_TIMG)
         if _NEW_CHAFA:
             output += " - chafa 1.10+         : " + has(_HAS_CHAFA)
         else:
