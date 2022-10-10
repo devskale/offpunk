@@ -1683,6 +1683,9 @@ class GeminiItem():
                 #because the FeedRendered fallback to HtmlRenderer
                 if mime2 and mime != mime2 and "html" in mime and "xml" in mime2:
                     mime = "text/xml"
+                # If it’s a xml file, consider it as such, regardless of what file thinks
+                elif path.endswith(".xml"):
+                    mime = "text/xml"
                 #Some xml/html document are considered as octet-stream
                 if mime == "application/octet-stream":
                     mime = "text/xml"
