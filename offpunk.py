@@ -12,9 +12,7 @@
 #  - Björn Wärmedal <bjorn.warmedal@gmail.com>
 #  - <jake@rmgr.dev>
 
-_VERSION = "1.5"
-global BETA
-BETA = False
+_VERSION = "1.6"
 
 import argparse
 import cmd
@@ -2940,16 +2938,6 @@ class GeminiClient(cmd.Cmd):
                     TERM_WIDTH = value
                 else:
                     print("%s is not a valid width (integer required)"%value)
-            elif option == "beta":
-                if value.lower() == "true":
-                    global BETA
-                    BETA = True
-                    print("Experimental features are enabled.")
-                else:
-                   # global BETA
-                    BETA = False
-                    print("Experimental features are disabled.")
-                self.options["beta"] = BETA
             elif value.isnumeric():
                 value = int(value)
             elif value.lower() == "false":
