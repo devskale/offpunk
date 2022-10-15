@@ -1520,9 +1520,12 @@ class GeminiItem():
             links = self.renderer.get_links(mode=mode)
         for l in links:
             #split between link and potential name
-            splitted = l.split(maxsplit=1)
-            url = self.absolutise_url(splitted[0])
-            if looks_like_url(url):
+            # check that l is non-empty
+            url = None
+            if l:   
+                splitted = l.split(maxsplit=1)
+                url = self.absolutise_url(splitted[0])
+            if url and looks_like_url(url):
                 if len(splitted) > 1:
                     #We add a name only for Gopher items
                     if url.startswith("gopher://"):
@@ -1532,7 +1535,7 @@ class GeminiItem():
                 else:
                     newgi = GeminiItem(url)
                 toreturn.append(newgi)
-            elif mode != "links_only" and url.startswith("data:image/"): 
+            elif url and mode != "links_only" and url.startswith("data:image/"): 
                 imgurl,imgdata = looks_like_base64(url,self.url)
                 toreturn.append(GeminiItem(imgurl))
             else:

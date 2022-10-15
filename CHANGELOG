@@ -1,5 +1,8 @@
 # Offpunk History
 
+## 1.7 - Unreleased
+- Solve a crash when loading webpages with empty links
+
 ## 1.6 - October 12th 2022
 - Support for base64 encoded pictures in HTML pages (opening them full screen only works offline)
 - A list can be added to a tour with "tour $LIST_NAME".
