@@ -4050,11 +4050,16 @@ Argument : duration of cache validity (in seconds)."""
                     #the ressource
                     add_to_tour(gitem)
             #Now, recursive call, even if we didn’t refresh the cache
+            # This recursive call is impacting performances a lot but is needed 
+            # For the case when you add a address to a list to read later
+            # You then expect the links to be loaded during next refresh, even
+            # if the link itself is fresh enough
+            # see fetch_list()
             if depth > 0:
                 #we should only savetotour at the first level of recursion
                 # The code for this was removed so, currently, we savetotour
                 # at every level of recursion.
-                links = gitem.get_links()
+                links = gitem.get_links(mode="links_only")
                 subcount = [0,len(links)]
                 d = depth - 1
                 for k in links:
@@ -4070,6 +4075,7 @@ Argument : duration of cache validity (in seconds)."""
             print(" * * * %s to fetch in %s * * *" %(end,list))
             for l in links:
                 counter += 1
+                # If cache for a link is newer than the list
                 fetch_gitem(l,depth=depth,validity=validity,savetotour=tourchildren,count=[counter,end])
                 if tourandremove:
                     if add_to_tour(l):
