@@ -2128,7 +2128,8 @@ class GeminiClient(cmd.Cmd):
                     body += r
                     #We divide max_size for streamed content
                     #in order to catch them faster
-                    if sys.getsizeof(body) > max_length/2:
+                    size = sys.getsizeof(body)
+                    if size > max_length/2:
                         response.close()
                         return set_error(gi,"streaming",max_length)
                 response.close()
