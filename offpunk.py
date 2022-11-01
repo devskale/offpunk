@@ -44,11 +44,16 @@ import webbrowser
 import html
 import base64
 import subprocess
-def run(cmd,direct_output=False):
+def run(cmd,direct_output=False,env=None):
+    #cmd = cmd.split(" ",maxsplit=1)
+    #print("running %s"%cmd)
+    #TODO : use environement variable for less history
     if not direct_output:
+        #result = subprocess.check_output(cmd,stderr=subprocess.STDOUT,env=env)
         result = subprocess.check_output(cmd,shell=True,stderr=subprocess.STDOUT)
         return result.decode()
     else:
+        #subprocess.run(cmd,env=env)
         subprocess.run(cmd,shell=True)
 
 try:
