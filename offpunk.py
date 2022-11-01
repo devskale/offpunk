@@ -2693,10 +2693,13 @@ class GeminiClient(cmd.Cmd):
 
     #TODO: remove format_geminiitem
     def _format_geminiitem(self, index, gi, url=False):
-        protocol = "" if gi.scheme == "gemini" else " %s" % gi.scheme
-        line = "[%d%s] %s" % (index, protocol, gi.name or gi.url)
-        if gi.name and url:
-            line += " (%s)" % gi.url
+        if not gi:
+            line = "[%s] - No valid URL"%index
+        else:
+            protocol = "" if gi.scheme == "gemini" else " %s" % gi.scheme
+            line = "[%d%s] %s" % (index, protocol, gi.name or gi.url)
+            if gi.name and url:
+                line += " (%s)" % gi.url
         return line
 
     def _show_lookup(self, offset=0, end=None, url=False):
