@@ -1937,6 +1937,20 @@ class GeminiClient(cmd.Cmd):
 
         self._connect_to_tofu_db()
 
+    def complete_list(self,text,line,begidx,endidx):
+        cmds = ["create","edit","subscribe","freeze","normal","delete","help"]
+        allowed = self.list_lists()
+        if len(line.split()) <= 2:
+            allowed += cmds
+        elif line.endswith("create ") or line.endswith("help "):
+            allowed = []
+        return [i for i in allowed if i.startswith(text)]
+
+    def complete_add(self,text,line,begidx,endidx):
+        return [i for i in self.list_lists() if i.startswith(text)]
+    def complete_move(self,text,line,begidx,endidx):
+        return [i for i in self.list_lists() if i.startswith(text)]
+
     def _connect_to_tofu_db(self):
 
         db_path = os.path.join(_CONFIG_DIR, "tofu.db")
