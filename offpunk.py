@@ -1938,18 +1938,43 @@ class GeminiClient(cmd.Cmd):
         self._connect_to_tofu_db()
 
     def complete_list(self,text,line,begidx,endidx):
+        allowed = []
         cmds = ["create","edit","subscribe","freeze","normal","delete","help"]
-        allowed = self.list_lists()
-        if len(line.split()) <= 2:
-            allowed += cmds
-        elif line.endswith("create ") or line.endswith("help "):
-            allowed = []
+        lists = self.list_lists()
+        words = len(line.split())
+        # We need to autocomplete listname for the first or second argument
+        # If the first one is a cmds
+        if words <= 1:
+            allowed = lists + cmds
+        elif words == 2:
+            # if text, the completing word is the second
+            cond = bool(text)
+            if text:
+                allowed = lists + cmds
+            else:
+                current_cmd = line.split()[1]
+                if current_cmd in ["help", "create"]:
+                    allowed = []
+                elif current_cmd in cmds:
+                    allowed = lists 
+        elif words == 3 and text != "":
+            current_cmd = line.split()[1]
+            if current_cmd in ["help", "create"]:
+                allowed = []
+            elif current_cmd in cmds:
+                allowed = lists 
         return [i for i in allowed if i.startswith(text)]
 
     def complete_add(self,text,line,begidx,endidx):
-        return [i for i in self.list_lists() if i.startswith(text)]
+        if len(line.split()) == 2 and text != "":
+            allowed = self.list_lists()
+        elif len(line.split()) == 1:
+            allowed = self.list_lists()
+        else:
+            allowed = []
+        return [i for i in allowed if i.startswith(text)]
     def complete_move(self,text,line,begidx,endidx):
-        return [i for i in self.list_lists() if i.startswith(text)]
+        return self.complete_add(text,line,begidx,endidx)
 
     def _connect_to_tofu_db(self):
 
