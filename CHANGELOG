@@ -4,6 +4,7 @@
 - Autocompletion for the list/add/move commands (that’s incredibly useful!)
 - Solve a crash when parsing wrong URL (related to bug #9 )
 - Solve a crash when loading webpages with empty links
+- Solve a crash when trying to load a wrong URL into tour
 
 ## 1.6 - October 12th 2022
 - Support for base64 encoded pictures in HTML pages (opening them full screen only works offline)

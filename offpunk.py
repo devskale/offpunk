@@ -4063,7 +4063,7 @@ Argument : duration of cache validity (in seconds)."""
         #               being refreshed (0 = never refreshed if it already exists)
         # - savetotour : if True, newly cached items are added to tour
         def add_to_tour(gitem):
-            if gitem.is_cache_valid():
+            if gitem and gitem.is_cache_valid():
                 toprint = "  -> adding to tour: %s" %gitem.url
                 width = term_width() - 1
                 toprint = toprint[:width]
