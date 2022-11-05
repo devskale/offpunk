@@ -2,6 +2,7 @@
 
 ## 1.7 - Unreleased
 - Autocompletion for the list/add/move commands (that’s incredibly useful!)
+- Create system lists when needed to avoid failure on clean system
 - Solve a crash when parsing wrong URL (related to bug #9 )
 - Solve a crash when loading webpages with empty links
 - Solve a crash when trying to load a wrong URL into tour

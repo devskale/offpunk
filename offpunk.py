@@ -3576,7 +3576,7 @@ If no argument given, URL is added to Bookmarks."""
                     title = "Links requested and to be fetched during the next --sync"
                 else:
                     title = None
-                self.list_create(list, title=title)
+                self.list_create(list, title=title,quite=True)
                 list_path = self.list_path(list)
         return list_path
     
@@ -3651,7 +3651,9 @@ archives, which is a special historical list limited in size. It is similar to `
 
     def list_add_line(self,list,gi=None,verbose=True):
         list_path = self.list_path(list)
-        if not list_path:
+        if not list_path and self.list_is_system(list):
+            self.list_create(list,quite=True)
+        elif not list_path:
             print("List %s does not exist. Create it with ""list create %s"""%(list,list))
             return False
         else:
@@ -3788,7 +3790,7 @@ archives, which is a special historical list limited in size. It is similar to `
         else:
             return None
 
-    def list_create(self,list,title=None):
+    def list_create(self,list,title=None,quite=False):
         list_path = self.list_path(list)
         if list in ["create","edit","delete","help"]:
             print("%s is not allowed as a name for a list"%list)
@@ -3802,7 +3804,8 @@ archives, which is a special historical list limited in size. It is similar to `
                 else:
                     lfile.write("# %s\n"%list)
                 lfile.close()
-            print("list created. Display with `list %s`"%list)
+            if not quite:
+                print("list created. Display with `list %s`"%list)
         else:
             print("list %s already exists" %list)
    
