@@ -3653,7 +3653,8 @@ archives, which is a special historical list limited in size. It is similar to `
         list_path = self.list_path(list)
         if not list_path and self.list_is_system(list):
             self.list_create(list,quite=True)
-        elif not list_path:
+            list_path = self.list_path(list)
+        if not list_path:
             print("List %s does not exist. Create it with ""list create %s"""%(list,list))
             return False
         else:
