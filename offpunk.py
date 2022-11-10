@@ -704,6 +704,7 @@ class GemtextRenderer(AbstractRenderer):
             width = term_width()
         r = self.representation(width)
         links = []
+        hidden_links = []
         preformatted = False
         def format_link(url,index,name=None):
             if "://" in url:
@@ -777,7 +778,13 @@ class GemtextRenderer(AbstractRenderer):
                 r.close_color("bold")
                 r.close_color("blue")
             else:
+                if "://" in line:
+                    words = line.split()
+                    for w in words:
+                        if "://" in w:
+                            hidden_links.append(w)
                 r.add_text(line.rstrip())
+        links += hidden_links
         return r.get_final(), links
 
 class GopherRenderer(AbstractRenderer):
