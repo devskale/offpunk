@@ -1,6 +1,9 @@
 # Offpunk History
 
 ## 1.7 - Unreleased
+- New "search" command which uses kennedy.gemi.dev by default.
+- New "wikipedia" command, which uses vault.transjovian.org by default.
+- Aliases "wen", "wfr" and "wes" for Wikipedia in English, French and Spanish.
 - Autocompletion for the list/add/move commands (that’s incredibly useful!)
 - If a link is found in plain text in a gopher/gemini page, it is now
   added to the list of links for that page. Useful for gopher.

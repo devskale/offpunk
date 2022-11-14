@@ -301,10 +301,14 @@ _ABBREVS = {
     "r":    "reload",
     "s":    "save",
     "se":   "search",
-    "/":    "search",
+    "/":    "find",
     "t":    "tour",
     "u":    "up",
     "v":    "view",
+    "w":    "wikipedia",
+    "wen":  "wikipedia en",
+    "wfr":  "wikipedia fr",
+    "wes":  "wikipedia es",
 }
 
 _MIME_HANDLERS = {
@@ -1913,6 +1917,9 @@ class GeminiClient(cmd.Cmd):
             "editor" : None,
             "download_images_first" : True,
             "redirects" : True,
+            # the wikipedia entry needs two %s, one for lang, other for search
+            "wikipedia" : "gemini://vault.transjovian.org:1965/search/%s/%s",
+            "search"    : "gemini://kennedy.gemi.dev/search?%s",
         }
         
         self.redirects = {
@@ -3377,6 +3384,35 @@ Marks are temporary until shutdown (not saved to disk)."""
 Use 'ls -l' to see URLs."""
         self._show_lookup(url = "-l" in line)
         self.page_index = 0
+
+    def do_search(self,line):
+        """Search on Gemini using the engine configured (by default kennedy.gemi.dev)
+        You can configure it using "set search URL".
+        URL should contains one "%s" that will be replaced by the search term."""
+        search = urllib.parse.quote(line)
+        url = self.options["search"]%search
+        gi = GeminiItem(url)
+        self._go_to_gi(url)
+
+    def do_wikipedia(self,line):
+        """Search on wikipedia using the configured Gemini interface.
+        The first word should be the two letters code for the language.
+        Exemple : "wikipedia en Gemini protocol"
+        But you can also use abbreviations to go faster:
+        "wen Gemini protocol". (your abbreviation might be missing, report the bug)
+        The interface used can be modified with the command:
+        "set wikipedia URL" where URL should contains two "%s", the first
+        one used for the language, the second for the search string."""
+        words = line.split(" ",maxsplit=1)
+        if len(words[0]) == 2:
+            lang = words[0]
+            search = urllib.parse.quote(words[1])
+        else:
+            lang = "en"
+            search = urllib.parse.quote(line)
+        url = self.options["wikipedia"]%(lang,search)
+        gi = GeminiItem(url)
+        self._go_to_gi(gi)
 
     def do_gus(self, line):
         """Submit a search query to the geminispace.info search engine."""
