@@ -12,7 +12,7 @@
 #  - Björn Wärmedal <bjorn.warmedal@gmail.com>
 #  - <jake@rmgr.dev>
 
-_VERSION = "1.7"
+_VERSION = "1.7.1"
 
 import argparse
 import cmd
@@ -3392,7 +3392,7 @@ Use 'ls -l' to see URLs."""
         search = urllib.parse.quote(line)
         url = self.options["search"]%search
         gi = GeminiItem(url)
-        self._go_to_gi(url)
+        self._go_to_gi(gi)
 
     def do_wikipedia(self,line):
         """Search on wikipedia using the configured Gemini interface.

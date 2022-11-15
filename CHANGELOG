@@ -1,5 +1,8 @@
 # Offpunk History
 
+## 1.7.1 - November 15th 2022
+- Correcting a stupid crash in search (thanks kelbot for the report)
+
 ## 1.7 - November 15th 2022
 - New "search" command which uses kennedy.gemi.dev by default.
 - New "wikipedia" command, which uses vault.transjovian.org by default.
