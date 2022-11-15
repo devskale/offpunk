@@ -12,7 +12,7 @@
 #  - Björn Wärmedal <bjorn.warmedal@gmail.com>
 #  - <jake@rmgr.dev>
 
-_VERSION = "1.6"
+_VERSION = "1.7"
 
 import argparse
 import cmd

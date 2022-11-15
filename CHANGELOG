@@ -1,6 +1,6 @@
 # Offpunk History
 
-## 1.7 - Unreleased
+## 1.7 - November 15th 2022
 - New "search" command which uses kennedy.gemi.dev by default.
 - New "wikipedia" command, which uses vault.transjovian.org by default.
 - Aliases "wen", "wfr" and "wes" for Wikipedia in English, French and Spanish.
@@ -11,6 +11,7 @@
 - Solve a crash when parsing wrong URL (related to bug #9 )
 - Solve a crash when loading webpages with empty links
 - Solve a crash when trying to load a wrong URL into tour
+=> gemini://ploum.be/offpunk17-sourcehut.gmi
 
 ## 1.6 - October 12th 2022
 - Support for base64 encoded pictures in HTML pages (opening them full screen only works offline)
