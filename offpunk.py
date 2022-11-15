@@ -187,7 +187,7 @@ except ModuleNotFoundError:
 _DO_HTML = _HAS_SOUP #and _HAS_READABILITY
 if _DO_HTML and not _HAS_READABILITY:
     print("To improve your web experience (less cruft in webpages),")
-    print("please install python3-reability or readability-lxml")
+    print("please install python3-readability or readability-lxml")
 
 try:
     import feedparser
