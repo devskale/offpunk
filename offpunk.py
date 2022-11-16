@@ -1920,6 +1920,7 @@ class GeminiClient(cmd.Cmd):
             # the wikipedia entry needs two %s, one for lang, other for search
             "wikipedia" : "gemini://vault.transjovian.org:1965/search/%s/%s",
             "search"    : "gemini://kennedy.gemi.dev/search?%s",
+            "accept_bad_ssl_certificates" : False,
         }
         
         self.redirects = {
@@ -2101,6 +2102,11 @@ class GeminiClient(cmd.Cmd):
                     print("""ERROR5: Trying to create a directory which already exists
                             in the cache : """)
                     print(err)
+                elif isinstance(err,requests.exceptions.SSLError):
+                    print("""ERROR6: Bad SSL certificate:\n""")
+                    print(err)
+                    print("""\n If you know what you are doing, you can try to accept bad certificates with the following command:\n""")
+                    print("""set accept_bad_ssl_certificates True""")
                 else:
                     if print_error:
                         print("ERROR4: " + str(type(err)) + " : " + str(err))
@@ -2995,6 +3001,16 @@ class GeminiClient(cmd.Cmd):
             elif option == "tls_mode":
                 if value.lower() not in ("ca", "tofu"):
                     print("TLS mode must be `ca` or `tofu`!")
+                    return
+            elif option == "accept_bad_ssl_certificates":
+                if value.lower() == "false":
+                    print("Only high security certificates are now accepted")
+                    requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL:@SECLEVEL=2'
+                elif value.lower() == "true":
+                    print("Low security SSL certificates are now accepted")
+                    requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL:@SECLEVEL=1'
+                else:
+                    print("accept_bad_ssl_certificates should be True or False")
                     return
             elif option == "width":
                 if value.isnumeric():

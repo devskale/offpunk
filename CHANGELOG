@@ -1,7 +1,8 @@
 # Offpunk History
 
 ## 1.8 - Unreleased
-- A variable was not initialised without python-cryptography
+- "set accept_bad_ssl_certificates True" allows to lower HTTPS SSL requirements 
+- Fix: A variable was not initialised without python-cryptography
 
 ## 1.7.1 - November 15th 2022
 - Correcting a stupid crash in search (thanks kelbot for the report)
