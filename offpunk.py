@@ -2676,12 +2676,12 @@ class GeminiClient(cmd.Cmd):
                     self.db_conn.commit()
                     break
             else:
+                certdir = os.path.join(_CONFIG_DIR, "cert_cache")
+                with open(os.path.join(certdir, most_frequent_cert+".crt"), "rb") as fp:
+                    previous_cert = fp.read()
                 if _HAS_CRYPTOGRAPHY:
                     # Load the most frequently seen certificate to see if it has
                     # expired
-                    certdir = os.path.join(_CONFIG_DIR, "cert_cache")
-                    with open(os.path.join(certdir, most_frequent_cert+".crt"), "rb") as fp:
-                        previous_cert = fp.read()
                     previous_cert = x509.load_der_x509_certificate(previous_cert, _BACKEND)
                     previous_ttl = previous_cert.not_valid_after - now
                     print(previous_ttl)
