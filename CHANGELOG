@@ -2,6 +2,7 @@
 
 ## 1.8 - Unreleased
 - "set accept_bad_ssl_certificates True" allows to lower HTTPS SSL requirements 
+- Accept "localhost" as a valid URL
 - Fix: A variable was not initialised without python-cryptography
 
 ## 1.7.1 - November 15th 2022

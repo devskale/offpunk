@@ -1821,7 +1821,7 @@ def looks_like_url(word):
         elif mailto:
             return "@" in word
         elif not local:
-            return "." in word
+            return "." in word or "localhost" in word
         else:
             return "/" in word
     except ValueError:
