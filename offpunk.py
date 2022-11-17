@@ -3003,7 +3003,12 @@ class GeminiClient(cmd.Cmd):
                     print("TLS mode must be `ca` or `tofu`!")
                     return
             elif option == "accept_bad_ssl_certificates":
-                if value.lower() == "false":
+                if not _DO_HTTP :
+                    print("accepting bad certificates only makes sense with HTTP requests")
+                    print("You need to install python3-request and other dependancies")
+                    print("Type \"version\" for more information")
+                    return
+                elif value.lower() == "false":
                     print("Only high security certificates are now accepted")
                     requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL:@SECLEVEL=2'
                 elif value.lower() == "true":
