@@ -2767,6 +2767,7 @@ class GeminiClient(cmd.Cmd):
                 line += " (%s)" % gi.url
         return line
 
+    @needs_gi
     def _show_lookup(self, offset=0, end=None, url=False):
         for n, gi in enumerate(self.gi.get_links()[offset:end]):
             print(self._format_geminiitem(n+offset+1, gi, url))
