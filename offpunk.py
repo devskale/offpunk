@@ -348,6 +348,7 @@ def fix_ipv6_url(url):
 standard_ports = {
         "gemini" : 1965,
         "gopher" : 70,
+        "finger" : 79,
         "http"   : 80,
         "https"  : 443,
         "spartan": 300,
@@ -1398,7 +1399,7 @@ class GeminiItem():
             # finish by "/". Else, the cache will create a file, not a folder.
             if self.scheme.startswith("http"):
                 index = "index.html"
-            elif self.scheme == "gopher":
+            elif self.scheme in ["gopher", "finger"]:
                 index = "index.txt"
             else:
                 index = "index.gmi"
@@ -2070,6 +2071,8 @@ class GeminiClient(cmd.Cmd):
                         return
                 elif gi.scheme in ("gopher"):
                     gi = self._fetch_gopher(gi,timeout=self.options["short_timeout"])
+                elif gi.scheme in ("finger"):
+                    gi = self._fetch_finger(gi,timeout=self.options["short_timeout"])
                 elif gi.scheme in ("spartan"):
                     gi = self._fetch_spartan(gi)
                 else:
@@ -2278,6 +2281,20 @@ class GeminiClient(cmd.Cmd):
             # by default, we should consider Gopher
             mime = "text/gopher"
         gi.write_body(response,mime)
+        return gi
+
+    def _fetch_finger(self,gi,timeout=10):
+        if not looks_like_url(gi.url):
+            print("%s is not a valid url" %gi.url)
+        parsed = urllib.parse.urlparse(gi.url)
+        host = parsed.hostname
+        port = parsed.port or standard_ports["finger"]
+        query = parsed.path.lstrip("/") + "\r\n"
+        with socket.create_connection((host,port)) as sock:
+            sock.settimeout(timeout)
+            sock.send(query.encode())
+            response = sock.makefile("rb").read().decode("UTF-8")
+            gi.write_body(response,"text/plain")
         return gi
 
     # Copied from reference spartan client by Michael Lazar

@@ -15,7 +15,7 @@ Offpunk is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98)
 
 Offpunk is a single python file. Installation is optional, you can simply download and run "./offpunk.py" or "python3 offpunk.py" in a terminal.
 
-You use the `go` command to visit a URL, e.g. `go gemini.circumlunar.space`. (gemini:// is assumed is no protocol is specified. Supported protocols are gemini, gopher, http, https, mailto, spartan and file).
+You use the `go` command to visit a URL, e.g. `go gemini.circumlunar.space`. (gemini:// is assumed if no protocol is specified. Supported protocols are gemini, gopher, finger, http, https, mailto, spartan and file).
 
 Links in pages are assigned numerical indices.  Just type an index to follow that link. If page is too long to fit on your screen, the content is displayed in the less pager (by default). Type `q` to quit and go back to Offpunk prompt. Type `view` or `v` to display it again. (`view full` or `v full` allows to see the full html page instead of the article view. `v feed` try to display the linked RSS feed and `v feeds` displays a list of available feeds. This only applies to html pages)
 
