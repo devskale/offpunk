@@ -3,6 +3,7 @@
 ## 1.8 - Unreleased
 - "set accept_bad_ssl_certificates True" allows to lower HTTPS SSL requirements 
 - Accept "localhost" as a valid URL
+- Better feedback when --sync an URL which is streaming
 - Fix a crash when ls on empty page (thanks Marty Oehme)
 - Fix: A variable was not initialised without python-cryptography
 
