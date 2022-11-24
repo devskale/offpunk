@@ -1344,7 +1344,8 @@ class GeminiItem():
                 self.path = self.url
         else:
             self.local = False
-            self.host = parsed.hostname
+            # Convert unicode hostname to punycode using idna RFC3490
+            self.host = parsed.hostname #.encode("idna").decode()
             self.port = parsed.port or standard_ports.get(self.scheme, 0)
             # special gopher selector case
             if self.scheme == "gopher":
@@ -2191,13 +2192,17 @@ class GeminiClient(cmd.Cmd):
                 return set_error(gi,str(length/1000000),max_length)
             elif max_length and length == 0:
                 body = b''
+                downloaded = 0
                 for r in response.iter_content():
                     body += r
                     #We divide max_size for streamed content
                     #in order to catch them faster
                     size = sys.getsizeof(body)
                     max = max_length/2
-                    print("  -> Receiving stream: %s%% of allowed data"%round(size*100/max,3),end='\r')
+                    current = round(size*100/max,0)
+                    if current > downloaded:
+                        downloaded = current
+                        print("  -> Receiving stream: %s%% of allowed data"%downloaded,end='\r')
                     #print("size: %s (%s\% of maxlenght)"%(size,size/max_length))
                     if size > max_length/2:
                         response.close()
@@ -2378,7 +2383,7 @@ class GeminiClient(cmd.Cmd):
         # Spec dictates <META> should not exceed 1024 bytes,
         # so maximum valid header length is 1027 bytes.
         header = f.readline(1027)
-        header = header.decode("UTF-8")
+        header = urllib.parse.unquote(header.decode("UTF-8"))
         if not header or header[-1] != '\n':
             raise RuntimeError("Received invalid header from server!")
         header = header.strip()
@@ -2484,6 +2489,7 @@ class GeminiClient(cmd.Cmd):
         """Send a selector to a given host and port.
         Returns the resolved address and binary file with the reply."""
         host, port = gi.host, gi.port
+        host = host.encode("idna").decode()
         # Do DNS resolution
         addresses = self._get_addresses(host, port)
 
@@ -2530,7 +2536,7 @@ class GeminiClient(cmd.Cmd):
             else:
                 timeout = self.options["timeout"]
             s.settimeout(timeout)
-            s = context.wrap_socket(s, server_hostname = gi.host)
+            s = context.wrap_socket(s, server_hostname = host)
             try:
                 s.connect(address[4])
                 break
@@ -2553,8 +2559,8 @@ class GeminiClient(cmd.Cmd):
 
         # Remember that we showed the current cert to this domain...
         if self.client_certs["active"]:
-            self.active_cert_domains.append(gi.host)
-            self.client_certs[gi.host] = self.client_certs["active"]
+            self.active_cert_domains.append(host)
+            self.client_certs[host] = self.client_certs["active"]
 
         # Send request and wrap response in a file descriptor
         self._debug("Sending %s<CRLF>" % gi.url)
