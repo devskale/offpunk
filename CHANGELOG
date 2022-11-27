@@ -7,6 +7,7 @@
 - Better feedback when --sync an URL which is streaming
 - Fix a crash when ls on empty page (thanks Marty Oehme)
 - Fix: A variable was not initialised without python-cryptography
+- Fix: "cp raw" was not accessing the temp_file correctly
 
 ## 1.7.1 - November 15th 2022
 - Correcting a stupid crash in search (thanks kelbot for the report)

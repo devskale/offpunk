@@ -645,6 +645,7 @@ class AbstractRenderer():
         return title_r.get_final() 
 
     def display(self,mode="readable",window_title="",window_info=None,grep=None):
+        if not mode: mode = "readable"
         wtitle = self._window_title(window_title,info=window_info)
         body = wtitle + "\n" + self.get_body(mode=mode)
         if not body:
