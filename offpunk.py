@@ -16,7 +16,6 @@ _VERSION = "1.7.1"
 
 import argparse
 import cmd
-import cgi
 import codecs
 import datetime
 import fnmatch
@@ -154,6 +153,19 @@ def terminal_image(img_file):
         cmd = cmd + " \"%s\""%img_file
         run(cmd,direct_output=True)
 
+def parse_mime(mime):
+    options = {}
+    if mime:
+        if ";" in mime:
+            splited = mime.split(";",maxsplit=1)
+            mime = splited[0]
+            if len(splited) >= 1:
+                options_list = splited[1].split()
+                for o in options_list:
+                    spl = o.split("=",maxsplit=1)
+                    if len(spl) > 0:
+                        options[spl[0]] = spl[1]
+    return mime, options
 
 _HAS_XSEL = shutil.which('xsel')
 _HAS_XDGOPEN = shutil.which('xdg-open')
@@ -1659,8 +1671,7 @@ class GeminiItem():
         ## Write_body() also create the cache !
         # DEFAULT GEMINI MIME
         self.body = body
-        if mime:
-            self.mime, mime_options = cgi.parse_header(mime)
+        self.mime, options = parse_mime(mime)
         if not self.local:
             if self.mime and self.mime.startswith("text/"):
                 mode = "w"
@@ -2467,7 +2478,7 @@ class GeminiClient(cmd.Cmd):
         # DEFAULT GEMINI MIME
         if mime == "":
             mime = "text/gemini; charset=utf-8"
-        shortmime, mime_options = cgi.parse_header(mime)
+        shortmime, mime_options = parse_mime(mime)
         if "charset" in mime_options:
             try:
                 codecs.lookup(mime_options["charset"])
