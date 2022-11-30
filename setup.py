@@ -6,7 +6,7 @@ setup(
     description="Offline-First Gemini/Web/Gopher/RSS reader and browser",
     author="Ploum",
     author_email="offpunk@ploum.eu",
-    url='https://notabug.org/ploum/offpunk',
+    url='https://sr.ht/~lioploum/offpunk/',
     classifiers=[
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python :: 3 :: Only',

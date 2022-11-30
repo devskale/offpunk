@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: offpunk
-Source: https://notabug.org/ploum/offpunk
+Source: https://sr.ht/~lioploum/offpunk/
 Files: *
 Copyright: 2022 Ploum <offpunk@ploum.eu> and contributors
 License: BSD-2-Clause

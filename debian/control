@@ -9,7 +9,7 @@ Build-Depends-Indep:
  dh-python,
 Rules-Requires-Root: no
 Standards-Version: 4.6.0
-Homepage: https://notabug.org/ploum/offpunk
+Homepage: https://sr.ht/~lioploum/offpunk/
 
 Package: offpunk
 Architecture: all
