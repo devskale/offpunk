@@ -1868,19 +1868,9 @@ def needs_gi(inner):
     outer.__doc__ = inner.__doc__
     return outer
 
-def restricted(inner):
-    def outer(self, *args, **kwargs):
-        if self.restricted:
-            print("Sorry, this command is not available in restricted mode!")
-            return None
-        else:
-            return inner(self, *args, **kwargs)
-    outer.__doc__ = inner.__doc__
-    return outer
-
 class GeminiClient(cmd.Cmd):
 
-    def __init__(self, completekey="tab", restricted=False, synconly=False):
+    def __init__(self, completekey="tab", synconly=False):
         cmd.Cmd.__init__(self)
 
         # Set umask so that nothing we create can be read by anybody else.
@@ -1902,7 +1892,6 @@ class GeminiClient(cmd.Cmd):
         self.permanent_redirects = {}
         self.previous_redirectors = set()
         # Sync-only mode is restriced by design
-        self.restricted = restricted or synconly
         self.visited_hosts = set()
         self.offline_only = False
         self.sync_only = False
@@ -2601,15 +2590,6 @@ class GeminiClient(cmd.Cmd):
 
 
     def _handle_cert_request(self, meta):
-
-        # Don't do client cert stuff in restricted mode, as in principle
-        # it could be used to fill up the disk by creating a whole lot of
-        # certificates
-        if self.restricted:
-            print("The server is requesting a client certificate.")
-            print("These are not supported in restricted mode, sorry.")
-            raise UserAbortException()
-
         print("SERVER SAYS: ", meta)
         # Present different messages for different 6x statuses, but
         # handle them the same.
@@ -3015,7 +2995,7 @@ class GeminiClient(cmd.Cmd):
             toprint +="\nTo remove a redirect, use \"redirect origine.com NONE\""
             toprint +="\nTo completely block a website, use \"redirect origine.com BLOCK\""
             print(toprint)
-    @restricted
+
     def do_set(self, line):
         """View or set various options."""
         if not line.strip():
@@ -3076,7 +3056,6 @@ class GeminiClient(cmd.Cmd):
                     pass
             self.options[option] = value
 
-    @restricted
     def do_cert(self, line):
         """Manage client certificates"""
         print("Managing client certificates")
@@ -3100,7 +3079,6 @@ class GeminiClient(cmd.Cmd):
         else:
             print("Aborting.")
 
-    @restricted
     def do_handler(self, line):
         """View or set handler commands for different MIME types."""
         if not line.strip():
@@ -3552,14 +3530,12 @@ see "handler" command to set your handler."""
             cmd_str = cmd_str % file_path 
             run(cmd_str,direct_output=True)
 
-    @restricted
     @needs_gi
     def do_shell(self, line):
         """'cat' most recently visited item through a shell pipeline.
 '!' is an useful shortcut."""
         run("cat \"%s\" |" % self.gi.get_temp_filename() + line,direct_output=True)
 
-    @restricted
     @needs_gi
     def do_save(self, line):
         """Save an item to the filesystem.
@@ -3644,7 +3620,6 @@ see "handler" command to set your handler."""
         print(self.gi.url)
 
     ### Bookmarking stuff
-    @restricted
     @needs_gi
     def do_add(self, line):
         """Add the current URL to the list specied as argument.
@@ -4303,7 +4278,6 @@ def main():
                         help='start with your list of bookmarks')
     parser.add_argument('--tls-cert', metavar='FILE', help='TLS client certificate file')
     parser.add_argument('--tls-key', metavar='FILE', help='TLS client certificate private key file')
-    parser.add_argument('--restricted', action="store_true", help='Disallow shell, add, and save commands')
     parser.add_argument('--sync', action='store_true', 
                         help='run non-interactively to build cache by exploring bookmarks')
     parser.add_argument('--assume-yes', action='store_true', 
@@ -4338,7 +4312,7 @@ def main():
                 os.makedirs(f)
 
     # Instantiate client
-    gc = GeminiClient(restricted=args.restricted,synconly=args.sync)
+    gc = GeminiClient(synconly=args.sync)
     torun_queue = []
     
     # Interactive if offpunk started normally
@@ -4414,8 +4388,6 @@ def main():
         # We are in the normal mode. First process config file
         torun_queue = read_config(torun_queue,interactive=True)
         print("Welcome to Offpunk!")
-        if args.restricted:
-            print("Restricted mode engaged!")
         print("Type `help` to get the list of available command.")
         for line in torun_queue:
             gc.onecmd(line)
