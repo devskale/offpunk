@@ -11,6 +11,7 @@
 #  - govynnus <govynnus@sdf.org>
 #  - Björn Wärmedal <bjorn.warmedal@gmail.com>
 #  - <jake@rmgr.dev>
+#  - Maeve Sproule <code@sprock.dev>
 
 _VERSION = "1.7.1"
 
@@ -43,17 +44,31 @@ import webbrowser
 import html
 import base64
 import subprocess
-def run(cmd,direct_output=False,env=None):
-    #cmd = cmd.split(" ",maxsplit=1)
+
+# In terms of arguments, this can take an input file/string to be passed to
+# stdin, a parameter to do (well-escaped) "%" replacement on the command, a
+# flag requesting that the output go directly to the stdout, and a list of
+# additional environment variables to set.
+def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
     #print("running %s"%cmd)
-    #TODO : use environement variable for less history
-    if not direct_output:
-        #result = subprocess.check_output(cmd,stderr=subprocess.STDOUT,env=env)
-        result = subprocess.check_output(cmd,shell=True,stderr=subprocess.STDOUT)
-        return result.decode()
+    if parameter:
+        cmd = cmd % shlex.quote(parameter)
+    env = dict(os.environ) | env
+    if isinstance(input, io.IOBase):
+        stdin = input
+        input = None
     else:
-        #subprocess.run(cmd,env=env)
-        subprocess.run(cmd,shell=True)
+        if input:
+            input = input.encode()
+        stdin = None
+    if not direct_output:
+        # subprocess.check_output() wouldn't allow us to pass stdin.
+        result = subprocess.run(cmd, check=True, env=env, input=input,
+                                shell=True, stdin=stdin, stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+        return result.stdout.decode()
+    else:
+        subprocess.run(cmd, env=env, input=input, shell=True, stdin=stdin)
 
 try:
     import setproctitle
@@ -118,7 +133,7 @@ def inline_image(img_file,width):
     ansi_img = ""
     #We avoid errors by not trying to render non-image files
     if shutil.which("file"):
-        mime = run("file -b --mime-type \"%s\""%img_file).strip()
+        mime = run("file -b --mime-type %s", parameter=img_file).strip()
         if not "image" in mime:
             return ansi_img
     if _HAS_CHAFA:
@@ -134,9 +149,9 @@ def inline_image(img_file,width):
     if not inline and _NEW_TIMG:
         inline = "timg --frames=1 -p q -g %sx1000"
     if inline:
-        cmd = inline%width+ " \"%s\""%img_file
+        cmd = inline%width + " %s"
         try:
-            ansi_img = run(cmd)
+            ansi_img = run(cmd, parameter=img_file)
         except Exception as err:
             ansi_img = "***image failed : %s***\n" %err
     return ansi_img
@@ -150,8 +165,8 @@ def terminal_image(img_file):
     elif _HAS_CHAFA:
         cmd = "chafa -d 0 --bg white -t 1 -w 1"
     if cmd:
-        cmd = cmd + " \"%s\""%img_file
-        run(cmd,direct_output=True)
+        cmd = cmd + " %s"
+        run(cmd, parameter=img_file, direct_output=True)
 
 def parse_mime(mime):
     options = {}
@@ -270,22 +285,21 @@ else:
 _DEFAULT_LESS = less_base + " \"+''\" %s"
 _DEFAULT_CAT = less_base + " -EF %s"
 def less_cmd(file, histfile=None,cat=False,grep=None):
-    file = "\"%s\""%file
     if histfile:
-        prefix = "LESSHISTFILE=%s "%histfile
+        env = {"LESSHISTFILE": histfile}
     else:
-        prefix = ""
+        env = {}
     if cat:
-        cmd_str = prefix + _DEFAULT_CAT % file 
+        cmd_str = _DEFAULT_CAT
     elif grep:
         grep_cmd = _GREP
         #case insensitive for lowercase search
         if grep.islower():
             grep_cmd += " -i"
-        cmd_str = prefix + _DEFAULT_CAT % file + "|" + grep_cmd + " %s"%grep
+        cmd_str = _DEFAULT_CAT + "|" + grep_cmd + " %s"%grep
     else:
-        cmd_str = prefix + _DEFAULT_LESS % file
-    run(cmd_str,direct_output=True)
+        cmd_str = _DEFAULT_LESS
+    run(cmd_str, parameter=file, direct_output=True, env=env)
 
 
 # Command abbreviations
@@ -1708,7 +1722,7 @@ class GeminiItem():
             elif path.endswith(".gmi"):
                 mime = "text/gemini"
             elif shutil.which("file") :
-                mime = run("file -b --mime-type \"%s\""%path).strip()
+                mime = run("file -b --mime-type %s", parameter=path).strip()
                 mime2,encoding = mimetypes.guess_type(path,strict=False)
                 #If we hesitate between html and xml, takes the xml one
                 #because the FeedRendered fallback to HtmlRenderer
@@ -2021,8 +2035,7 @@ class GeminiClient(cmd.Cmd):
                 self.gi = gi
                 if resp.strip().lower() in ("y", "yes"):
                     if _HAS_XDGOPEN :
-                        cmd = "xdg-open \"mailto:%s\"" %gi.path
-                        run(cmd,direct_output=True)
+                        run("xdg-open mailto:%s", parameter=gi.path ,direct_output=True)
                     else:
                         print("Cannot find a mail client to send mail to %s" %gi.path)
                         print("Please install xdg-open (usually from xdg-util package)")
@@ -2146,9 +2159,8 @@ class GeminiClient(cmd.Cmd):
             elif display :
                 cmd_str = self._get_handler_cmd(gi.get_mime())
                 try:
-                    # get tmpfile from gi !
-                    tmpfile = "\"%s\""%gi.get_body(as_file=True)
-                    run(cmd_str%tmpfile,direct_output=True)
+                    # get body (tmpfile) from gi !
+                    run(cmd_str, parameter=gi.get_body(as_file=True), direct_output=True)
                 except FileNotFoundError:
                     print("Handler program %s not found!" % shlex.split(cmd_str)[0])
                     print("You can use the ! command to specify another handler program or pipeline.")
@@ -2766,9 +2778,9 @@ class GeminiClient(cmd.Cmd):
         else:
             # Use "xdg-open" as a last resort.
             if _HAS_XDGOPEN:
-                cmd_str = "xdg-open \"%s\""
+                cmd_str = "xdg-open %s"
             else:
-                cmd_str = "echo ""Can’t find how to open %s"""
+                cmd_str = "echo \"Can’t find how to open \"%s"
                 print("Please install xdg-open (usually from xdg-util package)")
         self._debug("Using handler: %s" % cmd_str)
         return cmd_str
@@ -3139,13 +3151,13 @@ Use with "cache" to copy the path of the cached content."""
                         url = gi.url
                     else:
                         url = self.gi.url
-                    run("echo %s |xsel -b -i" % url,direct_output=True)
+                    run("xsel -b -i", input=url, direct_output=True)
                 elif args and args[0] == "raw":
-                    run("cat \"%s\" |xsel -b -i" % self.gi.get_temp_filename(),direct_output=True)
+                    run("xsel -b -i", input=open(self.gi.get_temp_filename(), "rb"), direct_output=True)
                 elif args and args[0] == "cache":
-                    run("echo %s |xsel -b -i" % self.gi.get_cache_path(), direct_output=True)
+                    run("xsel -b -i", input=self.gi.get_cache_path(), direct_output=True)
                 else:
-                    run("cat \"%s\" |xsel -b -i" % self.gi.get_body(as_file=True), direct_output=True)
+                    run("xsel -b -i", input=open(self.gi.get_body(as_file=True), "rb"), direct_output=True)
             else:
                 print("Please install xsel to use copy")
         else:
@@ -3477,7 +3489,7 @@ Use 'ls -l' to see URLs."""
     @needs_gi
     def do_cat(self, *args):
         """Run most recently visited item through "cat" command."""
-        run("cat \"%s\"" % self.gi.get_temp_filename(),direct_output=True)
+        run("cat", input=open(self.gi.get_temp_filename(), "rb"), direct_output=True)
 
     @needs_gi
     def do_view(self, *args):
@@ -3523,18 +3535,16 @@ Use "view feeds" to see available feeds on this page.
 Uses "open url" to open current URL in a browser.
 see "handler" command to set your handler."""
         if args[0] == "url":
-            run("xdg-open %s" %self.gi.url,direct_output=True)
+            run("xdg-open %s", parameter=self.gi.url, direct_output=True)
         else:
             cmd_str = self._get_handler_cmd(self.gi.get_mime())
-            file_path = "\"%s\"" %self.gi.get_body(as_file=True)
-            cmd_str = cmd_str % file_path 
-            run(cmd_str,direct_output=True)
+            run(cmd_str, parameter=self.gi.get_body(as_file=True), direct_output=True)
 
     @needs_gi
     def do_shell(self, line):
         """'cat' most recently visited item through a shell pipeline.
 '!' is an useful shortcut."""
-        run("cat \"%s\" |" % self.gi.get_temp_filename() + line,direct_output=True)
+        run(line, input=open(self.gi.get_temp_filename(), "rb"), direct_output=True)
 
     @needs_gi
     def do_save(self, line):
@@ -4010,7 +4020,11 @@ Note: There’s no "delete" on purpose. The use of "archive" is recommended."""
                     if len(args) > 1 and args[1] in self.list_lists():
                         path = os.path.join(listdir,args[1]+".gmi")
                         try:
-                            run("%s \"%s\""%(editor,path),direct_output=True)
+                            # Note that we intentionally don't quote the editor.
+                            # In the unlikely case `editor` includes a percent
+                            # sign, we also escape it for the %-formatting.
+                            cmd = editor.replace("%", "%%") + " %s"
+                            run(cmd, parameter=path, direct_output=True)
                         except Exception as err:
                             print(err)
                             print("Please set a valid editor with \"set editor\"")
