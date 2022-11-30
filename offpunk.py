@@ -4281,7 +4281,7 @@ def main():
     parser.add_argument('--sync', action='store_true', 
                         help='run non-interactively to build cache by exploring bookmarks')
     parser.add_argument('--assume-yes', action='store_true', 
-                        help='assume-yes when asked questions about certificates/redirections during sync')
+                        help='assume-yes when asked questions about certificates/redirections during sync (lower security)')
     parser.add_argument('--disable-http',action='store_true',
                         help='do not try to get http(s) links (but already cached will be displayed)')
     parser.add_argument('--fetch-later', action='store_true', 
@@ -4370,6 +4370,7 @@ def main():
     elif args.sync:
         if args.assume_yes:
             gc.automatic_choice = "y"
+            gc.onecmd("set accept_bad_ssl_certificates True")
         if args.cache_validity:
             refresh_time = int(args.cache_validity)
         else:

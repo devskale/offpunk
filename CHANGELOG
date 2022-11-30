@@ -4,7 +4,7 @@
 - Official URL is now https://sr.ht/~lioploum/offpunk/
 - Add support for the finger protocol (by Sotiris Papatheodorou)
 - "restricted" mode has been removed because unmaintained (code cleanup)
-- "set accept_bad_ssl_certificates True" allows to lower HTTPS SSL requirements 
+- "set accept_bad_ssl_certificates True" allows to lower HTTPS SSL requirements (also with --assume-yes) 
 - Accept "localhost" as a valid URL
 - Better feedback when --sync an URL which is streaming
 - Removed cgi dependency (soon deprecated)
