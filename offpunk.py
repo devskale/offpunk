@@ -2026,6 +2026,8 @@ class GeminiClient(cmd.Cmd):
         storing the response in a temporary file, choosing
         and calling a handler program, and updating the history.
         Nothing is returned."""
+        if not mode:
+            mode = gi.last_mode
         if not gi:
             return
         # Don't try to speak to servers running other protocols
@@ -2048,7 +2050,7 @@ class GeminiClient(cmd.Cmd):
         # Obey permanent redirects
         if gi.url in self.permanent_redirects:
             new_gi = GeminiItem(self.permanent_redirects[gi.url], name=gi.name)
-            self._go_to_gi(new_gi)
+            self._go_to_gi(new_gi,mode=mode)
             return
         
         # Use cache or mark as to_fetch if resource is not cached
