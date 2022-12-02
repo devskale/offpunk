@@ -2037,8 +2037,6 @@ class GeminiClient(cmd.Cmd):
         Nothing is returned."""
         if not gi:
             return
-        if not mode:
-            mode = gi.last_mode
         # Don't try to speak to servers running other protocols
         elif gi.scheme == "mailto":
             if handle and not self.sync_only:
@@ -2056,6 +2054,8 @@ class GeminiClient(cmd.Cmd):
             print("Sorry, no support for {} links.".format(gi.scheme))
             return
 
+        if not mode:
+            mode = gi.last_mode
         # Obey permanent redirects
         if gi.url in self.permanent_redirects:
             new_gi = GeminiItem(self.permanent_redirects[gi.url], name=gi.name)
