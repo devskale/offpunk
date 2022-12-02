@@ -1582,7 +1582,10 @@ class GeminiItem():
                 toreturn.append(newgi)
             elif url and mode != "links_only" and url.startswith("data:image/"): 
                 imgurl,imgdata = looks_like_base64(url,self.url)
-                toreturn.append(GeminiItem(imgurl))
+                if imgurl:
+                    toreturn.append(GeminiItem(imgurl))
+                else:
+                    toreturn.append(None)
             else:
                 # We must include a None item to keep the link count valid
                 toreturn.append(None)
@@ -1860,12 +1863,18 @@ def looks_like_url(word):
 def looks_like_base64(src,baseurl):
     imgdata = None
     imgname = src
-    if src and src.startswith("data:image/") and ";base64," in src:
-        splitted = src.split(";base64,")
-        extension = splitted[0].strip("data:image/")[:3]
-        imgdata = splitted[1]
-        imgname = imgdata[:20] + "." + extension
-    imgurl = urllib.parse.urljoin(baseurl, imgname)
+    if src and src.startswith("data:image/"):
+        if ";base64," in src:
+            splitted = src.split(";base64,")
+            extension = splitted[0].strip("data:image/")[:3]
+            imgdata = splitted[1]
+            imgname = imgdata[:20] + "." + extension
+            imgurl = urllib.parse.urljoin(baseurl, imgname)
+        else:
+            #We can’t handle other data:image such as svg for now
+            imgurl = None
+    else:
+        imgurl = urllib.parse.urljoin(baseurl, imgname)
     return imgurl,imgdata
 
 class UserAbortException(Exception):
@@ -2026,10 +2035,10 @@ class GeminiClient(cmd.Cmd):
         storing the response in a temporary file, choosing
         and calling a handler program, and updating the history.
         Nothing is returned."""
-        if not mode:
-            mode = gi.last_mode
         if not gi:
             return
+        if not mode:
+            mode = gi.last_mode
         # Don't try to speak to servers running other protocols
         elif gi.scheme == "mailto":
             if handle and not self.sync_only:
