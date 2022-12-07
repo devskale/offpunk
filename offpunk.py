@@ -2004,7 +2004,7 @@ class GeminiClient(cmd.Cmd):
                 allowed = []
             elif current_cmd in cmds:
                 allowed = lists 
-        return [i for i in allowed if i.startswith(text)]
+        return [i+" " for i in allowed if i.startswith(text)]
 
     def complete_add(self,text,line,begidx,endidx):
         if len(line.split()) == 2 and text != "":
@@ -2013,7 +2013,7 @@ class GeminiClient(cmd.Cmd):
             allowed = self.list_lists()
         else:
             allowed = []
-        return [i for i in allowed if i.startswith(text)]
+        return [i+" " for i in allowed if i.startswith(text)]
     def complete_move(self,text,line,begidx,endidx):
         return self.complete_add(text,line,begidx,endidx)
 
