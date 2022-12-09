@@ -105,9 +105,14 @@ if _HAS_CHAFA:
     # starting with 1.10, chafa can return only one frame
     # which allows us to drop dependancy for PIL
     output = run("chafa --version")
-    # with chafa < 1.10, --version was returned to stderr instead of stdout.
-    if output != '':
-        _NEW_CHAFA = True
+    # output is "Chafa version M.m.p"
+    # check for m < 1.10
+    try:
+        chafa_major, chafa_minor, _ = output.split("\n")[0].split(" ")[-1].split(".")
+        if int(chafa_major) >= 1 and int(chafa_minor) >= 10:
+            _NEW_CHAFA = True
+    except:
+        pass
 if _NEW_CHAFA :
     _RENDER_IMAGE = True
 if _HAS_TIMG :
