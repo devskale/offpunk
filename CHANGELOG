@@ -14,6 +14,7 @@
 - Fix a crash when ls on empty page (thanks Marty Oehme)
 - Fix: A variable was not initialised without python-cryptography
 - Fix: "cp raw" was not accessing the temp_file correctly
+- Fix: ANSI handling off arrows in readline (by Ben Winston)
 
 ## 1.7.1 - November 15th 2022
 - Correcting a stupid crash in search (thanks kelbot for the report)

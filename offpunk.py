@@ -1907,9 +1907,9 @@ class GeminiClient(cmd.Cmd):
         os.umask(0o077)
 
 
-        self.no_cert_prompt = "\x1b[38;5;76m" + "ON" + "\x1b[38;5;255m" + "> " + "\x1b[0m"
-        self.cert_prompt = "\x1b[38;5;202m" + "ON" + "\x1b[38;5;255m"
-        self.offline_prompt = "\x1b[38;5;76m" + "OFF" + "\x1b[38;5;255m" + "> " + "\x1b[0m"
+        self.no_cert_prompt = "\001\x1b[38;5;76m\002" + "ON" + "\001\x1b[38;5;255m\002" + "> " + "\001\x1b[0m\002"
+        self.cert_prompt = "\001\x1b[38;5;202m\002" + "ON" + "\001\x1b[38;5;255m\002"
+        self.offline_prompt = "\001\x1b[38;5;76m\002" + "OFF" + "\001\x1b[38;5;255m\002" + "> " + "\001\x1b[0m\001"
         self.prompt = self.no_cert_prompt
         self.gi = None
         self.hist_index = 0
@@ -2945,7 +2945,7 @@ class GeminiClient(cmd.Cmd):
     def _activate_client_cert(self, certfile, keyfile):
         self.client_certs["active"] = (certfile, keyfile)
         self.active_cert_domains = []
-        self.prompt = self.cert_prompt + "+" + os.path.basename(certfile).replace('.crt','') + "> " + "\x1b[0m"
+        self.prompt = self.cert_prompt + "+" + os.path.basename(certfile).replace('.crt','') + "> " + "\001\x1b[0m\002"
         self._debug("Using ID {} / {}.".format(*self.client_certs["active"]))
 
     def _deactivate_client_cert(self):
