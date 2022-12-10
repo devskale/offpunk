@@ -13,7 +13,7 @@
 #  - <jake@rmgr.dev>
 #  - Maeve Sproule <code@sprock.dev>
 
-_VERSION = "1.7.1"
+_VERSION = "1.8"
 
 import argparse
 import cmd
