@@ -2983,6 +2983,10 @@ class GeminiClient(cmd.Cmd):
         except ValueError:
             print("What?")
             return
+        # if we have no GeminiItem, there's nothing to do
+        if self.gi is None:
+            print("No links to index")
+            return
         try:
             gi = self.gi.get_link(n)
         except IndexError:

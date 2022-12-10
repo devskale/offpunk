@@ -1,5 +1,8 @@
 # Offpunk History
 
+## 1.9 - unreleased
+- Fix a crash when trying to access a link without GI (Ben Winston)
+
 ## 1.8 - December 11th 2022
 - Official URL is now https://sr.ht/~lioploum/offpunk/
 - SECURITY: Avoid passing improperly-escaped paths to shell (fixes notabug #9) (by Maeve Sproule)
