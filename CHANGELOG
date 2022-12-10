@@ -1,8 +1,8 @@
 # Offpunk History
 
-## 1.8 - Unreleased
+## 1.8 - December 11th 2022
 - Official URL is now https://sr.ht/~lioploum/offpunk/
-- Avoid passing improperly-escaped paths to shell (fixes notabug #9) (by Maeve Sproule)
+- SECURITY: Avoid passing improperly-escaped paths to shell (fixes notabug #9) (by Maeve Sproule)
 - Add support for the finger protocol (by Sotiris Papatheodorou)
 - "restricted" mode has been removed because unmaintained (code cleanup)
 - "set accept_bad_ssl_certificates True" allows to lower HTTPS SSL requirements (also with --assume-yes) 
