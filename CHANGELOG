@@ -1,6 +1,7 @@
 # Offpunk History
 
 ## 1.9 - unreleased
+- Fix a crash when subscribing without GI (reported by sodimel on linuxfr)
 - Fix a crash when trying to access a link without GI (Ben Winston)
 
 ## 1.8 - December 11th 2022

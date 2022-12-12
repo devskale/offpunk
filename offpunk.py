@@ -3688,6 +3688,7 @@ If no argument given, URL is added to Bookmarks."""
                 list_path = self.list_path(list)
         return list_path
     
+    @needs_gi
     def do_subscribe(self,line):
         """Subscribe to current page by saving it in the "subscribed" list.
 If a new link is found in the page during a --sync, the new link is automatically
