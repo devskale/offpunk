@@ -343,10 +343,6 @@ _ABBREVS = {
 }
 
 _MIME_HANDLERS = {
-    "application/pdf":      "zathura %s",
-    "audio/mpeg":           "mpg123 %s",
-    "audio/ogg":            "ogg123 %s",
-    "image/*":              "feh -. %s",
 }
 
 # monkey-patch Gemini support in urllib.parse

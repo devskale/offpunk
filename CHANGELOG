@@ -1,6 +1,7 @@
 # Offpunk History
 
 ## 1.9 - unreleased
+- Default handlers have been removed (not everybody use feh and zathura)
 - Fix a crash when subscribing without GI (reported by sodimel on linuxfr)
 - Fix a crash when trying to access a link without GI (Ben Winston)
 
