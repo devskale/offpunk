@@ -1410,6 +1410,9 @@ class GeminiItem():
                     self.path += "/" + parsed.query
     
     def get_cache_path(self):
+        # if we already have a _cache_path, we returns it.
+        # Except if it became a folder! (which happens for index.html/index.gmi)
+        # In that case, we need to reconstruct it
         if self._cache_path and not os.path.isdir(self._cache_path):
             return self._cache_path
         elif self.local:
