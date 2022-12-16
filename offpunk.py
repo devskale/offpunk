@@ -309,6 +309,7 @@ def less_cmd(file, histfile=None,cat=False,grep=None):
 
 # Command abbreviations
 _ABBREVS = {
+    "..":   "up",
     "a":    "add",
     "b":    "back",
     "bb":   "blackbox",
@@ -2963,8 +2964,6 @@ class GeminiClient(cmd.Cmd):
     def default(self, line):
         if line.strip() == "EOF":
             return self.onecmd("quit")
-        elif line.strip() == "..":
-            return self.do_up()
         elif line.startswith("/"):
             return self.do_find(line[1:])
         # Expand abbreviated commands
