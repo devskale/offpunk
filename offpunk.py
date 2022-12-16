@@ -1957,6 +1957,7 @@ class GeminiClient(cmd.Cmd):
         self.redirects = {
             "twitter.com" : "nitter.42l.fr",
             "facebook.com" : "blocked",
+            "doubleclick.net": "blocked",
             "google-analytics.com" : "blocked",
             "youtube.com" : "yewtu.be",
             "reddit.com"  : "teddit.net",
