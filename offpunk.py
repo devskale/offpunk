@@ -2229,7 +2229,7 @@ class GeminiClient(cmd.Cmd):
                     #in order to catch them faster
                     size = sys.getsizeof(body)
                     max = max_length/2
-                    current = round(size*100/max,0)
+                    current = round(size*100/max,1)
                     if current > downloaded:
                         downloaded = current
                         print("  -> Receiving stream: %s%% of allowed data"%downloaded,end='\r')
