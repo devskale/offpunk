@@ -1013,7 +1013,8 @@ class FeedRenderer(GemtextRenderer):
                 if "published" in i:
                     pub_date = time.strftime("%Y-%m-%d",i.published_parsed)
                     line += pub_date + " : "
-                line += "%s" %(i.title)
+                if "title" in i:
+                    line += "%s" %(i.title)
                 if "author" in i:
                     line += " (by %s)"%i.author
                 page += line + "\n"
@@ -2453,7 +2454,7 @@ class GeminiClient(cmd.Cmd):
             elif self.sync_only:
                 follow = self.automatic_choice
             # Never follow cross-domain redirects without asking
-            elif new_gi.host != gi.host:
+            elif new_gi.host.encode("idna") != gi.host.encode("idna"):
                 follow = input("Follow cross-domain redirect to %s? (y/n) " % new_gi.url)
             # Never follow cross-protocol redirects without asking
             elif new_gi.scheme != gi.scheme:
@@ -2593,8 +2594,13 @@ class GeminiClient(cmd.Cmd):
             self.client_certs[host] = self.client_certs["active"]
 
         # Send request and wrap response in a file descriptor
-        self._debug("Sending %s<CRLF>" % gi.url)
-        s.sendall((gi.url + CRLF).encode("UTF-8"))
+        url = urllib.parse.urlparse(gi.url)
+        new_netloc = host
+        if port != 1965:
+            new_netloc += ":" + str(port)
+        url = urllib.parse.urlunparse(url._replace(netloc=new_netloc))
+        self._debug("Sending %s<CRLF>" % url)
+        s.sendall((url + CRLF).encode("UTF-8"))
         mf= s.makefile(mode = "rb")
         return address, mf
 

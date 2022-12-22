@@ -5,6 +5,8 @@
 - Default handlers have been removed (not everybody use feh and zathura)
 - Fix a crash when subscribing without GI (reported by sodimel on linuxfr)
 - Fix a crash when trying to access a link without GI (Ben Winston)
+- Fix a crash when rss items don’t have a title (eg: Mastodon rss)
+- Fix support for UTF-8 domains in Gemini (Maeve Sproule, fixes #5)
 
 ## 1.8 - December 11th 2022
 - Official URL is now https://sr.ht/~lioploum/offpunk/
