@@ -2138,7 +2138,7 @@ class GeminiClient(cmd.Cmd):
                     print("""ERROR5: Trying to create a directory which already exists
                             in the cache : """)
                     print(err)
-                elif isinstance(err,requests.exceptions.SSLError):
+                elif _DO_HTTP and isinstance(err,requests.exceptions.SSLError):
                     print("""ERROR6: Bad SSL certificate:\n""")
                     print(err)
                     print("""\n If you know what you are doing, you can try to accept bad certificates with the following command:\n""")
