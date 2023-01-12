@@ -7,6 +7,7 @@
 - Fix a crash when subscribing without GI (reported by sodimel on linuxfr)
 - Fix a crash when trying to access a link without GI (Ben Winston)
 - Fix a crash when rss items don’t have a title (eg: Mastodon rss)
+- Fix a crash with badly formatted links in gopher ( #7 by xiu) 
 - Fix error handling assuming that requests is installed
 
 ## 1.8 - December 11th 2022

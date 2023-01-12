@@ -1420,7 +1420,8 @@ class GeminiItem():
         elif self.local:
             self._cache_path = self.path
         #if not local, we create a local cache path.
-        else:
+        #Warning: this cache_path might be nul in case of an invalid GI
+        elif self.scheme and self.host:
             self._cache_path = os.path.expanduser(_CACHE_PATH + self.scheme +\
                                                 "/" + self.host + self.path)
             #There’s an OS limitation of 260 characters per path. 
@@ -1685,8 +1686,9 @@ class GeminiItem():
             self._set_renderer()
         if self.renderer and self.renderer.is_valid():
             tmpf = self.renderer.get_temp_file()
-        if not tmpf:
-            tmpf = self.get_cache_path()
+        cache_path = self.get_cache_path()
+        if not tmpf and cache_path:
+            tmpf = cache_path
         return tmpf
 
     def write_body(self,body,mime=None):
@@ -1695,7 +1697,8 @@ class GeminiItem():
         # DEFAULT GEMINI MIME
         self.body = body
         self.mime, options = parse_mime(mime)
-        if not self.local:
+        cache_path = self.get_cache_path()
+        if not self.local and cache_path:
             if self.mime and self.mime.startswith("text/"):
                 mode = "w"
             else:
@@ -2108,8 +2111,10 @@ class GeminiClient(cmd.Cmd):
                     gi = self._fetch_finger(gi,timeout=self.options["short_timeout"])
                 elif gi.scheme in ("spartan"):
                     gi = self._fetch_spartan(gi)
-                else:
+                elif gi.scheme in ("gemini"):
                     gi = self._fetch_over_network(gi)
+                else:
+                    return
             except UserAbortException:
                 return
             except Exception as err:
