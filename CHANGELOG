@@ -9,6 +9,7 @@
 - Fix a crash when rss items don’t have a title (eg: Mastodon rss)
 - Fix a crash with badly formatted links in gopher ( #7 by xiu) 
 - Fix error handling assuming that requests is installed
+- Improve compatibility with python prior 3.9 by replacing a dict union
 
 ## 1.8 - December 11th 2022
 - Official URL is now https://sr.ht/~lioploum/offpunk/

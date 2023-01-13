@@ -53,7 +53,9 @@ def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
     #print("running %s"%cmd)
     if parameter:
         cmd = cmd % shlex.quote(parameter)
-    env = dict(os.environ) | env
+    #following requires python 3.9 (but is more elegant/explicit): 
+    # env = dict(os.environ) | env
+    env.update(dict(os.environ))
     if isinstance(input, io.IOBase):
         stdin = input
         input = None
