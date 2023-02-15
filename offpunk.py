@@ -1958,7 +1958,6 @@ class GeminiClient(cmd.Cmd):
             "wikipedia" : "gemini://vault.transjovian.org:1965/search/%s/%s",
             "search"    : "gemini://kennedy.gemi.dev/search?%s",
             "accept_bad_ssl_certificates" : False,
-            "cache"     :  _CACHE_PATH,
         }
         
         self.redirects = {
@@ -3088,16 +3087,6 @@ class GeminiClient(cmd.Cmd):
                     TERM_WIDTH = value
                 else:
                     print("%s is not a valid width (integer required)"%value)
-            elif option == "cache":
-                if not os.path.isdir(value) or not os.access(value,os.W_OK):
-                    print("%s is a writable folder. You must create it first"%value)
-                    return
-                else:
-                    if not value.endswith("/"):
-                        value += "/"
-                    print("cache is now set to %s" %value)
-                    global _CACHE_PATH
-                    _CACHE_PATH = value
             elif value.isnumeric():
                 value = int(value)
             elif value.lower() == "false":
@@ -3466,7 +3455,7 @@ Marks are temporary until shutdown (not saved to disk)."""
         output += "\n"
         output += "Config directory    : " +  _CONFIG_DIR + "\n"
         output += "User Data directory : " +  _DATA_DIR + "\n"
-        output += "Cache directoy      : " +  self.options["cache"] 
+        output += "Cache directoy      : " +  _CACHE_PATH
 
         print(output)
 

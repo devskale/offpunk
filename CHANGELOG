@@ -1,7 +1,6 @@
 # Offpunk History
 
 ## 1.9 - unreleased
-- "set cache" allows to use a custom cache folder (experimental)
 - ".." as abbreviation to "up" (by Sotiris Papatheodorou)
 - Fix support for UTF-8 domains in Gemini (Maeve Sproule, fixes #5)
 - Default handlers have been removed (not everybody use feh and zathura)
