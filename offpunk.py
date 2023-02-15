@@ -389,7 +389,7 @@ standard_ports = {
 class AbstractRenderer():
     def __init__(self,content,url,center=True):
         self.url = url
-        self.body = content
+        self.body = str(content)
         #there’s one rendered text and one links table per mode
         self.rendered_text = {}
         self.links = {}
