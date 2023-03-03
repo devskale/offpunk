@@ -1024,8 +1024,9 @@ class FeedRenderer(GemtextRenderer):
                     if "summary" in i:
                         html = HtmlRenderer(i.summary,self.url,center=False)
                         rendered = html.get_body(width=None,mode="full")
-                        page += rendered
                         page += "\n"
+                        page += rendered
+                        page += "\n------------\n\n"
         return page
 
 class ImageRenderer(AbstractRenderer):
@@ -1831,7 +1832,10 @@ class GeminiItem():
         Convert a relative URL to an absolute URL by using the URL of this
         GeminiItem as a base.
         """
-        abs_url = urllib.parse.urljoin(self.url, relative_url)
+        try:
+            abs_url = urllib.parse.urljoin(self.url, relative_url)
+        except ValueError as e:
+            abs_url = None
         return abs_url
 
     def url_mode(self):
