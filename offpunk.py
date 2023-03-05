@@ -2513,7 +2513,9 @@ class GeminiClient(cmd.Cmd):
             try:
                 codecs.lookup(mime_options["charset"])
             except LookupError:
-                raise RuntimeError("Header declared unknown encoding %s" % value)
+                #raise RuntimeError("Header declared unknown encoding %s" % mime_options)
+                #If the encoding is wrong, there’s a high probably it’s UTF-8 with a bad header
+                mime_options["charset"] = "UTF-8"
         if shortmime.startswith("text/"):
             #Get the charset and default to UTF-8 in none
             encoding = mime_options.get("charset", "UTF-8")
