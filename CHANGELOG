@@ -12,6 +12,7 @@
 - Fix a crash were some HTML content is seen a bytes instead of a string
 - Fix a crash when displaying embedded CDATA html in feed. But #10 is still open.
 - Fix error handling assuming that requests is installed
+- Ugly fix for a rare certificate bug (fix #11)
 - Improve compatibility with python prior 3.9 by replacing a dict union
 
 ## 1.8 - December 11th 2022

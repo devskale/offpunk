@@ -14,7 +14,6 @@
 #  - Maeve Sproule <code@sprock.dev>
 
 _VERSION = "1.8"
-
 import argparse
 import cmd
 import codecs
@@ -2156,8 +2155,10 @@ class GeminiClient(cmd.Cmd):
                     print("""set accept_bad_ssl_certificates True""")
                 else:
                     if print_error:
+                        import traceback
                         print("ERROR4: " + str(type(err)) + " : " + str(err))
                         print("\n" + str(err.with_traceback(None)))
+                        print(traceback.format_exc())
                 return
 
         # Pass file to handler, unless we were asked not to
@@ -2711,7 +2712,7 @@ class GeminiClient(cmd.Cmd):
             names = set(names)
             for name in names:
                 try:
-                    ssl._dnsname_match(name, host)
+                    ssl._dnsname_match(str(name), host)
                     break
                 except CertificateError:
                     continue
