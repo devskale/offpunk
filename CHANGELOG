@@ -1,6 +1,7 @@
 # Offpunk History
 
-## 1.9 - unreleased
+## 1.9 - March 8th 2023
+This is a bug-fixing release.
 - We now have a man page thanks to phoebos!
 - ".." as abbreviation to "up" (by Sotiris Papatheodorou)
 - Fix support for UTF-8 domains in Gemini (Maeve Sproule, fixes #5)

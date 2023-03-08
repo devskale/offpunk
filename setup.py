@@ -2,9 +2,9 @@ from setuptools import setup
 
 setup(
     name='offpunk',
-    version='1.8',
+    version='1.9',
     description="Offline-First Gemini/Web/Gopher/RSS reader and browser",
-    author="Ploum",
+    author="Lionel Dricot (Ploum)",
     author_email="offpunk@ploum.eu",
     url='https://sr.ht/~lioploum/offpunk/',
     classifiers=[
