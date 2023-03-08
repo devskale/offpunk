@@ -3764,7 +3764,8 @@ Bookmarks are stored using the 'add' command."""
             self.list_go_to_line(args,"bookmarks")
         else:
             self.list_show("bookmarks")
-    
+
+    @needs_gi 
     def do_archive(self,args):
         """Archive current page by removing it from every list and adding it to
 archives, which is a special historical list limited in size. It is similar to `move archives`."""

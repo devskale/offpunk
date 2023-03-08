@@ -1,5 +1,8 @@
 # Offpunk History
 
+## 1.9.1 - March 8th 2023
+- Fixed crash with archive without GI (thanks Étienne Mollier)
+
 ## 1.9 - March 8th 2023
 This is a bug-fixing release.
 - We now have a man page thanks to phoebos!
