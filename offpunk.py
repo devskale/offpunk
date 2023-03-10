@@ -13,7 +13,7 @@
 #  - <jake@rmgr.dev>
 #  - Maeve Sproule <code@sprock.dev>
 
-_VERSION = "1.9"
+_VERSION = "1.9.1"
 import argparse
 import cmd
 import codecs
