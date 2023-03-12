@@ -13,7 +13,12 @@
 #  - <jake@rmgr.dev>
 #  - Maeve Sproule <code@sprock.dev>
 
-_VERSION = "1.9.1"
+"""
+Offline-First Gemini/Web/Gopher/RSS reader and browser
+"""
+
+__version__ = "1.9.1"
+
 import argparse
 import cmd
 import codecs
@@ -52,7 +57,7 @@ def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
     #print("running %s"%cmd)
     if parameter:
         cmd = cmd % shlex.quote(parameter)
-    #following requires python 3.9 (but is more elegant/explicit): 
+    #following requires python 3.9 (but is more elegant/explicit):
     # env = dict(os.environ) | env
     env = dict(**os.environ,**env)
     if isinstance(input, io.IOBase):
@@ -354,7 +359,7 @@ urllib.parse.uses_netloc.append("gemini")
 urllib.parse.uses_relative.append("spartan")
 urllib.parse.uses_netloc.append("spartan")
 
-#An IPV6 URL should be put between []  
+#An IPV6 URL should be put between []
 #We try to detect them has location with more than 2 ":"
 def fix_ipv6_url(url):
     if not url or url.startswith("mailto"):
@@ -398,7 +403,7 @@ class AbstractRenderer():
         self.temp_file = {}
         self.less_histfile = {}
         self.center = center
-   
+
     #This class hold an internal representation of the HTML text
     class representation:
         def __init__(self,width,title=None,center=True):
@@ -417,7 +422,7 @@ class AbstractRenderer():
             self.current_indent = ""
             self.disabled_indents = None
             # each color is an [open,close] pair code
-            self.colors = { 
+            self.colors = {
                             "bold"   : ["1","22"],
                             "faint"  : ["2","22"],
                             "italic" : ["3","23"],
@@ -428,7 +433,7 @@ class AbstractRenderer():
                        }
 
         def _insert(self,color,open=True):
-            if open: o = 0 
+            if open: o = 0
             else: o = 1
             pos = len(self.last_line)
             #we remember the position where to insert color codes
@@ -439,8 +444,8 @@ class AbstractRenderer():
                 self.last_line_colors[pos].remove([color,int(not o)])
             else:
                 self.last_line_colors[pos].append([color,o])#+color+str(o))
-        
-        # Take self.last line and add ANSI codes to it before adding it to 
+
+        # Take self.last line and add ANSI codes to it before adding it to
         # self.final_text.
         def _endline(self):
             if len(self.last_line.strip()) > 0:
@@ -451,7 +456,7 @@ class AbstractRenderer():
                 #we insert the color code at the saved positions
                 while len (self.last_line_colors) > 0:
                     pos,colors = self.last_line_colors.popitem()
-                    #popitem itterates LIFO. 
+                    #popitem itterates LIFO.
                     #So we go, backward, to the pos (starting at the end of last_line)
                     nextline = self.last_line[pos:] + nextline
                     ansicol = "\x1b["
@@ -479,10 +484,10 @@ class AbstractRenderer():
             else:
                 self.last_line = ""
 
-        
+
         def center_line(self):
             self.last_line_center = True
-        
+
         def open_color(self,color):
             if color in self.colors and color not in self.opened:
                 self._insert(color,open=True)
@@ -537,7 +542,7 @@ class AbstractRenderer():
             self._endline()
 
         #A new paragraph implies 2 newlines (1 blank line between paragraphs)
-        #But it is only used if didn’t already started one to avoid plenty 
+        #But it is only used if didn’t already started one to avoid plenty
         #of blank lines. force=True allows to bypass that limit.
         #new_paragraph becomes false as soon as text is entered into it
         def newparagraph(self,force=False):
@@ -575,7 +580,7 @@ class AbstractRenderer():
             self.new_paragraph = False
             self._endline()
             self._enable_indents()
-        
+
         def add_text(self,intext):
             self._title_first(intext=intext)
             lines = []
@@ -635,7 +640,7 @@ class AbstractRenderer():
         return self.links[mode]
     def get_title(self):
         return "Abstract title"
-   
+
     # This function return a list of URL which should be downloaded
     # before displaying the page (images in HTML pages, typically)
     def get_images(self,mode="readable"):
@@ -650,7 +655,7 @@ class AbstractRenderer():
     #This function will give gemtext to the gemtext renderer
     def prepare(self,body,mode=None):
         return body
-    
+
     def get_body(self,width=None,mode="readable"):
         if not width:
             width = term_width()
@@ -671,7 +676,7 @@ class AbstractRenderer():
         if info:
             title_r.add_text("   (%s)"%info)
         title_r.close_color("red")
-        return title_r.get_final() 
+        return title_r.get_final()
 
     def display(self,mode="readable",window_title="",window_info=None,grep=None):
         if not mode: mode = "readable"
@@ -693,7 +698,7 @@ class AbstractRenderer():
             firsttime = False
         less_cmd(self.temp_file[mode], histfile=self.less_histfile[mode],cat=firsttime,grep=grep)
         return True
-    
+
     def get_temp_file(self,mode="readable"):
         if mode in self.temp_file:
             return self.temp_file[mode]
@@ -720,7 +725,7 @@ class GemtextRenderer(AbstractRenderer):
                     self.title = line.strip("#").strip()
                     return self.title
             if len(lines) > 0:
-                # If not title found, we take the first 50 char 
+                # If not title found, we take the first 50 char
                 # of the first line
                 title_line = lines[0].strip()
                 if len(title_line) > 50:
@@ -732,7 +737,7 @@ class GemtextRenderer(AbstractRenderer):
                 return self.title
         else:
             return "Unknown Gopher Page"
-    
+
     #render_gemtext
     def render(self,gemtext, width=None,mode=None):
         if not width:
@@ -766,7 +771,7 @@ class GemtextRenderer(AbstractRenderer):
             elif line.startswith("=>"):
                 strippedline = line[2:].strip()
                 if strippedline:
-                    links.append(strippedline)        
+                    links.append(strippedline)
                     splitted = strippedline.split(maxsplit=1)
                     url = splitted[0]
                     name = None
@@ -1096,7 +1101,7 @@ class HtmlRenderer(AbstractRenderer):
             self.title = str(soup.title.string)
         else:
             return ""
-    
+
     # Our own HTML engine (crazy, isn’t it?)
     # Return [rendered_body, list_of_links]
     # mode is either links_only, readable or full
@@ -1225,7 +1230,7 @@ class HtmlRenderer(AbstractRenderer):
                 if link:
                     text = ""
                     imgtext = ""
-                    #we display images first in a link 
+                    #we display images first in a link
                     for child in element.children:
                         if child.name == "img":
                             recursive_render(child)
@@ -1412,7 +1417,7 @@ class GeminiItem():
                 # Also, very long query are usually useless stuff
                 if len(self.path+parsed.query) < 258:
                     self.path += "/" + parsed.query
-    
+
     def get_cache_path(self):
         # if we already have a _cache_path, we returns it.
         # Except if it became a folder! (which happens for index.html/index.gmi)
@@ -1426,7 +1431,7 @@ class GeminiItem():
         elif self.scheme and self.host:
             self._cache_path = os.path.expanduser(_CACHE_PATH + self.scheme +\
                                                 "/" + self.host + self.path)
-            #There’s an OS limitation of 260 characters per path. 
+            #There’s an OS limitation of 260 characters per path.
             #We will thus cut the path enough to add the index afterward
             self._cache_path = self._cache_path[:249]
             # FIXME : this is a gross hack to give a name to
@@ -1453,7 +1458,7 @@ class GeminiItem():
             if os.path.isdir(self._cache_path):
                 self._cache_path += "/" + index
         return self._cache_path
-            
+
     def get_capsule_title(self):
             #small intelligence to try to find a good name for a capsule
             #we try to find eithe ~username or /users/username
@@ -1477,7 +1482,7 @@ class GeminiItem():
                         if pp.startswith("~"):
                             red_title = pp[1:]
             return red_title
-   
+
     def get_page_title(self):
         title = ""
         if not self.renderer:
@@ -1491,7 +1496,7 @@ class GeminiItem():
         return title
 
     def is_cache_valid(self,validity=0):
-        # Validity is the acceptable time for 
+        # Validity is the acceptable time for
         # a cache to be valid  (in seconds)
         # If 0, then any cache is considered as valid
         # (use validity = 1 if you want to refresh everything)
@@ -1528,7 +1533,7 @@ class GeminiItem():
         else:
             print("ERROR : NO CACHE in cache_last_modified")
             return None
-    
+
     def get_body(self,as_file=False):
         if self.body and not as_file:
             return self.body
@@ -1552,7 +1557,7 @@ class GeminiItem():
         else:
             #print("ERROR: NO CACHE for %s" %self._cache_path)
             return None
-   
+
     def get_images(self,mode=None):
         if not self.renderer:
             self._set_renderer()
@@ -1576,7 +1581,7 @@ class GeminiItem():
             #split between link and potential name
             # check that l is non-empty
             url = None
-            if l:   
+            if l:
                 splitted = l.split(maxsplit=1)
                 url = self.absolutise_url(splitted[0])
             if url and looks_like_url(url):
@@ -1589,7 +1594,7 @@ class GeminiItem():
                 else:
                     newgi = GeminiItem(url)
                 toreturn.append(newgi)
-            elif url and mode != "links_only" and url.startswith("data:image/"): 
+            elif url and mode != "links_only" and url.startswith("data:image/"):
                 imgurl,imgdata = looks_like_base64(url,self.url)
                 if imgurl:
                     toreturn.append(GeminiItem(imgurl))
@@ -1722,7 +1727,7 @@ class GeminiItem():
             with open(self.get_cache_path(), mode=mode) as f:
                 f.write(body)
                 f.close()
-         
+
     def get_mime(self):
         #Beware, this one is really a shaddy ad-hoc function
         if self.mime:
@@ -1762,7 +1767,7 @@ class GeminiItem():
                     mime = "text/gemini"
             self.mime = mime
         return self.mime
-    
+
     def set_error(self,err):
     # If we get an error, we want to keep an existing cache
     # but we need to touch it or to create an empty one
@@ -1789,8 +1794,8 @@ class GeminiItem():
                     cache.write("If you believe this error was temporary, type ""reload"".\n")
                     cache.write("The ressource will be tentatively fetched during next sync.\n")
                     cache.close()
-    
-               
+
+
     def root(self):
         return GeminiItem(self._derive_url("/"))
 
@@ -1838,7 +1843,7 @@ class GeminiItem():
         return abs_url
 
     def url_mode(self):
-        url = self.url 
+        url = self.url
         if self.last_mode and self.last_mode != "readable":
             url += "##offpunk_mode=" + self.last_mode
         return url
@@ -1962,7 +1967,7 @@ class GeminiClient(cmd.Cmd):
             "search"    : "gemini://kennedy.gemi.dev/search?%s",
             "accept_bad_ssl_certificates" : False,
         }
-        
+
         self.redirects = {
             "twitter.com" : "nitter.42l.fr",
             "facebook.com" : "blocked",
@@ -2012,13 +2017,13 @@ class GeminiClient(cmd.Cmd):
                 if current_cmd in ["help", "create"]:
                     allowed = []
                 elif current_cmd in cmds:
-                    allowed = lists 
+                    allowed = lists
         elif words == 3 and text != "":
             current_cmd = line.split()[1]
             if current_cmd in ["help", "create"]:
                 allowed = []
             elif current_cmd in cmds:
-                allowed = lists 
+                allowed = lists
         return [i+" " for i in allowed if i.startswith(text)]
 
     def complete_add(self,text,line,begidx,endidx):
@@ -2046,7 +2051,7 @@ class GeminiClient(cmd.Cmd):
                                                 mode=None,limit_size=False):
         """This method might be considered "the heart of Offpunk".
         Everything involved in fetching a gemini resource happens here:
-        sending the request over the network, parsing the response, 
+        sending the request over the network, parsing the response,
         storing the response in a temporary file, choosing
         and calling a handler program, and updating the history.
         Nothing is returned."""
@@ -2076,7 +2081,7 @@ class GeminiClient(cmd.Cmd):
             new_gi = GeminiItem(self.permanent_redirects[gi.url], name=gi.name)
             self._go_to_gi(new_gi,mode=mode)
             return
-        
+
         # Use cache or mark as to_fetch if resource is not cached
         # Why is this code useful ? It set the mimetype !
         if self.offline_only:
@@ -2199,11 +2204,11 @@ class GeminiClient(cmd.Cmd):
         def set_error(item,length,max_length):
             err = "Size of %s is %s Mo\n"%(item.url,length)
             err += "Offpunk only download automatically content under %s Mo\n" %(max_length/1000000)
-            err += "To retrieve this content anyway, type 'reload'." 
+            err += "To retrieve this content anyway, type 'reload'."
             item.set_error(err)
             return item
         header = {}
-        header["User-Agent"] = "Offpunk browser v%s"%_VERSION
+        header["User-Agent"] = "Offpunk browser v%s"%__version__
         parsed = urllib.parse.urlparse(gi.url)
         # Code to translate URLs to better frontends (think twitter.com -> nitter)
         if self.options["redirects"]:
@@ -2385,7 +2390,7 @@ class GeminiClient(cmd.Cmd):
     # fetch_over_network will modify with gi.write_body(body,mime)
     # before returning the gi
     def _fetch_over_network(self, gi):
-        
+
         # Be careful with client certificates!
         # Are we crossing a domain boundary?
         if self.active_cert_domains and gi.host not in self.active_cert_domains:
@@ -2502,7 +2507,7 @@ class GeminiClient(cmd.Cmd):
 
         # If we're here, this must be a success and there's a response body
         assert status.startswith("2")
-        
+
         mime = meta
         # Read the response body over the network
         fbody = f.read()
@@ -2527,7 +2532,7 @@ class GeminiClient(cmd.Cmd):
                                     encoding declared in header!" % encoding)
         else:
             body = fbody
-        gi.write_body(body,mime)    
+        gi.write_body(body,mime)
         return gi
 
     def _send_request(self, gi):
@@ -2570,7 +2575,7 @@ class GeminiClient(cmd.Cmd):
         if self.client_certs["active"]:
             certfile, keyfile = self.client_certs["active"]
             context.load_cert_chain(certfile, keyfile)
-        
+
         # Connect to remote host by any address possible
         err = None
         for address in addresses:
@@ -3166,10 +3171,10 @@ class GeminiClient(cmd.Cmd):
             self.offline_only = True
             self.prompt = self.offline_prompt
             print("Offpunk is now offline and will only access cached content")
-    
+
     def do_online(self, *args):
         """Use Offpunk online with a direct connection"""
-        if self.offline_only:    
+        if self.offline_only:
             self.offline_only = False
             self.prompt = self.no_cert_prompt
             print("Offpunk is online and will access the network")
@@ -3220,7 +3225,7 @@ Use with "cache" to copy the path of the cached content."""
                     if "://" in u and looks_like_url(u) and u not in urls :
                         urls.append(u)
                 if len(urls) > 1:
-                    stri = "URLs in your clipboard\n" 
+                    stri = "URLs in your clipboard\n"
                     counter = 0
                     for u in urls:
                         counter += 1
@@ -3309,7 +3314,7 @@ All items in $LIST can be added with `tour $LIST`.
 Current item can be added back to the end of the tour with `tour .`.
 Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
         # Creating the tour list if needed
-        self.get_list("tour") 
+        self.get_list("tour")
         line = line.strip()
         if not line:
             # Fly to next waypoint on tour
@@ -3383,7 +3388,7 @@ Marks are temporary until shutdown (not saved to disk)."""
             self.marks[line] = self.gi
         else:
             print("Invalid mark, must be one letter")
-    
+
     @needs_gi
     def do_info(self,line):
         """Display information about current page."""
@@ -3429,7 +3434,7 @@ Marks are temporary until shutdown (not saved to disk)."""
                 return "\t\x1b[1;32mInstalled\x1b[0m\n"
             else:
                 return "\t\x1b[1;31mNot Installed\x1b[0m\n"
-        output = "Offpunk " + _VERSION + "\n"
+        output = "Offpunk " + __version__ + "\n"
         output += "===========\n"
         output += "Highly recommended:\n"
         output += " - python-cryptography : " + has(_HAS_CRYPTOGRAPHY)
@@ -3458,7 +3463,7 @@ Marks are temporary until shutdown (not saved to disk)."""
         output += " - Render Atom/RSS feeds (feedparser)         : " + has(_DO_FEED)
         output += " - Connect to http/https (requests)           : " + has(_DO_HTTP)
         output += " - copy to/from clipboard (xsel)              : " + has(_HAS_XSEL)
-        output += " - restore last position (less 572+)          : " + has(_LESS_RESTORE_POSITION) 
+        output += " - restore last position (less 572+)          : " + has(_LESS_RESTORE_POSITION)
         output += "\n"
         output += "Config directory    : " +  _CONFIG_DIR + "\n"
         output += "User Data directory : " +  _DATA_DIR + "\n"
@@ -3514,7 +3519,7 @@ Use 'ls -l' to see URLs."""
     @needs_gi
     def do_find(self, searchterm):
         """Find in current page by displaying only relevant lines (grep)."""
-        self.gi.display(grep=searchterm) 
+        self.gi.display(grep=searchterm)
 
     def emptyline(self):
         """Page through index ten lines at a time."""
@@ -3554,7 +3559,7 @@ Use "view feeds" to see available feeds on this page.
                     print("No other feed found on %s"%self.gi.url)
             elif args[0] == "feeds":
                 subs = self.gi.get_subscribe_links()
-                stri = "Available views :\n" 
+                stri = "Available views :\n"
                 counter = 0
                 for s in subs:
                     counter += 1
@@ -3567,7 +3572,7 @@ Use "view feeds" to see available feeds on this page.
                 print("Valid argument for view are : normal, full, feed, feeds")
         else:
             self._go_to_gi(self.gi)
-                
+
     @needs_gi
     def do_open(self, *args):
         """Open current item with the configured handler or xdg-open.
@@ -3681,7 +3686,7 @@ If no argument given, URL is added to Bookmarks."""
             self.list_add_line(list)
         else:
             self.list_add_line(args[0])
-    
+
     # Get the list file name, creating or migrating it if needed.
     # Migrate bookmarks/tour/to_fetch from XDG_CONFIG to XDG_DATA
     # We migrate only if the file exists in XDG_CONFIG and not XDG_DATA
@@ -3706,7 +3711,7 @@ If no argument given, URL is added to Bookmarks."""
                 self.list_create(list, title=title,quite=True)
                 list_path = self.list_path(list)
         return list_path
-    
+
     @needs_gi
     def do_subscribe(self,line):
         """Subscribe to current page by saving it in the "subscribed" list.
@@ -3765,7 +3770,7 @@ Bookmarks are stored using the 'add' command."""
         else:
             self.list_show("bookmarks")
 
-    @needs_gi 
+    @needs_gi
     def do_archive(self,args):
         """Archive current page by removing it from every list and adding it to
 archives, which is a special historical list limited in size. It is similar to `move archives`."""
@@ -3805,7 +3810,7 @@ archives, which is a special historical list limited in size. It is similar to `
             if verbose:
                 print("%s added to %s" %(gi.url,list))
             return True
-    
+
     def list_add_top(self,list,limit=0,truncate_lines=0):
         if not self.gi:
             return
@@ -3843,7 +3848,7 @@ archives, which is a special historical list limited in size. It is similar to `
     # return False if the URL was not found
     def list_rm_url(self,url,list):
         return self.list_has_url(url,list,deletion=True)
-   
+
     # deletion and has_url are so similar, I made them the same method
     def list_has_url(self,url,list,deletion=False):
         list_path = self.list_path(list)
@@ -3907,7 +3912,7 @@ archives, which is a special historical list limited in size. It is similar to `
             print("List %s does not exist. Create it with ""list create %s"""%(list,list))
         else:
             gi = GeminiItem("list:///%s"%list)
-            display = not self.sync_only 
+            display = not self.sync_only
             self._go_to_gi(gi,handle=display)
 
     #return the path of the list file if list exists.
@@ -3938,10 +3943,10 @@ archives, which is a special historical list limited in size. It is similar to `
                 print("list created. Display with `list %s`"%list)
         else:
             print("list %s already exists" %list)
-   
+
     def do_move(self,arg):
         """move LIST will add the current page to the list LIST.
-With a major twist: current page will be removed from all other lists. 
+With a major twist: current page will be removed from all other lists.
 If current page was not in a list, this command is similar to `add LIST`."""
         if not arg:
             print("LIST argument is required as the target for your move")
@@ -3960,7 +3965,7 @@ If current page was not in a list, this command is similar to `add LIST`."""
                         if isremoved:
                             print("Removed from %s"%l)
                 self.list_add_line(args[0])
-    
+
     def list_lists(self):
         listdir = os.path.join(_DATA_DIR,"lists")
         to_return = []
@@ -3971,7 +3976,7 @@ If current page was not in a list, this command is similar to `add LIST`."""
                     #removing the .gmi at the end of the name
                     to_return.append(l[:-4])
         return to_return
-    
+
     def list_has_status(self,list,status):
         path = self.list_path(list)
         toreturn = False
@@ -4020,7 +4025,7 @@ If current page was not in a list, this command is similar to `add LIST`."""
 - list $LIST : display pages in $LIST
 - list create $NEWLIST : create a new list
 - list edit $LIST : edit the list
-- list subscribe $LIST : during sync, add new links found in listed pages to tour 
+- list subscribe $LIST : during sync, add new links found in listed pages to tour
 - list freeze $LIST : don’t update pages in list during sync if a cache already exists
 - list normal $LIST : update pages in list during sync but don’t add anything to tour
 - list delete $LIST : delete a list permanently (a confirmation is required)
@@ -4168,7 +4173,7 @@ current gemini browsing session."""
         for key, value in lines:
             print(key.ljust(24) + str(value).rjust(8))
 
-    
+
     def do_sync(self, line):
         """Synchronize all bookmarks lists.
 - New elements in pages in subscribed lists will be added to tour
@@ -4231,11 +4236,11 @@ Argument : duration of cache validity (in seconds)."""
                 limit = not savetotour
                 self._go_to_gi(gitem,update_hist=False,limit_size=limit)
                 if savetotour and isnew and gitem.is_cache_valid():
-                    #we add to the next tour only if we managed to cache 
+                    #we add to the next tour only if we managed to cache
                     #the ressource
                     add_to_tour(gitem)
             #Now, recursive call, even if we didn’t refresh the cache
-            # This recursive call is impacting performances a lot but is needed 
+            # This recursive call is impacting performances a lot but is needed
             # For the case when you add a address to a list to read later
             # You then expect the links to be loaded during next refresh, even
             # if the link itself is fresh enough
@@ -4252,7 +4257,7 @@ Argument : duration of cache validity (in seconds)."""
                     substri = strin + " -->"
                     subcount[0] += 1
                     fetch_gitem(k,depth=d,validity=0,savetotour=savetotour,\
-                                        count=subcount,strin=substri) 
+                                        count=subcount,strin=substri)
         def fetch_list(list,validity=0,depth=1,tourandremove=False,tourchildren=False):
             links = self.list_get_links(list)
             end = len(links)
@@ -4265,7 +4270,7 @@ Argument : duration of cache validity (in seconds)."""
                 if tourandremove:
                     if add_to_tour(l):
                         self.list_rm_url(l.url_mode(),list)
-            
+
         self.sync_only = True
         lists = self.list_lists()
         # We will fetch all the lists except "archives" and "history"
@@ -4328,22 +4333,22 @@ Argument : duration of cache validity (in seconds)."""
 def main():
 
     # Parse args
-    parser = argparse.ArgumentParser(description='A command line gemini client.')
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bookmarks', action='store_true',
                         help='start with your list of bookmarks')
     parser.add_argument('--tls-cert', metavar='FILE', help='TLS client certificate file')
     parser.add_argument('--tls-key', metavar='FILE', help='TLS client certificate private key file')
-    parser.add_argument('--sync', action='store_true', 
+    parser.add_argument('--sync', action='store_true',
                         help='run non-interactively to build cache by exploring bookmarks')
-    parser.add_argument('--assume-yes', action='store_true', 
+    parser.add_argument('--assume-yes', action='store_true',
                         help='assume-yes when asked questions about certificates/redirections during sync (lower security)')
     parser.add_argument('--disable-http',action='store_true',
                         help='do not try to get http(s) links (but already cached will be displayed)')
-    parser.add_argument('--fetch-later', action='store_true', 
+    parser.add_argument('--fetch-later', action='store_true',
                         help='run non-interactively with an URL as argument to fetch it later')
-    parser.add_argument('--depth', 
+    parser.add_argument('--depth',
                         help='depth of the cache to build. Default is 1. More is crazy. Use at your own risks!')
-    parser.add_argument('--cache-validity', 
+    parser.add_argument('--cache-validity',
                         help='duration for which a cache is valid before sync (seconds)')
     parser.add_argument('--version', action='store_true',
                         help='display version information and quit')
@@ -4355,11 +4360,11 @@ def main():
 
     # Handle --version
     if args.version:
-        print("Offpunk " + _VERSION)
+        print("Offpunk " + __version__)
         sys.exit()
     elif args.features:
         GeminiClient.do_version(None,None)
-        sys.exit() 
+        sys.exit()
     else:
         for f in [_CONFIG_DIR, _CACHE_PATH, _DATA_DIR]:
             if not os.path.exists(f):
@@ -4369,7 +4374,7 @@ def main():
     # Instantiate client
     gc = GeminiClient(synconly=args.sync)
     torun_queue = []
-    
+
     # Interactive if offpunk started normally
     # False if started with --sync
     # Queue is a list of command (potentially empty)
@@ -4447,7 +4452,7 @@ def main():
         print("Type `help` to get the list of available command.")
         for line in torun_queue:
             gc.onecmd(line)
-        
+
         while True:
             try:
                 gc.cmdloop()
