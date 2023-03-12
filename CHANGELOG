@@ -2,6 +2,7 @@
 
 ## 1.9.2 - Unreleased
 - Switch from setup.py to flit (Anna cybertailor Vyalkova)
+- Bump requirements to python >= 3.7 (Anna cybertailor Vyalkova)
 
 ## 1.9.1 - March 8th 2023
 - Fixed crash with archive without GI (thanks Étienne Mollier)
