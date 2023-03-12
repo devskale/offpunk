@@ -22,7 +22,7 @@ classifiers = [
     "Topic :: Internet",
 ]
 keywords = ["gemini", "browser"]
-requires-python = ">=3.6"
+requires-python = ">=3.7"
 dynamic = ["version", "description"]
 
 [project.license]
