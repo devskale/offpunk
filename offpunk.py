@@ -17,7 +17,7 @@
 Offline-First Gemini/Web/Gopher/RSS reader and browser
 """
 
-__version__ = "1.9.1"
+__version__ = "1.9.2"
 
 import argparse
 import cmd
