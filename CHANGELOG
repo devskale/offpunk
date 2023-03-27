@@ -1,5 +1,8 @@
 # Offpunk History
 
+## 1.9.3 - unreleased
+- Add missing chardet module (Sotiris Papatheodorou)
+
 ## 1.9.2 - March 13th 2023
 - Switch from setup.py to flit (Anna cybertailor Vyalkova)
 - Bump requirements to python >= 3.7 (Anna cybertailor Vyalkova)

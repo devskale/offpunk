@@ -210,6 +210,12 @@ except ModuleNotFoundError:
     _DO_HTTP = False
 
 try:
+    import chardet
+    _HAS_CHARDET = True
+except ModuleNotFoundError:
+    _HAS_CHARDET = False
+
+try:
     from readability import Document
     _HAS_READABILITY = True
 except ModuleNotFoundError:
@@ -2317,11 +2323,11 @@ class GeminiClient(cmd.Cmd):
                     pass
             else:
                 # try to find encoding
-                #if _HAS_CHARDET:
-                detected = chardet.detect(response)
-                response = response.decode(detected["encoding"])
-                #else:
-                    #raise UnicodeDecodeError
+                if _HAS_CHARDET:
+                    detected = chardet.detect(response)
+                    response = response.decode(detected["encoding"])
+                else:
+                    raise UnicodeDecodeError
         if itemtype == "0":
             mime = "text/gemini"
         elif itemtype == "1":
