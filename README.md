@@ -87,6 +87,7 @@ Dependencies to enable web browsing (packagers may put those in an offpunk-web m
 Nice to have (packagers should may make those optional):
 * [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). Also needed to use the `copy` command. (apt-get install xsel)
 * [Python-setproctitle](https://github.com/dvarrazzo/py-setproctitle) will change the process name from "python" to "offpunk". Useful to kill it without killing every python service.
+* [Python-chardet](https://github.com/chardet/chardet) is used to detect the character encoding on Gopher (and may be used more in the future)
 
 ## Features
 
