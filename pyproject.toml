@@ -30,6 +30,7 @@ file = "LICENSE"
 
 [project.optional-dependencies]
 better-tofu = ["cryptography"]
+chardet = ["chardet"]
 html = ["bs4", "readability-lxml"]
 http = ["requests"]
 process-title = ["setproctitle"]

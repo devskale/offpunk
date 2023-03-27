@@ -1,3 +1,4 @@
+chardet
 cryptography
 requests
 feedparser

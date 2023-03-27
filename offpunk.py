@@ -3468,6 +3468,7 @@ Marks are temporary until shutdown (not saved to disk)."""
         output += " - Render HTML (bs4, readability)             : " + has(_DO_HTML)
         output += " - Render Atom/RSS feeds (feedparser)         : " + has(_DO_FEED)
         output += " - Connect to http/https (requests)           : " + has(_DO_HTTP)
+        output += " - Detect text encoding (python-chardet)      : " + has(_HAS_CHARDET)
         output += " - copy to/from clipboard (xsel)              : " + has(_HAS_XSEL)
         output += " - restore last position (less 572+)          : " + has(_LESS_RESTORE_POSITION)
         output += "\n"
