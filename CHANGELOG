@@ -2,6 +2,7 @@
 
 ## 1.10 - unreleased
 - IMPORTANT : new optional dependency : python-chardet
+- "set accept_bad_ssl_certificates True" now also used for Gemini expired certificates
 - Add missing chardet module (Sotiris Papatheodorou)
 
 ## 1.9.2 - March 13th 2023

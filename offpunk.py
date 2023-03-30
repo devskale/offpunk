@@ -2706,10 +2706,11 @@ class GeminiClient(cmd.Cmd):
             # the standard ssl library...
             c = x509.load_der_x509_certificate(cert, _BACKEND)
             # Check certificate validity dates
-            if c.not_valid_before >= now:
-                raise CertificateError("Certificate not valid until: {}!".format(c.not_valid_before))
-            elif c.not_valid_after <= now:
-                raise CertificateError("Certificate expired as of: {})!".format(c.not_valid_after))
+            if not self.options["accept_bad_ssl_certificates"]:
+                if c.not_valid_before >= now:
+                    raise CertificateError("Certificate not valid until: {}!".format(c.not_valid_before))
+                elif c.not_valid_after <= now:
+                    raise CertificateError("Certificate expired as of: {})!".format(c.not_valid_after))
 
             # Check certificate hostnames
             names = []
@@ -3083,12 +3084,7 @@ class GeminiClient(cmd.Cmd):
                     print("TLS mode must be `ca` or `tofu`!")
                     return
             elif option == "accept_bad_ssl_certificates":
-                if not _DO_HTTP :
-                    print("accepting bad certificates only makes sense with HTTP requests")
-                    print("You need to install python3-request and other dependancies")
-                    print("Type \"version\" for more information")
-                    return
-                elif value.lower() == "false":
+                if value.lower() == "false":
                     print("Only high security certificates are now accepted")
                     requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL:@SECLEVEL=2'
                 elif value.lower() == "true":
