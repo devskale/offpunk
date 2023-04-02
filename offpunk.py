@@ -59,7 +59,8 @@ def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
         cmd = cmd % shlex.quote(parameter)
     #following requires python 3.9 (but is more elegant/explicit):
     # env = dict(os.environ) | env
-    env = dict(**os.environ,**env)
+    e = os.environ
+    e.update(env)
     if isinstance(input, io.IOBase):
         stdin = input
         input = None
@@ -69,12 +70,12 @@ def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
         stdin = None
     if not direct_output:
         # subprocess.check_output() wouldn't allow us to pass stdin.
-        result = subprocess.run(cmd, check=True, env=env, input=input,
+        result = subprocess.run(cmd, check=True, env=e, input=input,
                                 shell=True, stdin=stdin, stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
         return result.stdout.decode()
     else:
-        subprocess.run(cmd, env=env, input=input, shell=True, stdin=stdin)
+        subprocess.run(cmd, env=e, input=input, shell=True, stdin=stdin)
 
 try:
     import setproctitle
