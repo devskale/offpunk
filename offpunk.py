@@ -2273,7 +2273,7 @@ class GeminiClient(cmd.Cmd):
 
     def _fetch_gopher(self,gi,timeout=10):
         if not looks_like_url(gi.url):
-            print("%s is not a valide url" %gi.url)
+            print("%s is not a valid url" %gi.url)
         parsed =urllib.parse.urlparse(gi.url)
         host = parsed.hostname
         port = parsed.port or 70
@@ -2300,11 +2300,6 @@ class GeminiClient(cmd.Cmd):
                 break
             except OSError as e:
                 err = e
-        else:
-            # If we couldn't connect to *any* of the addresses, just
-            # bubble up the exception from the last attempt and deny
-            # knowledge of earlier failures.
-            raise err
         if parsed.query:
             request = selector + "\t" + parsed.query
         else:
