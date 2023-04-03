@@ -2301,10 +2301,11 @@ class GeminiClient(cmd.Cmd):
             except OSError as e:
                 err = e
         if parsed.query:
-            request = selector + "\t" + parsed.query
+            request = selector[1:] + "\t" + parsed.query
         else:
-            request = selector
+            request = selector[1:]
         request += "\r\n"
+        print("request: %s"%request)
         s.sendall(request.encode("UTF-8"))
         response = s.makefile("rb").read()
         # Transcode response into UTF-8

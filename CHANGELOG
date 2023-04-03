@@ -5,6 +5,7 @@
 - "set accept_bad_ssl_certificates True" now also used for Gemini expired certificates
 - Add missing chardet module (Sotiris Papatheodorou)
 - Fix merging dictionaries with common keys (Sotiris Papatheodorou)
+- Fix Gopher requests (the starting "/" should be removed)
 
 ## 1.9.2 - March 13th 2023
 - Switch from setup.py to flit (Anna cybertailor Vyalkova)
