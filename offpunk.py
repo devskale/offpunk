@@ -2305,7 +2305,6 @@ class GeminiClient(cmd.Cmd):
         else:
             request = selector[1:]
         request += "\r\n"
-        print("request: %s"%request)
         s.sendall(request.encode("UTF-8"))
         response = s.makefile("rb").read()
         # Transcode response into UTF-8
