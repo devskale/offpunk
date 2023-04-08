@@ -2301,9 +2301,9 @@ class GeminiClient(cmd.Cmd):
             except OSError as e:
                 err = e
         if parsed.query:
-            request = selector[1:] + "\t" + parsed.query
+            request = selector[2:] + "\t" + parsed.query
         else:
-            request = selector[1:]
+            request = selector[2:]
         request += "\r\n"
         s.sendall(request.encode("UTF-8"))
         response = s.makefile("rb").read()
