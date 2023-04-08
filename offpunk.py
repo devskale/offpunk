@@ -892,8 +892,6 @@ class GopherRenderer(AbstractRenderer):
                     if itemtype == "h" and path.startswith("URL:"):
                         url = path[4:]
                     else:
-                        if not path.startswith("/"):
-                            path = "/"+path
                         url = "gopher://%s%s/%s%s" %(host,port,itemtype,path)
                     url = url.replace(" ","%20")
                     linkline = url + " " + name
@@ -1393,19 +1391,12 @@ class GeminiItem():
             self.port = parsed.port or standard_ports.get(self.scheme, 0)
             # special gopher selector case
             if self.scheme == "gopher":
-                if parsed.path and parsed.path[0] == "/" and len(parsed.path) > 1:
-                    splitted = parsed.path.split("/")
-                    # We check if we have well a gopher type
-                    if len(splitted[1]) == 1:
-                        itemtype = parsed.path[1]
-                        selector = parsed.path[2:]
-                    else:
-                        itemtype = "1"
-                        selector = parsed.path
-                    self.path = selector
+                if len(parsed.path) >= 2:
+                    itemtype = parsed.path[1]
+                    self.path = parsed.path[2:]
                 else:
                     itemtype = "1"
-                    self.path = parsed.path
+                    self.path = ""
                 if itemtype == "0":
                     self.mime = "text/gemini"
                 elif itemtype == "1":
@@ -2277,18 +2268,12 @@ class GeminiClient(cmd.Cmd):
         parsed =urllib.parse.urlparse(gi.url)
         host = parsed.hostname
         port = parsed.port or 70
-        if parsed.path and parsed.path[0] == "/" and len(parsed.path) > 1:
-            splitted = parsed.path.split("/")
-            # We check if we have well a gopher type
-            if len(splitted[1]) == 1:
-                itemtype = parsed.path[1]
-                selector = parsed.path[2:]
-            else:
-                itemtype = "1"
-                selector = parsed.path
+        if len(parsed.path) >= 2:
+            itemtype = parsed.path[1]
+            selector = parsed.path[2:]
         else:
             itemtype = "1"
-            selector = parsed.path
+            selector = ""
         addresses = socket.getaddrinfo(host, port, family=0,type=socket.SOCK_STREAM)
         s = socket.create_connection((host,port))
         for address in addresses:
@@ -2301,9 +2286,9 @@ class GeminiClient(cmd.Cmd):
             except OSError as e:
                 err = e
         if parsed.query:
-            request = selector[2:] + "\t" + parsed.query
+            request = selector + "\t" + parsed.query
         else:
-            request = selector[2:]
+            request = selector
         request += "\r\n"
         s.sendall(request.encode("UTF-8"))
         response = s.makefile("rb").read()
