@@ -2,6 +2,7 @@
 
 ## 1.10 - unreleased
 - IMPORTANT : new optional dependency : python-chardet
+- IMPORTANT : Gopher directory index filename changed from "index.txt" to "gophermap". To update the cache to the new format run the `migrate-offpunk-cache` script (Sotiris Papatheodorou)
 - "set accept_bad_ssl_certificates True" now also used for Gemini expired certificates
 - Add missing chardet module (Sotiris Papatheodorou)
 - Fix merging dictionaries with common keys (Sotiris Papatheodorou)

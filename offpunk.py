@@ -1439,8 +1439,10 @@ class GeminiItem():
             # finish by "/". Else, the cache will create a file, not a folder.
             if self.scheme.startswith("http"):
                 index = "index.html"
-            elif self.scheme in ["gopher", "finger"]:
+            elif self.scheme == "finger":
                 index = "index.txt"
+            elif self.scheme == "gopher":
+                index = "gophermap"
             else:
                 index = "index.gmi"
             if self.path == "" or os.path.isdir(self._cache_path):

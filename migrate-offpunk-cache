@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2023 Sotiris Papatheodorou
+# SPDX-License-Identifier: BSD-2-Clause
+
+"""
+A script to migrate the offpunk cache to the newest version.
+
+For each new version of offpunk that requires changes to the cache a migration
+function should be written. The name of the function should have the format
+v<major-version>_<minor-version>_<patch-version> and it should accept the
+offpunk cache directory as a string. The function should perform a migration
+from the immediately previous cache format. All migration functions must be
+called at the end of this script from oldest to newest.
+"""
+
+import argparse
+import os
+import os.path
+
+
+def v1_10_0(cache_dir: str) -> None:
+    """
+    Rename index.txt to gophermap in the Gopher protocol cache.
+    """
+    for root, _, files in os.walk(os.path.join(cache_dir, 'gopher')):
+        for f in files:
+            if f == 'index.txt':
+                src = os.path.join(root, f)
+                dst = os.path.join(root, 'gophermap')
+                os.rename(src, dst)
+
+
+if __name__ == '__main__':
+    # Compute the default offpunk cache directory.
+    xdg_cache_home = os.environ.get('XDG_CACHE_HOME')
+    if xdg_cache_home:
+        default_cache_dir = os.path.join(xdg_cache_home, 'offpunk')
+    else:
+        default_cache_dir = os.path.join(os.path.expanduser('~'), '.cache/offpunk')
+    # Parse command line arguments.
+    parser = argparse.ArgumentParser(
+        description='Migrate the offpunk cache to a newer version.')
+    parser.add_argument('cache_dir', metavar='CACHE_DIR', nargs='?',
+        default=default_cache_dir, help='the path to the cache')
+    args = parser.parse_args()
+    # Run the cache migration functions from the oldest to the newest version.
+    v1_10_0(args.cache_dir)
