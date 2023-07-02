@@ -4020,7 +4020,16 @@ See also :
 - add $LIST (to add current page to $LIST or, by default, to bookmarks)
 - move $LIST (to add current page to list while removing from all others)
 - archive (to remove current page from all lists while adding to archives)
-Note: There’s no "delete" on purpose. The use of "archive" is recommended."""
+
+There’s no "delete" on purpose. The use of "archive" is recommended.
+
+The following lists cannot be removed or frozen but can be edited with "list edit"
+- list archives  : contains last 200 archived URLs
+- history        : contains last 200 visisted URLs
+- to_fetch       : contains URLs that will be fetch during the next sync
+- tour           : contains the next URLs to visit during a tour (see "help tour")
+
+"""
         listdir = os.path.join(_DATA_DIR,"lists")
         os.makedirs(listdir,exist_ok=True)
         if not arg:
@@ -4161,11 +4170,14 @@ current gemini browsing session."""
 
 
     def do_sync(self, line):
-        """Synchronize all bookmarks lists.
+        """Synchronize all bookmarks lists and URLs from the to_fetch list.
 - New elements in pages in subscribed lists will be added to tour
 - Elements in list to_fetch will be retrieved and added to tour
 - Normal lists will be synchronized and updated
 - Frozen lists will be fetched only if not present.
+
+Before a sync, you can edit the list of URLs that will be fetched with the
+following command: "list edit to_fetch"
 
 Argument : duration of cache validity (in seconds)."""
         if self.offline_only:
