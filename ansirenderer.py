@@ -1,5 +1,133 @@
 #!/bin/python
 import os
+import shutil
+import tempfile
+import io
+import subprocess
+import shlex
+import textwrap
+import time
+import html
+
+try:
+    from readability import Document
+    _HAS_READABILITY = True
+except ModuleNotFoundError:
+    _HAS_READABILITY = False
+
+try:
+    from bs4 import BeautifulSoup
+    from bs4 import Comment
+    _HAS_SOUP = True
+except ModuleNotFoundError:
+    _HAS_SOUP = False
+
+_DO_HTML = _HAS_SOUP #and _HAS_READABILITY
+if _DO_HTML and not _HAS_READABILITY:
+    print("To improve your web experience (less cruft in webpages),")
+    print("please install python3-readability or readability-lxml")
+
+try:
+    import feedparser
+    _DO_FEED = True
+except ModuleNotFoundError:
+    _DO_FEED = False
+
+# TODO : term_width is copy/paste from offpunk.py. Could we do it in another way?
+global TERM_WIDTH
+TERM_WIDTH = 80
+def term_width():
+    width = TERM_WIDTH
+    cur = shutil.get_terminal_size()[0]
+    if cur < width:
+        width = cur
+    return width
+# TODO: also copy/paste
+# In terms of arguments, this can take an input file/string to be passed to
+# stdin, a parameter to do (well-escaped) "%" replacement on the command, a
+# flag requesting that the output go directly to the stdout, and a list of
+# additional environment variables to set.
+def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
+    #print("running %s"%cmd)
+    if parameter:
+        cmd = cmd % shlex.quote(parameter)
+    #following requires python 3.9 (but is more elegant/explicit):
+    # env = dict(os.environ) | env
+    e = os.environ
+    e.update(env)
+    if isinstance(input, io.IOBase):
+        stdin = input
+        input = None
+    else:
+        if input:
+            input = input.encode()
+        stdin = None
+    if not direct_output:
+        # subprocess.check_output() wouldn't allow us to pass stdin.
+        result = subprocess.run(cmd, check=True, env=e, input=input,
+                                shell=True, stdin=stdin, stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+        return result.stdout.decode()
+    else:
+        subprocess.run(cmd, env=e, input=input, shell=True, stdin=stdin)
+
+
+
+
+less_version = 0
+if not shutil.which("less"):
+    print("Please install the pager \"less\" to run Offpunk.")
+    print("If you wish to use another pager, send your request to offpunk@ploum.eu.")
+    print("(I’m really curious to hear about people not having \"less\" on their system.)")
+    sys.exit()
+output = run("less --version")
+# We get less Version (which is the only integer on the first line)
+words = output.split("\n")[0].split()
+less_version = 0
+for w in words:
+    if w.isdigit():
+        less_version = int(w)
+# restoring position only works for version of less > 572
+if less_version >= 572:
+    _LESS_RESTORE_POSITION = True
+else:
+    _LESS_RESTORE_POSITION = False
+#_DEFAULT_LESS = "less -EXFRfM -PMurl\ lines\ \%lt-\%lb/\%L\ \%Pb\%$ %s"
+# -E : quit when reaching end of file (to behave like "cat")
+# -F : quit if content fits the screen (behave like "cat")
+# -X : does not clear the screen
+# -R : interpret ANSI colors correctly
+# -f : suppress warning for some contents
+# -M : long prompt (to have info about where you are in the file)
+# -W : hilite the new first line after a page skip (space)
+# -i : ignore case in search
+# -S : do not wrap long lines. Wrapping is done by offpunk, longlines
+# are there on purpose (surch in asciiart)
+#--incsearch : incremental search starting rev581
+if less_version >= 581:
+    less_base = "less --incsearch --save-marks -~ -XRfMWiS"
+elif less_version >= 572:
+    less_base = "less --save-marks -XRfMWiS"
+else:
+    less_base = "less -XRfMWiS"
+_DEFAULT_LESS = less_base + " \"+''\" %s"
+_DEFAULT_CAT = less_base + " -EF %s"
+def less_cmd(file, histfile=None,cat=False,grep=None):
+    if histfile:
+        env = {"LESSHISTFILE": histfile}
+    else:
+        env = {}
+    if cat:
+        cmd_str = _DEFAULT_CAT
+    elif grep:
+        grep_cmd = _GREP
+        #case insensitive for lowercase search
+        if grep.islower():
+            grep_cmd += " -i"
+        cmd_str = _DEFAULT_CAT + "|" + grep_cmd + " %s"%grep
+    else:
+        cmd_str = _DEFAULT_LESS
+    run(cmd_str, parameter=file, direct_output=True, env=env)
 
 
 # First, we define the different content->text renderers, outside of the rest
@@ -531,8 +659,10 @@ class FolderRenderer(GemtextRenderer):
             body = ""
             for li in l:
                 path = "list:///%s"%li
-                gi = GeminiItem(path)
-                size = len(gi.get_links())
+                #TODO : size of lists
+                #gi = GeminiItem(path)
+                #size = len(gi.get_links())
+                size = "TODO"
                 body += "=> %s %s (%s items)\n" %(str(path),li,size)
             return body
         listdir = os.path.join(self.datadir,"lists")

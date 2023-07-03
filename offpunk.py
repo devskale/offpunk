@@ -40,12 +40,10 @@ import sqlite3
 import ssl
 from ssl import CertificateError
 import sys
-import tempfile
 import time
 import urllib.parse
 import uuid
 import webbrowser
-import html
 import base64
 import subprocess
 import ansirenderer
@@ -84,8 +82,6 @@ try:
     _HAS_SETPROCTITLE = True
 except ModuleNotFoundError:
     _HAS_SETPROCTITLE = False
-
-import textwrap
 
 global TERM_WIDTH
 TERM_WIDTH = 80
@@ -217,29 +213,6 @@ try:
 except ModuleNotFoundError:
     _HAS_CHARDET = False
 
-try:
-    from readability import Document
-    _HAS_READABILITY = True
-except ModuleNotFoundError:
-    _HAS_READABILITY = False
-
-try:
-    from bs4 import BeautifulSoup
-    from bs4 import Comment
-    _HAS_SOUP = True
-except ModuleNotFoundError:
-    _HAS_SOUP = False
-
-_DO_HTML = _HAS_SOUP #and _HAS_READABILITY
-if _DO_HTML and not _HAS_READABILITY:
-    print("To improve your web experience (less cruft in webpages),")
-    print("please install python3-readability or readability-lxml")
-
-try:
-    import feedparser
-    _DO_FEED = True
-except ModuleNotFoundError:
-    _DO_FEED = False
 
 ## Config directories
 ## We implement our own python-xdg to avoid conflict with existing libraries.
@@ -319,7 +292,6 @@ def less_cmd(file, histfile=None,cat=False,grep=None):
     else:
         cmd_str = _DEFAULT_LESS
     run(cmd_str, parameter=file, direct_output=True, env=env)
-
 
 # Command abbreviations
 _ABBREVS = {
