@@ -99,9 +99,6 @@ data_home = os.environ.get('XDG_DATA_HOME') or \
             os.path.join(_home,'.local','share')
 config_home = os.environ.get('XDG_CONFIG_HOME') or \
                 os.path.join(_home,'.config')
-cache_home = os.environ.get('XDG_CACHE_HOME') or\
-                os.path.join(_home,'.cache')
-_CACHE_PATH = os.path.join(cache_home,"offpunk/")
 _CONFIG_DIR = os.path.join(config_home,"offpunk/")
 _DATA_DIR = os.path.join(data_home,"offpunk/")
 _old_config = os.path.expanduser("~/.offpunk/")
@@ -522,7 +519,7 @@ class GeminiItem():
                     newgi = GeminiItem(url)
                 toreturn.append(newgi)
             elif url and mode != "links_only" and url.startswith("data:image/"):
-                imgurl,imgdata = looks_like_base64(url,self.url)
+                imgurl,imgdata = ansirenderer.looks_like_base64(url,self.url)
                 if imgurl:
                     toreturn.append(GeminiItem(imgurl))
                 else:
@@ -3272,7 +3269,7 @@ def main():
         GeminiClient.do_version(None,None)
         sys.exit()
     else:
-        for f in [_CONFIG_DIR, _CACHE_PATH, _DATA_DIR]:
+        for f in [_CONFIG_DIR, _DATA_DIR]:
             if not os.path.exists(f):
                 print("Creating config directory {}".format(f))
                 os.makedirs(f)
