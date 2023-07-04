@@ -2,13 +2,12 @@
 import os
 import shutil
 import tempfile
-import io
 import subprocess
-import shlex
 import textwrap
 import time
 import html
-
+import urllib
+from offutils import run,term_width
 try:
     from readability import Document
     _HAS_READABILITY = True
@@ -32,46 +31,6 @@ try:
     _DO_FEED = True
 except ModuleNotFoundError:
     _DO_FEED = False
-
-# TODO : term_width is copy/paste from offpunk.py. Could we do it in another way?
-global TERM_WIDTH
-TERM_WIDTH = 80
-def term_width():
-    width = TERM_WIDTH
-    cur = shutil.get_terminal_size()[0]
-    if cur < width:
-        width = cur
-    return width
-# TODO: also copy/paste
-# In terms of arguments, this can take an input file/string to be passed to
-# stdin, a parameter to do (well-escaped) "%" replacement on the command, a
-# flag requesting that the output go directly to the stdout, and a list of
-# additional environment variables to set.
-def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
-    #print("running %s"%cmd)
-    if parameter:
-        cmd = cmd % shlex.quote(parameter)
-    #following requires python 3.9 (but is more elegant/explicit):
-    # env = dict(os.environ) | env
-    e = os.environ
-    e.update(env)
-    if isinstance(input, io.IOBase):
-        stdin = input
-        input = None
-    else:
-        if input:
-            input = input.encode()
-        stdin = None
-    if not direct_output:
-        # subprocess.check_output() wouldn't allow us to pass stdin.
-        result = subprocess.run(cmd, check=True, env=e, input=input,
-                                shell=True, stdin=stdin, stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT)
-        return result.stdout.decode()
-    else:
-        subprocess.run(cmd, env=e, input=input, shell=True, stdin=stdin)
-
-
 
 
 less_version = 0
@@ -129,6 +88,67 @@ def less_cmd(file, histfile=None,cat=False,grep=None):
         cmd_str = _DEFAULT_LESS
     run(cmd_str, parameter=file, direct_output=True, env=env)
 
+try:
+    from PIL import Image
+    _HAS_PIL = True
+except ModuleNotFoundError:
+    _HAS_PIL = False
+_HAS_TIMG = shutil.which('timg')
+_HAS_CHAFA = shutil.which('chafa')
+_NEW_CHAFA = False
+_NEW_TIMG = False
+_RENDER_IMAGE = False
+
+# All this code to know if we render image inline or not
+if _HAS_CHAFA:
+    # starting with 1.10, chafa can return only one frame
+    # which allows us to drop dependancy for PIL
+    output = run("chafa --version")
+    # output is "Chafa version M.m.p"
+    # check for m < 1.10
+    try:
+        chafa_major, chafa_minor, _ = output.split("\n")[0].split(" ")[-1].split(".")
+        if int(chafa_major) >= 1 and int(chafa_minor) >= 10:
+            _NEW_CHAFA = True
+    except:
+        pass
+if _NEW_CHAFA :
+    _RENDER_IMAGE = True
+if _HAS_TIMG :
+    try:
+        output = run("timg --version")
+    except subprocess.CalledProcessError:
+        output = False
+    # We don’t deal with timg before 1.3.2 (looping options)
+    if output and output[5:10] > "1.3.2":
+        _NEW_TIMG = True
+        _RENDER_IMAGE = True
+elif _HAS_CHAFA and _HAS_PIL:
+    _RENDER_IMAGE = True
+if not _RENDER_IMAGE:
+    print("To render images inline, you need either chafa or timg.")
+    if not _NEW_CHAFA and not _NEW_TIMG:
+        print("Before Chafa 1.10, you also need python-pil")
+
+
+# This method return the image URL or invent it if it’s a base64 inline image
+# It returns [url,image_data] where image_data is None for normal image
+def looks_like_base64(src,baseurl):
+    imgdata = None
+    imgname = src
+    if src and src.startswith("data:image/"):
+        if ";base64," in src:
+            splitted = src.split(";base64,")
+            extension = splitted[0].strip("data:image/")[:3]
+            imgdata = splitted[1]
+            imgname = imgdata[:20] + "." + extension
+            imgurl = urllib.parse.urljoin(baseurl, imgname)
+        else:
+            #We can’t handle other data:image such as svg for now
+            imgurl = None
+    else:
+        imgurl = urllib.parse.urljoin(baseurl, imgname)
+    return imgurl,imgdata
 
 # First, we define the different content->text renderers, outside of the rest
 # (They could later be factorized in other files or replaced)

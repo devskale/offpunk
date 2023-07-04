@@ -47,93 +47,13 @@ import webbrowser
 import base64
 import subprocess
 import ansirenderer
-
-# In terms of arguments, this can take an input file/string to be passed to
-# stdin, a parameter to do (well-escaped) "%" replacement on the command, a
-# flag requesting that the output go directly to the stdout, and a list of
-# additional environment variables to set.
-def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
-    #print("running %s"%cmd)
-    if parameter:
-        cmd = cmd % shlex.quote(parameter)
-    #following requires python 3.9 (but is more elegant/explicit):
-    # env = dict(os.environ) | env
-    e = os.environ
-    e.update(env)
-    if isinstance(input, io.IOBase):
-        stdin = input
-        input = None
-    else:
-        if input:
-            input = input.encode()
-        stdin = None
-    if not direct_output:
-        # subprocess.check_output() wouldn't allow us to pass stdin.
-        result = subprocess.run(cmd, check=True, env=e, input=input,
-                                shell=True, stdin=stdin, stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT)
-        return result.stdout.decode()
-    else:
-        subprocess.run(cmd, env=e, input=input, shell=True, stdin=stdin)
-
+from offutils import run,term_width
 try:
     import setproctitle
     setproctitle.setproctitle("offpunk")
     _HAS_SETPROCTITLE = True
 except ModuleNotFoundError:
     _HAS_SETPROCTITLE = False
-
-global TERM_WIDTH
-TERM_WIDTH = 80
-
-def term_width():
-    width = TERM_WIDTH
-    cur = shutil.get_terminal_size()[0]
-    if cur < width:
-        width = cur
-    return width
-
-try:
-    from PIL import Image
-    _HAS_PIL = True
-except ModuleNotFoundError:
-    _HAS_PIL = False
-_HAS_TIMG = shutil.which('timg')
-_HAS_CHAFA = shutil.which('chafa')
-_NEW_CHAFA = False
-_NEW_TIMG = False
-_RENDER_IMAGE = False
-
-# All this code to know if we render image inline or not
-if _HAS_CHAFA:
-    # starting with 1.10, chafa can return only one frame
-    # which allows us to drop dependancy for PIL
-    output = run("chafa --version")
-    # output is "Chafa version M.m.p"
-    # check for m < 1.10
-    try:
-        chafa_major, chafa_minor, _ = output.split("\n")[0].split(" ")[-1].split(".")
-        if int(chafa_major) >= 1 and int(chafa_minor) >= 10:
-            _NEW_CHAFA = True
-    except:
-        pass
-if _NEW_CHAFA :
-    _RENDER_IMAGE = True
-if _HAS_TIMG :
-    try:
-        output = run("timg --version")
-    except subprocess.CalledProcessError:
-        output = False
-    # We don’t deal with timg before 1.3.2 (looping options)
-    if output and output[5:10] > "1.3.2":
-        _NEW_TIMG = True
-        _RENDER_IMAGE = True
-elif _HAS_CHAFA and _HAS_PIL:
-    _RENDER_IMAGE = True
-if not _RENDER_IMAGE:
-    print("To render images inline, you need either chafa or timg.")
-    if not _NEW_CHAFA and not _NEW_TIMG:
-        print("Before Chafa 1.10, you also need python-pil")
 
 #return ANSI text that can be show by less
 def inline_image(img_file,width):
@@ -926,24 +846,6 @@ def looks_like_url(word):
     except ValueError:
         return False
 
-# This method return the image URL or invent it if it’s a base64 inline image
-# It returns [url,image_data] where image_data is None for normal image
-def looks_like_base64(src,baseurl):
-    imgdata = None
-    imgname = src
-    if src and src.startswith("data:image/"):
-        if ";base64," in src:
-            splitted = src.split(";base64,")
-            extension = splitted[0].strip("data:image/")[:3]
-            imgdata = splitted[1]
-            imgname = imgdata[:20] + "." + extension
-            imgurl = urllib.parse.urljoin(baseurl, imgname)
-        else:
-            #We can’t handle other data:image such as svg for now
-            imgurl = None
-    else:
-        imgurl = urllib.parse.urljoin(baseurl, imgname)
-    return imgurl,imgdata
 
 class UserAbortException(Exception):
     pass
@@ -1028,8 +930,7 @@ class GeminiClient(cmd.Cmd):
             "medium.com"  : "scribe.rip",
 
         }
-        global TERM_WIDTH
-        TERM_WIDTH = self.options["width"]
+        term_width(new_width=self.options["width"])
         self.log = {
             "start_time": time.time(),
             "requests": 0,
@@ -1218,7 +1119,8 @@ class GeminiClient(cmd.Cmd):
         # Pass file to handler, unless we were asked not to
         if gi :
             display = handle and not self.sync_only
-            if display and _RENDER_IMAGE and self.options["download_images_first"] \
+            #TODO: take into account _RENDER_IMAGE
+            if display and self.options["download_images_first"] \
                                                         and not self.offline_only:
                 # We download images first
                 for image in gi.get_images(mode=mode):
@@ -2129,8 +2031,7 @@ class GeminiClient(cmd.Cmd):
                 if value.isnumeric():
                     value = int(value)
                     print("changing width to ",value)
-                    global TERM_WIDTH
-                    TERM_WIDTH = value
+                    term_width(new_width=value)
                 else:
                     print("%s is not a valid width (integer required)"%value)
             elif value.isnumeric():
