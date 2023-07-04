@@ -47,6 +47,7 @@ import webbrowser
 import base64
 import subprocess
 import ansirenderer
+import netcache
 from offutils import run,term_width
 try:
     import setproctitle
@@ -283,105 +284,16 @@ class GeminiItem():
         self.mime = None
         self.renderer = None
         self.body = None
-        parsed = urllib.parse.urlparse(self.url)
-        if url[0] == "/" or url.startswith("./"):
-            self.scheme = "file"
-        else:
-            self.scheme = parsed.scheme
-        if self.scheme in ["file","mailto","list"]:
-            self.local = True
-            self.host = ""
-            self.port = None
-            # file:// is 7 char
-            if self.url.startswith("file://"):
-                self.path = self.url[7:]
-            elif self.scheme == "mailto":
-                self.path = parsed.path
-            elif self.url.startswith("list://"):
-                listdir = os.path.join(_DATA_DIR,"lists")
-                listname = self.url[7:].lstrip("/")
-                if listname in [""]:
-                    self.name = "My Lists"
-                    self.path = listdir
-                else:
-                    self.name = listname
-                    self.path = os.path.join(listdir, "%s.gmi"%listname)
-            else:
-                self.path = self.url
-        else:
-            self.local = False
-            # Convert unicode hostname to punycode using idna RFC3490
-            self.host = parsed.hostname #.encode("idna").decode()
-            self.port = parsed.port or standard_ports.get(self.scheme, 0)
-            # special gopher selector case
-            if self.scheme == "gopher":
-                if len(parsed.path) >= 2:
-                    itemtype = parsed.path[1]
-                    self.path = parsed.path[2:]
-                else:
-                    itemtype = "1"
-                    self.path = ""
-                if itemtype == "0":
-                    self.mime = "text/gemini"
-                elif itemtype == "1":
-                    self.mime = "text/gopher"
-                elif itemtype == "h":
-                    self.mime = "text/html"
-                elif itemtype in ("9","g","I","s"):
-                    self.mime = "binary"
-                else:
-                    self.mime = "text/gopher"
-            else:
-                self.path = parsed.path
-            if parsed.query:
-                # we don’t add the query if path is too long because path above 260 char
-                # are not supported and crash python.
-                # Also, very long query are usually useless stuff
-                if len(self.path+parsed.query) < 258:
-                    self.path += "/" + parsed.query
+        #TODO : stuff have been migrated to netcache. What are we missing here ?
 
     def get_cache_path(self):
         # if we already have a _cache_path, we returns it.
         # Except if it became a folder! (which happens for index.html/index.gmi)
         # In that case, we need to reconstruct it
-        if self._cache_path and not os.path.isdir(self._cache_path):
-            return self._cache_path
-        elif self.local:
-            self._cache_path = self.path
-        #if not local, we create a local cache path.
-        #Warning: this cache_path might be nul in case of an invalid GI
-        elif self.scheme and self.host:
-            self._cache_path = os.path.expanduser(_CACHE_PATH + self.scheme +\
-                                                "/" + self.host + self.path)
-            #There’s an OS limitation of 260 characters per path.
-            #We will thus cut the path enough to add the index afterward
-            self._cache_path = self._cache_path[:249]
-            # FIXME : this is a gross hack to give a name to
-            # index files. This will break if the index is not
-            # index.gmi. I don’t know how to know the real name
-            # of the file. But first, we need to ensure that the domain name
-            # finish by "/". Else, the cache will create a file, not a folder.
-            if self.scheme.startswith("http"):
-                index = "index.html"
-            elif self.scheme == "finger":
-                index = "index.txt"
-            elif self.scheme == "gopher":
-                index = "gophermap"
-            else:
-                index = "index.gmi"
-            if self.path == "" or os.path.isdir(self._cache_path):
-                if not self._cache_path.endswith("/"):
-                    self._cache_path += "/"
-                if not self.url.endswith("/"):
-                    self.url += "/"
-            if self._cache_path.endswith("/"):
-                self._cache_path += index
-            #sometimes, the index itself is a dir
-            #like when folder/index.gmi?param has been created
-            #and we try to access folder
-            if os.path.isdir(self._cache_path):
-                self._cache_path += "/" + index
-        return self._cache_path
+        # TODO: ensure that the following two lines are not needed in netcache
+        #if self._cache_path and not os.path.isdir(self._cache_path):
+        #    return self._cache_path
+        return netcache.get_cache_path(self.url)
 
     def get_capsule_title(self):
             #small intelligence to try to find a good name for a capsule
@@ -420,43 +332,10 @@ class GeminiItem():
         return title
 
     def is_cache_valid(self,validity=0):
-        # Validity is the acceptable time for
-        # a cache to be valid  (in seconds)
-        # If 0, then any cache is considered as valid
-        # (use validity = 1 if you want to refresh everything)
-        cache = self.get_cache_path()
-        if self.local:
-            return os.path.exists(cache)
-        elif cache :
-            # If path is too long, we always return True to avoid
-            # fetching it.
-            if len(cache) > 259:
-                print("We return False because path is too long")
-                return False
-            if os.path.exists(cache) and not os.path.isdir(cache):
-                if validity > 0 :
-                    last_modification = self.cache_last_modified()
-                    now = time.time()
-                    age = now - last_modification
-                    return age < validity
-                else:
-                    return True
-            else:
-                #Cache has not been build
-                return False
-        else:
-            #There’s not even a cache!
-            return False
+        return netcache.is_cache_valid(self.url,validity=validity)
 
     def cache_last_modified(self):
-        path = self.get_cache_path()
-        if path:
-            return os.path.getmtime(path)
-        elif self.local:
-            return 0
-        else:
-            print("ERROR : NO CACHE in cache_last_modified")
-            return None
+        return netcache.cache_last_modified(self.url)
 
     def get_body(self,as_file=False):
         if self.body and not as_file:
