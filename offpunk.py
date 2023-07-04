@@ -55,48 +55,6 @@ try:
 except ModuleNotFoundError:
     _HAS_SETPROCTITLE = False
 
-#return ANSI text that can be show by less
-def inline_image(img_file,width):
-    #Chafa is faster than timg inline. Let use that one by default
-    inline = None
-    ansi_img = ""
-    #We avoid errors by not trying to render non-image files
-    if shutil.which("file"):
-        mime = run("file -b --mime-type %s", parameter=img_file).strip()
-        if not "image" in mime:
-            return ansi_img
-    if _HAS_CHAFA:
-        if _HAS_PIL and not _NEW_CHAFA:
-            # this code is a hack to remove frames from animated gif
-            img_obj = Image.open(img_file)
-            if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
-                # we remove all frames but the first one
-                img_obj.save(img_file,format="gif",save_all=False)
-            inline = "chafa --bg white -s %s -f symbols"
-        elif _NEW_CHAFA:
-            inline = "chafa --bg white -t 1 -s %s -f symbols --animate=off"
-    if not inline and _NEW_TIMG:
-        inline = "timg --frames=1 -p q -g %sx1000"
-    if inline:
-        cmd = inline%width + " %s"
-        try:
-            ansi_img = run(cmd, parameter=img_file)
-        except Exception as err:
-            ansi_img = "***image failed : %s***\n" %err
-    return ansi_img
-
-def terminal_image(img_file):
-    #Render by timg is better than old chafa.
-    # it is also centered
-    cmd = None
-    if _NEW_TIMG:
-        cmd = "timg --loops=1 -C"
-    elif _HAS_CHAFA:
-        cmd = "chafa -d 0 --bg white -t 1 -w 1"
-    if cmd:
-        cmd = cmd + " %s"
-        run(cmd, parameter=img_file, direct_output=True)
-
 def parse_mime(mime):
     options = {}
     if mime:
