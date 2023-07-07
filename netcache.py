@@ -1,6 +1,7 @@
 #!/bin/python
 import os
 import urllib
+import argparse
 
 _home = os.path.expanduser('~')
 cache_home = os.environ.get('XDG_CACHE_HOME') or\
@@ -149,3 +150,26 @@ def get_cache_path(url):
         if os.path.isdir(cache_path):
             cache_path += "/" + index
     return cache_path
+
+
+def main():
+    
+    # Parse arguments
+    parser = argparse.ArgumentParser(description=__doc__)
+    
+    # No argument: write help
+    parser.add_argument('url', metavar='URL', nargs='*',
+                        help='download URL and returns the path to the cache of it')
+    # arg = URL: download and returns cached URI
+    # --cache-validity : do not download if cache is valid
+    # --offline : do not attempt to download, return Null if no cached version
+    # --validity : returns the date of the cached version, Null if no version
+    # --force-download : download and replace cache, even if valid
+    args = parser.parse_args()
+
+    print("Download URL: %s" %args.url)
+
+
+
+if __name__== '__main__':
+    main()
