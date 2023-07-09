@@ -459,30 +459,35 @@ def _fetch_gemini(url):
     context = ssl.SSLContext(protocol)
 
         # Use CAs or TOFU
-        if self.options["tls_mode"] == "ca":
-            context.verify_mode = ssl.CERT_REQUIRED
-            context.check_hostname = True
-            context.load_default_certs()
-        else:
-            context.check_hostname = False
-            context.verify_mode = ssl.CERT_NONE
-        # Impose minimum TLS version
-        ## In 3.7 and above, this is easy...
-        if sys.version_info.minor >= 7:
-            context.minimum_version = ssl.TLSVersion.TLSv1_2
-        ## Otherwise, it seems very hard...
-        ## The below is less strict than it ought to be, but trying to disable
-        ## TLS v1.1 here using ssl.OP_NO_TLSv1_1 produces unexpected failures
-        ## with recent versions of OpenSSL.  What a mess...
-        else:
-            context.options |= ssl.OP_NO_SSLv3
-            context.options |= ssl.OP_NO_SSLv2
-        # Try to enforce sensible ciphers
-        try:
-            context.set_ciphers("AESGCM+ECDHE:AESGCM+DHE:CHACHA20+ECDHE:CHACHA20+DHE:!DSS:!SHA1:!MD5:@STRENGTH")
-        except ssl.SSLError:
-            # Rely on the server to only support sensible things, I guess...
-            pass
+        #TODO : should we care about this options?
+        #if self.options["tls_mode"] == "ca":
+        #    context.verify_mode = ssl.CERT_REQUIRED
+        #    context.check_hostname = True
+        #    context.load_default_certs()
+        #else:
+        #    context.check_hostname = False
+        #    context.verify_mode = ssl.CERT_NONE
+    context.check_hostname=False
+    context.verify_mode = ssl.CERT_NONE
+    # Impose minimum TLS version
+    ## In 3.7 and above, this is easy...
+    if sys.version_info.minor >= 7:
+        context.minimum_version = ssl.TLSVersion.TLSv1_2
+    ## Otherwise, it seems very hard...
+    ## The below is less strict than it ought to be, but trying to disable
+    ## TLS v1.1 here using ssl.OP_NO_TLSv1_1 produces unexpected failures
+    ## with recent versions of OpenSSL.  What a mess...
+    else:
+        context.options |= ssl.OP_NO_SSLv3
+        context.options |= ssl.OP_NO_SSLv2
+    # Try to enforce sensible ciphers
+    try:
+        context.set_ciphers("AESGCM+ECDHE:AESGCM+DHE:CHACHA20+ECDHE:CHACHA20+DHE:!DSS:!SHA1:!MD5:@STRENGTH")
+    except ssl.SSLError:
+        # Rely on the server to only support sensible things, I guess...
+        pass
+
+    #TODO: I’m here in the refactor
         # Load client certificate if needed
         if self.client_certs["active"]:
             certfile, keyfile = self.client_certs["active"]
