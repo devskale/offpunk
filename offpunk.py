@@ -73,11 +73,6 @@ try:
 except ModuleNotFoundError:
     _DO_HTTP = False
 
-try:
-    import chardet
-    _HAS_CHARDET = True
-except ModuleNotFoundError:
-    _HAS_CHARDET = False
 
 
 ## Config directories
@@ -940,67 +935,6 @@ class GeminiClient(cmd.Cmd):
                     print("Handler program %s not found!" % shlex.split(cmd_str)[0])
                     print("You can use the ! command to specify another handler program or pipeline.")
 
-
-    def _fetch_gopher(self,gi,timeout=10):
-        if not looks_like_url(gi.url):
-            print("%s is not a valid url" %gi.url)
-        parsed =urllib.parse.urlparse(gi.url)
-        host = parsed.hostname
-        port = parsed.port or 70
-        if len(parsed.path) >= 2:
-            itemtype = parsed.path[1]
-            selector = parsed.path[2:]
-        else:
-            itemtype = "1"
-            selector = ""
-        addresses = socket.getaddrinfo(host, port, family=0,type=socket.SOCK_STREAM)
-        s = socket.create_connection((host,port))
-        for address in addresses:
-            self._debug("Connecting to: " + str(address[4]))
-            s = socket.socket(address[0], address[1])
-            s.settimeout(timeout)
-            try:
-                s.connect(address[4])
-                break
-            except OSError as e:
-                err = e
-        if parsed.query:
-            request = selector + "\t" + parsed.query
-        else:
-            request = selector
-        request += "\r\n"
-        s.sendall(request.encode("UTF-8"))
-        response = s.makefile("rb").read()
-        # Transcode response into UTF-8
-        #if itemtype in ("0","1","h"):
-        if not itemtype in ("9","g","I","s"):
-            # Try most common encodings
-            for encoding in ("UTF-8", "ISO-8859-1"):
-                try:
-                    response = response.decode("UTF-8")
-                    break
-                except UnicodeDecodeError:
-                    pass
-            else:
-                # try to find encoding
-                if _HAS_CHARDET:
-                    detected = chardet.detect(response)
-                    response = response.decode(detected["encoding"])
-                else:
-                    raise UnicodeDecodeError
-        if itemtype == "0":
-            mime = "text/gemini"
-        elif itemtype == "1":
-            mime = "text/gopher"
-        elif itemtype == "h":
-            mime = "text/html"
-        elif itemtype in ("9","g","I","s"):
-            mime = None
-        else:
-            # by default, we should consider Gopher
-            mime = "text/gopher"
-        gi.write_body(response,mime)
-        return gi
 
     def _fetch_finger(self,gi,timeout=10):
         if not looks_like_url(gi.url):

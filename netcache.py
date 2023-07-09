@@ -3,6 +3,12 @@ import os
 import urllib.parse
 import argparse
 import requests
+import socket
+try:
+    import chardet
+    _HAS_CHARDET = True
+except ModuleNotFoundError:
+    _HAS_CHARDET = False
 
 _home = os.path.expanduser('~')
 cache_home = os.environ.get('XDG_CACHE_HOME') or\
@@ -279,18 +285,133 @@ def _fetch_http(url,max_length=None):
     cache = write_body(url,body,mime)
     return cache
 
+def _fetch_gopher(url,timeout=10):
+    parsed =urllib.parse.urlparse(url)
+    host = parsed.hostname
+    port = parsed.port or 70
+    if len(parsed.path) >= 2:
+        itemtype = parsed.path[1]
+        selector = parsed.path[2:]
+    else:
+        itemtype = "1"
+        selector = ""
+    addresses = socket.getaddrinfo(host, port, family=0,type=socket.SOCK_STREAM)
+    s = socket.create_connection((host,port))
+    for address in addresses:
+        self._debug("Connecting to: " + str(address[4]))
+        s = socket.socket(address[0], address[1])
+        s.settimeout(timeout)
+        try:
+            s.connect(address[4])
+            break
+        except OSError as e:
+            err = e
+    if parsed.query:
+        request = selector + "\t" + parsed.query
+    else:
+        request = selector
+    request += "\r\n"
+    s.sendall(request.encode("UTF-8"))
+    response = s.makefile("rb").read()
+    # Transcode response into UTF-8
+    #if itemtype in ("0","1","h"):
+    if not itemtype in ("9","g","I","s"):
+        # Try most common encodings
+        for encoding in ("UTF-8", "ISO-8859-1"):
+            try:
+                response = response.decode("UTF-8")
+                break
+            except UnicodeDecodeError:
+                pass
+        else:
+            # try to find encoding
+            if _HAS_CHARDET:
+                detected = chardet.detect(response)
+                response = response.decode(detected["encoding"])
+            else:
+                raise UnicodeDecodeError
+    if itemtype == "0":
+        mime = "text/gemini"
+    elif itemtype == "1":
+        mime = "text/gopher"
+    elif itemtype == "h":
+        mime = "text/html"
+    elif itemtype in ("9","g","I","s"):
+        mime = None
+    else:
+        # by default, we should consider Gopher
+        mime = "text/gopher"
+    cache = write_body(response,mime)
+    return cache
+
+def _fetch_finger(url,timeout=10):
+    parsed = urllib.parse.urlparse(url)
+    host = parsed.hostname
+    port = parsed.port or standard_ports["finger"]
+    query = parsed.path.lstrip("/") + "\r\n"
+    with socket.create_connection((host,port)) as sock:
+        sock.settimeout(timeout)
+        sock.send(query.encode())
+        response = sock.makefile("rb").read().decode("UTF-8")
+        cache = write_body(response,"text/plain")
+    return cache
+
+# Originally copied from reference spartan client by Michael Lazar
+def _fetch_spartan(url):
+    cache = None
+    url_parts = urllib.parse.urlparse(url)
+    host = url_parts.hostname
+    port = url_parts.port or 300
+    path = url_parts.path or "/"
+    query = url_parts.query
+    redirect_url = None
+    with socket.create_connection((host,port)) as sock:
+        if query:
+            data = urllib.parse.unquote_to_bytes(query)
+        else:
+            data = b""
+        encoded_host = host.encode("idna")
+        ascii_path = urllib.parse.unquote_to_bytes(path)
+        encoded_path = urllib.parse.quote_from_bytes(ascii_path).encode("ascii")
+        sock.send(b"%s %s %d\r\n" % (encoded_host,encoded_path,len(data)))
+        fp = sock.makefile("rb")
+        response = fp.readline(4096).decode("ascii").strip("\r\n")
+        parts = response.split(" ",maxsplit=1)
+        code,meta = int(parts[0]),parts[1]
+        if code == 2:
+            body = fp.read()
+            if meta.startswith("text"):
+                body = body.decode("UTF-8")
+            cache = write_body(body,meta)
+        elif code == 3:
+            redirect_url = url_parts._replace(path=meta).geturl()
+        else:
+            #TODO:set error!
+            #gi.set_error("Spartan code %s: Error %s"%(code,meta))
+            print("TODO set_error")
+    if redirect_url:
+        cache = _fetch_spartan(redirect_url)
+    return cache
+
 
 def fetch(url):
     url = normalize_url(url)
-    if "://" in url:
+    path=None
+    if "://" in url
         scheme = url.split("://")[0]
-        if scheme in ("http","https"):
+        if scheme not in standard_ports:
+            print("%s is not a supported protocol"%scheme)
+        elif scheme in ("http","https"):
             path=_fetch_http(url)
-            print("Path = %s"%path)
+        elif scheme == "gopher":
+            path=_fetch_gopher(url)
+        elif scheme == "finger":
+            path=_fetch_finger(url)
         else:
             print("scheme %s not implemented yet")
     else:
         print("Not a supproted URL")
+    return path
 
 
 def main():
