@@ -21,10 +21,8 @@ __version__ = "1.10"
 
 import argparse
 import cmd
-import codecs
 import datetime
 import fnmatch
-import getpass
 import glob
 import hashlib
 import io
@@ -89,7 +87,6 @@ if os.path.exists(_old_config):
 #if no XDG .local/share and not XDG .config, we use the old config
 if not os.path.exists(data_home) and os.path.exists(_old_config):
     _DATA_DIR = _CONFIG_DIR
-_MAX_REDIRECTS = 5
 _MAX_CACHE_SIZE = 10
 _MAX_CACHE_AGE_SECS = 180
 
@@ -602,7 +599,6 @@ class GeminiItem():
     def to_map_line(self):
         return "=> {} {}\n".format(self.url_mode(), self.get_page_title())
 
-CRLF = '\r\n'
 
 # Cheap and cheerful URL detector
 def looks_like_url(word):
@@ -665,7 +661,6 @@ class GeminiClient(cmd.Cmd):
         self.marks = {}
         self.page_index = 0
         self.permanent_redirects = {}
-        self.previous_redirectors = set()
         # Sync-only mode is restriced by design
         self.visited_hosts = set()
         self.offline_only = False
