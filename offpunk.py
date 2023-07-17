@@ -185,13 +185,6 @@ _ABBREVS = {
 _MIME_HANDLERS = {
 }
 
-# monkey-patch Gemini support in urllib.parse
-# see https://github.com/python/cpython/blob/master/Lib/urllib/parse.py
-urllib.parse.uses_relative.append("gemini")
-urllib.parse.uses_netloc.append("gemini")
-urllib.parse.uses_relative.append("spartan")
-urllib.parse.uses_netloc.append("spartan")
-
 #An IPV6 URL should be put between []
 #We try to detect them has location with more than 2 ":"
 def fix_ipv6_url(url):

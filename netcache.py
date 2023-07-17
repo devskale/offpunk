@@ -41,6 +41,13 @@ CRLF = '\r\n'
 DEFAULT_TIMEOUT = 10
 _MAX_REDIRECTS = 5
 
+# monkey-patch Gemini support in urllib.parse
+# see https://github.com/python/cpython/blob/master/Lib/urllib/parse.py
+urllib.parse.uses_relative.append("gemini")
+urllib.parse.uses_netloc.append("gemini")
+urllib.parse.uses_relative.append("spartan")
+urllib.parse.uses_netloc.append("spartan")
+
 def parse_mime(mime):
     options = {}
     if mime:
