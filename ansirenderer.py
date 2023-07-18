@@ -1136,8 +1136,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--format", choices=["gemtext","html","feed","gopher","image","folder"],
                         help="Renderer to use. Available: gemtext, html, feed, gopher, image, folder")
-    parser.add_argument("input",metavar="INPUT", nargs="?", default=sys.stdin,
-                        help="text to render")
+    ## The argument needs to be a path to a file. If none, then stdin is used which allows
+    ## to pipe text directly into ansirenderer
+    parser.add_argument("input",metavar="INPUT", nargs="?", type=argparse.FileType("r"), 
+                         default=sys.stdin, help="Path to the text to render (default to stdin)")
     args = parser.parse_args()
     render(args.input.read(),args.format)
 
