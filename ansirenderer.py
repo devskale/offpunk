@@ -7,6 +7,7 @@ import textwrap
 import time
 import html
 import urllib
+import argparse
 from offutils import run,term_width
 try:
     from readability import Document
@@ -1122,3 +1123,14 @@ class HtmlRenderer(AbstractRenderer):
                 recursive_render(soup)
         return r.get_final(),links
 
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--format", choices=["gemtext","html","feed","gopher","image","folder"],
+                        help="Renderer to use. Available: gemtext, html, feed, gopher, image, folder")
+    parser.add_argument("input",metavar="INPUT", nargs="*",
+                        help="text to render")
+    args = parser.parse_args()
+    print(args.input)
+
+if __name__ == '__main__':
+    main()
