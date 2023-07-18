@@ -1,5 +1,6 @@
 #!/bin/python
 import os
+import sys
 import shutil
 import tempfile
 import subprocess
@@ -1123,14 +1124,22 @@ class HtmlRenderer(AbstractRenderer):
                 recursive_render(soup)
         return r.get_final(),links
 
+def render(text,format):
+    if format == "gemtext":
+        r = GemtextRenderer(text,"https://ploum.net")
+    elif format == "html":
+        r = HtmlRenderer(text,"https://ploum.net")
+    r.display()
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--format", choices=["gemtext","html","feed","gopher","image","folder"],
                         help="Renderer to use. Available: gemtext, html, feed, gopher, image, folder")
-    parser.add_argument("input",metavar="INPUT", nargs="*",
+    parser.add_argument("input",metavar="INPUT", nargs="?", default=sys.stdin,
                         help="text to render")
     args = parser.parse_args()
-    print(args.input)
+    render(args.input.read(),args.format)
 
 if __name__ == '__main__':
     main()
