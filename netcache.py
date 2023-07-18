@@ -662,23 +662,33 @@ def main():
     
     # Parse arguments
     parser = argparse.ArgumentParser(description=__doc__)
-    
+    parser.add_argument("--path", action="store_true",
+                        help="return path to the cache instead of the content of the cache")
+    parser.add_argument("--offline", action="store_true",
+                        help="Do not attempt to download, return cached version or error")
     # No argument: write help
     parser.add_argument('url', metavar='URL', nargs='*',
-                        help='download URL and returns the path to the cache of it')
+                        help='download URL and returns the content or the path to a cached version')
     # arg = URL: download and returns cached URI
     # --cache-validity : do not download if cache is valid
-    # --offline : do not attempt to download, return Null if no cached version
     # --validity : returns the date of the cached version, Null if no version
     # --force-download : download and replace cache, even if valid
     # --max-size-download : cancel download of items above that size. Returns Null.
     args = parser.parse_args()
     
     for u in args.url:
-        print("Download URL: %s" %u)
-        fetch(u)
+        if args.offline:
+            path = get_cache_path(u)
+        else:
+            print("Download URL: %s" %u)
+            path = fetch(u)
+        if args.path:
+            print(path)
+        else:
+            with open(path,"r") as f:
+                print(f.read())
+                f.close()
 
-
-
+        
 if __name__== '__main__':
     main()
