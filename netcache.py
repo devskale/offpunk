@@ -237,10 +237,10 @@ def write_body(url,body,mime=None):
             f.close()
         return cache_path
 
-def _fetch_http(url,max_length=None):
-    def set_error(item,length,max_length):
+def _fetch_http(url,max_size=None,timeout=DEFAULT_TIMEOUT,**kwargs):
+    def set_error(item,length,max_size):
         err = "Size of %s is %s Mo\n"%(item.url,length)
-        err += "Offpunk only download automatically content under %s Mo\n" %(max_length/1000000)
+        err += "Offpunk only download automatically content under %s Mo\n" %(max_size/1000000)
         err += "To retrieve this content anyway, type 'reload'."
         item.set_error(err)
         return item
@@ -261,7 +261,7 @@ def _fetch_http(url,max_length=None):
 #            else:
 #                parsed = parsed._replace(netloc = self.redirects[netloc])
     url = urllib.parse.urlunparse(parsed)
-    with requests.get(url,headers=header, stream=True,timeout=5) as response:
+    with requests.get(url,headers=header, stream=True,timeout=DEFAULT_TIMEOUT) as response:
         #print("This is header for %s"%gi.url)
         #print(response.headers)
         if "content-type" in response.headers:
@@ -272,10 +272,10 @@ def _fetch_http(url,max_length=None):
             length = int(response.headers['content-length'])
         else:
             length = 0
-        if max_length and length > max_length:
+        if max_size and length > max_size:
             response.close()
-            return set_error(gi,str(length/1000000),max_length)
-        elif max_length and length == 0:
+            return set_error(gi,str(length/100),max_size)
+        elif max_size and length == 0:
             body = b''
             downloaded = 0
             for r in response.iter_content():
@@ -283,15 +283,15 @@ def _fetch_http(url,max_length=None):
                 #We divide max_size for streamed content
                 #in order to catch them faster
                 size = sys.getsizeof(body)
-                max = max_length/2
+                max = max_size/2
                 current = round(size*100/max,1)
                 if current > downloaded:
                     downloaded = current
                     print("  -> Receiving stream: %s%% of allowed data"%downloaded,end='\r')
-                #print("size: %s (%s\% of maxlenght)"%(size,size/max_length))
-                if size > max_length/2:
+                #print("size: %s (%s\% of maxlenght)"%(size,size/max_size))
+                if size > max_size/2:
                     response.close()
-                    return set_error(gi,"streaming",max_length)
+                    return set_error(gi,"streaming",max_size)
             response.close()
         else:
             body = response.content
@@ -301,7 +301,7 @@ def _fetch_http(url,max_length=None):
     cache = write_body(url,body,mime)
     return cache
 
-def _fetch_gopher(url,timeout=10):
+def _fetch_gopher(url,timeout=DEFAULT_TIMEOUT,**kwargs):
     parsed =urllib.parse.urlparse(url)
     host = parsed.hostname
     port = parsed.port or 70
@@ -360,7 +360,7 @@ def _fetch_gopher(url,timeout=10):
     cache = write_body(url,response,mime)
     return cache
 
-def _fetch_finger(url,timeout=10):
+def _fetch_finger(url,timeout=DEFAULT_TIMEOUT,**kwargs):
     parsed = urllib.parse.urlparse(url)
     host = parsed.hostname
     port = parsed.port or standard_ports["finger"]
@@ -373,7 +373,7 @@ def _fetch_finger(url,timeout=10):
     return cache
 
 # Originally copied from reference spartan client by Michael Lazar
-def _fetch_spartan(url):
+def _fetch_spartan(url,**kwargs):
     cache = None
     url_parts = urllib.parse.urlparse(url)
     host = url_parts.hostname
@@ -409,7 +409,7 @@ def _fetch_spartan(url):
         cache = _fetch_spartan(redirect_url)
     return cache
 
-def _fetch_gemini(url,options={}):
+def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,**kwargs):
     cache = None
     url_parts = urllib.parse.urlparse(url)
     host = url_parts.hostname
@@ -502,10 +502,6 @@ def _fetch_gemini(url,options={}):
     err = None
     for address in addresses:
         s = socket.socket(address[0], address[1])
-        if "timeout" in options:
-            timeout = options["timeout"]
-        else:
-            timeout = DEFAULT_TIMEOUT
         s.settimeout(timeout)
         s = context.wrap_socket(s, server_hostname = host)
         try:
@@ -636,7 +632,7 @@ def _fetch_gemini(url,options={}):
     return cache
 
 
-def fetch(url):
+def fetch(url,**kwargs):
     url = normalize_url(url)
     path=None
     if "://" in url:
@@ -644,13 +640,13 @@ def fetch(url):
         if scheme not in standard_ports:
             print("%s is not a supported protocol"%scheme)
         elif scheme in ("http","https"):
-            path=_fetch_http(url)
+            path=_fetch_http(url,**kwargs)
         elif scheme == "gopher":
-            path=_fetch_gopher(url)
+            path=_fetch_gopher(url,**kwargs)
         elif scheme == "finger":
-            path=_fetch_finger(url)
+            path=_fetch_finger(url,**kwargs)
         elif scheme == "gemini":
-            patch=_fetch_gemini(url)
+            patch=_fetch_gemini(url,**kwargs)
         else:
             print("scheme %s not implemented yet")
     else:
@@ -666,6 +662,10 @@ def main():
                         help="return path to the cache instead of the content of the cache")
     parser.add_argument("--offline", action="store_true",
                         help="Do not attempt to download, return cached version or error")
+    parser.add_argument("--max-size", type=int,
+                        help="Cancel download of items above that size (value in Mb).")
+    parser.add_argument("--timeout", type=int,
+                        help="Time to wait before cancelling connection (in second).")
     # No argument: write help
     parser.add_argument('url', metavar='URL', nargs='*',
                         help='download URL and returns the content or the path to a cached version')
@@ -673,15 +673,16 @@ def main():
     # --cache-validity : do not download if cache is valid
     # --validity : returns the date of the cached version, Null if no version
     # --force-download : download and replace cache, even if valid
-    # --max-size-download : cancel download of items above that size. Returns Null.
     args = parser.parse_args()
+
+    param = {}
     
     for u in args.url:
         if args.offline:
             path = get_cache_path(u)
         else:
             print("Download URL: %s" %u)
-            path = fetch(u)
+            path = fetch(u,max_size=args.max_size,timeout=args.timeout)
         if args.path:
             print(path)
         else:

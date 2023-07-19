@@ -819,31 +819,10 @@ class GeminiClient(cmd.Cmd):
 
         elif not self.offline_only and not gi.local:
             try:
-                if gi.scheme in ("http", "https"):
-                    if self.support_http:
-                        if limit_size:
-                            # Let’s cap automatic downloads to 20Mo
-                            max_download = int(self.options["max_size_download"])*1000000
-                        else:
-                            max_download = None
-                        gi = self._fetch_http(gi,max_length=max_download)
-                    elif handle and not self.sync_only:
-                        if not _DO_HTTP:
-                            print("Install python3-requests to handle http requests natively")
-                        webbrowser.open_new_tab(gi.url)
-                        return
-                    else:
-                        return
-                elif gi.scheme in ("gopher"):
-                    gi = self._fetch_gopher(gi,timeout=self.options["short_timeout"])
-                elif gi.scheme in ("finger"):
-                    gi = self._fetch_finger(gi,timeout=self.options["short_timeout"])
-                elif gi.scheme in ("spartan"):
-                    gi = self._fetch_spartan(gi)
-                elif gi.scheme in ("gemini"):
-                    gi = self._fetch_over_network(gi)
-                else:
-                    return
+                params = {}
+                params["timeout"] = self.options["short_timeout"]
+                params["max_size"] = int(self.options["max_size_download"])*1000000
+                cachepath = netcache.fetch(gi.url,**params)
             except UserAbortException:
                 return
             except Exception as err:
@@ -886,7 +865,7 @@ class GeminiClient(cmd.Cmd):
                 return
 
         # Pass file to handler, unless we were asked not to
-        if gi :
+        if netcache.is_cache_valid(gi.url) :
             display = handle and not self.sync_only
             #TODO: take into account _RENDER_IMAGE
             if display and self.options["download_images_first"] \
