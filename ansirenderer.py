@@ -9,6 +9,7 @@ import time
 import html
 import urllib
 import argparse
+import mimetypes
 from offutils import run,term_width
 try:
     from readability import Document
@@ -704,6 +705,8 @@ class GopherRenderer(AbstractRenderer):
 
 
 class FolderRenderer(GemtextRenderer):
+    #it was initialized with:
+    #self.renderer = FolderRenderer("",self.get_cache_path(),datadir=_DATA_DIR)
     def __init__(self,content,url,center=True,datadir=None):
         GemtextRenderer.__init__(self,content,url,center)
         self.datadir = datadir
@@ -1124,24 +1127,124 @@ class HtmlRenderer(AbstractRenderer):
                 recursive_render(soup)
         return r.get_final(),links
 
-def render(text,format):
+
+# Mapping mimetypes with renderers
+# (any content with a mimetype text/* not listed here will be rendered with as GemText)
+_FORMAT_RENDERERS = {
+    "text/gemini":  GemtextRenderer,
+    "text/html" :   HtmlRenderer,
+    "text/xml" : FeedRenderer,
+    "application/xml" : FeedRenderer,
+    "application/rss+xml" : FeedRenderer,
+    "application/atom+xml" : FeedRenderer,
+    "text/gopher": GopherRenderer,
+    "image/*": ImageRenderer
+}
+def get_mime(path):
+    #Beware, this one is really a shaddy ad-hoc function
+    if path.startswith("mailto:"):
+        mime = "mailto"
+    elif os.path.isdir(path):
+        mime = "Local Folder"
+    elif path.endswith(".gmi"):
+        mime = "text/gemini"
+    elif shutil.which("file") :
+        mime = run("file -b --mime-type %s", parameter=path).strip()
+        mime2,encoding = mimetypes.guess_type(path,strict=False)
+        #If we hesitate between html and xml, takes the xml one
+        #because the FeedRendered fallback to HtmlRenderer
+        if mime2 and mime != mime2 and "html" in mime and "xml" in mime2:
+            mime = "text/xml"
+        # If it’s a xml file, consider it as such, regardless of what file thinks
+        elif path.endswith(".xml"):
+            mime = "text/xml"
+        #Some xml/html document are considered as octet-stream
+        if mime == "application/octet-stream":
+            mime = "text/xml"
+    else:
+        mime,encoding = mimetypes.guess_type(path,strict=False)
+    #gmi Mimetype is not recognized yet
+    if not mime and not shutil.which("file") :
+        print("Cannot guess the mime type of the file. Please install \"file\".")
+        print("(and send me an email, I’m curious of systems without \"file\" installed!")
+    if mime.startswith("text") and mime not in _FORMAT_RENDERERS:
+        if mime2 and mime2 in _FORMAT_RENDERERS:
+            mime = mime2
+        else:
+            #by default, we consider it’s gemini except for html
+            mime = "text/gemini"
+    return mime
+
+def set_renderer(content,url,mime):
+    renderer = None
+    if mime == "Local Folder":
+        renderer = FolderRenderer("",url,datadir=_DATA_DIR)
+        return renderer
+    mime_to_use = []
+    for m in _FORMAT_RENDERERS:
+        if fnmatch.fnmatch(mime, m):
+            mime_to_use.append(m)
+    if len(mime_to_use) > 0:
+        current_mime = mime_to_use[0]
+        func = _FORMAT_RENDERERS[current_mime]
+        if current_mime.startswith("text"):
+            renderer = func(content,url)
+            # We double check if the renderer is correct.
+            # If not, we fallback to html
+            # (this is currently only for XHTML, often being
+            # mislabelled as xml thus RSS feeds)
+            if not renderer.is_valid():
+                func = _FORMAT_RENDERERS["text/html"]
+                #print("Set (fallback)RENDERER to html instead of %s"%mime)
+                renderer = func(content,url)
+        else:
+            #TODO: check this code and then remove one if.
+            #we don’t parse text, we give the file to the renderer
+            renderer = func(content,url)
+            if not renderer.is_valid():
+                renderer = None
+    return renderer
+
+
+def render(input,format="auto",mime=None,url=None):
+    if mime and not format or format=="auto":
+        format = get_format(input)
     if format == "gemtext":
-        r = GemtextRenderer(text,"https://ploum.net")
+        r = GemtextRenderer(input,"https://ploum.net")
     elif format == "html":
-        r = HtmlRenderer(text,"https://ploum.net")
-    r.display()
+        r = HtmlRenderer(input,"https://ploum.net")
+    elif format == "feed":
+        r = FeedRenderer(input,"https://ploum.net")
+    elif format == "gopher":
+        r = GopherRenderer(input,"https://ploum.net")
+    elif format == "image":
+        r = ImageRenderer(input,"https://ploum.net")
+    elif format == "folder":
+        r = FolderRenderer(input,"https://ploum.net")
+    else:
+        if not mime:
+            mime = get_mime(input)
+        r = set_renderer(input,url,mime)
+        print("renderer is %s"%r)
+    if r:
+        r.display()
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--format", choices=["gemtext","html","feed","gopher","image","folder"],
-                        help="Renderer to use. Available: gemtext, html, feed, gopher, image, folder")
+    parser.add_argument("--format", choices=["auto","gemtext","html","feed","gopher","image","folder"],
+                        help="Renderer to use. Available: auto, gemtext, html, feed, gopher, image, folder")
     ## The argument needs to be a path to a file. If none, then stdin is used which allows
     ## to pipe text directly into ansirenderer
-    parser.add_argument("input",metavar="INPUT", nargs="?", type=argparse.FileType("r"), 
+    parser.add_argument("--url",metavar="URL", nargs="*",
+                        help="Original URL of the content")
+    parser.add_argument("content",metavar="INPUT", nargs="*", type=argparse.FileType("r"), 
                          default=sys.stdin, help="Path to the text to render (default to stdin)")
     args = parser.parse_args()
-    render(args.input.read(),args.format)
+    print("Input: %s"%args.input)
+    #TODO: find when we have a text or a path.
+    # We cannot get mime from a text!
+    #render(args.input.read(),format=args.format,url=args.url)
 
 if __name__ == '__main__':
     main()

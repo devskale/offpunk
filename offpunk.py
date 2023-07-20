@@ -1,3 +1,4 @@
+#TODO: remove the set_renderer then try to run offpunk
 #!/usr/bin/env python3
 # Offpunk Offline Gemini client
 # Derived from AV-98 by Solderpunk,
@@ -26,7 +27,6 @@ import fnmatch
 import glob
 import hashlib
 import io
-import mimetypes
 import os
 import os.path
 import filecmp
@@ -213,18 +213,6 @@ standard_ports = {
         "https"  : 443,
         "spartan": 300,
 }
-# Mapping mimetypes with renderers
-# (any content with a mimetype text/* not listed here will be rendered with as GemText)
-_FORMAT_RENDERERS = {
-    "text/gemini":  ansirenderer.GemtextRenderer,
-    "text/html" :   ansirenderer.HtmlRenderer,
-    "text/xml" : ansirenderer.FeedRenderer,
-    "application/xml" : ansirenderer.FeedRenderer,
-    "application/rss+xml" : ansirenderer.FeedRenderer,
-    "application/atom+xml" : ansirenderer.FeedRenderer,
-    "text/gopher": ansirenderer.GopherRenderer,
-    "image/*": ansirenderer.ImageRenderer
-}
 # Offpunk is organized as follow:
 # - a GeminiClient instance which handles the browsing of GeminiItems (= pages).
 # - There’s only one GeminiClient. Each page is a GeminiItem (name is historical, as
@@ -398,37 +386,6 @@ class GeminiItem():
         else:
             return []
 
-    def _set_renderer(self,mime=None):
-        if self.local and os.path.isdir(self.get_cache_path()):
-            self.renderer = ansirenderer.FolderRenderer("",self.get_cache_path(),datadir=_DATA_DIR)
-            return
-        if not mime:
-            mime = self.get_mime()
-            #we don’t even have a mime (so probably we don’t have a cache)
-            if not mime:
-                return
-        mime_to_use = []
-        for m in _FORMAT_RENDERERS:
-            if fnmatch.fnmatch(mime, m):
-                mime_to_use.append(m)
-        if len(mime_to_use) > 0:
-            current_mime = mime_to_use[0]
-            func = _FORMAT_RENDERERS[current_mime]
-            if current_mime.startswith("text"):
-                self.renderer = func(self.get_body(),self.url)
-                # We double check if the renderer is correct.
-                # If not, we fallback to html
-                # (this is currently only for XHTML, often being
-                # mislabelled as xml thus RSS feeds)
-                if not self.renderer.is_valid():
-                    func = _FORMAT_RENDERERS["text/html"]
-                    #print("Set (fallback)RENDERER to html instead of %s"%mime)
-                    self.renderer = func(self.get_body(),self.url)
-            else:
-                #we don’t parse text, we give the file to the renderer
-                self.renderer = func(self.get_cache_path(),self.url)
-                if not self.renderer.is_valid():
-                    self.renderer = None
 
     def display(self,mode=None,grep=None):
         if not self.renderer:
@@ -469,45 +426,6 @@ class GeminiItem():
         return tmpf
 
 
-    def get_mime(self):
-        #Beware, this one is really a shaddy ad-hoc function
-        if self.mime:
-            return self.mime
-        elif self.is_cache_valid():
-            path = self.get_cache_path()
-            if self.scheme == "mailto":
-                mime = "mailto"
-            elif os.path.isdir(path):
-                mime = "Local Folder"
-            elif path.endswith(".gmi"):
-                mime = "text/gemini"
-            elif shutil.which("file") :
-                mime = run("file -b --mime-type %s", parameter=path).strip()
-                mime2,encoding = mimetypes.guess_type(path,strict=False)
-                #If we hesitate between html and xml, takes the xml one
-                #because the FeedRendered fallback to HtmlRenderer
-                if mime2 and mime != mime2 and "html" in mime and "xml" in mime2:
-                    mime = "text/xml"
-                # If it’s a xml file, consider it as such, regardless of what file thinks
-                elif path.endswith(".xml"):
-                    mime = "text/xml"
-                #Some xml/html document are considered as octet-stream
-                if mime == "application/octet-stream":
-                    mime = "text/xml"
-            else:
-                mime,encoding = mimetypes.guess_type(path,strict=False)
-            #gmi Mimetype is not recognized yet
-            if not mime and not shutil.which("file") :
-                print("Cannot guess the mime type of the file. Please install \"file\".")
-                print("(and send me an email, I’m curious of systems without \"file\" installed!")
-            if mime.startswith("text") and mime not in _FORMAT_RENDERERS:
-                if mime2 and mime2 in _FORMAT_RENDERERS:
-                    mime = mime2
-                else:
-                    #by default, we consider it’s gemini except for html
-                    mime = "text/gemini"
-            self.mime = mime
-        return self.mime
 
     def set_error(self,err):
     # If we get an error, we want to keep an existing cache
