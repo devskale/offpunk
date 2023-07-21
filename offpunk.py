@@ -1,4 +1,4 @@
-#TODO: remove the set_renderer then try to run offpunk
+#TODO: migrate go_to_gi to netcache
 #!/usr/bin/env python3
 # Offpunk Offline Gemini client
 # Derived from AV-98 by Solderpunk,
@@ -204,15 +204,6 @@ def fix_ipv6_url(url):
         return schema + "://" + schemaless
     return schemaless
 
-# This list is also used as a list of supported protocols
-standard_ports = {
-        "gemini" : 1965,
-        "gopher" : 70,
-        "finger" : 79,
-        "http"   : 80,
-        "https"  : 443,
-        "spartan": 300,
-}
 # Offpunk is organized as follow:
 # - a GeminiClient instance which handles the browsing of GeminiItems (= pages).
 # - There’s only one GeminiClient. Each page is a GeminiItem (name is historical, as
@@ -234,11 +225,10 @@ class GeminiItem():
         else:
             self.url = url
         self.url = fix_ipv6_url(self.url).strip()
-        self._cache_path = None
+        self._cache_path = self.get_cache_path()
         self.name = name
         self.mime = None
-        self.renderer = None
-        self.body = None
+        self.renderer = ansirenderer.renderer_from_file(self._cache_path,self.url)
         #TODO : stuff have been migrated to netcache. What are we missing here ?
 
     def get_cache_path(self):
@@ -276,8 +266,6 @@ class GeminiItem():
 
     def get_page_title(self):
         title = ""
-        if not self.renderer:
-            self._set_renderer()
         if self.renderer:
             title = self.renderer.get_title()
         if not title or len(title) == 0:
@@ -293,8 +281,6 @@ class GeminiItem():
         return netcache.cache_last_modified(self.url)
 
     def get_body(self,as_file=False):
-        if self.body and not as_file:
-            return self.body
         if self.is_cache_valid():
             path = self.get_cache_path()
         else:
@@ -317,8 +303,6 @@ class GeminiItem():
             return None
 
     def get_images(self,mode=None):
-        if not self.renderer:
-            self._set_renderer()
         if self.renderer:
             return self.renderer.get_images(mode=mode)
         else:
@@ -329,8 +313,6 @@ class GeminiItem():
     def get_links(self,mode=None):
         links = []
         toreturn = []
-        if not self.renderer:
-            self._set_renderer()
         if self.renderer:
             if not mode:
                 mode = self.last_mode
@@ -373,8 +355,6 @@ class GeminiItem():
             return links[nb-1]
 
     def get_subscribe_links(self):
-        if not self.renderer:
-            self._set_renderer()
         if self.renderer:
             subs = self.renderer.get_subscribe_links()
             abssubs = []
@@ -388,8 +368,6 @@ class GeminiItem():
 
 
     def display(self,mode=None,grep=None):
-        if not self.renderer:
-            self._set_renderer()
         if self.renderer and self.renderer.is_valid():
             if not mode:
                 mode = self.last_mode
@@ -416,8 +394,6 @@ class GeminiItem():
 
     def get_temp_filename(self):
         tmpf = None
-        if not self.renderer:
-            self._set_renderer()
         if self.renderer and self.renderer.is_valid():
             tmpf = self.renderer.get_temp_file()
         cache_path = self.get_cache_path()
@@ -484,7 +460,7 @@ class GeminiItem():
         A thin wrapper around urlunparse which avoids inserting standard ports
         into URLs just to keep things clean.
         """
-        if not self.port or self.port == standard_ports[self.scheme] :
+        if not self.port or self.port == netcache.standard_ports[self.scheme] :
             host = self.host
         else:
             host = self.host + ":" + str(self.port)
@@ -522,7 +498,7 @@ def looks_like_url(word):
         port = parsed.port
         mailto = word.startswith("mailto:")
         scheme = word.split("://")[0]
-        start = scheme in standard_ports
+        start = scheme in netcache.standard_ports
         local = scheme in ["file","list"]
         if not start and not local and not mailto:
             return looks_like_url("gemini://"+word)
@@ -706,7 +682,7 @@ class GeminiClient(cmd.Cmd):
                         print("Cannot find a mail client to send mail to %s" %gi.path)
                         print("Please install xdg-open (usually from xdg-util package)")
             return
-        elif gi.scheme not in ["file","list"] and gi.scheme not in standard_ports \
+        elif gi.scheme not in ["file","list"] and gi.scheme not in netcache.standard_ports \
                                                                 and not self.sync_only:
             print("Sorry, no support for {} links.".format(gi.scheme))
             return
@@ -982,7 +958,7 @@ class GeminiClient(cmd.Cmd):
                 os.makedirs(certdir)
             with open(os.path.join(certdir, fingerprint+".crt"), "wb") as fp:
                 fp.write(cert)
-
+    
     def _get_handler_cmd(self, mimetype):
         # Now look for a handler for this mimetype
         # Consider exact matches before wildcard matches
@@ -1003,7 +979,6 @@ class GeminiClient(cmd.Cmd):
             else:
                 cmd_str = "echo \"Can’t find how to open \"%s"
                 print("Please install xdg-open (usually from xdg-util package)")
-        self._debug("Using handler: %s" % cmd_str)
         return cmd_str
 
     #TODO: remove format_geminiitem

@@ -1176,6 +1176,14 @@ def get_mime(path):
             mime = "text/gemini"
     return mime
 
+
+def renderer_from_file(path,url=None):
+    mime = get_mime(path)
+    with open(path) as f:
+        body = f.read()
+        f.close()
+    return set_renderer(body,url,mime)
+
 def set_renderer(content,url,mime):
     renderer = None
     if mime == "Local Folder":
@@ -1209,21 +1217,22 @@ def set_renderer(content,url,mime):
 
 def render(input,path=None,format="auto",mime=None,url=None):
     if format == "gemtext":
-        r = GemtextRenderer(input,"https://ploum.net")
+        r = GemtextRenderer(input,url)
     elif format == "html":
-        r = HtmlRenderer(input,"https://ploum.net")
+        r = HtmlRenderer(input,url)
     elif format == "feed":
-        r = FeedRenderer(input,"https://ploum.net")
+        r = FeedRenderer(input,url)
     elif format == "gopher":
-        r = GopherRenderer(input,"https://ploum.net")
+        r = GopherRenderer(input,url)
     elif format == "image":
-        r = ImageRenderer(input,"https://ploum.net")
+        r = ImageRenderer(input,url)
     elif format == "folder":
-        r = FolderRenderer(input,"https://ploum.net")
+        r = FolderRenderer(input,url)
     else:
         if not mime and path:
-            mime = get_mime(path)
-        r = set_renderer(input,url,mime)
+            r= renderer_from_file(path,url)
+        else:
+            r = set_renderer(input,url,mime)
         print("renderer is %s"%r)
     if r:
         r.display()
