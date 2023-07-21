@@ -635,20 +635,60 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,**kwargs):
 def fetch(url,**kwargs):
     url = normalize_url(url)
     path=None
+    print_error = "print_error" in kwargs.keys() and kwargs["print_error"]
     if "://" in url:
-        scheme = url.split("://")[0]
-        if scheme not in standard_ports:
-            print("%s is not a supported protocol"%scheme)
-        elif scheme in ("http","https"):
-            path=_fetch_http(url,**kwargs)
-        elif scheme == "gopher":
-            path=_fetch_gopher(url,**kwargs)
-        elif scheme == "finger":
-            path=_fetch_finger(url,**kwargs)
-        elif scheme == "gemini":
-            patch=_fetch_gemini(url,**kwargs)
-        else:
-            print("scheme %s not implemented yet")
+        try:
+            scheme = url.split("://")[0]
+            if scheme not in standard_ports:
+                print("%s is not a supported protocol"%scheme)
+            elif scheme in ("http","https"):
+                path=_fetch_http(url,**kwargs)
+            elif scheme == "gopher":
+                path=_fetch_gopher(url,**kwargs)
+            elif scheme == "finger":
+                path=_fetch_finger(url,**kwargs)
+            elif scheme == "gemini":
+                patch=_fetch_gemini(url,**kwargs)
+            else:
+                print("scheme %s not implemented yet")
+        except UserAbortException:
+            return
+        except Exception as err:
+            #TODO return the error !
+            #gi.set_error(err)
+            # Print an error message
+            # we fail silently when sync_only
+            if isinstance(err, socket.gaierror):
+                if print_error:
+                    print("ERROR: DNS error!")
+            elif isinstance(err, ConnectionRefusedError):
+                if print_error:
+                    print("ERROR1: Connection refused!")
+            elif isinstance(err, ConnectionResetError):
+                if print_error:
+                    print("ERROR2: Connection reset!")
+            elif isinstance(err, (TimeoutError, socket.timeout)):
+                if print_error:
+                    print("""ERROR3: Connection timed out!
+    Slow internet connection?  Use 'set timeout' to be more patient.""")
+            elif isinstance(err, FileExistsError):
+                if print_error:
+                    print("""ERROR5: Trying to create a directory which already exists
+                        in the cache : """)
+                print(err)
+            elif _DO_HTTP and isinstance(err,requests.exceptions.SSLError):
+                if print_error:
+                    print("""ERROR6: Bad SSL certificate:\n""")
+                    print(err)
+                    print("""\n If you know what you are doing, you can try to accept bad certificates with the following command:\n""")
+                    print("""set accept_bad_ssl_certificates True""")
+            else:
+                if print_error:
+                    import traceback
+                    print("ERROR4: " + str(type(err)) + " : " + str(err))
+                    print("\n" + str(err.with_traceback(None)))
+                    print(traceback.format_exc())
+            return
     else:
         print("Not a supproted URL")
     return path

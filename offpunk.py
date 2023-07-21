@@ -264,6 +264,7 @@ class GeminiItem():
     def cache_last_modified(self):
         return netcache.cache_last_modified(self.url)
 
+    #TODO : move to ansirenderer
     def get_body(self,as_file=False):
         if self.is_cache_valid():
             path = self.get_cache_path()
@@ -294,6 +295,7 @@ class GeminiItem():
 
     # This method is used to load once the list of links in a gi
     # Links can be followed, after a space, by a description/title
+    #TODO: check all calls of get_links then move it to ansirenderer
     def get_links(self,mode=None):
         links = []
         toreturn = []
@@ -329,6 +331,7 @@ class GeminiItem():
                 toreturn.append(None)
         return toreturn
 
+    #TODO: should be in ansirenderer
     def get_link(self,nb):
         # == None allows to return False, even if the list is empty
         links = self.get_links()
@@ -338,6 +341,7 @@ class GeminiItem():
         else:
             return links[nb-1]
 
+    #TODO: should be in ansirenderer
     def get_subscribe_links(self):
         if self.renderer:
             subs = self.renderer.get_subscribe_links()
@@ -350,7 +354,7 @@ class GeminiItem():
         else:
             return []
 
-
+    #TODO: should be in ansiless
     def display(self,mode=None,grep=None):
         if self.renderer and self.renderer.is_valid():
             if not mode:
@@ -645,6 +649,8 @@ class GeminiClient(cmd.Cmd):
             (hostname text, address text, fingerprint text,
             first_seen date, last_seen date, count integer)""")
 
+    #TODO: go_to_gi should take an URL as parameter, not gi
+    #it should also only be called to really go, not for all links
     def _go_to_gi(self, gi, update_hist=True, check_cache=True, handle=True,\
                                                 mode=None,limit_size=False):
         """This method might be considered "the heart of Offpunk".
@@ -698,51 +704,11 @@ class GeminiClient(cmd.Cmd):
             return
 
         elif not self.offline_only and not gi.local:
-            try:
-                params = {}
-                params["timeout"] = self.options["short_timeout"]
-                params["max_size"] = int(self.options["max_size_download"])*1000000
-                cachepath = netcache.fetch(gi.url,**params)
-            except UserAbortException:
-                return
-            except Exception as err:
-                gi.set_error(err)
-                # Print an error message
-                # we fail silently when sync_only
-                print_error = not self.sync_only
-                if isinstance(err, socket.gaierror):
-                    self.log["dns_failures"] += 1
-                    if print_error:
-                        print("ERROR: DNS error!")
-                elif isinstance(err, ConnectionRefusedError):
-                    self.log["refused_connections"] += 1
-                    if print_error:
-                        print("ERROR1: Connection refused!")
-                elif isinstance(err, ConnectionResetError):
-                    self.log["reset_connections"] += 1
-                    if print_error:
-                        print("ERROR2: Connection reset!")
-                elif isinstance(err, (TimeoutError, socket.timeout)):
-                    self.log["timeouts"] += 1
-                    if print_error:
-                        print("""ERROR3: Connection timed out!
-        Slow internet connection?  Use 'set timeout' to be more patient.""")
-                elif isinstance(err, FileExistsError):
-                    print("""ERROR5: Trying to create a directory which already exists
-                            in the cache : """)
-                    print(err)
-                elif _DO_HTTP and isinstance(err,requests.exceptions.SSLError):
-                    print("""ERROR6: Bad SSL certificate:\n""")
-                    print(err)
-                    print("""\n If you know what you are doing, you can try to accept bad certificates with the following command:\n""")
-                    print("""set accept_bad_ssl_certificates True""")
-                else:
-                    if print_error:
-                        import traceback
-                        print("ERROR4: " + str(type(err)) + " : " + str(err))
-                        print("\n" + str(err.with_traceback(None)))
-                        print(traceback.format_exc())
-                return
+            params = {}
+            params["timeout"] = self.options["short_timeout"]
+            params["max_size"] = int(self.options["max_size_download"])*1000000
+            params["print_error"] = not self.sync_only
+            cachepath = netcache.fetch(gi.url,**params)
 
         # Pass file to handler, unless we were asked not to
         if netcache.is_cache_valid(gi.url) :
@@ -750,7 +716,9 @@ class GeminiClient(cmd.Cmd):
             #TODO: take into account _RENDER_IMAGE
             if display and self.options["download_images_first"] \
                                                         and not self.offline_only:
+
                 # We download images first
+                #TODO: this should go into netcache
                 for image in gi.get_images(mode=mode):
                     if image and image.startswith("http"):
                         img_gi = GeminiItem(image)

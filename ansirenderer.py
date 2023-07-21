@@ -968,6 +968,7 @@ class HtmlRenderer(AbstractRenderer):
             if _RENDER_IMAGE and mode != "links_only" and imgurl:
                 try:
                     #4 followings line are there to translate the URL into cache path
+                    #TODO: do that with netcache
                     g = GeminiItem(imgurl)
                     img = g.get_cache_path()
                     if imgdata:
@@ -1208,11 +1209,17 @@ def get_mime(path):
 
 def renderer_from_file(path,url=None):
     mime = get_mime(path)
+    if not url:
+        url = path
     if os.path.exists(path):
-        with open(path) as f:
-            body = f.read()
-            f.close()
-        return set_renderer(body,url,mime)
+        if mime.startswith("text/"):
+            with open(path) as f:
+                print("DEBUG: opening %s"%path)
+                content = f.read()
+                f.close()
+        else:
+            content = path
+        return set_renderer(content,url,mime)
     else:
         return None
 
