@@ -21,7 +21,7 @@ cache_home = os.environ.get('XDG_CACHE_HOME') or\
 #_CACHE_PATH = os.path.join(cache_home,"offpunk/")
 #Debug:
 _CACHE_PATH = "/home/ploum/dev/netcache/"
-
+_DATA_DIR = "/home/ploum/dev/netcache/"
 if not os.path.exists(_CACHE_PATH):
     print("Creating cache directory {}".format(_CACHE_PATH))
     os.makedirs(_CACHE_PATH)

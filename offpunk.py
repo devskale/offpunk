@@ -230,6 +230,8 @@ class GeminiItem():
         self.mime = None
         self.renderer = ansirenderer.renderer_from_file(self._cache_path,self.url)
         #TODO : stuff have been migrated to netcache. What are we missing here ?
+        self.scheme = "https"
+        self.local = False
 
     def get_cache_path(self):
         # if we already have a _cache_path, we returns it.
@@ -240,38 +242,14 @@ class GeminiItem():
         #    return self._cache_path
         return netcache.get_cache_path(self.url)
 
-    def get_capsule_title(self):
-            #small intelligence to try to find a good name for a capsule
-            #we try to find eithe ~username or /users/username
-            #else we fallback to hostname
-            if self.local:
-                if self.name != "":
-                    red_title = self.name
-                else:
-                    red_title = self.path
-            else:
-                red_title = self.host
-                if "user" in self.path:
-                    i = 0
-                    splitted = self.path.split("/")
-                    while i < (len(splitted)-1):
-                        if splitted[i].startswith("user"):
-                            red_title = splitted[i+1]
-                        i += 1
-                if "~" in self.path:
-                    for pp in self.path.split("/"):
-                        if pp.startswith("~"):
-                            red_title = pp[1:]
-            return red_title
-
     def get_page_title(self):
         title = ""
         if self.renderer:
             title = self.renderer.get_title()
         if not title or len(title) == 0:
-            title = self.get_capsule_title()
+            title = self.renderer.get_url_title()
         else:
-            title += " (%s)" %self.get_capsule_title()
+            title += " (%s)" %self.renderer.get_url_title()
         return title
 
     def is_cache_valid(self,validity=0):
@@ -373,7 +351,7 @@ class GeminiItem():
                 mode = self.last_mode
             else:
                 self.last_mode = mode
-            title = self.get_capsule_title()
+            title = self.renderer.get_url_title()
             if self.is_cache_valid(): #and self.offline_only and not self.local:
                 nbr = len(self.get_links(mode=mode))
                 if self.local:
@@ -483,6 +461,7 @@ class GeminiItem():
             url += "##offpunk_mode=" + self.last_mode
         return url
 
+    #what is the line to add to a list for this url ?
     def to_map_line(self):
         return "=> {} {}\n".format(self.url_mode(), self.get_page_title())
 
@@ -671,21 +650,22 @@ class GeminiClient(cmd.Cmd):
         if not gi:
             return
         # Don't try to speak to servers running other protocols
-        elif gi.scheme == "mailto":
-            if handle and not self.sync_only:
-                resp = input("Send an email to %s Y/N? " %gi.path)
-                self.gi = gi
-                if resp.strip().lower() in ("y", "yes"):
-                    if _HAS_XDGOPEN :
-                        run("xdg-open mailto:%s", parameter=gi.path ,direct_output=True)
-                    else:
-                        print("Cannot find a mail client to send mail to %s" %gi.path)
-                        print("Please install xdg-open (usually from xdg-util package)")
-            return
-        elif gi.scheme not in ["file","list"] and gi.scheme not in netcache.standard_ports \
-                                                                and not self.sync_only:
-            print("Sorry, no support for {} links.".format(gi.scheme))
-            return
+        #TODO: support for mailto and unsupported protocols
+       # elif gi.scheme == "mailto":
+       #     if handle and not self.sync_only:
+       #         resp = input("Send an email to %s Y/N? " %gi.path)
+       #         self.gi = gi
+       #         if resp.strip().lower() in ("y", "yes"):
+       #             if _HAS_XDGOPEN :
+       #                 run("xdg-open mailto:%s", parameter=gi.path ,direct_output=True)
+       #             else:
+       #                 print("Cannot find a mail client to send mail to %s" %gi.path)
+       #                 print("Please install xdg-open (usually from xdg-util package)")
+       #     return
+       # elif gi.scheme not in ["file","list"] and gi.scheme not in netcache.standard_ports \
+       #                                                         and not self.sync_only:
+       #     print("Sorry, no support for {} links.".format(gi.scheme))
+       #     return
 
         if not mode:
             mode = gi.last_mode

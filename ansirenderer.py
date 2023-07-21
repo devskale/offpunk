@@ -447,8 +447,37 @@ class AbstractRenderer():
                 for l in self.get_subscribe_links()[1:]:
                     self.links[mode].append(l[0])
         return self.links[mode]
+    #get_title is about the "content title", so the title in the page itself
     def get_title(self):
         return "Abstract title"
+    
+    #this function is about creating a title derived from the URL
+    def get_url_title(self):
+        #small intelligence to try to find a good name for a capsule
+        #we try to find eithe ~username or /users/username
+        #else we fallback to hostname
+        #TODO: handle local name
+       # if self.local:
+       #     if self.name != "":
+       #         red_title = self.name
+       #     else:
+       #         red_title = self.path
+       # else:
+       #TODO: handle host and path separation
+        red_title = "TODO:host" #self.host
+        path = self.url
+        if "user" in path:
+            i = 0
+            splitted = path.split("/")
+            while i < (len(splitted)-1):
+                if splitted[i].startswith("user"):
+                    red_title = splitted[i+1]
+                i += 1
+        if "~" in path:
+            for pp in path.split("/"):
+                if pp.startswith("~"):
+                    red_title = pp[1:]
+        return red_title
 
     # This function return a list of URL which should be downloaded
     # before displaying the page (images in HTML pages, typically)
@@ -1179,10 +1208,13 @@ def get_mime(path):
 
 def renderer_from_file(path,url=None):
     mime = get_mime(path)
-    with open(path) as f:
-        body = f.read()
-        f.close()
-    return set_renderer(body,url,mime)
+    if os.path.exists(path):
+        with open(path) as f:
+            body = f.read()
+            f.close()
+        return set_renderer(body,url,mime)
+    else:
+        return None
 
 def set_renderer(content,url,mime):
     renderer = None
