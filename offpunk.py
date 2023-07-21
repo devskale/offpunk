@@ -1,4 +1,6 @@
 #TODO: migrate go_to_gi to netcache
+#TODO: separate ansirenderer into ansicat and ansiless
+#TODO: migrate displaying into ansirenderer
 #!/usr/bin/env python3
 # Offpunk Offline Gemini client
 # Derived from AV-98 by Solderpunk,
@@ -217,6 +219,7 @@ class GeminiItem():
 
     def __init__(self, url, name=""):
         self.last_mode = None
+        url = netcache.normalize_url(url)
         findmode = url.split("##offpunk_mode=")
         if len(findmode) > 1:
             self.url = findmode[0]
@@ -225,13 +228,15 @@ class GeminiItem():
         else:
             self.url = url
         self.url = fix_ipv6_url(self.url).strip()
-        self._cache_path = self.get_cache_path()
         self.name = name
         self.mime = None
-        self.renderer = ansirenderer.renderer_from_file(self._cache_path,self.url)
+        self.renderer = ansirenderer.renderer_from_file(self.get_cache_path(),self.url)
         #TODO : stuff have been migrated to netcache. What are we missing here ?
         self.scheme = "https"
         self.local = False
+
+    def get_mime(self):
+        return ansirenderer.get_mime(self.get_cache_path())
 
     def get_cache_path(self):
         # if we already have a _cache_path, we returns it.
@@ -246,10 +251,11 @@ class GeminiItem():
         title = ""
         if self.renderer:
             title = self.renderer.get_title()
-        if not title or len(title) == 0:
-            title = self.renderer.get_url_title()
-        else:
-            title += " (%s)" %self.renderer.get_url_title()
+            if not title or len(title) == 0:
+                title = self.renderer.get_url_title()
+            else:
+                title += " (%s)" %self.renderer.get_url_title()
+        #TODO: handle title for gi without renderer?
         return title
 
     def is_cache_valid(self,validity=0):
