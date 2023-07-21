@@ -10,6 +10,7 @@ import html
 import urllib
 import argparse
 import mimetypes
+import fnmatch
 from offutils import run,term_width
 try:
     from readability import Document
@@ -1206,9 +1207,7 @@ def set_renderer(content,url,mime):
     return renderer
 
 
-def render(input,format="auto",mime=None,url=None):
-    if mime and not format or format=="auto":
-        format = get_format(input)
+def render(input,path=None,format="auto",mime=None,url=None):
     if format == "gemtext":
         r = GemtextRenderer(input,"https://ploum.net")
     elif format == "html":
@@ -1222,8 +1221,8 @@ def render(input,format="auto",mime=None,url=None):
     elif format == "folder":
         r = FolderRenderer(input,"https://ploum.net")
     else:
-        if not mime:
-            mime = get_mime(input)
+        if not mime and path:
+            mime = get_mime(path)
         r = set_renderer(input,url,mime)
         print("renderer is %s"%r)
     if r:
@@ -1234,6 +1233,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--format", choices=["auto","gemtext","html","feed","gopher","image","folder"],
                         help="Renderer to use. Available: auto, gemtext, html, feed, gopher, image, folder")
+    parser.add_argument("--mime", help="Mime of the content to parse")
     ## The argument needs to be a path to a file. If none, then stdin is used which allows
     ## to pipe text directly into ansirenderer
     parser.add_argument("--url",metavar="URL", nargs="*",
@@ -1241,10 +1241,18 @@ def main():
     parser.add_argument("content",metavar="INPUT", nargs="*", type=argparse.FileType("r"), 
                          default=sys.stdin, help="Path to the text to render (default to stdin)")
     args = parser.parse_args()
-    print("Input: %s"%args.input)
-    #TODO: find when we have a text or a path.
-    # We cannot get mime from a text!
-    #render(args.input.read(),format=args.format,url=args.url)
+    # Detect if we are running interactively or in a pipe
+    if sys.stdin.isatty():
+        #we are interactive, not in stdin, we can have multiple files as input
+        for f in args.content:
+            path = os.path.abspath(f.name)
+            render(f.read(),path=path,format=args.format,url=args.url,mime=args.mime)
+    else:
+        #we are in stdin
+        if not args.format and not args.mime:
+            print("Format or mime should be specified when running with stdin")
+        else:
+            render(args.content.read(),path=None,format=args.format,url=args.url,mime=args.mime)
 
 if __name__ == '__main__':
     main()
