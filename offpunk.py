@@ -230,22 +230,10 @@ class GeminiItem():
         self.url = fix_ipv6_url(self.url).strip()
         self.name = name
         self.mime = None
-        self.renderer = ansirenderer.renderer_from_file(self.get_cache_path(),self.url)
+        self.renderer = ansirenderer.renderer_from_file(netcache.get_cache_path(self.url),self.url)
         #TODO : stuff have been migrated to netcache. What are we missing here ?
         self.scheme = "https"
         self.local = False
-
-    def get_mime(self):
-        return ansirenderer.get_mime(self.get_cache_path())
-
-    def get_cache_path(self):
-        # if we already have a _cache_path, we returns it.
-        # Except if it became a folder! (which happens for index.html/index.gmi)
-        # In that case, we need to reconstruct it
-        # TODO: ensure that the following two lines are not needed in netcache
-        #if self._cache_path and not os.path.isdir(self._cache_path):
-        #    return self._cache_path
-        return netcache.get_cache_path(self.url)
 
     def get_page_title(self):
         title = ""
@@ -258,16 +246,10 @@ class GeminiItem():
         #TODO: handle title for gi without renderer?
         return title
 
-    def is_cache_valid(self,validity=0):
-        return netcache.is_cache_valid(self.url,validity=validity)
-
-    def cache_last_modified(self):
-        return netcache.cache_last_modified(self.url)
-
     #TODO : move to ansirenderer
     def get_body(self,as_file=False):
-        if self.is_cache_valid():
-            path = self.get_cache_path()
+        if netcache.is_cache_valid(self.url):
+            path = netcache.get_cache_path(self.url)
         else:
             path = None
         if path:
@@ -362,13 +344,13 @@ class GeminiItem():
             else:
                 self.last_mode = mode
             title = self.renderer.get_url_title()
-            if self.is_cache_valid(): #and self.offline_only and not self.local:
+            if netcache.is_cache_valid(self.url): #and self.offline_only and not self.local:
                 nbr = len(self.get_links(mode=mode))
                 if self.local:
                     title += " (%s items)"%nbr
                     str_last = "local file"
                 else:
-                    str_last = "last accessed on %s" %time.ctime(self.cache_last_modified())
+                    str_last = "last accessed on %s" %time.ctime(netcache.cache_last_modified(self.url))
                     title += " (%s links)"%nbr
                 return self.renderer.display(mode=mode,window_title=title,window_info=str_last,grep=grep)
             else:
@@ -377,14 +359,14 @@ class GeminiItem():
             return False
 
     def get_filename(self):
-        filename = os.path.basename(self.get_cache_path())
+        filename = os.path.basename(netcache.get_cache_path(self.url))
         return filename
 
     def get_temp_filename(self):
         tmpf = None
         if self.renderer and self.renderer.is_valid():
             tmpf = self.renderer.get_temp_file()
-        cache_path = self.get_cache_path()
+        cache_path = netcache.get_cache_path(self.url)
         if not tmpf and cache_path:
             tmpf = cache_path
         return tmpf
@@ -395,8 +377,8 @@ class GeminiItem():
     # If we get an error, we want to keep an existing cache
     # but we need to touch it or to create an empty one
     # to avoid hitting the error at each refresh
-        cache = self.get_cache_path()
-        if self.is_cache_valid():
+        cache = netcache.get_cache_path(self.url)
+        if netcache.is_cache_valid(self.url):
             os.utime(cache)
         else:
             cache_dir = os.path.dirname(cache)
@@ -690,7 +672,7 @@ class GeminiClient(cmd.Cmd):
         # Use cache or mark as to_fetch if resource is not cached
         # Why is this code useful ? It set the mimetype !
         if self.offline_only:
-            if not gi.is_cache_valid():
+            if not netcache.is_cache_valid(gi.url):
                 self.get_list("to_fetch")
                 r = self.list_add_line("to_fetch",gi=gi,verbose=False)
                 if r:
@@ -721,13 +703,13 @@ class GeminiClient(cmd.Cmd):
                 #TODO: this should go into netcache
                 for image in gi.get_images(mode=mode):
                     if image and image.startswith("http"):
-                        img_gi = GeminiItem(image)
-                        if not img_gi.is_cache_valid():
+                        if not netcache.is_cache_valid(image):
                             width = term_width() - 1
                             toprint = "Downloading %s" %image
                             toprint = toprint[:width]
                             toprint += " "*(width-len(toprint))
                             print(toprint,end="\r")
+                            img_gi = GeminiItem(image)
                             self._go_to_gi(img_gi, update_hist=False, check_cache=True, \
                                                 handle=False,limit_size=True)
             if display and gi.display(mode=mode):
@@ -739,7 +721,7 @@ class GeminiClient(cmd.Cmd):
                 if update_hist and not self.sync_only:
                     self._update_history(gi)
             elif display :
-                cmd_str = self._get_handler_cmd(gi.get_mime())
+                cmd_str = self._get_handler_cmd(ansirenderer.get_mime(gi.url))
                 try:
                     # get body (tmpfile) from gi !
                     run(cmd_str, parameter=gi.get_body(as_file=True), direct_output=True)
@@ -1301,7 +1283,7 @@ Use with "cache" to copy the path of the cached content."""
                 elif args and args[0] == "raw":
                     run("xsel -b -i", input=open(self.gi.get_temp_filename(), "rb"), direct_output=True)
                 elif args and args[0] == "cache":
-                    run("xsel -b -i", input=self.gi.get_cache_path(), direct_output=True)
+                    run("xsel -b -i", input=netcache.get_cache_path(self.gi.url), direct_output=True)
                 else:
                     run("xsel -b -i", input=open(self.gi.get_body(as_file=True), "rb"), direct_output=True)
             else:
@@ -1497,10 +1479,10 @@ Marks are temporary until shutdown (not saved to disk)."""
         out = self.gi.get_page_title() + "\n\n"
         out += "URL      :   " + self.gi.url + "\n"
         out += "Path     :   " + self.gi.path + "\n"
-        out += "Mime     :   " + self.gi.get_mime() + "\n"
-        out += "Cache    :   " + self.gi.get_cache_path() + "\n"
+        out += "Mime     :   " + ansirenderer.get_mime(self.gi.url) + "\n"
+        out += "Cache    :   " + netcache.get_cache_path(self.gi.url) + "\n"
         tmp = self.gi.get_temp_filename()
-        if tmp != self.gi.get_cache_path():
+        if tmp != netcache.get_cache_path(self.gi.url):
             out += "Tempfile :   " + self.gi.get_temp_filename() + "\n"
         if self.gi.renderer :
             rend = str(self.gi.renderer.__class__)
@@ -1684,7 +1666,7 @@ see "handler" command to set your handler."""
         if args[0] == "url":
             run("xdg-open %s", parameter=self.gi.url, direct_output=True)
         else:
-            cmd_str = self._get_handler_cmd(self.gi.get_mime())
+            cmd_str = self._get_handler_cmd(ansirenderer.get_mime(self.gi.url))
             run(cmd_str, parameter=self.gi.get_body(as_file=True), direct_output=True)
 
     @needs_gi
@@ -1706,7 +1688,7 @@ see "handler" command to set your handler."""
             # No arguments given at all
             # Save current item, if there is one, to a file whose name is
             # inferred from the gemini path
-            if not self.gi.is_cache_valid():
+            if not netcache.is_cache_valid(self.gi.url):
                 print("You cannot save if not cached!")
                 return
             else:
@@ -2320,7 +2302,7 @@ Argument : duration of cache validity (in seconds)."""
         #               being refreshed (0 = never refreshed if it already exists)
         # - savetotour : if True, newly cached items are added to tour
         def add_to_tour(gitem):
-            if gitem and gitem.is_cache_valid():
+            if gitem and netcache.is_cache_valid(gitem.url):
                 toprint = "  -> adding to tour: %s" %gitem.url
                 width = term_width() - 1
                 toprint = toprint[:width]
@@ -2335,13 +2317,13 @@ Argument : duration of cache validity (in seconds)."""
             # else, do not save to tour
             #regardless of valitidy
             if not gitem: return
-            if not gitem.is_cache_valid(validity=validity):
+            if not netcache.is_cache_valid(gitem.url,validity=validity):
                 if strin != "":
                     endline = '\r'
                 else:
                     endline = None
                 #Did we already had a cache (even an old one) ?
-                isnew = not gitem.is_cache_valid()
+                isnew = not netcache.is_cache_valid(gitem.url)
                 toprint = "%s [%s/%s] Fetch "%(strin,count[0],count[1]) + gitem.url
                 width = term_width() - 1
                 toprint = toprint[:width]
@@ -2350,7 +2332,7 @@ Argument : duration of cache validity (in seconds)."""
                 #If not saving to tour, then we should limit download size
                 limit = not savetotour
                 self._go_to_gi(gitem,update_hist=False,limit_size=limit)
-                if savetotour and isnew and gitem.is_cache_valid():
+                if savetotour and isnew and netcache.is_cache_valid(gitem.url):
                     #we add to the next tour only if we managed to cache
                     #the ressource
                     add_to_tour(gitem)
@@ -2535,8 +2517,8 @@ def main():
         if args.url:
             gc.sync_only = True
             for u in args.url:
-                gi = GeminiItem(u)
-                if gi and gi.is_cache_valid():
+                if netcache.is_cache_valid(u):
+                    gi = GeminiItem(u)
                     gc.list_add_line("tour",gi)
                 else:
                     gc.list_add_line("to_fetch",gi)

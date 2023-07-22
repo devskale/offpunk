@@ -112,6 +112,8 @@ def is_cache_valid(url,validity=0):
 
 
 def get_cache_path(url):
+    # Sometimes, cache_path became a folder! (which happens for index.html/index.gmi)
+    # In that case, we need to reconstruct it
     #First, we parse the URL
     parsed = urllib.parse.urlparse(url)
     if url[0] == "/" or url.startswith("./"):
