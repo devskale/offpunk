@@ -450,6 +450,14 @@ class AbstractRenderer():
     #get_title is about the "content title", so the title in the page itself
     def get_title(self):
         return "Abstract title"
+
+    def get_page_title(self):
+        title = self.get_title()
+        if not title or len(title) == 0:
+            title = self.get_url_title()
+        else:
+            title += " (%s)" %self.get_url_title()
+        return title
     
     #this function is about creating a title derived from the URL
     def get_url_title(self):

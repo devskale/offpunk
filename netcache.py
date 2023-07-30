@@ -60,6 +60,11 @@ urllib.parse.uses_netloc.append("gemini")
 urllib.parse.uses_relative.append("spartan")
 urllib.parse.uses_netloc.append("spartan")
 
+
+class UserAbortException(Exception):
+    pass
+
+
 def parse_mime(mime):
     options = {}
     if mime:
@@ -968,17 +973,21 @@ def fetch(url,**kwargs):
                     print("""ERROR5: Trying to create a directory which already exists
                         in the cache : """)
                 print(err)
-            elif _DO_HTTP and isinstance(err,requests.exceptions.SSLError):
+            elif isinstance(err,requests.exceptions.SSLError):
                 if print_error:
                     print("""ERROR6: Bad SSL certificate:\n""")
                     print(err)
                     print("""\n If you know what you are doing, you can try to accept bad certificates with the following command:\n""")
                     print("""set accept_bad_ssl_certificates True""")
+            elif isinstance(err,requests.exceptions.ConnectionError):
+                if print_error:
+                    print("""ERROR7: Cannot connect to URL:\n""")
+                    print(str(err))
             else:
                 if print_error:
                     import traceback
                     print("ERROR4: " + str(type(err)) + " : " + str(err))
-                    print("\n" + str(err.with_traceback(None)))
+                    #print("\n" + str(err.with_traceback(None)))
                     print(traceback.format_exc())
             return
     else:

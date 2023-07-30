@@ -222,20 +222,8 @@ class GeminiItem():
         self.name = name
         self.mime = None
         self.renderer = ansirenderer.renderer_from_file(netcache.get_cache_path(self.url),self.url)
-        #TODO : stuff have been migrated to netcache. What are we missing here ?
         self.scheme = "https"
         self.local = False
-
-    def get_page_title(self):
-        title = ""
-        if self.renderer:
-            title = self.renderer.get_title()
-            if not title or len(title) == 0:
-                title = self.renderer.get_url_title()
-            else:
-                title += " (%s)" %self.renderer.get_url_title()
-        #TODO: handle title for gi without renderer?
-        return title
 
     #TODO : move to ansirenderer
     def get_body(self,as_file=False):
@@ -259,12 +247,6 @@ class GeminiItem():
         else:
             #print("ERROR: NO CACHE for %s" %self._cache_path)
             return None
-
-    def get_images(self,mode=None):
-        if self.renderer:
-            return self.renderer.get_images(mode=mode)
-        else:
-            return []
 
     # This method is used to load once the list of links in a gi
     # Links can be followed, after a space, by a description/title
@@ -438,6 +420,7 @@ class GeminiItem():
             abs_url = None
         return abs_url
 
+    #TODO: explore how to put this in ansirenderer
     def url_mode(self):
         url = self.url
         if self.last_mode and self.last_mode != "readable":
@@ -446,7 +429,7 @@ class GeminiItem():
 
     #what is the line to add to a list for this url ?
     def to_map_line(self):
-        return "=> {} {}\n".format(self.url_mode(), self.get_page_title())
+        return "=> {} {}\n".format(self.url_mode(), self.renderer.get_page_title())
 
 
 # Cheap and cheerful URL detector
@@ -474,9 +457,6 @@ def looks_like_url(word):
         return False
 
 
-class UserAbortException(Exception):
-    pass
-
 # GeminiClient Decorators
 def needs_gi(inner):
     def outer(self, *args, **kwargs):
@@ -498,12 +478,16 @@ class GeminiClient(cmd.Cmd):
         # type sensitivie information.
         os.umask(0o077)
 
-
+        # This dictionary contains an url -> ansirenderer mapping. This allows 
+        # to reuse a renderer when visiting several times the same URL during
+        # the same session
+        self.rendererdic = {}
         self.no_cert_prompt = "\001\x1b[38;5;76m\002" + "ON" + "\001\x1b[38;5;255m\002" + "> " + "\001\x1b[0m\002"
         self.cert_prompt = "\001\x1b[38;5;202m\002" + "ON" + "\001\x1b[38;5;255m\002"
         self.offline_prompt = "\001\x1b[38;5;76m\002" + "OFF" + "\001\x1b[38;5;255m\002" + "> " + "\001\x1b[0m\001"
         self.prompt = self.no_cert_prompt
         self.gi = None
+        self.current_url = None
         self.hist_index = 0
         self.index = []
         self.index_index = -1
@@ -611,6 +595,21 @@ class GeminiClient(cmd.Cmd):
     def complete_move(self,text,line,begidx,endidx):
         return self.complete_add(text,line,begidx,endidx)
 
+    def get_renderer(self,url):
+        # reuse existing renderer if any
+        if url in self.rendererdic.keys():
+            renderer = self.rendererdic[url]
+        else:
+            cache_path = netcache.get_cache_path(url)
+            if cache_path:
+                print("DEBUG: we set the renderer for %s" %url)
+                renderer = ansirenderer.renderer_from_file(cache_path,url)
+                self.rendererdic[url] = renderer
+            else:
+                print("WARNING: no cache for requested renderer for %s" %url)
+                #TODO FIXME
+                return None
+        return renderer
     #TODO: go_to_gi should take an URL as parameter, not gi
     #it should also only be called to really go, not for all links
     def _go_to_url(self,url,**kwargs):
@@ -618,7 +617,7 @@ class GeminiClient(cmd.Cmd):
             gi= GeminiItem(url,name=kwargs["name"])
         else:
             gi= GeminiItem(url)
-        return _go_to_url(GeminiItem(url),kwargs)
+        return self._go_to_gi(GeminiItem(url),kwargs)
 
     def _go_to_gi(self, gi, update_hist=True, check_cache=True, handle=True,\
                                                 mode=None,limit_size=False):
@@ -648,7 +647,6 @@ class GeminiClient(cmd.Cmd):
        #     print("Sorry, no support for {} links.".format(gi.scheme))
        #     return
         url = gi.url
-
         if not mode:
             mode = gi.last_mode
         # Obey permanent redirects
@@ -668,6 +666,7 @@ class GeminiClient(cmd.Cmd):
             params["print_error"] = not self.sync_only
             params["offline"] = self.offline_only
             cachepath = netcache.fetch(url,**params)
+            renderer = self.get_renderer(url)
             # Use cache or mark as to_fetch if resource is not cached
             if not cachepath:
                 self.get_list("to_fetch")
@@ -687,7 +686,8 @@ class GeminiClient(cmd.Cmd):
 
                     # We download images first
                     #TODO: this should go into netcache
-                    for image in gi.get_images(mode=mode):
+                    print("url: ## %s ##"%url)
+                    for image in renderer.get_images(mode=mode):
                         if image and image.startswith("http"):
                             if not netcache.is_cache_valid(image):
                                 width = term_width() - 1
@@ -695,8 +695,7 @@ class GeminiClient(cmd.Cmd):
                                 toprint = toprint[:width]
                                 toprint += " "*(width-len(toprint))
                                 print(toprint,end="\r")
-                                img_gi = GeminiItem(image)
-                                self._go_to_gi(img_gi, update_hist=False, check_cache=True, \
+                                self._go_to_url(image, update_hist=False, check_cache=True, \
                                                     handle=False,limit_size=True)
                 if display and gi.display(mode=mode):
                     self.index = gi.get_links()
@@ -704,6 +703,7 @@ class GeminiClient(cmd.Cmd):
                     self.index_index = -1
                     # Update state (external files are not added to history)
                     self.gi = gi
+                    self.current_url = url
                     if update_hist and not self.sync_only:
                         self._update_history(gi)
                 elif display :
@@ -1196,11 +1196,14 @@ Marks are temporary until shutdown (not saved to disk)."""
     @needs_gi
     def do_info(self,line):
         """Display information about current page."""
-        out = self.gi.get_page_title() + "\n\n"
-        out += "URL      :   " + self.gi.url + "\n"
-        out += "Path     :   " + self.gi.path + "\n"
-        out += "Mime     :   " + ansirenderer.get_mime(self.gi.url) + "\n"
-        out += "Cache    :   " + netcache.get_cache_path(self.gi.url) + "\n"
+        print("current url: %s" %self.current_url)
+        print("current renderer: %s" %self.rendererdic)
+        renderer = self.get_renderer(self.current_url)
+        url = self.current_url
+        out = renderer.get_page_title() + "\n\n"
+        out += "URL      :   " + url + "\n"
+        out += "Mime     :   " + renderer.get_mime() + "\n"
+        out += "Cache    :   " + netcache.get_cache_path(url) + "\n"
         tmp = self.gi.get_temp_filename()
         if tmp != netcache.get_cache_path(self.gi.url):
             out += "Tempfile :   " + self.gi.get_temp_filename() + "\n"
@@ -1448,6 +1451,7 @@ see "handler" command to set your handler."""
             except IndexError:
                 print ("Index too high!")
                 self.gi = last_gi
+                self.current_url = self.gi.url
                 return
         else:
             gi = self.gi
@@ -1585,7 +1589,7 @@ archives, which is a special historical list limited in size. It is similar to `
                 if deleted:
                     print("Removed from %s"%li)
         self.list_add_top("archives",limit=self.options["archives_size"])
-        print("Archiving: %s"%self.gi.get_page_title())
+        print("Archiving: %s"%self.get_renderer(self.current_url).get_page_title())
         print("\x1b[2;34mCurrent maximum size of archives : %s\x1b[0m" %self.options["archives_size"])
 
     def list_add_line(self,list,gi=None,verbose=True):
