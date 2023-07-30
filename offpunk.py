@@ -287,16 +287,6 @@ class GeminiItem():
         return toreturn
 
     #TODO: should be in ansirenderer
-    def get_link(self,nb):
-        # == None allows to return False, even if the list is empty
-        links = self.get_links()
-        if len(links) < nb:
-            print("Index too high! No link %s for %s" %(nb,self.url))
-            return None
-        else:
-            return links[nb-1]
-
-    #TODO: should be in ansirenderer
     def get_subscribe_links(self):
         if self.renderer:
             subs = self.renderer.get_subscribe_links()
@@ -595,7 +585,9 @@ class GeminiClient(cmd.Cmd):
     def complete_move(self,text,line,begidx,endidx):
         return self.complete_add(text,line,begidx,endidx)
 
-    def get_renderer(self,url):
+    def get_renderer(self,url=None):
+        # If launched without argument, we return the renderer for the current URL
+        if not url: url = self.url
         # reuse existing renderer if any
         if url in self.rendererdic.keys():
             renderer = self.rendererdic[url]
@@ -818,17 +810,19 @@ class GeminiClient(cmd.Cmd):
             print("What?")
             return
         # if we have no GeminiItem, there's nothing to do
-        if self.gi is None:
+        if self.current_url is None:
             print("No links to index")
             return
-        try:
-            gi = self.gi.get_link(n)
-        except IndexError:
-            print ("Index too high!")
-            return
+        else:
+            r = self.get_renderer()
+            if r:
+                url = r.get_link(n)
+            else:
+                print("No page with links")
+                return
 
         self.index_index = n
-        self._go_to_gi(gi)
+        self._go_to_url(url)
 
     ### Settings
     def do_redirect(self,line):
@@ -1157,18 +1151,18 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
                     if len(pair) == 1:
                         # Just a single index
                         n = int(index)
-                        gi = self.gi.get_link(n)
-                        self.list_add_line("tour",gi=gi,verbose=False)
+                        url = self.get_renderer().get_link(n)
+                        self.list_add_line("tour",gi=GeminiItem(url),verbose=False)
                     elif len(pair) == 2:
                         # Two endpoints for a range of indices
                         if int(pair[0]) < int(pair[1]):
                             for n in range(int(pair[0]), int(pair[1]) + 1):
-                                gi = self.gi.get_link(n)
-                                self.list_add_line("tour",gi=gi,verbose=False)
+                                url = self.get_renderer().get_link(n)
+                                self.list_add_line("tour",gi=GeminiItem(url),verbose=False)
                         else:
                             for n in range(int(pair[0]), int(pair[1]) - 1, -1):
-                                gi = self.gi.get_link(n)
-                                self.list_add_line("tour",gi=gi,verbose=False)
+                                url = self.get_renderer().get_link(n)
+                                self.list_add_line("tour",gi=GeminiItem(url),verbose=False)
 
                     else:
                         # Syntax error
@@ -1198,7 +1192,7 @@ Marks are temporary until shutdown (not saved to disk)."""
         """Display information about current page."""
         print("current url: %s" %self.current_url)
         print("current renderer: %s" %self.rendererdic)
-        renderer = self.get_renderer(self.current_url)
+        renderer = self.get_renderer()
         url = self.current_url
         out = renderer.get_page_title() + "\n\n"
         out += "URL      :   " + url + "\n"
@@ -1446,8 +1440,8 @@ see "handler" command to set your handler."""
         if index:
             last_gi = self.gi
             try:
-                gi = self.gi.get_link(index)
-                self._go_to_gi(gi, update_hist = False, handle = False)
+                url = self.get_renderer().get_link(index)
+                self._go_to_url(url, update_hist = False, handle = False)
             except IndexError:
                 print ("Index too high!")
                 self.gi = last_gi
@@ -1589,7 +1583,7 @@ archives, which is a special historical list limited in size. It is similar to `
                 if deleted:
                     print("Removed from %s"%li)
         self.list_add_top("archives",limit=self.options["archives_size"])
-        print("Archiving: %s"%self.get_renderer(self.current_url).get_page_title())
+        print("Archiving: %s"%self.get_renderer().get_page_title())
         print("\x1b[2;34mCurrent maximum size of archives : %s\x1b[0m" %self.options["archives_size"])
 
     def list_add_line(self,list,gi=None,verbose=True):
@@ -1708,11 +1702,12 @@ archives, which is a special historical list limited in size. It is similar to `
         elif not line.isnumeric():
             print("go_to_line requires a number as parameter")
         else:
-            gi = GeminiItem("list:///%s"%list)
-            gi = gi.get_link(int(line))
+            r = self.get_renderer("list:///%s"%list)
+            url = r.get_lin(int(line))
             display = not self.sync_only
-            if gi:
-                self._go_to_gi(gi,handle=display)
+            if url:
+                self._go_to_url(url,handle=display)
+                #TODO url_mode ?
                 return gi.url_mode()
 
     def list_show(self,list):

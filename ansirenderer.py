@@ -448,6 +448,14 @@ class AbstractRenderer():
                 for l in self.get_subscribe_links()[1:]:
                     self.links[mode].append(l[0])
         return self.links[mode]
+    def get_link(self,nb):
+        links = self.get_links()
+        if len(links) < nb:
+            print("Index too high! No link %s for %s" %(nb,self.url))
+            return None
+        else:
+            return links[nb-1]
+
     #get_title is about the "content title", so the title in the page itself
     def get_title(self):
         return "Abstract title"
