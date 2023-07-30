@@ -11,6 +11,7 @@ import urllib
 import argparse
 import mimetypes
 import fnmatch
+import netcache
 from offutils import run,term_width
 try:
     from readability import Document
@@ -976,14 +977,12 @@ class HtmlRenderer(AbstractRenderer):
             if _RENDER_IMAGE and mode != "links_only" and imgurl:
                 try:
                     #4 followings line are there to translate the URL into cache path
-                    #TODO: do that with netcache
-                    g = GeminiItem(imgurl)
-                    img = g.get_cache_path()
+                    img = netcache.get_cache_path(imgurl)
                     if imgdata:
                         with open(img,"wb") as cached:
                             cached.write(base64.b64decode(imgdata))
                             cached.close()
-                    if g.is_cache_valid():
+                    if netcache.is_cache_valid(img):
                         renderer = ImageRenderer(img,imgurl)
                         # Image are 40px wide except if terminal is smaller
                         if width > 40:
@@ -1280,9 +1279,11 @@ def render(input,path=None,format="auto",mime=None,url=None):
             r= renderer_from_file(path,url)
         else:
             r = set_renderer(input,url,mime)
-        print("renderer is %s"%r)
+        print("DEBUG: renderer is %s"%r)
     if r:
         r.display()
+    else:
+        print("Could not render %s"%input)
 
 
 def main():
@@ -1302,7 +1303,11 @@ def main():
         #we are interactive, not in stdin, we can have multiple files as input
         for f in args.content:
             path = os.path.abspath(f.name)
-            render(f.read(),path=path,format=args.format,url=args.url,mime=args.mime)
+            try:
+                content = f.read()
+            except UnicodeDecodeError:
+                content = f
+            render(content,path=path,format=args.format,url=args.url,mime=args.mime)
     else:
         #we are in stdin
         if not args.format and not args.mime:
