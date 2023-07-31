@@ -233,10 +233,6 @@ class GeminiItem():
             path = None
         if path:
             # There’s on OS limit on path length
-            if len(path) > 259:
-                toreturn = "Path is too long. This is an OS limitation.\n\n"
-                toreturn += self.url
-                return toreturn
             elif as_file:
                 return path
             else:

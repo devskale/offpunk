@@ -225,6 +225,10 @@ def get_cache_path(url):
         #and we try to access folder
         if os.path.isdir(cache_path):
             cache_path += "/" + index
+    if len(cache_path) > 259:
+        print("Path is too long. This is an OS limitation.\n\n")
+        print(url)
+        return None
     return cache_path
 
 def write_body(url,body,mime=None):
