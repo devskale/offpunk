@@ -210,9 +210,10 @@ class AbstractRenderer():
         self.images = {}
         self.title = None
         self.validity = True
-        self.temp_file = {}
+        self.temp_files = {}
         self.less_histfile = {}
         self.center = center
+        self.last_mode = "readable"
 
     #This class hold an internal representation of the HTML text
     class representation:
@@ -439,7 +440,11 @@ class AbstractRenderer():
         return [[self.url,self.get_mime(),self.get_title()]]
     def is_valid(self):
         return self.validity
-    def get_links(self,mode="links_only"):
+    def is_local(self):
+        #TODO with self.url
+        return False
+    def get_links(self,mode=None):
+        if not mode: mode = self.last_mode
         if mode not in self.links :
             prepared_body = self.prepare(self.body,mode=mode)
             results = self.render(prepared_body,mode=mode)
@@ -533,16 +538,17 @@ class AbstractRenderer():
         title_r.close_color("red")
         return title_r.get_final()
 
-    def display(self,mode="readable",window_title="",window_info=None,grep=None):
-        if not mode: mode = "readable"
+    def display(self,mode=None,window_title="",window_info=None,grep=None):
+        if mode: self.last_mode = mode
+        else: mode = self.last_mode
         wtitle = self._window_title(window_title,info=window_info)
         body = wtitle + "\n" + self.get_body(mode=mode)
         if not body:
             return False
         # We actually put the body in a tmpfile before giving it to less
-        if mode not in self.temp_file:
+        if mode not in self.temp_files:
             tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
-            self.temp_file[mode] = tmpf.name
+            self.temp_files[mode] = tmpf.name
             tmpf.write(body)
             tmpf.close()
         if mode not in self.less_histfile:
@@ -551,12 +557,12 @@ class AbstractRenderer():
             self.less_histfile[mode] = tmpf.name
         else:
             firsttime = False
-        less_cmd(self.temp_file[mode], histfile=self.less_histfile[mode],cat=firsttime,grep=grep)
+        less_cmd(self.temp_files[mode], histfile=self.less_histfile[mode],cat=firsttime,grep=grep)
         return True
 
     def get_temp_file(self,mode="readable"):
-        if mode in self.temp_file:
-            return self.temp_file[mode]
+        if mode in self.temp_files:
+            return self.temp_files[mode]
         else:
             return None
 

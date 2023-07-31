@@ -1,6 +1,3 @@
-#TODO: migrate go_to_gi to netcache
-#TODO: separate ansirenderer into ansicat and ansiless
-#TODO: migrate displaying into ansirenderer
 #!/usr/bin/env python3
 # Offpunk Offline Gemini client
 # Derived from AV-98 by Solderpunk,
@@ -299,28 +296,6 @@ class GeminiItem():
         else:
             return []
 
-    #TODO: should be in ansiless
-    def display(self,mode=None,grep=None):
-        if self.renderer and self.renderer.is_valid():
-            if not mode:
-                mode = self.last_mode
-            else:
-                self.last_mode = mode
-            title = self.renderer.get_url_title()
-            if netcache.is_cache_valid(self.url): #and self.offline_only and not self.local:
-                nbr = len(self.get_links(mode=mode))
-                if self.local:
-                    title += " (%s items)"%nbr
-                    str_last = "local file"
-                else:
-                    str_last = "last accessed on %s" %time.ctime(netcache.cache_last_modified(self.url))
-                    title += " (%s links)"%nbr
-                return self.renderer.display(mode=mode,window_title=title,window_info=str_last,grep=grep)
-            else:
-                return False
-        else:
-            return False
-
     def get_filename(self):
         filename = os.path.basename(netcache.get_cache_path(self.url))
         return filename
@@ -588,6 +563,14 @@ class GeminiClient(cmd.Cmd):
     def get_renderer(self,url=None):
         # If launched without argument, we return the renderer for the current URL
         if not url: url = self.url
+        findmode = url.split("##offpunk_mode=")
+        if len(findmode) > 1:
+            url = findmode[0]
+            if findmode[1] in ["full"] or findmode[1].isnumeric():
+                #TODO: what should we do with last mode ?
+                last_mode = findmode[1]
+        else:
+            self.url = url
         # reuse existing renderer if any
         if url in self.rendererdic.keys():
             renderer = self.rendererdic[url]
@@ -689,7 +672,20 @@ class GeminiClient(cmd.Cmd):
                                 print(toprint,end="\r")
                                 self._go_to_url(image, update_hist=False, check_cache=True, \
                                                     handle=False,limit_size=True)
-                if display and gi.display(mode=mode):
+                is_rendered = False
+                if display and netcache.is_cache_valid(self.url):
+                    title = renderer.get_url_title()
+                    nbr = len(renderer.get_links(mode=mode))
+                    if renderer.is_local():
+                        title += " (%s items)"%nbr
+                        str_last = "local file"
+                    else:
+                        str_last = "last accessed on %s"\
+                                        %time.ctime(netcache.cache_last_modified(self.url))
+                        title += " (%s links)"%nbr
+                    is_rendered = renderer.display(mode=mode,\
+                                            window_title=title,window_info=str_last)
+                if display and is_rendered:
                     self.index = gi.get_links()
                     self.page_index = 0
                     self.index_index = -1
@@ -698,7 +694,7 @@ class GeminiClient(cmd.Cmd):
                     self.current_url = url
                     if update_hist and not self.sync_only:
                         self._update_history(gi)
-                elif display :
+                elif display and not is_rendered :
                     cmd_str = self._get_handler_cmd(ansirenderer.get_mime(gi.url))
                     try:
                         # get body (tmpfile) from gi !
@@ -817,12 +813,12 @@ class GeminiClient(cmd.Cmd):
             r = self.get_renderer()
             if r:
                 url = r.get_link(n)
+                self._go_to_url(url)
             else:
                 print("No page with links")
                 return
 
         self.index_index = n
-        self._go_to_url(url)
 
     ### Settings
     def do_redirect(self,line):
@@ -1321,7 +1317,7 @@ Use 'ls -l' to see URLs."""
     @needs_gi
     def do_find(self, searchterm):
         """Find in current page by displaying only relevant lines (grep)."""
-        self.gi.display(grep=searchterm)
+        self.get_renderer().display(grep=searchterm)
 
     def emptyline(self):
         """Page through index ten lines at a time."""
