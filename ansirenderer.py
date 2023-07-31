@@ -443,7 +443,10 @@ class AbstractRenderer():
     def is_local(self):
         #TODO with self.url
         return False
+    def set_mode(self,mode):
+        self.last_mode = mode
     def get_links(self,mode=None):
+        print("mode : %s and last_mode : %s (%s)"%(mode,self.last_mode,self.url))
         if not mode: mode = self.last_mode
         if mode not in self.links :
             prepared_body = self.prepare(self.body,mode=mode)
@@ -503,7 +506,8 @@ class AbstractRenderer():
 
     # This function return a list of URL which should be downloaded
     # before displaying the page (images in HTML pages, typically)
-    def get_images(self,mode="readable"):
+    def get_images(self,mode=None):
+        if not mode: mode = self.last_mode
         if not mode in self.images:
             self.get_body(mode=mode)
             # we also invalidate the body that was done without images
@@ -516,7 +520,8 @@ class AbstractRenderer():
     def prepare(self,body,mode=None):
         return body
 
-    def get_body(self,width=None,mode="readable"):
+    def get_body(self,width=None,mode=None):
+        if not mode: mode = self.last_mode
         if not width:
             width = term_width()
         if mode not in self.rendered_text:
@@ -560,7 +565,8 @@ class AbstractRenderer():
         less_cmd(self.temp_files[mode], histfile=self.less_histfile[mode],cat=firsttime,grep=grep)
         return True
 
-    def get_temp_file(self,mode="readable"):
+    def get_temp_file(self,mode=None):
+        if not mode: mode = self.last_mode
         if mode in self.temp_files:
             return self.temp_files[mode]
         else:
@@ -849,7 +855,8 @@ class FeedRenderer(GemtextRenderer):
             self.get_body()
         return self.title
 
-    def prepare(self,content,mode="readable",width=None):
+    def prepare(self,content,mode=None,width=None):
+        if not mode: mode = self.last_mode
         if not width:
             width = term_width()
         self.title = "RSS/Atom feed"
@@ -972,7 +979,8 @@ class HtmlRenderer(AbstractRenderer):
     # Our own HTML engine (crazy, isn’t it?)
     # Return [rendered_body, list_of_links]
     # mode is either links_only, readable or full
-    def render(self,body,mode="readable",width=None,add_title=True):
+    def render(self,body,mode=None,width=None,add_title=True):
+        if not mode: mode = self.last_mode
         if not width:
             width = term_width()
         if not _DO_HTML:

@@ -253,7 +253,7 @@ class GeminiItem():
         toreturn = []
         if self.renderer:
             if not mode:
-                mode = self.last_mode
+                mode = self.renderer.last_mode
             links = self.renderer.get_links(mode=mode)
         for l in links:
             #split between link and potential name
@@ -454,8 +454,6 @@ class GeminiClient(cmd.Cmd):
         self.gi = None
         self.current_url = None
         self.hist_index = 0
-        self.index = []
-        self.index_index = -1
         self.marks = {}
         self.page_index = 0
         self.permanent_redirects = {}
@@ -562,15 +560,13 @@ class GeminiClient(cmd.Cmd):
 
     def get_renderer(self,url=None):
         # If launched without argument, we return the renderer for the current URL
+        mode = None
         if not url: url = self.url
         findmode = url.split("##offpunk_mode=")
         if len(findmode) > 1:
             url = findmode[0]
             if findmode[1] in ["full"] or findmode[1].isnumeric():
-                #TODO: what should we do with last mode ?
-                last_mode = findmode[1]
-        else:
-            self.url = url
+                mode = findmode[1]
         # reuse existing renderer if any
         if url in self.rendererdic.keys():
             renderer = self.rendererdic[url]
@@ -584,6 +580,9 @@ class GeminiClient(cmd.Cmd):
                 print("WARNING: no cache for requested renderer for %s" %url)
                 #TODO FIXME
                 return None
+        self.url = url
+        if mode:
+            renderer.set_mode(mode)
         return renderer
     #TODO: go_to_gi should take an URL as parameter, not gi
     #it should also only be called to really go, not for all links
@@ -622,8 +621,6 @@ class GeminiClient(cmd.Cmd):
        #     print("Sorry, no support for {} links.".format(gi.scheme))
        #     return
         url = gi.url
-        if not mode:
-            mode = gi.last_mode
         # Obey permanent redirects
         if url in self.permanent_redirects:
             self._go_to_url(self.permanent_redirects[url],name=gi.name,mode=mode)
@@ -642,6 +639,12 @@ class GeminiClient(cmd.Cmd):
             params["offline"] = self.offline_only
             cachepath = netcache.fetch(url,**params)
             renderer = self.get_renderer(url)
+            if not renderer:
+                print("no renderer for %s"%url)
+            print("mode is originally : %s"%mode)
+            if not mode:
+                mode = renderer.last_mode
+            print("now mode is %s" %mode)
             # Use cache or mark as to_fetch if resource is not cached
             if not cachepath:
                 self.get_list("to_fetch")
@@ -685,10 +688,10 @@ class GeminiClient(cmd.Cmd):
                         title += " (%s links)"%nbr
                     is_rendered = renderer.display(mode=mode,\
                                             window_title=title,window_info=str_last)
+                    print("after display: last_mode = %s" %renderer.last_mode)
+                    print("renderers : %s"%self.rendererdic)
                 if display and is_rendered:
-                    self.index = gi.get_links()
                     self.page_index = 0
-                    self.index_index = -1
                     # Update state (external files are not added to history)
                     self.gi = gi
                     self.current_url = url
@@ -741,6 +744,7 @@ class GeminiClient(cmd.Cmd):
 
     @needs_gi
     def _show_lookup(self, offset=0, end=None, url=False):
+        #TODO: change get_links to use the renderer
         for n, gi in enumerate(self.gi.get_links()[offset:end]):
             print(self._format_geminiitem(n+offset+1, gi, url))
 
@@ -818,7 +822,6 @@ class GeminiClient(cmd.Cmd):
                 print("No page with links")
                 return
 
-        self.index_index = n
 
     ### Settings
     def do_redirect(self,line):
@@ -985,10 +988,9 @@ Use with "cache" to copy the path of the cached content."""
                 args = arg.split()
                 if args and args[0] == "url":
                     if len(args) > 1 and args[1].isdecimal():
-                        gi = self.index[int(args[1])-1]
-                        url = gi.url
+                        url = self.get_renderer().get_link(int(args[1])-1)
                     else:
-                        url = self.gi.url
+                        url = self.url
                     run("xsel -b -i", input=url, direct_output=True)
                 elif args and args[0] == "raw":
                     run("xsel -b -i", input=open(self.gi.get_temp_filename(), "rb"), direct_output=True)
@@ -1124,6 +1126,7 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
             for l in self.list_get_links("tour"):
                 self.list_rm_url(l.url_mode(),"tour")
         elif line == "*":
+            #TODO: change to use renderer.get_links and change list_add_line
             for l in self.gi.get_links():
                 self.list_add_line("tour",gi=l,verbose=False)
         elif line == ".":
@@ -1138,6 +1141,7 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
                 gi = GeminiItem("list:///%s"%line)
                 display = not self.sync_only
                 if gi:
+                    #TODO : change get_links
                     for l in gi.get_links():
                         self.list_add_line("tour",gi=l,verbose=False)
         else:
@@ -1322,7 +1326,7 @@ Use 'ls -l' to see URLs."""
     def emptyline(self):
         """Page through index ten lines at a time."""
         i = self.page_index
-        if not self.gi or i > len(self.gi.get_links()):
+        if not self.gi or i > len(self.get_renderer().get_links()):
             return
         self._show_lookup(offset=i, end=i+10)
         self.page_index += 10
@@ -1686,8 +1690,7 @@ archives, which is a special historical list limited in size. It is similar to `
     def list_get_links(self,list):
         list_path = self.list_path(list)
         if list_path:
-            gi = GeminiItem("list:///%s"%list)
-            return gi.get_links()
+            return self.get_renderer("list:///%s"%list).get_links()
         else:
             return []
 
@@ -2061,6 +2064,7 @@ Argument : duration of cache validity (in seconds)."""
                 #we should only savetotour at the first level of recursion
                 # The code for this was removed so, currently, we savetotour
                 # at every level of recursion.
+                #TODO: get rid of gitem
                 links = gitem.get_links(mode="links_only")
                 subcount = [0,len(links)]
                 d = depth - 1
