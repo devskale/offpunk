@@ -225,25 +225,6 @@ class GeminiItem():
         self.scheme = "https"
         self.local = False
 
-    #TODO : move to ansirenderer
-    def get_body(self,as_file=False):
-        if netcache.is_cache_valid(self.url):
-            path = netcache.get_cache_path(self.url)
-        else:
-            path = None
-        if path:
-            # There’s on OS limit on path length
-            elif as_file:
-                return path
-            else:
-                with open(path) as f:
-                    body = f.read()
-                    f.close()
-                return body
-        else:
-            #print("ERROR: NO CACHE for %s" %self._cache_path)
-            return None
-
     # This method is used to load once the list of links in a gi
     # Links can be followed, after a space, by a description/title
     #TODO: remove this code
@@ -690,10 +671,10 @@ class GeminiClient(cmd.Cmd):
                     if update_hist and not self.sync_only:
                         self._update_history(gi)
                 elif display and not is_rendered :
-                    cmd_str = self._get_handler_cmd(ansirenderer.get_mime(gi.url))
+                    cmd_str = self._get_handler_cmd(ansirenderer.get_mime(url))
                     try:
                         # get body (tmpfile) from gi !
-                        run(cmd_str, parameter=gi.get_body(as_file=True), direct_output=True)
+                        run(cmd_str, netcache.get_cache_path(url), direct_output=True)
                     except FileNotFoundError:
                         print("Handler program %s not found!" % shlex.split(cmd_str)[0])
                         print("You can use the ! command to specify another handler program or pipeline.")
@@ -976,14 +957,16 @@ Use with "cache" to copy the path of the cached content."""
                     if len(args) > 1 and args[1].isdecimal():
                         url = self.get_renderer().get_link(int(args[1])-1)
                     else:
-                        url = self.url
+                        url = self.current_url
                     run("xsel -b -i", input=url, direct_output=True)
                 elif args and args[0] == "raw":
                     run("xsel -b -i", input=open(self.gi.get_temp_filename(), "rb"), direct_output=True)
                 elif args and args[0] == "cache":
-                    run("xsel -b -i", input=netcache.get_cache_path(self.gi.url), direct_output=True)
+                    run("xsel -b -i", input=netcache.get_cache_path(self.current_url),\
+                                                                    direct_output=True)
                 else:
-                    run("xsel -b -i", input=open(self.gi.get_body(as_file=True), "rb"), direct_output=True)
+                    run("xsel -b -i", input=open(netcache.get_cache_path(self.current_url), "rb"),\
+                                                direct_output=True)
             else:
                 print("Please install xsel to use copy")
         else:
@@ -1369,7 +1352,7 @@ see "handler" command to set your handler."""
             run("xdg-open %s", parameter=self.gi.url, direct_output=True)
         else:
             cmd_str = self._get_handler_cmd(ansirenderer.get_mime(self.gi.url))
-            run(cmd_str, parameter=self.gi.get_body(as_file=True), direct_output=True)
+            run(cmd_str, parameter=netcache.get_cache_path(self.current_url), direct_output=True)
 
     @needs_gi
     def do_shell(self, line):
@@ -1390,7 +1373,7 @@ see "handler" command to set your handler."""
             # No arguments given at all
             # Save current item, if there is one, to a file whose name is
             # inferred from the gemini path
-            if not netcache.is_cache_valid(self.gi.url):
+            if not netcache.is_cache_valid(self.current_url):
                 print("You cannot save if not cached!")
                 return
             else:
@@ -1434,6 +1417,7 @@ see "handler" command to set your handler."""
                 return
         else:
             gi = self.gi
+            url = gi.url
 
         # Derive filename from current GI's path, if one hasn't been set
         if not filename:
@@ -1445,7 +1429,7 @@ see "handler" command to set your handler."""
             # Don't use _get_active_tmpfile() here, because we want to save the
             # "source code" of menus, not the rendered view - this way Offpunk
             # can navigate to it later.
-            path = gi.get_body(as_file=True)
+            path = netcache.get_cache_path(url)
             if os.path.isdir(path):
                 print("Can’t save %s because it’s a folder, not a file"%path)
             else:
