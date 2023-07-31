@@ -564,7 +564,7 @@ class GeminiClient(cmd.Cmd):
     def get_renderer(self,url=None):
         # If launched without argument, we return the renderer for the current URL
         mode = None
-        if not url: url = self.url
+        if not url: url = self.current_url
         findmode = url.split("##offpunk_mode=")
         if len(findmode) > 1:
             url = findmode[0]
@@ -583,7 +583,6 @@ class GeminiClient(cmd.Cmd):
                 print("WARNING: no cache for requested renderer for %s" %url)
                 #TODO FIXME
                 return None
-        self.url = url
         if mode:
             renderer.set_mode(mode)
         return renderer
@@ -644,10 +643,6 @@ class GeminiClient(cmd.Cmd):
             renderer = self.get_renderer(url)
             if not renderer:
                 print("no renderer for %s"%url)
-            print("mode is originally : %s"%mode)
-            if not mode:
-                mode = renderer.last_mode
-            print("now mode is %s" %mode)
             # Use cache or mark as to_fetch if resource is not cached
             if not cachepath:
                 self.get_list("to_fetch")
@@ -679,7 +674,7 @@ class GeminiClient(cmd.Cmd):
                                 self._go_to_url(image, update_hist=False, check_cache=True, \
                                                     handle=False,limit_size=True)
                 is_rendered = False
-                if display and netcache.is_cache_valid(self.url):
+                if display and netcache.is_cache_valid(url):
                     title = renderer.get_url_title()
                     nbr = len(renderer.get_links(mode=mode))
                     if renderer.is_local():
@@ -687,12 +682,10 @@ class GeminiClient(cmd.Cmd):
                         str_last = "local file"
                     else:
                         str_last = "last accessed on %s"\
-                                        %time.ctime(netcache.cache_last_modified(self.url))
+                                        %time.ctime(netcache.cache_last_modified(url))
                         title += " (%s links)"%nbr
                     is_rendered = renderer.display(mode=mode,\
                                             window_title=title,window_info=str_last)
-                    print("after display: last_mode = %s" %renderer.last_mode)
-                    print("renderers : %s"%self.rendererdic)
                 if display and is_rendered:
                     self.page_index = 0
                     # Update state (external files are not added to history)
