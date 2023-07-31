@@ -6,10 +6,10 @@ build-backend = "flit_core.buildapi"
 name = "offpunk"
 authors = [
     {name = "Solderpunk", email = "solderpunk@sdf.org"},
-    {name = "Lionel Dricot (Ploum)", email = "offpunk@ploum.eu"},
+    {name = "Lionel Dricot (Ploum)", email = "offpunk110@ploum.eu"},
 ]
 maintainers = [
-    {name = "Lionel Dricot (Ploum)", email = "offpunk@ploum.eu"},
+    {name = "Lionel Dricot (Ploum)", email = "offpunk110@ploum.eu"},
 ]
 readme = "README.md"
 classifiers = [

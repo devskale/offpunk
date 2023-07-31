@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 # Offpunk Offline Gemini client
 # Derived from AV-98 by Solderpunk,
-# (C) 2021, 2022 Ploum <offpunk@ploum.eu>
-# (C) 2019, 2020 Solderpunk <solderpunk@sdf.org>
+# (C) 2021, 2022 Ploum <offpunk110 at ploum.eu>
+# (C) 2019, 2020 Solderpunk <solderpunk at sdf.org>
 # With contributions from:
-#  - danceka <hannu.hartikainen@gmail.com>
-#  - <jprjr@tilde.club>
-#  - <vee@vnsf.xyz>
-#  - Klaus Alexander Seistrup <klaus@seistrup.dk>
-#  - govynnus <govynnus@sdf.org>
-#  - Björn Wärmedal <bjorn.warmedal@gmail.com>
-#  - <jake@rmgr.dev>
-#  - Maeve Sproule <code@sprock.dev>
+#  - danceka <hannu.hartikainen at gmail.com>
+#  - <jprjr at tilde.club>
+#  - <vee at vnsf.xyz>
+#  - Klaus Alexander Seistrup <klaus at seistrup.dk>
+#  - govynnus <govynnus at sdf.org>
+#  - Björn Wärmedal <bjorn.warmedal at gmail.com>
+#  - <jake at rmgr.dev>
+#  - Maeve Sproule <code at sprock.dev>
 
 """
 Offline-First Gemini/Web/Gopher/RSS reader and browser
 """
 
-__version__ = "1.9.2"
+__version__ = "1.10"
 
 import argparse
 import cmd
@@ -267,7 +267,7 @@ _GREP = "grep --color=auto"
 less_version = 0
 if not shutil.which("less"):
     print("Please install the pager \"less\" to run Offpunk.")
-    print("If you wish to use another pager, send your request to offpunk@ploum.eu.")
+    print("If you wish to use another pager, send me an email.")
     print("(I’m really curious to hear about people not having \"less\" on their system.)")
     sys.exit()
 output = run("less --version")

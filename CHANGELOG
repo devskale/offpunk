@@ -1,6 +1,6 @@
 # Offpunk History
 
-## 1.10 - unreleased
+## 1.10 - July 31st 2023
 - IMPORTANT : new optional dependency : python-chardet
 - IMPORTANT : Gopher directory index filename changed from "index.txt" to "gophermap". To update the cache to the new format run the `migrate-offpunk-cache` script (Sotiris Papatheodorou)
 - "set accept_bad_ssl_certificates True" now also used for Gemini expired certificates
