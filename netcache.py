@@ -11,6 +11,7 @@ import ssl
 import glob
 import datetime
 import hashlib
+import sqlite3
 from ssl import CertificateError
 try:
     import chardet
@@ -30,7 +31,7 @@ _home = os.path.expanduser('~')
 cache_home = os.environ.get('XDG_CACHE_HOME') or\
                 os.path.join(_home,'.cache')
 #_CACHE_PATH = os.path.join(cache_home,"offpunk/")
-#Debug:
+#Debug (TODO: get path from offpunk):
 _CACHE_PATH = "/home/ploum/dev/netcache/"
 _DATA_DIR = "/home/ploum/dev/netcache/"
 _CONFIG_DIR = "/home/ploum/dev/netcache/"
@@ -814,7 +815,7 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,**kwargs):
     # TODO: another cert handling to refactor
     # Remember that we showed the current cert to this domain...
     #TODO : accept badssl and automatic choice
-    validate_cert(address[4][0], host, cert,automatic_choice="y")
+    _validate_cert(address[4][0], host, cert,automatic_choice="y")
 #    if self.client_certs["active"]:
 #        self.active_cert_domains.append(host)
 #        self.client_certs[host] = self.client_certs["active"]

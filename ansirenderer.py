@@ -41,7 +41,7 @@ except ModuleNotFoundError:
 less_version = 0
 if not shutil.which("less"):
     print("Please install the pager \"less\" to run Offpunk.")
-    print("If you wish to use another pager, send your request to offpunk@ploum.eu.")
+    print("If you wish to use another pager, send me an email !")
     print("(I’m really curious to hear about people not having \"less\" on their system.)")
     sys.exit()
 output = run("less --version")
@@ -1234,7 +1234,6 @@ def get_mime(path):
             #by default, we consider it’s gemini except for html
             mime = "text/gemini"
     return mime
-
 
 def renderer_from_file(path,url=None):
     mime = get_mime(path)

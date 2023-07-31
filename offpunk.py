@@ -31,7 +31,6 @@ import random
 import shlex
 import shutil
 import socket
-import sqlite3
 import sys
 import time
 import urllib.parse
@@ -136,6 +135,10 @@ def less_cmd(file, histfile=None,cat=False,grep=None):
         cmd_str = _DEFAULT_LESS
     run(cmd_str, parameter=file, direct_output=True, env=env)
 
+#TODO: remove this debug code
+_CACHE_PATH = "/home/ploum/dev/netcache/"
+_DATA_DIR = "/home/ploum/dev/netcache/"
+_CONFIG_DIR = "/home/ploum/dev/netcache/"
 # Command abbreviations
 _ABBREVS = {
     "..":   "up",
@@ -247,41 +250,41 @@ class GeminiItem():
 
     # This method is used to load once the list of links in a gi
     # Links can be followed, after a space, by a description/title
-    #TODO: check all calls of get_links then move it to ansirenderer
-    def get_links(self,mode=None):
-        links = []
-        toreturn = []
-        if self.renderer:
-            if not mode:
-                mode = self.renderer.last_mode
-            links = self.renderer.get_links(mode=mode)
-        for l in links:
-            #split between link and potential name
-            # check that l is non-empty
-            url = None
-            if l:
-                splitted = l.split(maxsplit=1)
-                url = self.absolutise_url(splitted[0])
-            if url and looks_like_url(url):
-                if len(splitted) > 1:
-                    #We add a name only for Gopher items
-                    if url.startswith("gopher://"):
-                        newgi = GeminiItem(url,name=splitted[1])
-                    else:
-                        newgi = GeminiItem(url)
-                else:
-                    newgi = GeminiItem(url)
-                toreturn.append(newgi)
-            elif url and mode != "links_only" and url.startswith("data:image/"):
-                imgurl,imgdata = ansirenderer.looks_like_base64(url,self.url)
-                if imgurl:
-                    toreturn.append(GeminiItem(imgurl))
-                else:
-                    toreturn.append(None)
-            else:
-                # We must include a None item to keep the link count valid
-                toreturn.append(None)
-        return toreturn
+    #TODO: remove this code
+   # def get_links(self,mode=None):
+   #     links = []
+   #     toreturn = []
+   #     if self.renderer:
+   #         if not mode:
+   #             mode = self.renderer.last_mode
+   #         links = self.renderer.get_links(mode=mode)
+   #     for l in links:
+   #         #split between link and potential name
+   #         # check that l is non-empty
+   #         url = None
+   #         if l:
+   #             splitted = l.split(maxsplit=1)
+   #             url = self.absolutise_url(splitted[0])
+   #         if url and looks_like_url(url):
+   #             if len(splitted) > 1:
+   #                 #We add a name only for Gopher items
+   #                 if url.startswith("gopher://"):
+   #                     newgi = GeminiItem(url,name=splitted[1])
+   #                 else:
+   #                     newgi = GeminiItem(url)
+   #             else:
+   #                 newgi = GeminiItem(url)
+   #             toreturn.append(newgi)
+   #         elif url and mode != "links_only" and url.startswith("data:image/"):
+   #             imgurl,imgdata = ansirenderer.looks_like_base64(url,self.url)
+   #             if imgurl:
+   #                 toreturn.append(GeminiItem(imgurl))
+   #             else:
+   #                 toreturn.append(None)
+   #         else:
+   #             # We must include a None item to keep the link count valid
+   #             toreturn.append(None)
+   #     return toreturn
 
     #TODO: should be in ansirenderer
     def get_subscribe_links(self):
@@ -731,22 +734,16 @@ class GeminiClient(cmd.Cmd):
                 print("Please install xdg-open (usually from xdg-util package)")
         return cmd_str
 
-    #TODO: remove format_geminiitem
-    def _format_geminiitem(self, index, gi, url=False):
-        if not gi:
-            line = "[%s] - No valid URL"%index
-        else:
-            protocol = "" if gi.scheme == "gemini" else " %s" % gi.scheme
-            line = "[%d%s] %s" % (index, protocol, gi.name or gi.url)
-            if gi.name and url:
-                line += " (%s)" % gi.url
-        return line
-
     @needs_gi
-    def _show_lookup(self, offset=0, end=None, url=False):
-        #TODO: change get_links to use the renderer
-        for n, gi in enumerate(self.gi.get_links()[offset:end]):
-            print(self._format_geminiitem(n+offset+1, gi, url))
+    def _show_lookup(self, offset=0, end=None, show_url=False):
+        for n, u in enumerate(self.get_renderer().get_links()[offset:end]):
+            index = n+offset+1
+            line = "[%s] %s" %(index,u)
+            #TODO: implement proper listing of url (with protocol and show_url)
+             #   protocol = "" if gi.scheme == "gemini" else " %s" % gi.scheme
+             #   line = "[%d%s] %s" % (index, protocol, gi.name or gi.url)
+             # line += " (%s)" % gi.url
+            print(line)
 
     def _update_history(self, gi):
         # We never update while in sync_only
@@ -1127,8 +1124,8 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
                 self.list_rm_url(l.url_mode(),"tour")
         elif line == "*":
             #TODO: change to use renderer.get_links and change list_add_line
-            for l in self.gi.get_links():
-                self.list_add_line("tour",gi=l,verbose=False)
+            for l in self.get_renderer().get_links():
+                self.list_add_line("tour",gi=GeminiItem(l),verbose=False)
         elif line == ".":
             self.list_add_line("tour",verbose=False)
         elif looks_like_url(line):
@@ -1138,12 +1135,11 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
             if not list_path:
                 print("List %s does not exist. Cannot add it to tour"%(list))
             else:
-                gi = GeminiItem("list:///%s"%line)
+                url = "list:///%s"%line
                 display = not self.sync_only
-                if gi:
-                    #TODO : change get_links
-                    for l in gi.get_links():
-                        self.list_add_line("tour",gi=l,verbose=False)
+                #TODO : change get_links
+                for l in self.get_renderer(url).get_links():
+                    self.list_add_line("tour",gi=GeminiItem(l),verbose=False)
         else:
             for index in line.split():
                 try:
@@ -1277,7 +1273,7 @@ Marks are temporary until shutdown (not saved to disk)."""
     def do_ls(self, line):
         """List contents of current index.
 Use 'ls -l' to see URLs."""
-        self._show_lookup(url = "-l" in line)
+        self._show_lookup(show_url = "-l" in line)
         self.page_index = 0
 
     def do_search(self,line):
@@ -1689,7 +1685,8 @@ archives, which is a special historical list limited in size. It is similar to `
 
     def list_get_links(self,list):
         list_path = self.list_path(list)
-        if list_path:
+        if os.path.exists(list_path):
+            print("path is %s and exists %s"%(list_path,os.path.exists(list_path)))
             return self.get_renderer("list:///%s"%list).get_links()
         else:
             return []
@@ -1706,8 +1703,8 @@ archives, which is a special historical list limited in size. It is similar to `
             display = not self.sync_only
             if url:
                 self._go_to_url(url,handle=display)
-                #TODO url_mode ?
-                return gi.url_mode()
+                #TODO : why returning the mode??
+                return self.renderer(url).last_mode
 
     def list_show(self,list):
         list_path = self.list_path(list)
