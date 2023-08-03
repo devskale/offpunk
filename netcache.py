@@ -127,8 +127,6 @@ def is_cache_valid(url,validity=0):
         #There’s not even a cache!
         return False
 
-
-
 def get_cache_path(url):
     # Sometimes, cache_path became a folder! (which happens for index.html/index.gmi)
     # In that case, we need to reconstruct it
@@ -261,13 +259,41 @@ def write_body(url,body,mime=None):
             f.close()
         return cache_path
 
+
+def set_error(url,err):
+# If we get an error, we want to keep an existing cache
+# but we need to touch it or to create an empty one
+# to avoid hitting the error at each refresh
+    cache = get_cache_path(url)
+    if is_cache_valid(url):
+        os.utime(cache)
+    else:
+        cache_dir = os.path.dirname(cache)
+        root_dir = cache_dir
+        while not os.path.exists(root_dir):
+            root_dir = os.path.dirname(root_dir)
+        if os.path.isfile(root_dir):
+            os.remove(root_dir)
+        os.makedirs(cache_dir,exist_ok=True)
+        if os.path.isdir(cache_dir):
+            with open(cache, "w") as cache:
+                cache.write(str(datetime.datetime.now())+"\n")
+                cache.write("ERROR while caching %s\n\n" %url)
+                cache.write("*****\n\n")
+                cache.write(str(type(err)) + " = " + str(err))
+                #cache.write("\n" + str(err.with_traceback(None)))
+                cache.write("\n*****\n\n")
+                cache.write("If you believe this error was temporary, type ""reload"".\n")
+                cache.write("The ressource will be tentatively fetched during next sync.\n")
+                cache.close()
+    return cache
+
 def _fetch_http(url,max_size=None,timeout=DEFAULT_TIMEOUT,**kwargs):
-    def set_error(item,length,max_size):
-        err = "Size of %s is %s Mo\n"%(item.url,length)
+    def too_large_error(url,length,max_size):
+        err = "Size of %s is %s Mo\n"%(url,length)
         err += "Offpunk only download automatically content under %s Mo\n" %(max_size/1000000)
         err += "To retrieve this content anyway, type 'reload'."
-        item.set_error(err)
-        return item
+        return set_error(url,err)
     header = {}
     header["User-Agent"] = "Netcache"
     parsed = urllib.parse.urlparse(url)
@@ -298,7 +324,7 @@ def _fetch_http(url,max_size=None,timeout=DEFAULT_TIMEOUT,**kwargs):
             length = 0
         if max_size and length > max_size:
             response.close()
-            return set_error(gi,str(length/100),max_size)
+            return too_large_error(url,str(length/100),max_size)
         elif max_size and length == 0:
             body = b''
             downloaded = 0
@@ -315,7 +341,7 @@ def _fetch_http(url,max_size=None,timeout=DEFAULT_TIMEOUT,**kwargs):
                 #print("size: %s (%s\% of maxlenght)"%(size,size/max_size))
                 if size > max_size/2:
                     response.close()
-                    return set_error(gi,"streaming",max_size)
+                    return too_large_error(url,"streaming",max_size)
             response.close()
         else:
             body = response.content
@@ -426,9 +452,7 @@ def _fetch_spartan(url,**kwargs):
         elif code == 3:
             redirect_url = url_parts._replace(path=meta).geturl()
         else:
-            #TODO:set error!
-            #gi.set_error("Spartan code %s: Error %s"%(code,meta))
-            print("TODO set_error")
+            return set_error(url,"Spartan code %s: Error %s"%(code,meta))
     if redirect_url:
         cache = _fetch_spartan(redirect_url)
     return cache
@@ -956,8 +980,7 @@ def fetch(url,**kwargs):
         except UserAbortException:
             return
         except Exception as err:
-            #TODO return the error !
-            #gi.set_error(err)
+            cache = set_error(url, err)
             # Print an error message
             # we fail silently when sync_only
             if isinstance(err, socket.gaierror):
@@ -994,7 +1017,7 @@ def fetch(url,**kwargs):
                     print("ERROR4: " + str(type(err)) + " : " + str(err))
                     #print("\n" + str(err.with_traceback(None)))
                     print(traceback.format_exc())
-            return
+            return cache
     else:
         print("Not cached URL or not supported format (TODO)")
     return path

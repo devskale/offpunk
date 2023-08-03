@@ -1005,7 +1005,7 @@ class HtmlRenderer(AbstractRenderer):
                 if "rss" in ty or "atom" in ty or "feed" in ty:
                     # some rss links are relatives: we absolutise_url
                     sublink = urllib.parse.urljoin(self.url, l.get("href"))
-                    subs.append([sublink,ty.l.get("title")])
+                    subs.append([sublink,ty,l.get("title")])
         return subs
 
     def get_title(self):

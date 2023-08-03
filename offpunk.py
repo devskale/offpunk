@@ -197,15 +197,8 @@ def fix_ipv6_url(url):
         return schema + "://" + schemaless
     return schemaless
 
-# Offpunk is organized as follow:
-# - a GeminiClient instance which handles the browsing of GeminiItems (= pages).
-# - There’s only one GeminiClient. Each page is a GeminiItem (name is historical, as
-# it could be non-gemini content)
-# - A GeminiItem is created with an URL from which it will derives content.
-# - Content include : a title, a body (raw source) and a renderer. The renderer will provide
-#                     ANSI rendered version of the content and a list of links
-# - Each GeminiItem generates a "cache_path" in which it maintains a cached version of its content.
-
+# Offpunk is basically a GeminiClient class which download URLs using netcache then
+# display them using AnsiRenderer.
 class GeminiItem():
 
     def __init__(self, url, name=""):
@@ -218,45 +211,6 @@ class GeminiItem():
         self.scheme = "https"
         self.local = False
 
-    def get_filename(self):
-        filename = os.path.basename(netcache.get_cache_path(self.url))
-        return filename
-
-    def get_temp_filename(self):
-        tmpf = None
-        if self.renderer and self.renderer.is_valid():
-            tmpf = self.renderer.get_temp_file()
-        cache_path = netcache.get_cache_path(self.url)
-        if not tmpf and cache_path:
-            tmpf = cache_path
-        return tmpf
-
-    def set_error(self,err):
-    # If we get an error, we want to keep an existing cache
-    # but we need to touch it or to create an empty one
-    # to avoid hitting the error at each refresh
-        cache = netcache.get_cache_path(self.url)
-        if netcache.is_cache_valid(self.url):
-            os.utime(cache)
-        else:
-            cache_dir = os.path.dirname(cache)
-            root_dir = cache_dir
-            while not os.path.exists(root_dir):
-                root_dir = os.path.dirname(root_dir)
-            if os.path.isfile(root_dir):
-                os.remove(root_dir)
-            os.makedirs(cache_dir,exist_ok=True)
-            if os.path.isdir(cache_dir):
-                with open(cache, "w") as cache:
-                    cache.write(str(datetime.datetime.now())+"\n")
-                    cache.write("ERROR while caching %s\n\n" %self.url)
-                    cache.write("*****\n\n")
-                    cache.write(str(type(err)) + " = " + str(err))
-                    #cache.write("\n" + str(err.with_traceback(None)))
-                    cache.write("\n*****\n\n")
-                    cache.write("If you believe this error was temporary, type ""reload"".\n")
-                    cache.write("The ressource will be tentatively fetched during next sync.\n")
-                    cache.close()
 
 # Cheap and cheerful URL detector
 def looks_like_url(word):
@@ -267,16 +221,14 @@ def looks_like_url(word):
         parsed = urllib.parse.urlparse(url)
         #sometimes, urllib crashed only when requesting the port
         port = parsed.port
-        mailto = word.startswith("mailto:")
         scheme = word.split("://")[0]
+        mailto = word.startswith("mailto:")
         start = scheme in netcache.standard_ports
         local = scheme in ["file","list"]
-        if not start and not local and not mailto:
-            return looks_like_url("gemini://"+word)
-        elif mailto:
+        if mailto:
             return "@" in word
         elif not local:
-            return "." in word or "localhost" in word
+            return start and ("." in word or "localhost" in word)
         else:
             return "/" in word
     except ValueError:
@@ -286,7 +238,7 @@ def looks_like_url(word):
 # GeminiClient Decorators
 def needs_gi(inner):
     def outer(self, *args, **kwargs):
-        if not self.gi:
+        if not self.current_url:
             print("You need to 'go' somewhere, first")
             return None
         else:
@@ -312,7 +264,6 @@ class GeminiClient(cmd.Cmd):
         self.cert_prompt = "\001\x1b[38;5;202m\002" + "ON" + "\001\x1b[38;5;255m\002"
         self.offline_prompt = "\001\x1b[38;5;76m\002" + "OFF" + "\001\x1b[38;5;255m\002" + "> " + "\001\x1b[0m\001"
         self.prompt = self.no_cert_prompt
-        self.gi = None
         self.current_url = None
         self.hist_index = 0
         self.marks = {}
@@ -434,35 +385,28 @@ class GeminiClient(cmd.Cmd):
         else:
             cache_path = netcache.get_cache_path(url)
             if cache_path:
-                print("DEBUG: we set the renderer for %s" %url)
                 renderer = ansirenderer.renderer_from_file(cache_path,url)
                 self.rendererdic[url] = renderer
             else:
                 print("WARNING: no cache for requested renderer for %s" %url)
-                #TODO FIXME
                 return None
         if mode:
             renderer.set_mode(mode)
         return renderer
-    #TODO: go_to_gi should take an URL as parameter, not gi
-    #it should also only be called to really go, not for all links
-    def _go_to_url(self,url,**kwargs):
-        if "name" in kwargs.keys():
-            gi= GeminiItem(url,name=kwargs["name"])
-        else:
-            gi= GeminiItem(url)
-        return self._go_to_gi(GeminiItem(url),kwargs)
 
-    def _go_to_gi(self, gi, update_hist=True, check_cache=True, handle=True,\
-                                                mode=None,limit_size=False):
+    def _go_to_url(self, url, update_hist=True, check_cache=True, handle=True,\
+                                            name=None, mode=None,limit_size=False):
         """This method might be considered "the heart of Offpunk".
         Everything involved in fetching a gemini resource happens here:
         sending the request over the network, parsing the response,
         storing the response in a temporary file, choosing
         and calling a handler program, and updating the history.
         Nothing is returned."""
-        if not gi:
+        if not url:
             return
+        #TODO: we don’t handle the name anymore !
+        if name:
+            print("We don’t handle name of URL: %s"%name)
         # Don't try to speak to servers running other protocols
         #TODO: support for mailto and unsupported protocols
        # elif gi.scheme == "mailto":
@@ -480,18 +424,21 @@ class GeminiClient(cmd.Cmd):
        #                                                         and not self.sync_only:
        #     print("Sorry, no support for {} links.".format(gi.scheme))
        #     return
-        url = gi.url
         # Obey permanent redirects
         if url in self.permanent_redirects:
-            self._go_to_url(self.permanent_redirects[url],name=gi.name,mode=mode)
+            self._go_to_url(self.permanent_redirects[url],update_hist=update_hist,\
+                            check_cache=check_cache, handle=handle, name=name,mode=mode,\
+                            limit_size=limit_size)
             return
 
         # check if local file exists.
-        if gi.local and not os.path.exists(gi.path):
-            print("Local file %s does not exist!" %gi.path)
-            return
+        #TODO
+        #if gi.local and not os.path.exists(gi.path):
+        #    print("Local file %s does not exist!" %gi.path)
+        #    return
 
-        elif not gi.local:
+        #elif not gi.local:
+        if True:
             params = {}
             params["timeout"] = self.options["short_timeout"]
             params["max_size"] = int(self.options["max_size_download"])*1000000
@@ -504,7 +451,7 @@ class GeminiClient(cmd.Cmd):
             # Use cache or mark as to_fetch if resource is not cached
             if not cachepath:
                 self.get_list("to_fetch")
-                r = self.list_add_line("to_fetch",gi=gi,verbose=False)
+                r = self.list_add_line("to_fetch",url=url,verbose=False)
                 if r:
                     print("%s not available, marked for syncing"%url)
                 else:
@@ -547,16 +494,14 @@ class GeminiClient(cmd.Cmd):
                 if display and is_rendered:
                     self.page_index = 0
                     # Update state (external files are not added to history)
-                    self.gi = gi
                     if mode and mode != "readable": 
                         url += "##offpunk_mode=" + mode
                     self.current_url = url
                     if update_hist and not self.sync_only:
-                        self._update_history(gi)
+                        self._update_history(url)
                 elif display and not is_rendered :
                     cmd_str = self._get_handler_cmd(ansirenderer.get_mime(url))
                     try:
-                        # get body (tmpfile) from gi !
                         run(cmd_str, netcache.get_cache_path(url), direct_output=True)
                     except FileNotFoundError:
                         print("Handler program %s not found!" % shlex.split(cmd_str)[0])
@@ -598,7 +543,7 @@ class GeminiClient(cmd.Cmd):
              # line += " (%s)" % gi.url
             print(line)
 
-    def _update_history(self, gi):
+    def _update_history(self, url):
         # We never update while in sync_only
         if self.sync_only:
             return
@@ -611,7 +556,7 @@ class GeminiClient(cmd.Cmd):
         length = len(links)
         if length > self.options["history_size"]:
             length = self.options["history_size"]
-        if length > 0 and links[self.hist_index] == gi:
+        if length > 0 and links[self.hist_index] == url:
             return
         self.list_add_top("history",limit=self.options["history_size"],truncate_lines=self.hist_index)
         self.hist_index = 0
@@ -659,7 +604,7 @@ class GeminiClient(cmd.Cmd):
         except ValueError:
             print("What?")
             return
-        # if we have no GeminiItem, there's nothing to do
+        # if we have no url, there's nothing to do
         if self.current_url is None:
             print("No links to index")
             return
@@ -833,7 +778,7 @@ class GeminiClient(cmd.Cmd):
 Use with "url" as argument to only copy the adress.
 Use with "raw" to copy ANSI content as seen in your terminal (not gemtext).
 Use with "cache" to copy the path of the cached content."""
-        if self.gi:
+        if self.current_url:
             if _HAS_XSEL:
                 args = arg.split()
                 if args and args[0] == "url":
@@ -843,7 +788,8 @@ Use with "cache" to copy the path of the cached content."""
                         url = self.current_url
                     run("xsel -b -i", input=url, direct_output=True)
                 elif args and args[0] == "raw":
-                    run("xsel -b -i", input=open(self.gi.get_temp_filename(), "rb"), direct_output=True)
+                    run("xsel -b -i", input=open(self.get_renderer().get_temp_filename(), "rb"),\
+                                                direct_output=True)
                 elif args and args[0] == "cache":
                     run("xsel -b -i", input=netcache.get_cache_path(self.current_url),\
                                                                     direct_output=True)
@@ -891,14 +837,14 @@ Use with "cache" to copy the path of the cached content."""
 
         # First, check for possible marks
         elif line in self.marks:
-            gi = self.marks[line]
-            self._go_to_gi(gi)
+            url = self.marks[line]
+            self._go_to_url(url)
         # or a local file
         elif os.path.exists(os.path.expanduser(line)):
-            self._go_to_gi(GeminiItem(line))
+            self._go_to_url(line)
         # If this isn't a mark, treat it as a URL
         elif looks_like_url(line):
-            self._go_to_gi(GeminiItem(line))
+            self._go_to_url(line)
         else:
             print("%s is not a valid URL to go"%line)
 
@@ -907,13 +853,13 @@ Use with "cache" to copy the path of the cached content."""
         """Reload the current URL."""
         if self.offline_only:
             self.get_list("to_fetch")
-            r = self.list_add_line("to_fetch",gi=self.gi,verbose=False)
+            r = self.list_add_line("to_fetch",url=self.current_url,verbose=False)
             if r:
-                print("%s marked for syncing" %self.gi.url)
+                print("%s marked for syncing" %self.current_url)
             else:
-                print("%s already marked for syncing" %self.gi.url)
+                print("%s already marked for syncing" %self.current_url)
         else:
-            self._go_to_gi(self.gi, check_cache=False)
+            self._go_to_url(self.current_url, check_cache=False)
 
     @needs_gi
     def do_up(self, *args):
@@ -924,7 +870,7 @@ Take an integer as argument to go up multiple times."""
             level = int(args[0])
         elif args[0] != "":
             print("Up only take integer as arguments")
-        #TODO: implement UP
+        #TODO : implement up, this code is copy/pasted from GeminiItem
         path = self.path.rstrip('/')
         count = 0
         while count < level:
@@ -939,7 +885,7 @@ Take an integer as argument to go up multiple times."""
             count += 1
         if self.scheme == "gopher":
             path = "/1" + path
-        return GeminiItem(self._derive_url(path))
+        return self._derive_url(path)
 
     def do_back(self, *args):
         """Go back to the previous gemini item."""
@@ -948,8 +894,8 @@ Take an integer as argument to go up multiple times."""
         if self.hist_index >= len(links) -1:
             return
         self.hist_index += 1
-        gi = links[self.hist_index]
-        self._go_to_gi(gi, update_hist=False)
+        url = links[self.hist_index]
+        self._go_to_url(url, update_hist=False)
 
     def do_forward(self, *args):
         """Go forward to the next gemini item."""
@@ -958,8 +904,8 @@ Take an integer as argument to go up multiple times."""
         if self.hist_index <= 0:
             return
         self.hist_index -= 1
-        gi = links[self.hist_index]
-        self._go_to_gi(gi, update_hist=False)
+        url = links[self.hist_index]
+        self._go_to_url(url, update_hist=False)
 
     @needs_gi
     def do_root(self, *args):
@@ -994,13 +940,12 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
             for l in self.list_get_links("tour"):
                 self.list_rm_url(l,"tour")
         elif line == "*":
-            #TODO: change to use renderer.get_links and change list_add_line
             for l in self.get_renderer().get_links():
-                self.list_add_line("tour",gi=GeminiItem(l),verbose=False)
+                self.list_add_line("tour",url=l,verbose=False)
         elif line == ".":
             self.list_add_line("tour",verbose=False)
         elif looks_like_url(line):
-            self.list_add_line("tour",gi=GeminiItem(line))
+            self.list_add_line("tour",url=line)
         elif line in self.list_lists():
             list_path = self.list_path(line)
             if not list_path:
@@ -1008,9 +953,8 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
             else:
                 url = "list:///%s"%line
                 display = not self.sync_only
-                #TODO : change get_links
                 for l in self.get_renderer(url).get_links():
-                    self.list_add_line("tour",gi=GeminiItem(l),verbose=False)
+                    self.list_add_line("tour",url=l,verbose=False)
         else:
             for index in line.split():
                 try:
@@ -1019,17 +963,17 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
                         # Just a single index
                         n = int(index)
                         url = self.get_renderer().get_link(n)
-                        self.list_add_line("tour",gi=GeminiItem(url),verbose=False)
+                        self.list_add_line("tour",url=url,verbose=False)
                     elif len(pair) == 2:
                         # Two endpoints for a range of indices
                         if int(pair[0]) < int(pair[1]):
                             for n in range(int(pair[0]), int(pair[1]) + 1):
                                 url = self.get_renderer().get_link(n)
-                                self.list_add_line("tour",gi=GeminiItem(url),verbose=False)
+                                self.list_add_line("tour",url=url,verbose=False)
                         else:
                             for n in range(int(pair[0]), int(pair[1]) - 1, -1):
                                 url = self.get_renderer().get_link(n)
-                                self.list_add_line("tour",gi=GeminiItem(url),verbose=False)
+                                self.list_add_line("tour",url=url,verbose=False)
 
                     else:
                         # Syntax error
@@ -1050,7 +994,7 @@ Marks are temporary until shutdown (not saved to disk)."""
             for mark, gi in self.marks.items():
                 print("[%s] %s (%s)" % (mark, gi.name, gi.url))
         elif line.isalpha() and len(line) == 1:
-            self.marks[line] = self.gi
+            self.marks[line] = self.current_url
         else:
             print("Invalid mark, must be one letter")
 
@@ -1065,18 +1009,18 @@ Marks are temporary until shutdown (not saved to disk)."""
         out += "URL      :   " + url + "\n"
         out += "Mime     :   " + renderer.get_mime() + "\n"
         out += "Cache    :   " + netcache.get_cache_path(url) + "\n"
-        tmp = self.gi.get_temp_filename()
-        if tmp != netcache.get_cache_path(self.gi.url):
-            out += "Tempfile :   " + self.gi.get_temp_filename() + "\n"
-        if self.gi.renderer :
-            rend = str(self.gi.renderer.__class__)
+        tmp = self.get_renderer().get_temp_filename()
+        if tmp != netcache.get_cache_path(self.current_url):
+            out += "Tempfile :   " + self.get_renderer().get_temp_filename() + "\n"
+        if self.get_renderer() :
+            rend = str(self.get_renderer().__class__)
             rend = rend.lstrip("<class '__main__.").rstrip("'>")
         else:
             rend = "None"
         out += "Renderer :   " + rend + "\n\n"
         lists = []
         for l in self.list_lists():
-            if self.list_has_url(self.gi.url,l):
+            if self.list_has_url(self.current_url,l):
                 lists.append(l)
         if len(lists) > 0:
             out += "Page appeard in following lists :\n"
@@ -1153,8 +1097,7 @@ Use 'ls -l' to see URLs."""
         URL should contains one "%s" that will be replaced by the search term."""
         search = urllib.parse.quote(line)
         url = self.options["search"]%search
-        gi = GeminiItem(url)
-        self._go_to_gi(gi)
+        self._go_to_url(url)
 
     def do_wikipedia(self,line):
         """Search on wikipedia using the configured Gemini interface.
@@ -1173,8 +1116,7 @@ Use 'ls -l' to see URLs."""
             lang = "en"
             search = urllib.parse.quote(line)
         url = self.options["wikipedia"]%(lang,search)
-        gi = GeminiItem(url)
-        self._go_to_gi(gi)
+        self._go_to_url(url)
 
     def do_gus(self, line):
         """Submit a search query to the geminispace.info search engine."""
@@ -1192,7 +1134,7 @@ Use 'ls -l' to see URLs."""
     def emptyline(self):
         """Page through index ten lines at a time."""
         i = self.page_index
-        if not self.gi or i > len(self.get_renderer().get_links()):
+        if not self.current_url or i > len(self.get_renderer().get_links()):
             return
         self._show_lookup(offset=i, end=i+10)
         self.page_index += 10
@@ -1201,7 +1143,7 @@ Use 'ls -l' to see URLs."""
     @needs_gi
     def do_cat(self, *args):
         """Run most recently visited item through "cat" command."""
-        run("cat", input=open(self.gi.get_temp_filename(), "rb"), direct_output=True)
+        run("cat", input=open(self.get_renderer().get_temp_filename(), "rb"), direct_output=True)
 
     @needs_gi
     def do_view(self, *args):
@@ -1212,19 +1154,19 @@ Use "view full" to see a complete html page instead of the article view.
 Use "view feed" to see the the linked feed of the page (in any).
 Use "view feeds" to see available feeds on this page.
 (full, feed, feeds have no effect on non-html content)."""
-        if self.gi and args and args[0] != "":
+        if self.current_url and args and args[0] != "":
             if args[0] in ["full","debug"]:
-                self._go_to_gi(self.gi,mode=args[0])
+                self._go_to_url(self.current_url,mode=args[0])
             elif args[0] in ["normal","readable"]:
-                self._go_to_gi(self.gi,mode="readable")
+                self._go_to_url(self.current_url,mode="readable")
             elif args[0] == "feed":
                 subs = self.get_renderer().get_subscribe_links()
                 if len(subs) > 1:
                     self.do_go(subs[1][0])
                 elif "rss" in subs[0][1] or "atom" in subs[0][1]:
-                    print("%s is already a feed" %self.gi.url)
+                    print("%s is already a feed" %self.current_url)
                 else:
-                    print("No other feed found on %s"%self.gi.url)
+                    print("No other feed found on %s"%self.current_url)
             elif args[0] == "feeds":
                 subs = self.get_renderer().get_subscribe_links()
                 stri = "Available views :\n"
@@ -1239,7 +1181,7 @@ Use "view feeds" to see available feeds on this page.
             else:
                 print("Valid argument for view are : normal, full, feed, feeds")
         else:
-            self._go_to_gi(self.gi)
+            self._go_to_url(self.current_url)
 
     @needs_gi
     def do_open(self, *args):
@@ -1247,16 +1189,16 @@ Use "view feeds" to see available feeds on this page.
 Uses "open url" to open current URL in a browser.
 see "handler" command to set your handler."""
         if args[0] == "url":
-            run("xdg-open %s", parameter=self.gi.url, direct_output=True)
+            run("xdg-open %s", parameter=self.current_url, direct_output=True)
         else:
-            cmd_str = self._get_handler_cmd(ansirenderer.get_mime(self.gi.url))
+            cmd_str = self._get_handler_cmd(ansirenderer.get_mime(self.current_url))
             run(cmd_str, parameter=netcache.get_cache_path(self.current_url), direct_output=True)
 
     @needs_gi
     def do_shell(self, line):
         """'cat' most recently visited item through a shell pipeline.
 '!' is an useful shortcut."""
-        run(line, input=open(self.gi.get_temp_filename(), "rb"), direct_output=True)
+        run(line, input=open(self.get_renderer().get_temp_filename(), "rb"), direct_output=True)
 
     @needs_gi
     def do_save(self, line):
@@ -1304,22 +1246,20 @@ see "handler" command to set your handler."""
 
         # Next, fetch the item to save, if it's not the current one.
         if index:
-            last_gi = self.gi
+            last_url = self.current_url
             try:
                 url = self.get_renderer().get_link(index)
                 self._go_to_url(url, update_hist = False, handle = False)
             except IndexError:
                 print ("Index too high!")
-                self.gi = last_gi
-                self.current_url = self.gi.url
+                self.current_url = last_url
                 return
         else:
-            gi = self.gi
-            url = gi.url
+            url = current_url
 
         # Derive filename from current GI's path, if one hasn't been set
         if not filename:
-            filename = gi.get_filename()
+            filename = os.path.basename(netcache.get_cache_path(self.url))
         # Check for filename collisions and actually do the save if safe
         if os.path.exists(filename):
             print("File %s already exists!" % filename)
@@ -1336,12 +1276,12 @@ see "handler" command to set your handler."""
 
         # Restore gi if necessary
         if index != None:
-            self._go_to_gi(last_gi, handle=False)
+            self._go_to_url(last_url, handle=False)
 
     @needs_gi
     def do_url(self, *args):
         """Print URL of most recently visited item."""
-        print(self.gi.url)
+        print(self.current_url)
 
     ### Bookmarking stuff
     @needs_gi
@@ -1415,9 +1355,8 @@ To unsubscribe, remove the page from the "subscribed" list."""
         else:
             sublink,title = None,None
         if sublink:
-            gi = GeminiItem(sublink,name=title)
             list_path = self.get_list("subscribed")
-            added = self.list_add_line("subscribed",gi=gi,verbose=False)
+            added = self.list_add_line("subscribed",url=sublink,verbose=False)
             if added :
                 print("Subscribed to %s" %sublink)
             else:
@@ -1456,7 +1395,7 @@ archives, which is a special historical list limited in size. It is similar to `
     def to_map_line(self):
         return "=> {} {}\n".format(self.current_url, self.get_renderer().get_page_title())
 
-    def list_add_line(self,list,gi=None,verbose=True):
+    def list_add_line(self,list,url=None,verbose=True):
         list_path = self.list_path(list)
         if not list_path and self.list_is_system(list):
             self.list_create(list,quite=True)
@@ -1465,8 +1404,8 @@ archives, which is a special historical list limited in size. It is similar to `
             print("List %s does not exist. Create it with ""list create %s"""%(list,list))
             return False
         else:
-            if not gi:
-                gi = self.gi
+            if not url:
+                url = self.current_url
             # first we check if url already exists in the file
             with open(list_path,"r") as l_file:
                 lines = l_file.readlines()
@@ -1475,18 +1414,17 @@ archives, which is a special historical list limited in size. It is similar to `
                     sp = l.split()
                     if self.current_url in sp:
                         if verbose:
-                            print("%s already in %s."%(gi.url,list))
+                            print("%s already in %s."%(url,list))
                         return False
             with open(list_path,"a") as l_file:
                 l_file.write(self.to_map_line())
                 l_file.close()
             if verbose:
-                print("%s added to %s" %(gi.url,list))
+                print("%s added to %s" %(url,list))
             return True
 
+    @needs_gi
     def list_add_top(self,list,limit=0,truncate_lines=0):
-        if not self.gi:
-            return
         stri = self.to_map_line().strip("\n")
         if list == "archives":
             stri += ", archived on "
@@ -1585,9 +1523,9 @@ archives, which is a special historical list limited in size. It is similar to `
         if not list_path:
             print("List %s does not exist. Create it with ""list create %s"""%(list,list))
         else:
-            gi = GeminiItem("list:///%s"%list)
+            url = "list:///%s"%list
             display = not self.sync_only
-            self._go_to_gi(gi,handle=display)
+            self._go_to_url(url,handle=display)
 
     #return the path of the list file if list exists.
     #return None if the list doesn’t exist.
@@ -1723,8 +1661,8 @@ The following lists cannot be removed or frozen but can be edited with "list edi
         if not arg:
             lists = self.list_lists()
             if len(lists) > 0:
-                lgi = GeminiItem("list:///")
-                self._go_to_gi(lgi)
+                lurl = "list:///"
+                self._go_to_url(lurl)
             else:
                 print("No lists yet. Use `list create`")
         else:
@@ -1883,48 +1821,48 @@ Argument : duration of cache validity (in seconds)."""
         self.call_sync(refresh_time=validity)
 
     def call_sync(self,refresh_time=0,depth=1):
-        # fetch_gitem is the core of the sync algorithm.
+        # fetch_url is the core of the sync algorithm.
         # It takes as input :
-        # - a GeminiItem to be fetched
+        # - an URL to be fetched
         # - depth : the degree of recursion to build the cache (0 means no recursion)
         # - validity : the age, in seconds, existing caches need to have before
         #               being refreshed (0 = never refreshed if it already exists)
         # - savetotour : if True, newly cached items are added to tour
-        def add_to_tour(gitem):
-            if gitem and netcache.is_cache_valid(gitem.url):
-                toprint = "  -> adding to tour: %s" %gitem.url
+        def add_to_tour(url):
+            if url and netcache.is_cache_valid(url):
+                toprint = "  -> adding to tour: %s" %url
                 width = term_width() - 1
                 toprint = toprint[:width]
                 toprint += " "*(width-len(toprint))
                 print(toprint)
-                self.list_add_line("tour",gi=gitem,verbose=False)
+                self.list_add_line("tour",url=url,verbose=False)
                 return True
             else:
                 return False
-        def fetch_gitem(gitem,depth=0,validity=0,savetotour=False,count=[0,0],strin=""):
+        def fetch_url(url,depth=0,validity=0,savetotour=False,count=[0,0],strin=""):
             #savetotour = True will save to tour newly cached content
             # else, do not save to tour
             #regardless of valitidy
-            if not gitem: return
-            if not netcache.is_cache_valid(gitem.url,validity=validity):
+            if not url: return
+            if not netcache.is_cache_valid(url,validity=validity):
                 if strin != "":
                     endline = '\r'
                 else:
                     endline = None
                 #Did we already had a cache (even an old one) ?
-                isnew = not netcache.is_cache_valid(gitem.url)
-                toprint = "%s [%s/%s] Fetch "%(strin,count[0],count[1]) + gitem.url
+                isnew = not netcache.is_cache_valid(url)
+                toprint = "%s [%s/%s] Fetch "%(strin,count[0],count[1]) + url
                 width = term_width() - 1
                 toprint = toprint[:width]
                 toprint += " "*(width-len(toprint))
                 print(toprint,end=endline)
                 #If not saving to tour, then we should limit download size
                 limit = not savetotour
-                self._go_to_gi(gitem,update_hist=False,limit_size=limit)
-                if savetotour and isnew and netcache.is_cache_valid(gitem.url):
+                self._go_to_url(url,update_hist=False,limit_size=limit)
+                if savetotour and isnew and netcache.is_cache_valid(url):
                     #we add to the next tour only if we managed to cache
                     #the ressource
-                    add_to_tour(gitem)
+                    add_to_tour(url)
             #Now, recursive call, even if we didn’t refresh the cache
             # This recursive call is impacting performances a lot but is needed
             # For the case when you add a address to a list to read later
@@ -1935,15 +1873,14 @@ Argument : duration of cache validity (in seconds)."""
                 #we should only savetotour at the first level of recursion
                 # The code for this was removed so, currently, we savetotour
                 # at every level of recursion.
-                #TODO: get rid of gitem
-                links = gitem.get_links(mode="links_only")
+                links = self.get_renderer(url).get_links(mode="links_only")
                 subcount = [0,len(links)]
                 d = depth - 1
                 for k in links:
                     #recursive call (validity is always 0 in recursion)
                     substri = strin + " -->"
                     subcount[0] += 1
-                    fetch_gitem(k,depth=d,validity=0,savetotour=savetotour,\
+                    fetch_url(k,depth=d,validity=0,savetotour=savetotour,\
                                         count=subcount,strin=substri)
         def fetch_list(list,validity=0,depth=1,tourandremove=False,tourchildren=False):
             links = self.list_get_links(list)
@@ -1953,7 +1890,7 @@ Argument : duration of cache validity (in seconds)."""
             for l in links:
                 counter += 1
                 # If cache for a link is newer than the list
-                fetch_gitem(l,depth=depth,validity=validity,savetotour=tourchildren,count=[counter,end])
+                fetch_url(l,depth=depth,validity=validity,savetotour=tourchildren,count=[counter,end])
                 if tourandremove:
                     if add_to_tour(l):
                         self.list_rm_url(l,list)
@@ -2104,10 +2041,9 @@ def main():
             gc.sync_only = True
             for u in args.url:
                 if netcache.is_cache_valid(u):
-                    gi = GeminiItem(u)
-                    gc.list_add_line("tour",gi)
+                    gc.list_add_line("tour",u)
                 else:
-                    gc.list_add_line("to_fetch",gi)
+                    gc.list_add_line("to_fetch",u)
         else:
             print("--fetch-later requires an URL (or a list of URLS) as argument")
     elif args.sync:
