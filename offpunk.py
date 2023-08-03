@@ -211,70 +211,12 @@ class GeminiItem():
     def __init__(self, url, name=""):
         self.last_mode = None
         url = netcache.normalize_url(url)
-        findmode = url.split("##offpunk_mode=")
-        if len(findmode) > 1:
-            self.url = findmode[0]
-            if findmode[1] in ["full"] or findmode[1].isnumeric():
-                self.last_mode = findmode[1]
-        else:
-            self.url = url
         self.url = fix_ipv6_url(self.url).strip()
         self.name = name
         self.mime = None
         self.renderer = ansirenderer.renderer_from_file(netcache.get_cache_path(self.url),self.url)
         self.scheme = "https"
         self.local = False
-
-    # This method is used to load once the list of links in a gi
-    # Links can be followed, after a space, by a description/title
-    #TODO: remove this code
-   # def get_links(self,mode=None):
-   #     links = []
-   #     toreturn = []
-   #     if self.renderer:
-   #         if not mode:
-   #             mode = self.renderer.last_mode
-   #         links = self.renderer.get_links(mode=mode)
-   #     for l in links:
-   #         #split between link and potential name
-   #         # check that l is non-empty
-   #         url = None
-   #         if l:
-   #             splitted = l.split(maxsplit=1)
-   #             url = self.absolutise_url(splitted[0])
-   #         if url and looks_like_url(url):
-   #             if len(splitted) > 1:
-   #                 #We add a name only for Gopher items
-   #                 if url.startswith("gopher://"):
-   #                     newgi = GeminiItem(url,name=splitted[1])
-   #                 else:
-   #                     newgi = GeminiItem(url)
-   #             else:
-   #                 newgi = GeminiItem(url)
-   #             toreturn.append(newgi)
-   #         elif url and mode != "links_only" and url.startswith("data:image/"):
-   #             imgurl,imgdata = ansirenderer.looks_like_base64(url,self.url)
-   #             if imgurl:
-   #                 toreturn.append(GeminiItem(imgurl))
-   #             else:
-   #                 toreturn.append(None)
-   #         else:
-   #             # We must include a None item to keep the link count valid
-   #             toreturn.append(None)
-   #     return toreturn
-
-    #TODO: should be in ansirenderer
-    def get_subscribe_links(self):
-        if self.renderer:
-            subs = self.renderer.get_subscribe_links()
-            abssubs = []
-            # some rss links are relatives
-            for s in subs:
-                s[0] = self.absolutise_url(s[0])
-                abssubs.append(s)
-            return abssubs
-        else:
-            return []
 
     def get_filename(self):
         filename = os.path.basename(netcache.get_cache_path(self.url))
@@ -288,8 +230,6 @@ class GeminiItem():
         if not tmpf and cache_path:
             tmpf = cache_path
         return tmpf
-
-
 
     def set_error(self,err):
     # If we get an error, we want to keep an existing cache
@@ -317,65 +257,6 @@ class GeminiItem():
                     cache.write("If you believe this error was temporary, type ""reload"".\n")
                     cache.write("The ressource will be tentatively fetched during next sync.\n")
                     cache.close()
-
-
-    def root(self):
-        return GeminiItem(self._derive_url("/"))
-
-    def up(self,level=1):
-        path = self.path.rstrip('/')
-        count = 0
-        while count < level:
-            pathbits = list(os.path.split(path))
-            # Don't try to go higher than root or in config
-            if self.local or len(pathbits) == 1 :
-                return self
-            # Get rid of bottom component
-            if len(pathbits) > 1:
-                pathbits.pop()
-            path = os.path.join(*pathbits)
-            count += 1
-        if self.scheme == "gopher":
-            path = "/1" + path
-        return GeminiItem(self._derive_url(path))
-
-    def query(self, query):
-        query = urllib.parse.quote(query)
-        return GeminiItem(self._derive_url(query=query))
-
-    def _derive_url(self, path="", query=""):
-        """
-        A thin wrapper around urlunparse which avoids inserting standard ports
-        into URLs just to keep things clean.
-        """
-        if not self.port or self.port == netcache.standard_ports[self.scheme] :
-            host = self.host
-        else:
-            host = self.host + ":" + str(self.port)
-        return urllib.parse.urlunparse((self.scheme,host,path or self.path, "", query, ""))
-
-    def absolutise_url(self, relative_url):
-        """
-        Convert a relative URL to an absolute URL by using the URL of this
-        GeminiItem as a base.
-        """
-        try:
-            abs_url = urllib.parse.urljoin(self.url, relative_url)
-        except ValueError as e:
-            abs_url = None
-        return abs_url
-
-    #TODO: explore how to put this in ansirenderer
-    def url_mode(self):
-        url = self.url
-        if self.last_mode and self.last_mode != "readable":
-            url += "##offpunk_mode=" + self.last_mode
-        return url
-
-    #what is the line to add to a list for this url ?
-    def to_map_line(self):
-        return "=> {} {}\n".format(self.url_mode(), self.renderer.get_page_title())
-
 
 # Cheap and cheerful URL detector
 def looks_like_url(word):
@@ -667,6 +548,8 @@ class GeminiClient(cmd.Cmd):
                     self.page_index = 0
                     # Update state (external files are not added to history)
                     self.gi = gi
+                    if mode and mode != "readable": 
+                        url += "##offpunk_mode=" + mode
                     self.current_url = url
                     if update_hist and not self.sync_only:
                         self._update_history(gi)
@@ -1041,7 +924,22 @@ Take an integer as argument to go up multiple times."""
             level = int(args[0])
         elif args[0] != "":
             print("Up only take integer as arguments")
-        self._go_to_gi(self.gi.up(level=level))
+        #TODO: implement UP
+        path = self.path.rstrip('/')
+        count = 0
+        while count < level:
+            pathbits = list(os.path.split(path))
+            # Don't try to go higher than root or in config
+            if self.local or len(pathbits) == 1 :
+                return self
+            # Get rid of bottom component
+            if len(pathbits) > 1:
+                pathbits.pop()
+            path = os.path.join(*pathbits)
+            count += 1
+        if self.scheme == "gopher":
+            path = "/1" + path
+        return GeminiItem(self._derive_url(path))
 
     def do_back(self, *args):
         """Go back to the previous gemini item."""
@@ -1066,7 +964,8 @@ Take an integer as argument to go up multiple times."""
     @needs_gi
     def do_root(self, *args):
         """Go to root selector of the server hosting current item."""
-        self._go_to_gi(self.gi.root())
+        parse = urllib.parse.urlparse(self.url)
+        self._go_to_url(urllib.parse.urlunparse(parse.scheme,parse.netloc,"/","","",""))
 
     def do_tour(self, line):
         """Add index items as waypoints on a tour, which is basically a FIFO
@@ -1093,7 +992,7 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
             self.list_show("tour")
         elif line == "clear":
             for l in self.list_get_links("tour"):
-                self.list_rm_url(l.url_mode(),"tour")
+                self.list_rm_url(l,"tour")
         elif line == "*":
             #TODO: change to use renderer.get_links and change list_add_line
             for l in self.get_renderer().get_links():
@@ -1279,8 +1178,7 @@ Use 'ls -l' to see URLs."""
 
     def do_gus(self, line):
         """Submit a search query to the geminispace.info search engine."""
-        gus = GeminiItem("gemini://geminispace.info/search")
-        self._go_to_gi(gus.query(line))
+        self._go_to_url(urllib.parse.urlunparse("gemini","geminispace.info","/search","",line,""))
 
     def do_history(self, *args):
         """Display history."""
@@ -1320,7 +1218,7 @@ Use "view feeds" to see available feeds on this page.
             elif args[0] in ["normal","readable"]:
                 self._go_to_gi(self.gi,mode="readable")
             elif args[0] == "feed":
-                subs = self.gi.get_subscribe_links()
+                subs = self.get_renderer().get_subscribe_links()
                 if len(subs) > 1:
                     self.do_go(subs[1][0])
                 elif "rss" in subs[0][1] or "atom" in subs[0][1]:
@@ -1328,7 +1226,7 @@ Use "view feeds" to see available feeds on this page.
                 else:
                     print("No other feed found on %s"%self.gi.url)
             elif args[0] == "feeds":
-                subs = self.gi.get_subscribe_links()
+                subs = self.get_renderer().get_subscribe_links()
                 stri = "Available views :\n"
                 counter = 0
                 for s in subs:
@@ -1490,7 +1388,7 @@ If no argument given, URL is added to Bookmarks."""
 If a new link is found in the page during a --sync, the new link is automatically
 fetched and added to your next tour.
 To unsubscribe, remove the page from the "subscribed" list."""
-        subs = self.gi.get_subscribe_links()
+        subs = self.get_renderer().get_subscribe_links()
         if len(subs) > 1:
             stri = "Multiple feeds have been found :\n"
         elif "rss" in subs[0][1] or "atom" in subs[0][1] :
@@ -1517,7 +1415,6 @@ To unsubscribe, remove the page from the "subscribed" list."""
         else:
             sublink,title = None,None
         if sublink:
-            sublink = self.gi.absolutise_url(sublink)
             gi = GeminiItem(sublink,name=title)
             list_path = self.get_list("subscribed")
             added = self.list_add_line("subscribed",gi=gi,verbose=False)
@@ -1548,12 +1445,16 @@ Bookmarks are stored using the 'add' command."""
 archives, which is a special historical list limited in size. It is similar to `move archives`."""
         for li in self.list_lists():
             if li not in ["archives", "history"]:
-                deleted = self.list_rm_url(self.gi.url_mode(),li)
+                deleted = self.list_rm_url(self.current_url,li)
                 if deleted:
                     print("Removed from %s"%li)
         self.list_add_top("archives",limit=self.options["archives_size"])
         print("Archiving: %s"%self.get_renderer().get_page_title())
         print("\x1b[2;34mCurrent maximum size of archives : %s\x1b[0m" %self.options["archives_size"])
+
+    #what is the line to add to a list for this url ?
+    def to_map_line(self):
+        return "=> {} {}\n".format(self.current_url, self.get_renderer().get_page_title())
 
     def list_add_line(self,list,gi=None,verbose=True):
         list_path = self.list_path(list)
@@ -1572,12 +1473,12 @@ archives, which is a special historical list limited in size. It is similar to `
                 l_file.close()
                 for l in lines:
                     sp = l.split()
-                    if gi.url_mode() in sp:
+                    if self.current_url in sp:
                         if verbose:
                             print("%s already in %s."%(gi.url,list))
                         return False
             with open(list_path,"a") as l_file:
-                l_file.write(gi.to_map_line())
+                l_file.write(self.to_map_line())
                 l_file.close()
             if verbose:
                 print("%s added to %s" %(gi.url,list))
@@ -1586,7 +1487,7 @@ archives, which is a special historical list limited in size. It is similar to `
     def list_add_top(self,list,limit=0,truncate_lines=0):
         if not self.gi:
             return
-        stri = self.gi.to_map_line().strip("\n")
+        stri = self.to_map_line().strip("\n")
         if list == "archives":
             stri += ", archived on "
         elif list == "history":
@@ -1734,7 +1635,7 @@ If current page was not in a list, this command is similar to `add LIST`."""
                 lists = self.list_lists()
                 for l in lists:
                     if l != args[0] and l not in ["archives", "history"]:
-                        isremoved = self.list_rm_url(self.gi.url_mode(),l)
+                        isremoved = self.list_rm_url(self.current_url,l)
                         if isremoved:
                             print("Removed from %s"%l)
                 self.list_add_line(args[0])
@@ -2055,7 +1956,7 @@ Argument : duration of cache validity (in seconds)."""
                 fetch_gitem(l,depth=depth,validity=validity,savetotour=tourchildren,count=[counter,end])
                 if tourandremove:
                     if add_to_tour(l):
-                        self.list_rm_url(l.url_mode(),list)
+                        self.list_rm_url(l,list)
 
         self.sync_only = True
         lists = self.list_lists()

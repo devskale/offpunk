@@ -446,13 +446,53 @@ class AbstractRenderer():
     def set_mode(self,mode):
         self.last_mode = mode
     def get_links(self,mode=None):
-        print("mode : %s and last_mode : %s (%s)"%(mode,self.last_mode,self.url))
+    # This method is used to load once the list of links in a gi
+    # Links can be followed, after a space, by a description/title
+    #TODO: remove this code
+   # def get_links(self,mode=None):
+   #     links = []
+   #     toreturn = []
+   #     if self.renderer:
+   #         if not mode:
+   #             mode = self.renderer.last_mode
+   #         links = self.renderer.get_links(mode=mode)
+   #     for l in links:
+   #         #split between link and potential name
+   #         # check that l is non-empty
+   #         url = None
+   #         if l:
+   #             splitted = l.split(maxsplit=1)
+   #             url = self.absolutise_url(splitted[0])
+   #         if url and looks_like_url(url):
+   #             if len(splitted) > 1:
+   #                 #We add a name only for Gopher items
+   #                 if url.startswith("gopher://"):
+   #                     newgi = GeminiItem(url,name=splitted[1])
+   #                 else:
+   #                     newgi = GeminiItem(url)
+   #             else:
+   #                 newgi = GeminiItem(url)
+   #             toreturn.append(newgi)
+   #         elif url and mode != "links_only" and url.startswith("data:image/"):
+   #             imgurl,imgdata = ansirenderer.looks_like_base64(url,self.url)
+   #             if imgurl:
+   #                 toreturn.append(GeminiItem(imgurl))
+   #             else:
+   #                 toreturn.append(None)
+   #         else:
+   #             # We must include a None item to keep the link count valid
+   #             toreturn.append(None)
+   #     return toreturn
         if not mode: mode = self.last_mode
         if mode not in self.links :
             prepared_body = self.prepare(self.body,mode=mode)
             results = self.render(prepared_body,mode=mode)
             if results:
-                self.links[mode] = results[1]
+                #we should absolutize all URLs here
+                self.links[mode] = []
+                for l in results[1]:
+                    abs_l = urllib.parse.urljoin(self.url,l.split()[0])
+                    self.links[mode].append(abs_l) 
                 for l in self.get_subscribe_links()[1:]:
                     self.links[mode].append(l[0])
         return self.links[mode]
@@ -529,7 +569,13 @@ class AbstractRenderer():
             result = self.render(prepared_body,width=width,mode=mode)
             if result:
                 self.rendered_text[mode] = result[0]
-                self.links[mode] = result[1]
+                #The following is there to prepoulate self.links
+                #but it seems to slow down a lot the loading
+                #self.links[mode] = []
+                #we should absolutize all URLs here
+                #for l in result[1]:
+                #    abs_l = urllib.parse.urljoin(self.url,l.split()[0])
+                #    self.links[mode].append(abs_l) 
         return self.rendered_text[mode]
 
     def _window_title(self,title,info=None):
@@ -957,7 +1003,9 @@ class HtmlRenderer(AbstractRenderer):
             ty = l.get("type")
             if ty :
                 if "rss" in ty or "atom" in ty or "feed" in ty:
-                    subs.append([l.get("href"),ty,l.get("title")])
+                    # some rss links are relatives: we absolutise_url
+                    sublink = urllib.parse.urljoin(self.url, l.get("href"))
+                    subs.append([sublink,ty.l.get("title")])
         return subs
 
     def get_title(self):
