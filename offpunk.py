@@ -197,21 +197,6 @@ def fix_ipv6_url(url):
         return schema + "://" + schemaless
     return schemaless
 
-# Offpunk is basically a GeminiClient class which download URLs using netcache then
-# display them using AnsiRenderer.
-class GeminiItem():
-
-    def __init__(self, url, name=""):
-        self.last_mode = None
-        url = netcache.normalize_url(url)
-        self.url = fix_ipv6_url(self.url).strip()
-        self.name = name
-        self.mime = None
-        self.renderer = ansirenderer.renderer_from_file(netcache.get_cache_path(self.url),self.url)
-        self.scheme = "https"
-        self.local = False
-
-
 # Cheap and cheerful URL detector
 def looks_like_url(word):
     try:
