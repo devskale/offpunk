@@ -38,8 +38,8 @@ import uuid
 import webbrowser
 import base64
 import subprocess
-import ansirenderer
 import netcache
+import opnk
 from offutils import run,term_width
 try:
     import setproctitle
@@ -241,10 +241,7 @@ class GeminiClient(cmd.Cmd):
         # type sensitivie information.
         os.umask(0o077)
 
-        # This dictionary contains an url -> ansirenderer mapping. This allows 
-        # to reuse a renderer when visiting several times the same URL during
-        # the same session
-        self.rendererdic = {}
+        self.opencache = opnk.opencache()
         self.no_cert_prompt = "\001\x1b[38;5;76m\002" + "ON" + "\001\x1b[38;5;255m\002" + "> " + "\001\x1b[0m\002"
         self.cert_prompt = "\001\x1b[38;5;202m\002" + "ON" + "\001\x1b[38;5;255m\002"
         self.offline_prompt = "\001\x1b[38;5;76m\002" + "OFF" + "\001\x1b[38;5;255m\002" + "> " + "\001\x1b[0m\001"
@@ -357,27 +354,8 @@ class GeminiClient(cmd.Cmd):
 
     def get_renderer(self,url=None):
         # If launched without argument, we return the renderer for the current URL
-        mode = None
         if not url: url = self.current_url
-        findmode = url.split("##offpunk_mode=")
-        if len(findmode) > 1:
-            url = findmode[0]
-            if findmode[1] in ["full"] or findmode[1].isnumeric():
-                mode = findmode[1]
-        # reuse existing renderer if any
-        if url in self.rendererdic.keys():
-            renderer = self.rendererdic[url]
-        else:
-            cache_path = netcache.get_cache_path(url)
-            if cache_path:
-                renderer = ansirenderer.renderer_from_file(cache_path,url)
-                self.rendererdic[url] = renderer
-            else:
-                print("WARNING: no cache for requested renderer for %s" %url)
-                return None
-        if mode:
-            renderer.set_mode(mode)
-        return renderer
+        return self.opencache.get_renderer(url)
 
     def _go_to_url(self, url, update_hist=True, check_cache=True, handle=True,\
                                             name=None, mode=None,limit_size=False):
@@ -465,6 +443,7 @@ class GeminiClient(cmd.Cmd):
                                                     handle=False,limit_size=True)
                 is_rendered = False
                 if display and netcache.is_cache_valid(url):
+                    #TODO : move title in ansirenderer
                     title = renderer.get_url_title()
                     nbr = len(renderer.get_links(mode=mode))
                     if renderer.is_local():
@@ -474,8 +453,9 @@ class GeminiClient(cmd.Cmd):
                         str_last = "last accessed on %s"\
                                         %time.ctime(netcache.cache_last_modified(url))
                         title += " (%s links)"%nbr
-                    is_rendered = renderer.display(mode=mode,\
-                                            window_title=title,window_info=str_last)
+                    #is_rendered = renderer.display(mode=mode,\
+                    #                       window_title=title,window_info=str_last)
+                    is_rendered = self.opencache.opnk(url,mode=mode)
                 if display and is_rendered:
                     self.page_index = 0
                     # Update state (external files are not added to history)
@@ -484,38 +464,6 @@ class GeminiClient(cmd.Cmd):
                     self.current_url = url
                     if update_hist and not self.sync_only:
                         self._update_history(url)
-                elif display and not is_rendered :
-                    cmd_str = self._get_handler_cmd(ansirenderer.get_mime(url))
-                    try:
-                        run(cmd_str, netcache.get_cache_path(url), direct_output=True)
-                    except FileNotFoundError:
-                        print("Handler program %s not found!" % shlex.split(cmd_str)[0])
-                        print("You can use the ! command to specify another handler program or pipeline.")
-
-
-
-    
-    def _get_handler_cmd(self, mimetype):
-        # Now look for a handler for this mimetype
-        # Consider exact matches before wildcard matches
-        exact_matches = []
-        wildcard_matches = []
-        for handled_mime, cmd_str in _MIME_HANDLERS.items():
-            if "*" in handled_mime:
-                wildcard_matches.append((handled_mime, cmd_str))
-            else:
-                exact_matches.append((handled_mime, cmd_str))
-        for handled_mime, cmd_str in exact_matches + wildcard_matches:
-            if fnmatch.fnmatch(mimetype, handled_mime):
-                break
-        else:
-            # Use "xdg-open" as a last resort.
-            if _HAS_XDGOPEN:
-                cmd_str = "xdg-open %s"
-            else:
-                cmd_str = "echo \"Can’t find how to open \"%s"
-                print("Please install xdg-open (usually from xdg-util package)")
-        return cmd_str
 
     @needs_gi
     def _show_lookup(self, offset=0, end=None, show_url=False):
@@ -716,19 +664,19 @@ class GeminiClient(cmd.Cmd):
         """View or set handler commands for different MIME types."""
         if not line.strip():
             # Show all current handlers
-            for mime in sorted(_MIME_HANDLERS.keys()):
-                print("%s   %s" % (mime, _MIME_HANDLERS[mime]))
+            h = self.opencache.get_handlers()
+            for mime in sorted(h.keys()):
+                print("%s   %s" % (mime, h[mime]))
         elif len(line.split()) == 1:
             mime = line.strip()
-            if mime in _MIME_HANDLERS:
-                print("%s   %s" % (mime, _MIME_HANDLERS[mime]))
+            h = self.opencache.get_handlers(mime=mime)
+            if h:
+                print("%s   %s" % (mime, h))
             else:
                 print("No handler set for MIME type %s" % mime)
         else:
             mime, handler = line.split(" ", 1)
-            _MIME_HANDLERS[mime] = handler
-            if "%s" not in handler:
-                print("Are you sure you don't want to pass the filename to the handler?")
+            self.opencache.set_handler(mime,handler)
 
     def do_abbrevs(self, *args):
         """Print all Offpunk command abbreviations."""
@@ -986,8 +934,6 @@ Marks are temporary until shutdown (not saved to disk)."""
     @needs_gi
     def do_info(self,line):
         """Display information about current page."""
-        print("current url: %s" %self.current_url)
-        print("current renderer: %s" %self.rendererdic)
         renderer = self.get_renderer()
         url = self.current_url
         out = renderer.get_page_title() + "\n\n"
@@ -1176,8 +1122,7 @@ see "handler" command to set your handler."""
         if args[0] == "url":
             run("xdg-open %s", parameter=self.current_url, direct_output=True)
         else:
-            cmd_str = self._get_handler_cmd(ansirenderer.get_mime(self.current_url))
-            run(cmd_str, parameter=netcache.get_cache_path(self.current_url), direct_output=True)
+            self.opencache.opnk(self.current_url,terminal=False)
 
     @needs_gi
     def do_shell(self, line):

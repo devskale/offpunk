@@ -2,7 +2,6 @@
 import os
 import sys
 import shutil
-import tempfile
 import subprocess
 import textwrap
 import time
@@ -38,60 +37,6 @@ except ModuleNotFoundError:
     _DO_FEED = False
 
 
-less_version = 0
-if not shutil.which("less"):
-    print("Please install the pager \"less\" to run Offpunk.")
-    print("If you wish to use another pager, send me an email !")
-    print("(I’m really curious to hear about people not having \"less\" on their system.)")
-    sys.exit()
-output = run("less --version")
-# We get less Version (which is the only integer on the first line)
-words = output.split("\n")[0].split()
-less_version = 0
-for w in words:
-    if w.isdigit():
-        less_version = int(w)
-# restoring position only works for version of less > 572
-if less_version >= 572:
-    _LESS_RESTORE_POSITION = True
-else:
-    _LESS_RESTORE_POSITION = False
-#_DEFAULT_LESS = "less -EXFRfM -PMurl\ lines\ \%lt-\%lb/\%L\ \%Pb\%$ %s"
-# -E : quit when reaching end of file (to behave like "cat")
-# -F : quit if content fits the screen (behave like "cat")
-# -X : does not clear the screen
-# -R : interpret ANSI colors correctly
-# -f : suppress warning for some contents
-# -M : long prompt (to have info about where you are in the file)
-# -W : hilite the new first line after a page skip (space)
-# -i : ignore case in search
-# -S : do not wrap long lines. Wrapping is done by offpunk, longlines
-# are there on purpose (surch in asciiart)
-#--incsearch : incremental search starting rev581
-if less_version >= 581:
-    less_base = "less --incsearch --save-marks -~ -XRfMWiS"
-elif less_version >= 572:
-    less_base = "less --save-marks -XRfMWiS"
-else:
-    less_base = "less -XRfMWiS"
-_DEFAULT_LESS = less_base + " \"+''\" %s"
-_DEFAULT_CAT = less_base + " -EF %s"
-def less_cmd(file, histfile=None,cat=False,grep=None):
-    if histfile:
-        env = {"LESSHISTFILE": histfile}
-    else:
-        env = {}
-    if cat:
-        cmd_str = _DEFAULT_CAT
-    elif grep:
-        grep_cmd = _GREP
-        #case insensitive for lowercase search
-        if grep.islower():
-            grep_cmd += " -i"
-        cmd_str = _DEFAULT_CAT + "|" + grep_cmd + " %s"%grep
-    else:
-        cmd_str = _DEFAULT_LESS
-    run(cmd_str, parameter=file, direct_output=True, env=env)
 
 try:
     from PIL import Image
@@ -211,7 +156,6 @@ class AbstractRenderer():
         self.title = None
         self.validity = True
         self.temp_files = {}
-        self.less_histfile = {}
         self.center = center
         self.last_mode = "readable"
 
@@ -592,31 +536,9 @@ class AbstractRenderer():
     def display(self,mode=None,window_title="",window_info=None,grep=None):
         if mode: self.last_mode = mode
         else: mode = self.last_mode
-        wtitle = self._window_title(window_title,info=window_info)
-        body = wtitle + "\n" + self.get_body(mode=mode)
-        if not body:
-            return False
-        # We actually put the body in a tmpfile before giving it to less
-        if mode not in self.temp_files:
-            tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
-            self.temp_files[mode] = tmpf.name
-            tmpf.write(body)
-            tmpf.close()
-        if mode not in self.less_histfile:
-            firsttime = True
-            tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
-            self.less_histfile[mode] = tmpf.name
-        else:
-            firsttime = False
-        less_cmd(self.temp_files[mode], histfile=self.less_histfile[mode],cat=firsttime,grep=grep)
+        #TODO to remove
         return True
 
-    def get_temp_file(self,mode=None):
-        if not mode: mode = self.last_mode
-        if mode in self.temp_files:
-            return self.temp_files[mode]
-        else:
-            return None
 
     # An instance of AbstractRenderer should have a self.render(body,width,mode) method.
     # 3 modes are used : readable (by default), full and links_only (the fastest, when
