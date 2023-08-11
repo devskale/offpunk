@@ -1,3 +1,11 @@
+#list of things to do before asking for bug reports
+#TODO: making list:// works
+#TODO: removing XDG_CONFIG DEBUG code
+#TODO: implementing mailto
+#TODO: testing and debugging --sync
+#TODO: disabling opnk cache if netcache more recent than opnk cache
+#TODO: offpunk.up is not working
+#TODO: gemini certificate code
 #!/usr/bin/env python3
 # Offpunk Offline Gemini client
 # Derived from AV-98 by Solderpunk,
@@ -34,9 +42,6 @@ import socket
 import sys
 import time
 import urllib.parse
-import uuid
-import webbrowser
-import base64
 import subprocess
 import netcache
 import opnk
@@ -392,50 +397,25 @@ class GeminiClient(cmd.Cmd):
                             check_cache=check_cache, handle=handle, name=name,mode=mode,\
                             limit_size=limit_size)
             return
-
         params = {}
         params["timeout"] = self.options["short_timeout"]
-        params["max_size"] = int(self.options["max_size_download"])*1000000
+        if limit_size:
+            params["max_size"] = int(self.options["max_size_download"])*1000000
         params["print_error"] = not self.sync_only
         params["offline"] = self.offline_only
-        cachepath = netcache.fetch(url,**params)
-        renderer = self.get_renderer(url)
-        if not renderer:
-            print("no renderer for %s"%url)
+        if not check_cache:
+            params["validity"] = 1
         # Use cache or mark as to_fetch if resource is not cached
-        if not cachepath:
-            self.get_list("to_fetch")
-            r = self.list_add_line("to_fetch",url=url,verbose=False)
-            if r:
-                print("%s not available, marked for syncing"%url)
+        if handle and not self.sync_only:
+            displayed = self.opencache.opnk(url,**params)
+            if not displayed:
+                self.get_list("to_fetch")
+                r = self.list_add_line("to_fetch",url=url,verbose=False)
+                if r:
+                    print("%s not available, marked for syncing"%url)
+                else:
+                    print("%s already marked for syncing"%url)
             else:
-                print("%s already marked for syncing"%url)
-            return
-        #Ok, we have a cached version
-        else:
-            # Pass file to handler, unless we were asked not to
-            display = handle and not self.sync_only
-            #TODO: take into account _RENDER_IMAGE
-            if display and self.options["download_images_first"] \
-                                                        and not self.offline_only:
-
-                # We download images first
-                #TODO: this should go into netcache
-                print("url: ## %s ##"%url)
-                for image in renderer.get_images(mode=mode):
-                    if image and image.startswith("http"):
-                        if not netcache.is_cache_valid(image):
-                            width = term_width() - 1
-                            toprint = "Downloading %s" %image
-                            toprint = toprint[:width]
-                            toprint += " "*(width-len(toprint))
-                            print(toprint,end="\r")
-                            self._go_to_url(image, update_hist=False, check_cache=True, \
-                                                handle=False,limit_size=True)
-            is_rendered = False
-            if display and netcache.is_cache_valid(url):
-                is_rendered = self.opencache.opnk(url,mode=mode)
-            if display and is_rendered:
                 self.page_index = 0
                 # Update state (external files are not added to history)
                 if mode and mode != "readable": 
@@ -443,6 +423,9 @@ class GeminiClient(cmd.Cmd):
                 self.current_url = url
                 if update_hist and not self.sync_only:
                     self._update_history(url)
+        else:
+            #we are asked not to handle or in sync_only mode
+            netcache.fetch(url,**params)
 
     @needs_gi
     def _show_lookup(self, offset=0, end=None, show_url=False):
@@ -788,7 +771,7 @@ Take an integer as argument to go up multiple times."""
         while count < level:
             pathbits = list(os.path.split(path))
             # Don't try to go higher than root or in config
-            if self.local or len(pathbits) == 1 :
+            if offutils.is_local(self.current_url) or len(pathbits) == 1 :
                 return self
             # Get rid of bottom component
             if len(pathbits) > 1:
@@ -1407,7 +1390,6 @@ archives, which is a special historical list limited in size. It is similar to `
     def list_get_links(self,list):
         list_path = self.list_path(list)
         if os.path.exists(list_path):
-            print("path is %s and exists %s"%(list_path,os.path.exists(list_path)))
             return self.get_renderer("list:///%s"%list).get_links()
         else:
             return []

@@ -13,6 +13,8 @@ import datetime
 import hashlib
 import sqlite3
 from ssl import CertificateError
+import ansicat
+import offutils
 try:
     import chardet
     _HAS_CHARDET = True
@@ -956,17 +958,21 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,**kwargs):
     return cache
 
 
-def fetch(url,**kwargs):
+def fetch(url,offline=False,download_image_first=True,validity=0,**kwargs):
     url = normalize_url(url)
     path=None
     print_error = "print_error" in kwargs.keys() and kwargs["print_error"]
-    if kwargs["offline"] and is_cache_valid(url):
+    if is_cache_valid(url,validity=validity):
         path = get_cache_path(url)
-    elif "://" in url and not kwargs["offline"]:
+    #If we are offline, any cache is better than nothing
+    elif offline and is_cache_valid(url,validity=0):
+        path = get_cache_path(url)
+    elif "://" in url and not offline:
         try:
             scheme = url.split("://")[0]
             if scheme not in standard_ports:
                 print("%s is not a supported protocol"%scheme)
+                path = None
             elif scheme in ("http","https"):
                 path=_fetch_http(url,**kwargs)
             elif scheme == "gopher":
@@ -1018,6 +1024,19 @@ def fetch(url,**kwargs):
                     #print("\n" + str(err.with_traceback(None)))
                     print(traceback.format_exc())
             return cache
+        # We download images contained in the document (from full mode)
+        if not offline and download_image_first:
+            renderer = ansicat.renderer_from_file(path,url)
+            for image in renderer.get_images(mode="full"):
+                if image and is_cache_valid(image):
+                    width = offutils.term_width() - 1
+                    toprint = "Downloading %s" %image
+                    toprint = toprint[:width]
+                    toprint += " "*(width-len(toprint))
+                    print(toprint,end="\r")
+                    #d_i_f is False to avoid recursive downloading 
+                    #if that ever happen
+                    fetch(image,offline=offline,download_image_first=False,validity=0,**kwargs)
     else:
         print("Not cached URL or not supported format (TODO)")
     return path

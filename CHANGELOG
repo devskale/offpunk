@@ -4,7 +4,8 @@
 This is an an experimental and unstable release. Lot of breakages are expected.
 Wait for 2.1 if you are not willing to do testing/bug reporting.
 - New command-line tool: "netcache"
-- New command-line tool: "ansirenderer"
+- New command-line tool: "ansicat"
+- New command-line tool: "opnk"
 
 ## 1.10 - July 31st 2023
 - IMPORTANT : new optional dependency : python-chardet

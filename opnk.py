@@ -8,7 +8,7 @@ import sys
 import tempfile
 import argparse
 import netcache
-import ansirenderer
+import ansicat
 import offutils
 import shutil
 from offutils import run,term_width
@@ -136,7 +136,7 @@ class opencache():
         path = netcache.get_cache_path(inpath)
         if path:
             if inpath not in self.rendererdic.keys():
-                renderer = ansirenderer.renderer_from_file(path,inpath)
+                renderer = ansicat.renderer_from_file(path,inpath)
                 if renderer:
                     self.rendererdic[inpath] = renderer
             else:
@@ -148,13 +148,17 @@ class opencache():
     def grep(self,inpath,searchterm):
         print("TODO: implement grep")
 
-    def opnk(self,inpath,mode=None,terminal=True):
+    def opnk(self,inpath,mode=None,terminal=True,**kwargs):
         #Return True if inpath opened in Terminal
         # False otherwise
         #if terminal = False, we don’t try to open in the terminal,
         #we immediately fallback to xdg-open.
         #netcache currently provide the path if it’s a file.
         #may this should be migrated here.
+        if not offutils.is_local(inpath):
+            cachepath = netcache.fetch(inpath,**kwargs)
+            if not cachepath:
+                return False
         renderer = self.get_renderer(inpath,mode=mode)
         if terminal and renderer:
             wtitle = renderer.get_formatted_title()
@@ -176,7 +180,7 @@ class opencache():
             return True
         #maybe, we have no renderer. Or we want to skip it.
         else:
-            cmd_str = self._get_handler_cmd(ansirenderer.get_mime(inpath))
+            cmd_str = self._get_handler_cmd(ansicat.get_mime(inpath))
             try:
                 run(cmd_str, parameter=netcache.get_cache_path(inpath), direct_output=True)
             except FileNotFoundError:

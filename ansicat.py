@@ -11,7 +11,7 @@ import argparse
 import mimetypes
 import fnmatch
 import netcache
-from offutils import run,term_width
+from offutils import run,term_width,is_local
 try:
     from readability import Document
     _HAS_READABILITY = True
@@ -25,6 +25,9 @@ try:
 except ModuleNotFoundError:
     _HAS_SOUP = False
 
+
+#DEBUG code
+_DATA_DIR = "/home/ploum/dev/netcache/"
 _DO_HTML = _HAS_SOUP #and _HAS_READABILITY
 if _DO_HTML and not _HAS_READABILITY:
     print("To improve your web experience (less cruft in webpages),")
@@ -384,12 +387,6 @@ class AbstractRenderer():
         return [[self.url,self.get_mime(),self.get_title()]]
     def is_valid(self):
         return self.validity
-    def is_local(self):
-        if "://" in self.url:
-            scheme,path = self.url.split("://",maxsplit=1)
-            return scheme in ["file","mail","list","mailto"]
-        else:
-            return True
     def set_mode(self,mode):
         self.last_mode = mode
     def get_links(self,mode=None):
@@ -466,7 +463,7 @@ class AbstractRenderer():
     def get_formatted_title(self):
         title = self.get_url_title()
         nbr = len(self.get_links())
-        if self.is_local():
+        if is_local(self.url):
             title += " (%s items)"%nbr
             str_last = "local file"
         else:
@@ -480,7 +477,7 @@ class AbstractRenderer():
         #small intelligence to try to find a good name for a capsule
         #we try to find eithe ~username or /users/username
         #else we fallback to hostname
-        if self.is_local():
+        if is_local(self.url):
             splitpath = self.url.split("/")
             filename = splitpath[-1]
             return filename
@@ -1217,7 +1214,6 @@ def renderer_from_file(path,url=None):
     if os.path.exists(path):
         if mime.startswith("text/"):
             with open(path) as f:
-                print("DEBUG: opening %s"%path)
                 content = f.read()
                 f.close()
         else:
@@ -1275,7 +1271,6 @@ def render(input,path=None,format="auto",mime=None,url=None):
             r= renderer_from_file(path,url)
         else:
             r = set_renderer(input,url,mime)
-        print("DEBUG: renderer is %s"%r)
     if r:
         r.display()
     else:
