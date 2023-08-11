@@ -17,11 +17,8 @@ import shlex
 # flag requesting that the output go directly to the stdout, and a list of
 # additional environment variables to set.
 def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
-    #print("running %s"%cmd)
     if parameter:
         cmd = cmd % shlex.quote(parameter)
-    #following requires python 3.9 (but is more elegant/explicit):
-    # env = dict(os.environ) | env
     e = os.environ
     e.update(env)
     if isinstance(input, io.IOBase):

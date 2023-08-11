@@ -50,7 +50,6 @@ except ModuleNotFoundError:
 
 
 _HAS_XSEL = shutil.which('xsel')
-_HAS_XDGOPEN = shutil.which('xdg-open')
 
 try:
     import requests
@@ -394,76 +393,56 @@ class GeminiClient(cmd.Cmd):
                             limit_size=limit_size)
             return
 
-        # check if local file exists.
-        #TODO
-        #if gi.local and not os.path.exists(gi.path):
-        #    print("Local file %s does not exist!" %gi.path)
-        #    return
-
-        #elif not gi.local:
-        if True:
-            params = {}
-            params["timeout"] = self.options["short_timeout"]
-            params["max_size"] = int(self.options["max_size_download"])*1000000
-            params["print_error"] = not self.sync_only
-            params["offline"] = self.offline_only
-            cachepath = netcache.fetch(url,**params)
-            renderer = self.get_renderer(url)
-            if not renderer:
-                print("no renderer for %s"%url)
-            # Use cache or mark as to_fetch if resource is not cached
-            if not cachepath:
-                self.get_list("to_fetch")
-                r = self.list_add_line("to_fetch",url=url,verbose=False)
-                if r:
-                    print("%s not available, marked for syncing"%url)
-                else:
-                    print("%s already marked for syncing"%url)
-                return
-            #Ok, we have a cached version
+        params = {}
+        params["timeout"] = self.options["short_timeout"]
+        params["max_size"] = int(self.options["max_size_download"])*1000000
+        params["print_error"] = not self.sync_only
+        params["offline"] = self.offline_only
+        cachepath = netcache.fetch(url,**params)
+        renderer = self.get_renderer(url)
+        if not renderer:
+            print("no renderer for %s"%url)
+        # Use cache or mark as to_fetch if resource is not cached
+        if not cachepath:
+            self.get_list("to_fetch")
+            r = self.list_add_line("to_fetch",url=url,verbose=False)
+            if r:
+                print("%s not available, marked for syncing"%url)
             else:
-                # Pass file to handler, unless we were asked not to
-                display = handle and not self.sync_only
-                #TODO: take into account _RENDER_IMAGE
-                if display and self.options["download_images_first"] \
-                                                            and not self.offline_only:
+                print("%s already marked for syncing"%url)
+            return
+        #Ok, we have a cached version
+        else:
+            # Pass file to handler, unless we were asked not to
+            display = handle and not self.sync_only
+            #TODO: take into account _RENDER_IMAGE
+            if display and self.options["download_images_first"] \
+                                                        and not self.offline_only:
 
-                    # We download images first
-                    #TODO: this should go into netcache
-                    print("url: ## %s ##"%url)
-                    for image in renderer.get_images(mode=mode):
-                        if image and image.startswith("http"):
-                            if not netcache.is_cache_valid(image):
-                                width = term_width() - 1
-                                toprint = "Downloading %s" %image
-                                toprint = toprint[:width]
-                                toprint += " "*(width-len(toprint))
-                                print(toprint,end="\r")
-                                self._go_to_url(image, update_hist=False, check_cache=True, \
-                                                    handle=False,limit_size=True)
-                is_rendered = False
-                if display and netcache.is_cache_valid(url):
-                    #TODO : move title in ansirenderer
-                    title = renderer.get_url_title()
-                    nbr = len(renderer.get_links(mode=mode))
-                    if renderer.is_local():
-                        title += " (%s items)"%nbr
-                        str_last = "local file"
-                    else:
-                        str_last = "last accessed on %s"\
-                                        %time.ctime(netcache.cache_last_modified(url))
-                        title += " (%s links)"%nbr
-                    #is_rendered = renderer.display(mode=mode,\
-                    #                       window_title=title,window_info=str_last)
-                    is_rendered = self.opencache.opnk(url,mode=mode)
-                if display and is_rendered:
-                    self.page_index = 0
-                    # Update state (external files are not added to history)
-                    if mode and mode != "readable": 
-                        url += "##offpunk_mode=" + mode
-                    self.current_url = url
-                    if update_hist and not self.sync_only:
-                        self._update_history(url)
+                # We download images first
+                #TODO: this should go into netcache
+                print("url: ## %s ##"%url)
+                for image in renderer.get_images(mode=mode):
+                    if image and image.startswith("http"):
+                        if not netcache.is_cache_valid(image):
+                            width = term_width() - 1
+                            toprint = "Downloading %s" %image
+                            toprint = toprint[:width]
+                            toprint += " "*(width-len(toprint))
+                            print(toprint,end="\r")
+                            self._go_to_url(image, update_hist=False, check_cache=True, \
+                                                handle=False,limit_size=True)
+            is_rendered = False
+            if display and netcache.is_cache_valid(url):
+                is_rendered = self.opencache.opnk(url,mode=mode)
+            if display and is_rendered:
+                self.page_index = 0
+                # Update state (external files are not added to history)
+                if mode and mode != "readable": 
+                    url += "##offpunk_mode=" + mode
+                self.current_url = url
+                if update_hist and not self.sync_only:
+                    self._update_history(url)
 
     @needs_gi
     def _show_lookup(self, offset=0, end=None, show_url=False):
@@ -981,7 +960,7 @@ Marks are temporary until shutdown (not saved to disk)."""
         output += "===========\n"
         output += "Highly recommended:\n"
         output += " - python-cryptography : " + has(netcache._HAS_CRYPTOGRAPHY)
-        output += " - xdg-open            : " + has(_HAS_XDGOPEN)
+        output += " - xdg-open            : " + has(opnk._HAS_XDGOPEN)
         output += "\nWeb browsing:\n"
         output += " - python-requests     : " + has(_DO_HTTP)
         output += " - python-feedparser   : " + has(_DO_FEED)

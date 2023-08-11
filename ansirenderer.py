@@ -385,8 +385,11 @@ class AbstractRenderer():
     def is_valid(self):
         return self.validity
     def is_local(self):
-        #TODO with self.url
-        return False
+        if "://" in self.url:
+            scheme,path = self.url.split("://",maxsplit=1)
+            return scheme in ["file","mail","list","mailto"]
+        else:
+            return True
     def set_mode(self,mode):
         self.last_mode = mode
     def get_links(self,mode=None):
@@ -460,21 +463,30 @@ class AbstractRenderer():
             title += " (%s)" %self.get_url_title()
         return title
     
+    def get_formatted_title(self):
+        title = self.get_url_title()
+        nbr = len(self.get_links())
+        if self.is_local():
+            title += " (%s items)"%nbr
+            str_last = "local file"
+        else:
+            str_last = "last accessed on %s"\
+                            %time.ctime(netcache.cache_last_modified(self.url))
+            title += " (%s links)"%nbr
+        return self._window_title(title,info=str_last)
+
     #this function is about creating a title derived from the URL
     def get_url_title(self):
         #small intelligence to try to find a good name for a capsule
         #we try to find eithe ~username or /users/username
         #else we fallback to hostname
-        #TODO: handle local name
-       # if self.local:
-       #     if self.name != "":
-       #         red_title = self.name
-       #     else:
-       #         red_title = self.path
-       # else:
-       #TODO: handle host and path separation
-        red_title = "TODO:host" #self.host
+        if self.is_local():
+            splitpath = self.url.split("/")
+            filename = splitpath[-1]
+            return filename
         path = self.url
+        parsed = urllib.parse.urlparse(self.url)
+        red_title = parsed.hostname
         if "user" in path:
             i = 0
             splitted = path.split("/")
@@ -532,13 +544,6 @@ class AbstractRenderer():
             title_r.add_text("   (%s)"%info)
         title_r.close_color("red")
         return title_r.get_final()
-
-    def display(self,mode=None,window_title="",window_info=None,grep=None):
-        if mode: self.last_mode = mode
-        else: mode = self.last_mode
-        #TODO to remove
-        return True
-
 
     # An instance of AbstractRenderer should have a self.render(body,width,mode) method.
     # 3 modes are used : readable (by default), full and links_only (the fastest, when

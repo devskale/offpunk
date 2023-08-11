@@ -13,6 +13,8 @@ import offutils
 import shutil
 from offutils import run,term_width
 
+_HAS_XDGOPEN = shutil.which('xdg-open')
+
 less_version = 0
 if not shutil.which("less"):
     print("Please install the pager \"less\" to run Offpunk.")
@@ -125,7 +127,6 @@ class opencache():
         renderer = None
         # We remove the ##offpunk_mode= from the URL
         # If mode is already set, we don’t use the part from the URL
-        print("inpath : %s" %inpath)
         findmode = inpath.split("##offpunk_mode=")
         if len(findmode) > 1:
             inpath = findmode[0]
@@ -133,7 +134,6 @@ class opencache():
                 if findmode[1] in ["full"] or findmode[1].isnumeric():
                     mode = findmode[1]
         path = netcache.get_cache_path(inpath)
-        #TODO: check if inpath is URL? 
         if path:
             if inpath not in self.rendererdic.keys():
                 renderer = ansirenderer.renderer_from_file(path,inpath)
@@ -147,7 +147,6 @@ class opencache():
 
     def grep(self,inpath,searchterm):
         print("TODO: implement grep")
-        #TODO
 
     def opnk(self,inpath,mode=None,terminal=True):
         #Return True if inpath opened in Terminal
@@ -156,12 +155,9 @@ class opencache():
         #we immediately fallback to xdg-open.
         #netcache currently provide the path if it’s a file.
         #may this should be migrated here.
-        print("inpath opnk: %s" %inpath)
         renderer = self.get_renderer(inpath,mode=mode)
-        # TODO: put the window title into ansirenderer itself
-        #wtitle = self._window_title(window_title,info=window_info)
         if terminal and renderer:
-            wtitle = "Test title\n"
+            wtitle = renderer.get_formatted_title()
             body = wtitle + "\n" + renderer.get_body(mode=mode)
             # We actually put the body in a tmpfile before giving it to less
             if mode not in self.temp_files:
@@ -180,10 +176,9 @@ class opencache():
             return True
         #maybe, we have no renderer. Or we want to skip it.
         else:
-            print("We can’t renderer in Ansi, fallback to xdg-open")
             cmd_str = self._get_handler_cmd(ansirenderer.get_mime(inpath))
             try:
-                run(cmd_str, netcache.get_cache_path(inpath), direct_output=True)
+                run(cmd_str, parameter=netcache.get_cache_path(inpath), direct_output=True)
             except FileNotFoundError:
                 print("Handler program %s not found!" % shlex.split(cmd_str)[0])
                 print("You can use the ! command to specify another handler program or pipeline.")
@@ -199,7 +194,7 @@ class opencache():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("content",metavar="INPUT", nargs="*", type=argparse.FileType("r"), 
+    parser.add_argument("content",metavar="INPUT", nargs="*", 
                          default=sys.stdin, help="Path to the file or URL to open")
     args = parser.parse_args()
     cache = opencache()
