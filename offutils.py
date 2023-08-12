@@ -11,6 +11,8 @@ import io
 import subprocess
 import shutil
 import shlex
+import urllib.parse
+import urllib.parse
 
 # In terms of arguments, this can take an input file/string to be passed to
 # stdin, a parameter to do (well-escaped) "%" replacement on the command, a
@@ -58,3 +60,22 @@ def is_local(url):
     else:
         return True
 
+
+# This method return the image URL or invent it if it’s a base64 inline image
+# It returns [url,image_data] where image_data is None for normal image
+def looks_like_base64(src,baseurl):
+    imgdata = None
+    imgname = src
+    if src and src.startswith("data:image/"):
+        if ";base64," in src:
+            splitted = src.split(";base64,")
+            extension = splitted[0].strip("data:image/")[:3]
+            imgdata = splitted[1]
+            imgname = imgdata[:20] + "." + extension
+            imgurl = urllib.parse.urljoin(baseurl, imgname)
+        else:
+            #We can’t handle other data:image such as svg for now
+            imgurl = None
+    else:
+        imgurl = urllib.parse.urljoin(baseurl, imgname)
+    return imgurl,imgdata

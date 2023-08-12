@@ -1031,16 +1031,19 @@ def fetch(url,offline=False,download_image_first=True,validity=0,**kwargs):
         # We download images contained in the document (from full mode)
         if not offline and download_image_first:
             renderer = ansicat.renderer_from_file(path,url)
-            for image in renderer.get_images(mode="full"):
-                if image and is_cache_valid(image):
-                    width = offutils.term_width() - 1
-                    toprint = "Downloading %s" %image
-                    toprint = toprint[:width]
-                    toprint += " "*(width-len(toprint))
-                    print(toprint,end="\r")
-                    #d_i_f is False to avoid recursive downloading 
-                    #if that ever happen
-                    fetch(image,offline=offline,download_image_first=False,validity=0,**kwargs)
+            if renderer:
+                for image in renderer.get_images(mode="full"):
+                    #Image should exist, should be an url (not a data image)
+                    #and should not be already cached
+                    if image and not image.startswith("data:image/") and not is_cache_valid(image):
+                        width = offutils.term_width() - 1
+                        toprint = "Downloading %s" %image
+                        toprint = toprint[:width]
+                        toprint += " "*(width-len(toprint))
+                        print(toprint,end="\r")
+                        #d_i_f is False to avoid recursive downloading 
+                        #if that ever happen
+                        fetch(image,offline=offline,download_image_first=False,validity=0,**kwargs)
     else:
         print("Not cached URL or not supported format (TODO)")
     return path

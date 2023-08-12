@@ -11,7 +11,7 @@ import argparse
 import mimetypes
 import fnmatch
 import netcache
-from offutils import run,term_width,is_local
+from offutils import run,term_width,is_local,looks_like_base64
 try:
     from readability import Document
     _HAS_READABILITY = True
@@ -84,24 +84,6 @@ if not _RENDER_IMAGE:
         print("Before Chafa 1.10, you also need python-pil")
 
 
-# This method return the image URL or invent it if it’s a base64 inline image
-# It returns [url,image_data] where image_data is None for normal image
-def looks_like_base64(src,baseurl):
-    imgdata = None
-    imgname = src
-    if src and src.startswith("data:image/"):
-        if ";base64," in src:
-            splitted = src.split(";base64,")
-            extension = splitted[0].strip("data:image/")[:3]
-            imgdata = splitted[1]
-            imgname = imgdata[:20] + "." + extension
-            imgurl = urllib.parse.urljoin(baseurl, imgname)
-        else:
-            #We can’t handle other data:image such as svg for now
-            imgurl = None
-    else:
-        imgurl = urllib.parse.urljoin(baseurl, imgname)
-    return imgurl,imgdata
 
 #return ANSI text that can be show by less
 def inline_image(img_file,width):

@@ -1,25 +1,12 @@
 #list of things to do before asking for bug reports
 #TODO: removing XDG_CONFIG DEBUG code
 #TODO: implementing mailto
-#TODO: testing and debugging --sync
 #TODO: disabling opnk cache if netcache more recent than opnk cache
-#TODO: offpunk.up is not working
+#TODO: mode not saved in lists
+#TODO: history/back/forward completely broken
 #TODO: gemini certificate code
 #!/usr/bin/env python3
 # Offpunk Offline Gemini client
-# Derived from AV-98 by Solderpunk,
-# (C) 2021, 2022 Ploum <offpunk110 at ploum.eu>
-# (C) 2019, 2020 Solderpunk <solderpunk at sdf.org>
-# With contributions from:
-#  - danceka <hannu.hartikainen at gmail.com>
-#  - <jprjr at tilde.club>
-#  - <vee at vnsf.xyz>
-#  - Klaus Alexander Seistrup <klaus at seistrup.dk>
-#  - govynnus <govynnus at sdf.org>
-#  - Björn Wärmedal <bjorn.warmedal at gmail.com>
-#  - <jake at rmgr.dev>
-#  - Maeve Sproule <code at sprock.dev>
-
 """
 Offline-First Gemini/Web/Gopher/RSS reader and browser
 """
@@ -44,7 +31,7 @@ import urllib.parse
 import subprocess
 import netcache
 import opnk
-from offutils import run,term_width
+from offutils import run,term_width,is_local
 try:
     import setproctitle
     setproctitle.setproctitle("offpunk")
@@ -443,8 +430,8 @@ class GeminiClient(cmd.Cmd):
         if self.sync_only:
             return
         # We don’t add lists to history
-        #if not gi or os.path.join(_DATA_DIR,"lists") in gi.url:
-        #    return
+        if not url or os.path.join(_DATA_DIR,"lists") in url:
+            return
         histlist = self.get_list("history")
         links = self.list_get_links("history")
         # avoid duplicate
@@ -766,21 +753,23 @@ Take an integer as argument to go up multiple times."""
         elif args[0] != "":
             print("Up only take integer as arguments")
         #TODO : implement up, this code is copy/pasted from GeminiItem
-        path = self.path.rstrip('/')
+        parsed = urllib.parse.urlparse(self.current_url)
+        path = parsed.path.rstrip('/')
         count = 0
         while count < level:
             pathbits = list(os.path.split(path))
             # Don't try to go higher than root or in config
-            if offutils.is_local(self.current_url) or len(pathbits) == 1 :
-                return self
+            if is_local(self.current_url) or len(pathbits) == 1 :
+                break
             # Get rid of bottom component
             if len(pathbits) > 1:
                 pathbits.pop()
             path = os.path.join(*pathbits)
             count += 1
-        if self.scheme == "gopher":
+        if parsed.scheme == "gopher":
             path = "/1" + path
-        return self._derive_url(path)
+        newurl = urllib.parse.urlunparse((parsed.scheme,parsed.netloc,path,"","",""))
+        self._go_to_url(newurl)
 
     def do_back(self, *args):
         """Go back to the previous gemini item."""
@@ -790,6 +779,7 @@ Take an integer as argument to go up multiple times."""
             return
         self.hist_index += 1
         url = links[self.hist_index]
+        print("back to %s"%url)
         self._go_to_url(url, update_hist=False)
 
     def do_forward(self, *args):
@@ -1284,12 +1274,14 @@ archives, which is a special historical list limited in size. It is similar to `
         print("\x1b[2;34mCurrent maximum size of archives : %s\x1b[0m" %self.options["archives_size"])
 
     #what is the line to add to a list for this url ?
-    def to_map_line(self):
-        r = self.get_renderer()
+    def to_map_line(self,url=None):
+        if not url:
+            url = self.current_url
+        r = self.get_renderer(url)
         if r:
-            return "=> {} {}\n".format(self.current_url, r.get_page_title())
+            return "=> {} {}\n".format(url, r.get_page_title())
         else:
-            print("no renderer for %s"%self.current_url)
+            print("no renderer for %s"%url)
             return None
 
     def list_add_line(self,list,url=None,verbose=True):
@@ -1309,12 +1301,12 @@ archives, which is a special historical list limited in size. It is similar to `
                 l_file.close()
                 for l in lines:
                     sp = l.split()
-                    if self.current_url in sp:
+                    if url in sp:
                         if verbose:
                             print("%s already in %s."%(url,list))
                         return False
             with open(list_path,"a") as l_file:
-                l_file.write(self.to_map_line())
+                l_file.write(self.to_map_line(url))
                 l_file.close()
             if verbose:
                 print("%s added to %s" %(url,list))
