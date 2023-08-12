@@ -763,48 +763,45 @@ class FolderRenderer(GemtextRenderer):
                 body += "=> %s %s (%s items)\n" %(str(path),li,size)
             return body
         listdir = os.path.join(self.datadir,"lists")
-        if self.url != listdir:
-            return "This is folder %s" %self.url
-        else:
-            self.title = "My lists"
-            lists = []
-            if os.path.exists(listdir):
-                listfiles = os.listdir(listdir)
-                if len(listfiles) > 0:
-                    for l in listfiles:
-                        #removing the .gmi at the end of the name
-                        lists.append(l[:-4])
-            if len(lists) > 0:
-                body = ""
-                my_lists = []
-                system_lists = []
-                subscriptions = []
-                frozen = []
-                lists.sort()
-                for l in lists:
-                    if l in ["history","to_fetch","archives","tour"]:
-                        system_lists.append(l)
+        self.title = "My lists"
+        lists = []
+        if os.path.exists(listdir):
+            listfiles = os.listdir(listdir)
+            if len(listfiles) > 0:
+                for l in listfiles:
+                    #removing the .gmi at the end of the name
+                    lists.append(l[:-4])
+        if len(lists) > 0:
+            body = ""
+            my_lists = []
+            system_lists = []
+            subscriptions = []
+            frozen = []
+            lists.sort()
+            for l in lists:
+                if l in ["history","to_fetch","archives","tour"]:
+                    system_lists.append(l)
+                else:
+                    first_line = get_first_line(l)
+                    if first_line and "#subscribed" in first_line:
+                        subscriptions.append(l)
+                    elif first_line and "#frozen" in first_line:
+                        frozen.append(l)
                     else:
-                        first_line = get_first_line(l)
-                        if first_line and "#subscribed" in first_line:
-                            subscriptions.append(l)
-                        elif first_line and "#frozen" in first_line:
-                            frozen.append(l)
-                        else:
-                            my_lists.append(l)
-                if len(my_lists) > 0:
-                    body+= "\n## Bookmarks Lists (updated during sync)\n"
-                    body += write_list(my_lists)
-                if len(subscriptions) > 0:
-                    body +="\n## Subscriptions (new links in those are added to tour)\n"
-                    body += write_list(subscriptions)
-                if len(frozen) > 0:
-                    body +="\n## Frozen (fetched but never updated)\n"
-                    body += write_list(frozen)
-                if len(system_lists) > 0:
-                    body +="\n## System Lists\n"
-                    body += write_list(system_lists)
-                return body
+                        my_lists.append(l)
+            if len(my_lists) > 0:
+                body+= "\n## Bookmarks Lists (updated during sync)\n"
+                body += write_list(my_lists)
+            if len(subscriptions) > 0:
+                body +="\n## Subscriptions (new links in those are added to tour)\n"
+                body += write_list(subscriptions)
+            if len(frozen) > 0:
+                body +="\n## Frozen (fetched but never updated)\n"
+                body += write_list(frozen)
+            if len(system_lists) > 0:
+                body +="\n## System Lists\n"
+                body += write_list(system_lists)
+            return body
 
 class FeedRenderer(GemtextRenderer):
     def get_mime(self):
@@ -1218,9 +1215,10 @@ def renderer_from_file(path,url=None):
                 f.close()
         else:
             content = path
-        return set_renderer(content,url,mime)
+        toreturn = set_renderer(content,url,mime)
     else:
-        return None
+        toreturn = None
+    return toreturn
 
 def set_renderer(content,url,mime):
     renderer = None

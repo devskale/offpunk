@@ -1,5 +1,5 @@
 #list of things to do before asking for bug reports
-#TODO: making list:// works
+#TODO: remember last_mode
 #TODO: removing XDG_CONFIG DEBUG code
 #TODO: implementing mailto
 #TODO: testing and debugging --sync
@@ -407,7 +407,10 @@ class GeminiClient(cmd.Cmd):
             params["validity"] = 1
         # Use cache or mark as to_fetch if resource is not cached
         if handle and not self.sync_only:
-            displayed = self.opencache.opnk(url,**params)
+            mode_url = url
+            if mode and mode != "readable": 
+                mode_url += "##offpunk_mode=" + mode
+            displayed = self.opencache.opnk(url,mode=mode,**params)
             if not displayed:
                 self.get_list("to_fetch")
                 r = self.list_add_line("to_fetch",url=url,verbose=False)
@@ -418,11 +421,9 @@ class GeminiClient(cmd.Cmd):
             else:
                 self.page_index = 0
                 # Update state (external files are not added to history)
-                if mode and mode != "readable": 
-                    url += "##offpunk_mode=" + mode
-                self.current_url = url
+                self.current_url = mode_url
                 if update_hist and not self.sync_only:
-                    self._update_history(url)
+                    self._update_history(mode_url)
         else:
             #we are asked not to handle or in sync_only mode
             netcache.fetch(url,**params)

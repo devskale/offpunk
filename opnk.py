@@ -80,6 +80,7 @@ class opencache():
         self.rendererdic = {}
         self.less_histfile = {}
         self.mime_handlers = {}
+        self.last_mode = {}
 
     def _get_handler_cmd(self, mimetype):
         # Now look for a handler for this mimetype
@@ -133,6 +134,12 @@ class opencache():
             if not mode:
                 if findmode[1] in ["full"] or findmode[1].isnumeric():
                     mode = findmode[1]
+        # If we still doesn’t have a mode, we see if we used one before
+        if inpath in self.last_mode.keys():
+            mode = self.last_mode[inpath]
+        else:
+            #default mode is readable
+            mode = "readable"
         path = netcache.get_cache_path(inpath)
         if path:
             if inpath not in self.rendererdic.keys():
@@ -143,6 +150,7 @@ class opencache():
                 renderer = self.rendererdic[inpath]
         if renderer and mode:
             renderer.set_mode(mode)
+            self.last_mode[inpath] = mode
         return renderer
 
     def grep(self,inpath,searchterm):
@@ -160,23 +168,26 @@ class opencache():
             if not cachepath:
                 return False
         renderer = self.get_renderer(inpath,mode=mode)
+        key = inpath
+        if mode and "##offpunk_mode=" not in inpath:
+            key += "##offpunk_mode=" + mode
         if terminal and renderer:
             wtitle = renderer.get_formatted_title()
             body = wtitle + "\n" + renderer.get_body(mode=mode)
             # We actually put the body in a tmpfile before giving it to less
-            if mode not in self.temp_files:
+            if key not in self.temp_files:
                 tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
-                self.temp_files[mode] = tmpf.name
+                self.temp_files[key] = tmpf.name
                 tmpf.write(body)
                 tmpf.close()
-            if mode not in self.less_histfile:
+            if key not in self.less_histfile:
                 firsttime = True
                 tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
-                self.less_histfile[mode] = tmpf.name
+                self.less_histfile[key] = tmpf.name
             else:
                 firsttime = False
             grep=None
-            less_cmd(self.temp_files[mode], histfile=self.less_histfile[mode],cat=firsttime,grep=grep)
+            less_cmd(self.temp_files[key], histfile=self.less_histfile[key],cat=firsttime,grep=grep)
             return True
         #maybe, we have no renderer. Or we want to skip it.
         else:
@@ -188,14 +199,6 @@ class opencache():
                 print("You can use the ! command to specify another handler program or pipeline.")
             return False
         
-
-    def get_temp_file(self,mode=None):
-        if not mode: mode = self.last_mode
-        if mode in self.temp_files:
-            return self.temp_files[mode]
-        else:
-            return None
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("content",metavar="INPUT", nargs="*", 
