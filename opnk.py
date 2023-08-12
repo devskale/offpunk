@@ -124,22 +124,8 @@ class opencache():
             if previous:
                 print("Previous handler was %s"%previous)
 
-    def get_renderer(self,inpath,mode=None):
+    def get_renderer(self,inpath):
         renderer = None
-        # We remove the ##offpunk_mode= from the URL
-        # If mode is already set, we don’t use the part from the URL
-        findmode = inpath.split("##offpunk_mode=")
-        if len(findmode) > 1:
-            inpath = findmode[0]
-            if not mode:
-                if findmode[1] in ["full"] or findmode[1].isnumeric():
-                    mode = findmode[1]
-        # If we still doesn’t have a mode, we see if we used one before
-        if inpath in self.last_mode.keys():
-            mode = self.last_mode[inpath]
-        else:
-            #default mode is readable
-            mode = "readable"
         path = netcache.get_cache_path(inpath)
         if path:
             if inpath not in self.rendererdic.keys():
@@ -148,9 +134,6 @@ class opencache():
                     self.rendererdic[inpath] = renderer
             else:
                 renderer = self.rendererdic[inpath]
-        if renderer and mode:
-            renderer.set_mode(mode)
-            self.last_mode[inpath] = mode
         return renderer
 
     def grep(self,inpath,searchterm):
@@ -167,7 +150,24 @@ class opencache():
             cachepath = netcache.fetch(inpath,**kwargs)
             if not cachepath:
                 return False
-        renderer = self.get_renderer(inpath,mode=mode)
+        # We remove the ##offpunk_mode= from the URL
+        # If mode is already set, we don’t use the part from the URL
+        findmode = inpath.split("##offpunk_mode=")
+        if len(findmode) > 1:
+            inpath = findmode[0]
+            if not mode:
+                if findmode[1] in ["full"] or findmode[1].isnumeric():
+                    mode = findmode[1]
+        # If we still doesn’t have a mode, we see if we used one before
+        if not mode and inpath in self.last_mode.keys():
+            mode = self.last_mode[inpath]
+        elif not mode:
+            #default mode is readable
+            mode = "readable"
+        renderer = self.get_renderer(inpath)
+        if renderer and mode:
+            renderer.set_mode(mode)
+            self.last_mode[inpath] = mode
         key = inpath
         if mode and "##offpunk_mode=" not in inpath:
             key += "##offpunk_mode=" + mode

@@ -90,6 +90,8 @@ def normalize_url(url):
 
 
 def cache_last_modified(url):
+    if not url:
+        return None
     path = get_cache_path(url)
     if path:
         return os.path.getmtime(path)
@@ -133,6 +135,8 @@ def get_cache_path(url):
     # Sometimes, cache_path became a folder! (which happens for index.html/index.gmi)
     # In that case, we need to reconstruct it
     #First, we parse the URL
+    if not url:
+        return None
     parsed = urllib.parse.urlparse(url)
     if url[0] == "/" or url.startswith("./"):
         scheme = "file"

@@ -1,5 +1,4 @@
 #list of things to do before asking for bug reports
-#TODO: remember last_mode
 #TODO: removing XDG_CONFIG DEBUG code
 #TODO: implementing mailto
 #TODO: testing and debugging --sync
@@ -421,9 +420,9 @@ class GeminiClient(cmd.Cmd):
             else:
                 self.page_index = 0
                 # Update state (external files are not added to history)
-                self.current_url = mode_url
+                self.current_url = url
                 if update_hist and not self.sync_only:
-                    self._update_history(mode_url)
+                    self._update_history(url)
         else:
             #we are asked not to handle or in sync_only mode
             netcache.fetch(url,**params)
@@ -1286,7 +1285,12 @@ archives, which is a special historical list limited in size. It is similar to `
 
     #what is the line to add to a list for this url ?
     def to_map_line(self):
-        return "=> {} {}\n".format(self.current_url, self.get_renderer().get_page_title())
+        r = self.get_renderer()
+        if r:
+            return "=> {} {}\n".format(self.current_url, r.get_page_title())
+        else:
+            print("no renderer for %s"%self.current_url)
+            return None
 
     def list_add_line(self,list,url=None,verbose=True):
         list_path = self.list_path(list)
