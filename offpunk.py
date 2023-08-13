@@ -1,5 +1,7 @@
 #list of things to do before asking for bug reports
-#TODO: implementing mailto
+#TODO: cached links are from the normal view, not the full view
+#We should invalidate the cache more aggressively
+#Also delete tmp file on close
 #!/usr/bin/env python3
 # Offpunk Offline Gemini client
 """
@@ -179,7 +181,6 @@ def looks_like_url(word):
     except ValueError:
         return False
 
-
 # GeminiClient Decorators
 def needs_gi(inner):
     def outer(self, *args, **kwargs):
@@ -192,15 +193,12 @@ def needs_gi(inner):
     return outer
 
 class GeminiClient(cmd.Cmd):
-
     def __init__(self, completekey="tab", synconly=False):
         cmd.Cmd.__init__(self)
-
         # Set umask so that nothing we create can be read by anybody else.
         # The certificate cache and TOFU database contain "browser history"
         # type sensitivie information.
         os.umask(0o077)
-
         self.opencache = opnk.opencache()
         self.no_cert_prompt = "\001\x1b[38;5;76m\002" + "ON" + "\001\x1b[38;5;255m\002" + "> " + "\001\x1b[0m\002"
         self.cert_prompt = "\001\x1b[38;5;202m\002" + "ON" + "\001\x1b[38;5;255m\002"
@@ -217,14 +215,12 @@ class GeminiClient(cmd.Cmd):
         self.sync_only = False
         self.support_http = _DO_HTTP
         self.automatic_choice = "n"
-
         self.client_certs = {
             "active": None
         }
         self.active_cert_domains = []
         self.active_is_transient = False
         self.transient_certs_created = []
-
         self.options = {
             "debug" : False,
             "beta" : False,
@@ -244,7 +240,6 @@ class GeminiClient(cmd.Cmd):
             "search"    : "gemini://kennedy.gemi.dev/search?%s",
             "accept_bad_ssl_certificates" : False,
         }
-
         self.redirects = {
             "twitter.com" : "nitter.42l.fr",
             "facebook.com" : "blocked",
@@ -327,26 +322,9 @@ class GeminiClient(cmd.Cmd):
         Nothing is returned."""
         if not url:
             return
-        #TODO: we don’t handle the name anymore !
+        #we don’t handle the name anymore !
         if name:
             print("We don’t handle name of URL: %s"%name)
-        # Don't try to speak to servers running other protocols
-        #TODO: support for mailto and unsupported protocols
-       # elif gi.scheme == "mailto":
-       #     if handle and not self.sync_only:
-       #         resp = input("Send an email to %s Y/N? " %gi.path)
-       #         self.gi = gi
-       #         if resp.strip().lower() in ("y", "yes"):
-       #             if _HAS_XDGOPEN :
-       #                 run("xdg-open mailto:%s", parameter=gi.path ,direct_output=True)
-       #             else:
-       #                 print("Cannot find a mail client to send mail to %s" %gi.path)
-       #                 print("Please install xdg-open (usually from xdg-util package)")
-       #     return
-       # elif gi.scheme not in ["file","list"] and gi.scheme not in netcache.standard_ports \
-       #                                                         and not self.sync_only:
-       #     print("Sorry, no support for {} links.".format(gi.scheme))
-       #     return
         # Obey permanent redirects
         if url in self.permanent_redirects:
             self._go_to_url(self.permanent_redirects[url],update_hist=update_hist,\
@@ -366,12 +344,14 @@ class GeminiClient(cmd.Cmd):
             displayed = self.opencache.opnk(url,mode=mode,**params)
             modedurl = mode_url(url,mode)
             if not displayed:
-                self.get_list("to_fetch")
-                r = self.list_add_line("to_fetch",url=modedurl,verbose=False)
-                if r:
-                    print("%s not available, marked for syncing"%url)
-                else:
-                    print("%s already marked for syncing"%url)
+                #if we can’t display, we mark to sync what is not local
+                if not is_local(url) or not netcache.is_cache_valid(url):
+                    self.get_list("to_fetch")
+                    r = self.list_add_line("to_fetch",url=modedurl,verbose=False)
+                    if r:
+                        print("%s not available, marked for syncing"%url)
+                    else:
+                        print("%s already marked for syncing"%url)
             else:
                 self.page_index = 0
                 # Update state (external files are not added to history)

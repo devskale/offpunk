@@ -215,7 +215,18 @@ class opencache():
             return True
         #maybe, we have no renderer. Or we want to skip it.
         else:
-            cmd_str = self._get_handler_cmd(ansicat.get_mime(inpath))
+            mimetype = ansicat.get_mime(inpath)
+            if mimetype == "mailto":
+                resp = input("Send an email to %s Y/N? " %inpath)
+                if resp.strip().lower() in ("y", "yes"):
+                    if _HAS_XDGOPEN :
+                        run("xdg-open mailto:%s", parameter=inpath ,direct_output=True)
+                    else:
+                         print("Cannot find a mail client to send mail to %s" %inpath)
+                         print("Please install xdg-open (usually from xdg-util package)")
+                return
+            else:
+                cmd_str = self._get_handler_cmd(mimetype)
             try:
                 run(cmd_str, parameter=netcache.get_cache_path(inpath), direct_output=True)
             except FileNotFoundError:

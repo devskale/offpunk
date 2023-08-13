@@ -3,14 +3,15 @@
 ## 2.0 - unreleased
 List of things before release
 TODO: restore gemini certificate code
-TODO: change licence to AGPL
 TODO: man pages for netcache, ansicat, opnk
 TODO: invalidate cache when size of terminal is changed
 This is an an experimental and unstable release. Lot of breakages are expected.
 Wait for 2.1 if you are not willing to do testing/bug reporting.
+- Licence has been changed to AGPL for ideological reasons
 - New command-line tool: "netcache"
 - New command-line tool: "ansicat"
 - New command-line tool: "opnk"
+- URL do not default anymore to "gemini://" if not protocol are indicated.
 - Images of html files are now always downloaded with the html (slower but better experience)
 - Reading position is now saved for the whole session
 - Gopher-only: we don’t support naming a page after the name of the incoming link
