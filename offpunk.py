@@ -1,8 +1,5 @@
 #list of things to do before asking for bug reports
-#TODO: removing XDG_CONFIG DEBUG code
 #TODO: implementing mailto
-#TODO: offpunk.info broken
-#TODO: gemini certificate code
 #!/usr/bin/env python3
 # Offpunk Offline Gemini client
 """
@@ -30,13 +27,13 @@ import subprocess
 import netcache
 import opnk
 from offutils import run,term_width,is_local,mode_url,unmode_url
+from offutils import _CONFIG_DIR,_DATA_DIR,_CACHE_PATH
 try:
     import setproctitle
     setproctitle.setproctitle("offpunk")
     _HAS_SETPROCTITLE = True
 except ModuleNotFoundError:
     _HAS_SETPROCTITLE = False
-
 
 _HAS_XSEL = shutil.which('xsel')
 
@@ -45,27 +42,6 @@ try:
     _DO_HTTP = True
 except ModuleNotFoundError:
     _DO_HTTP = False
-
-
-
-## Config directories
-## We implement our own python-xdg to avoid conflict with existing libraries.
-_home = os.path.expanduser('~')
-data_home = os.environ.get('XDG_DATA_HOME') or \
-            os.path.join(_home,'.local','share')
-config_home = os.environ.get('XDG_CONFIG_HOME') or \
-                os.path.join(_home,'.config')
-_CONFIG_DIR = os.path.join(config_home,"offpunk/")
-_DATA_DIR = os.path.join(data_home,"offpunk/")
-_old_config = os.path.expanduser("~/.offpunk/")
-## Look for pre-existing config directory, if any
-if os.path.exists(_old_config):
-    _CONFIG_DIR = _old_config
-#if no XDG .local/share and not XDG .config, we use the old config
-if not os.path.exists(data_home) and os.path.exists(_old_config):
-    _DATA_DIR = _CONFIG_DIR
-_MAX_CACHE_SIZE = 10
-_MAX_CACHE_AGE_SECS = 180
 
 _GREP = "grep --color=auto"
 less_version = 0
@@ -123,10 +99,6 @@ def less_cmd(file, histfile=None,cat=False,grep=None):
         cmd_str = _DEFAULT_LESS
     run(cmd_str, parameter=file, direct_output=True, env=env)
 
-#TODO: remove this debug code
-_CACHE_PATH = "/home/ploum/dev/netcache/"
-_DATA_DIR = "/home/ploum/dev/netcache/"
-_CONFIG_DIR = "/home/ploum/dev/netcache/"
 # Command abbreviations
 _ABBREVS = {
     "..":   "up",
@@ -888,9 +860,6 @@ Marks are temporary until shutdown (not saved to disk)."""
         out += "URL      :   " + url + "\n"
         out += "Mime     :   " + renderer.get_mime() + "\n"
         out += "Cache    :   " + netcache.get_cache_path(url) + "\n"
-        tmp = self.get_renderer().get_temp_filename()
-        if tmp != netcache.get_cache_path(self.current_url):
-            out += "Tempfile :   " + self.get_renderer().get_temp_filename() + "\n"
         if self.get_renderer() :
             rend = str(self.get_renderer().__class__)
             rend = rend.lstrip("<class '__main__.").rstrip("'>")
@@ -1085,7 +1054,6 @@ see "handler" command to set your handler."""
 'save filename' saves the last viewed item to the specified filename.
 'save n' saves menu item n to an automagic filename."""
         args = line.strip().split()
-
         # First things first, figure out what our arguments are
         if len(args) == 0:
             # No arguments given at all
@@ -1121,7 +1089,6 @@ see "handler" command to set your handler."""
         else:
             print("You must provide an index, a filename, or both.")
             return
-
         # Next, fetch the item to save, if it's not the current one.
         if index:
             last_url = self.current_url
@@ -1133,11 +1100,11 @@ see "handler" command to set your handler."""
                 self.current_url = last_url
                 return
         else:
-            url = current_url
+            url = self.current_url
 
         # Derive filename from current GI's path, if one hasn't been set
         if not filename:
-            filename = os.path.basename(netcache.get_cache_path(self.url))
+            filename = os.path.basename(netcache.get_cache_path(self.current_url))
         # Check for filename collisions and actually do the save if safe
         if os.path.exists(filename):
             print("File %s already exists!" % filename)

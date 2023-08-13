@@ -12,6 +12,7 @@ import mimetypes
 import fnmatch
 import netcache
 from offutils import run,term_width,is_local,looks_like_base64
+from offutils import _DATA_DIR
 try:
     from readability import Document
     _HAS_READABILITY = True
@@ -25,9 +26,6 @@ try:
 except ModuleNotFoundError:
     _HAS_SOUP = False
 
-
-#DEBUG code
-_DATA_DIR = "/home/ploum/dev/netcache/"
 _DO_HTML = _HAS_SOUP #and _HAS_READABILITY
 if _DO_HTML and not _HAS_READABILITY:
     print("To improve your web experience (less cruft in webpages),")
