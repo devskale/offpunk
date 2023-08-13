@@ -21,8 +21,8 @@ data_home = os.environ.get('XDG_DATA_HOME') or \
             os.path.join(_home,'.local','share')
 config_home = os.environ.get('XDG_CONFIG_HOME') or \
                 os.path.join(_home,'.config')
-_CONFIG_DIR = os.path.join(config_home,"offpunk/")
-_DATA_DIR = os.path.join(data_home,"offpunk/")
+_CONFIG_DIR = os.path.join(os.path.expanduser(config_home),"offpunk/")
+_DATA_DIR = os.path.join(os.path.expanduser(data_home),"offpunk/")
 _old_config = os.path.expanduser("~/.offpunk/")
 ## Look for pre-existing config directory, if any
 if os.path.exists(_old_config):
@@ -32,7 +32,7 @@ if not os.path.exists(data_home) and os.path.exists(_old_config):
     _DATA_DIR = _CONFIG_DIR
 cache_home = os.environ.get('XDG_CACHE_HOME') or\
                 os.path.join(_home,'.cache')
-_CACHE_PATH = os.path.join(cache_home,"offpunk/")
+_CACHE_PATH = os.path.join(os.path.expanduser(cache_home),"offpunk/")
 
 ## Those two functions add/remove the mode to the
 # URLs. This is a gross hack to remember the mode
