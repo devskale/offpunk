@@ -1,3 +1,0 @@
-# Links requested and to be fetched during the next --sync
-=> mailto:partenariat_commercial@ploum.eu 
-=> mailto:fr-join@listes.ploum.net 

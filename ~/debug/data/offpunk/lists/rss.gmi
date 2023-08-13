@@ -1,2 +1,0 @@
-# rss
-=> https://ploum.net/atom.xml Ploum.net (XML feed) (ploum.net)
