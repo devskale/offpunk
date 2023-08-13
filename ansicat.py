@@ -37,8 +37,6 @@ try:
 except ModuleNotFoundError:
     _DO_FEED = False
 
-
-
 try:
     from PIL import Image
     _HAS_PIL = True

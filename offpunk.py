@@ -1,7 +1,10 @@
 #list of things to do before asking for bug reports
 #TODO: cached links are from the normal view, not the full view
-#We should invalidate the cache more aggressively
-#Also delete tmp file on close
+#TODO:We should invalidate the cache more aggressively
+#TODO:Also delete tmp file on close
+#TODO: mode should be removed when displaying URL (or copying it)
+#TODO: pass mode to get_links()
+#TODO: basically, standardize on having the moded_url everywhere when possible
 #!/usr/bin/env python3
 # Offpunk Offline Gemini client
 """
