@@ -14,6 +14,22 @@ import shlex
 import urllib.parse
 import urllib.parse
 
+
+## Those two functions add/remove the mode to the
+# URLs. This is a gross hack to remember the mode
+def mode_url(url,mode):
+    if mode and mode!= "readable" and "##offpunk=" not in url:
+        url += "##offpunk_mode=" + mode
+    return url
+
+def unmode_url(url):
+    mode = None
+    splitted = url.split("##offpunk_mode=")
+    if len(splitted) > 1:
+        url = splitted[0]
+        mode = splitted[1]
+    return [url,mode]
+
 # In terms of arguments, this can take an input file/string to be passed to
 # stdin, a parameter to do (well-escaped) "%" replacement on the command, a
 # flag requesting that the output go directly to the stdout, and a list of

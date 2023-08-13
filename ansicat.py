@@ -371,44 +371,9 @@ class AbstractRenderer():
         return self.validity
     def set_mode(self,mode):
         self.last_mode = mode
+    def get_mode(self):
+        return self.last_mode
     def get_links(self,mode=None):
-    # This method is used to load once the list of links in a gi
-    # Links can be followed, after a space, by a description/title
-    #TODO: remove this code
-   # def get_links(self,mode=None):
-   #     links = []
-   #     toreturn = []
-   #     if self.renderer:
-   #         if not mode:
-   #             mode = self.renderer.last_mode
-   #         links = self.renderer.get_links(mode=mode)
-   #     for l in links:
-   #         #split between link and potential name
-   #         # check that l is non-empty
-   #         url = None
-   #         if l:
-   #             splitted = l.split(maxsplit=1)
-   #             url = self.absolutise_url(splitted[0])
-   #         if url and looks_like_url(url):
-   #             if len(splitted) > 1:
-   #                 #We add a name only for Gopher items
-   #                 if url.startswith("gopher://"):
-   #                     newgi = GeminiItem(url,name=splitted[1])
-   #                 else:
-   #                     newgi = GeminiItem(url)
-   #             else:
-   #                 newgi = GeminiItem(url)
-   #             toreturn.append(newgi)
-   #         elif url and mode != "links_only" and url.startswith("data:image/"):
-   #             imgurl,imgdata = ansirenderer.looks_like_base64(url,self.url)
-   #             if imgurl:
-   #                 toreturn.append(GeminiItem(imgurl))
-   #             else:
-   #                 toreturn.append(None)
-   #         else:
-   #             # We must include a None item to keep the link count valid
-   #             toreturn.append(None)
-   #     return toreturn
         if not mode: mode = self.last_mode
         if mode not in self.links :
             prepared_body = self.prepare(self.body,mode=mode)
@@ -738,9 +703,6 @@ class FolderRenderer(GemtextRenderer):
             body = ""
             for li in l:
                 path = "list:///%s"%li
-                #TODO : size of lists
-                #gi = GeminiItem(path)
-                #size = len(gi.get_links())
                 size = "TODO"
                 body += "=> %s %s (%s items)\n" %(str(path),li,size)
             return body

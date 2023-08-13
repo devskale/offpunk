@@ -1,9 +1,7 @@
 #list of things to do before asking for bug reports
 #TODO: removing XDG_CONFIG DEBUG code
 #TODO: implementing mailto
-#TODO: disabling opnk cache if netcache more recent than opnk cache
-#TODO: mode not saved in lists
-#TODO: history/back/forward completely broken
+#TODO: offpunk.info broken
 #TODO: gemini certificate code
 #!/usr/bin/env python3
 # Offpunk Offline Gemini client
@@ -31,7 +29,7 @@ import urllib.parse
 import subprocess
 import netcache
 import opnk
-from offutils import run,term_width,is_local
+from offutils import run,term_width,is_local,mode_url,unmode_url
 try:
     import setproctitle
     setproctitle.setproctitle("offpunk")
@@ -393,13 +391,11 @@ class GeminiClient(cmd.Cmd):
             params["validity"] = 1
         # Use cache or mark as to_fetch if resource is not cached
         if handle and not self.sync_only:
-            mode_url = url
-            if mode and mode != "readable": 
-                mode_url += "##offpunk_mode=" + mode
             displayed = self.opencache.opnk(url,mode=mode,**params)
+            modedurl = mode_url(url,mode)
             if not displayed:
                 self.get_list("to_fetch")
-                r = self.list_add_line("to_fetch",url=url,verbose=False)
+                r = self.list_add_line("to_fetch",url=modedurl,verbose=False)
                 if r:
                     print("%s not available, marked for syncing"%url)
                 else:
@@ -409,7 +405,7 @@ class GeminiClient(cmd.Cmd):
                 # Update state (external files are not added to history)
                 self.current_url = url
                 if update_hist and not self.sync_only:
-                    self._update_history(url)
+                    self._update_history(modedurl)
         else:
             #we are asked not to handle or in sync_only mode
             netcache.fetch(url,**params)
@@ -1279,10 +1275,12 @@ archives, which is a special historical list limited in size. It is similar to `
             url = self.current_url
         r = self.get_renderer(url)
         if r:
-            return "=> {} {}\n".format(url, r.get_page_title())
+            mode = r.get_mode()
+            url = mode_url(url,mode)
+            title = r.get_page_title()
         else:
-            print("no renderer for %s"%url)
-            return None
+            title = ""
+        return "=> {} {}\n".format(url,title)
 
     def list_add_line(self,list,url=None,verbose=True):
         list_path = self.list_path(list)
@@ -1359,13 +1357,13 @@ archives, which is a special historical list limited in size. It is similar to `
                 lf.close()
             to_write = []
             # let’s remove the mode
-            url = url.split("##offpunk_mode=")[0]
+            url=unmode_url(url)[0]
             for l in lines:
                 # we separate components of the line
                 # to ensure we identify a complete URL, not a part of it
                 splitted = l.split()
                 if url not in splitted and len(splitted) > 1:
-                    current = splitted[1].split("##offpunk_mode=")[0]
+                    current = unmode_url(splitted[1])[0]
                     #sometimes, we must remove the ending "/"
                     if url == current:
                         to_return = True
@@ -1399,12 +1397,11 @@ archives, which is a special historical list limited in size. It is similar to `
             print("go_to_line requires a number as parameter")
         else:
             r = self.get_renderer("list:///%s"%list)
-            url = r.get_lin(int(line))
+            url = r.get_link(int(line))
             display = not self.sync_only
             if url:
                 self._go_to_url(url,handle=display)
-                #TODO : why returning the mode??
-                return self.renderer(url).last_mode
+                return url
 
     def list_show(self,list):
         list_path = self.list_path(list)

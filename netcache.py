@@ -15,6 +15,7 @@ import sqlite3
 from ssl import CertificateError
 import ansicat
 import offutils
+import time
 try:
     import chardet
     _HAS_CHARDET = True
@@ -106,10 +107,9 @@ def is_cache_valid(url,validity=0):
     # a cache to be valid  (in seconds)
     # If 0, then any cache is considered as valid
     # (use validity = 1 if you want to refresh everything)
+    if offutils.is_local(url):
+        return True
     cache = get_cache_path(url)
-    # TODO FIXME : detect if we are local
-    #if self.local:
-    #    return os.path.exists(cache)
     if cache :
         # If path is too long, we always return True to avoid
         # fetching it.

@@ -11,7 +11,8 @@ import netcache
 import ansicat
 import offutils
 import shutil
-from offutils import run,term_width
+import time
+from offutils import run,term_width,mode_url,unmode_url,is_local
 
 _HAS_XDGOPEN = shutil.which('xdg-open')
 
@@ -73,12 +74,18 @@ def less_cmd(file, histfile=None,cat=False,grep=None):
 
 class opencache():
     def __init__(self):
+        # We have a cache of the rendering of file and, for each one,
+        # a less_histfile containing the current position in the file
         self.temp_files = {}
+        self.less_histfile = {}
         # This dictionary contains an url -> ansirenderer mapping. This allows 
         # to reuse a renderer when visiting several times the same URL during
         # the same session
+        # We save the time at which the renderer was created in renderer_time
+        # This way, we can invalidate the renderer if a new version of the source
+        # has been downloaded
         self.rendererdic = {}
-        self.less_histfile = {}
+        self.renderer_time = {}
         self.mime_handlers = {}
         self.last_mode = {}
 
@@ -128,10 +135,19 @@ class opencache():
         renderer = None
         path = netcache.get_cache_path(inpath)
         if path:
-            if inpath not in self.rendererdic.keys():
+            usecache = inpath in self.rendererdic.keys()
+            if usecache:
+                if inpath in self.renderer_time.keys():
+                    last_downloaded = netcache.cache_last_modified(inpath)
+                    last_cached = self.renderer_time[inpath]
+                    usecache = last_cached > last_downloaded
+                else:
+                    usecache = False
+            if not usecache:
                 renderer = ansicat.renderer_from_file(path,inpath)
                 if renderer:
                     self.rendererdic[inpath] = renderer
+                    self.renderer_time[inpath] = int(time.time())
             else:
                 renderer = self.rendererdic[inpath]
         return renderer
@@ -152,12 +168,8 @@ class opencache():
                 return False
         # We remove the ##offpunk_mode= from the URL
         # If mode is already set, we don’t use the part from the URL
-        findmode = inpath.split("##offpunk_mode=")
-        if len(findmode) > 1:
-            inpath = findmode[0]
-            if not mode:
-                if findmode[1] in ["full"] or findmode[1].isnumeric():
-                    mode = findmode[1]
+        inpath,newmode = unmode_url(inpath)
+        if not mode: mode = newmode
         # If we still doesn’t have a mode, we see if we used one before
         if not mode and inpath in self.last_mode.keys():
             mode = self.last_mode[inpath]
@@ -168,18 +180,30 @@ class opencache():
         if renderer and mode:
             renderer.set_mode(mode)
             self.last_mode[inpath] = mode
-        key = inpath
-        if mode and "##offpunk_mode=" not in inpath:
-            key += "##offpunk_mode=" + mode
+        #we use the full moded url as key for the dictionary
+        key = mode_url(inpath,mode)
         if terminal and renderer:
             wtitle = renderer.get_formatted_title()
             body = wtitle + "\n" + renderer.get_body(mode=mode)
+            #Should we use the cache ?
+            # only if it is not local and there’s a cache
+            usecache = not is_local(inpath) and key in self.temp_files
+            if usecache:
+                #and the cache is still valid!
+                last_downloaded = netcache.cache_last_modified(inpath)
+                last_cached = os.path.getmtime(self.temp_files[key])
+                if last_downloaded > last_cached:
+                    usecache = False
+                    self.temp_files.pop(key)
+                    self.less_histfile.pop(key)
             # We actually put the body in a tmpfile before giving it to less
-            if key not in self.temp_files:
+            if not usecache:
                 tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
                 self.temp_files[key] = tmpf.name
                 tmpf.write(body)
                 tmpf.close()
+            else:
+                print("we use cache for %s" %key)
             if key not in self.less_histfile:
                 firsttime = True
                 tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
