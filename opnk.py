@@ -88,6 +88,7 @@ class opencache():
         self.renderer_time = {}
         self.mime_handlers = {}
         self.last_mode = {}
+        self.last_width = term_width()
 
     def _get_handler_cmd(self, mimetype):
         # Now look for a handler for this mimetype
@@ -131,11 +132,25 @@ class opencache():
             if previous:
                 print("Previous handler was %s"%previous)
 
-    def get_renderer(self,inpath):
+    def get_renderer(self,inpath,mode=None):
+        # We remove the ##offpunk_mode= from the URL
+        # If mode is already set, we don’t use the part from the URL
+        inpath,newmode = unmode_url(inpath)
+        if not mode: mode = newmode
+        # If we still doesn’t have a mode, we see if we used one before
+        if not mode and inpath in self.last_mode.keys():
+            mode = self.last_mode[inpath]
+        elif not mode:
+            #default mode is readable
+            mode = "readable"
         renderer = None
         path = netcache.get_cache_path(inpath)
         if path:
             usecache = inpath in self.rendererdic.keys()
+            #Screen size may have changed
+            if usecache and self.last_width != term_width():
+                self.cleanup(full=False)
+                usecache = False
             if usecache:
                 if inpath in self.renderer_time.keys():
                     last_downloaded = netcache.cache_last_modified(inpath)
@@ -166,17 +181,7 @@ class opencache():
             cachepath = netcache.fetch(inpath,**kwargs)
             if not cachepath:
                 return False
-        # We remove the ##offpunk_mode= from the URL
-        # If mode is already set, we don’t use the part from the URL
-        inpath,newmode = unmode_url(inpath)
-        if not mode: mode = newmode
-        # If we still doesn’t have a mode, we see if we used one before
-        if not mode and inpath in self.last_mode.keys():
-            mode = self.last_mode[inpath]
-        elif not mode:
-            #default mode is readable
-            mode = "readable"
-        renderer = self.get_renderer(inpath)
+        renderer = self.get_renderer(inpath,mode=mode)
         if renderer and mode:
             renderer.set_mode(mode)
             self.last_mode[inpath] = mode
@@ -202,8 +207,6 @@ class opencache():
                 self.temp_files[key] = tmpf.name
                 tmpf.write(body)
                 tmpf.close()
-            else:
-                print("we use cache for %s" %key)
             if key not in self.less_histfile:
                 firsttime = True
                 tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
@@ -233,6 +236,17 @@ class opencache():
                 print("Handler program %s not found!" % shlex.split(cmd_str)[0])
                 print("You can use the ! command to specify another handler program or pipeline.")
             return False
+
+    #If not full cleanup, we only remove tempfiles but keep the renderers
+    def cleanup(self,full=True):
+        while len(self.temp_files) > 0:
+            os.remove(self.temp_files.popitem()[1])
+        while len(self.less_histfile) > 0:
+            os.remove(self.less_histfile.popitem()[1])
+        if full:
+            self.rendererdic = {}
+            self.renderer_time = {}
+            self.last_mode = {}
         
 def main():
     parser = argparse.ArgumentParser(description=__doc__)

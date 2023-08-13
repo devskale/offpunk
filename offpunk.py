@@ -1,10 +1,3 @@
-#list of things to do before asking for bug reports
-#TODO: cached links are from the normal view, not the full view
-#TODO:We should invalidate the cache more aggressively
-#TODO:Also delete tmp file on close
-#TODO: mode should be removed when displaying URL (or copying it)
-#TODO: pass mode to get_links()
-#TODO: basically, standardize on having the moded_url everywhere when possible
 #!/usr/bin/env python3
 # Offpunk Offline Gemini client
 """
@@ -325,6 +318,8 @@ class GeminiClient(cmd.Cmd):
         Nothing is returned."""
         if not url:
             return
+        url,newmode = unmode_url(url)
+        if not mode: mode = newmode
         #we don’t handle the name anymore !
         if name:
             print("We don’t handle name of URL: %s"%name)
@@ -394,29 +389,7 @@ class GeminiClient(cmd.Cmd):
         self.list_add_top("history",limit=self.options["history_size"],truncate_lines=self.hist_index)
         self.hist_index = 0
 
-
-    def _log_visit(self, gi, address, size):
-        if not address:
-            return
-        self.log["requests"] += 1
-        self.log["bytes_recvd"] += size
-        self.visited_hosts.add(address)
-        if address[0] == socket.AF_INET:
-            self.log["ipv4_requests"] += 1
-            self.log["ipv4_bytes_recvd"] += size
-        elif address[0] == socket.AF_INET6:
-            self.log["ipv6_requests"] += 1
-            self.log["ipv6_bytes_recvd"] += size
-
-    def _debug(self, debug_text):
-        if not self.options["debug"]:
-            return
-        debug_text = "\x1b[0;32m[DEBUG] " + debug_text + "\x1b[0m"
-        print(debug_text)
-
-
     # Cmd implementation follows
-
     def default(self, line):
         if line.strip() == "EOF":
             return self.onecmd("quit")
@@ -449,7 +422,6 @@ class GeminiClient(cmd.Cmd):
             else:
                 print("No page with links")
                 return
-
 
     ### Settings
     def do_redirect(self,line):
@@ -618,7 +590,7 @@ Use with "cache" to copy the path of the cached content."""
                     if len(args) > 1 and args[1].isdecimal():
                         url = self.get_renderer().get_link(int(args[1])-1)
                     else:
-                        url = self.current_url
+                        url,mode = unmode_url(self.current_url)
                     run("xsel -b -i", input=url, direct_output=True)
                 elif args and args[0] == "raw":
                     run("xsel -b -i", input=open(self.get_renderer().get_temp_filename(), "rb"),\
@@ -704,13 +676,14 @@ Take an integer as argument to go up multiple times."""
         elif args[0] != "":
             print("Up only take integer as arguments")
         #TODO : implement up, this code is copy/pasted from GeminiItem
-        parsed = urllib.parse.urlparse(self.current_url)
+        url, mode = unmode_url(self.current_url)
+        parsed = urllib.parse.urlparse(url)
         path = parsed.path.rstrip('/')
         count = 0
         while count < level:
             pathbits = list(os.path.split(path))
             # Don't try to go higher than root or in config
-            if is_local(self.current_url) or len(pathbits) == 1 :
+            if is_local(url) or len(pathbits) == 1 :
                 break
             # Get rid of bottom component
             if len(pathbits) > 1:
@@ -838,7 +811,7 @@ Marks are temporary until shutdown (not saved to disk)."""
     def do_info(self,line):
         """Display information about current page."""
         renderer = self.get_renderer()
-        url = self.current_url
+        url,mode = unmode_url(self.current_url)
         out = renderer.get_page_title() + "\n\n"
         out += "URL      :   " + url + "\n"
         out += "Mime     :   " + renderer.get_mime() + "\n"
@@ -851,7 +824,7 @@ Marks are temporary until shutdown (not saved to disk)."""
         out += "Renderer :   " + rend + "\n\n"
         lists = []
         for l in self.list_lists():
-            if self.list_has_url(self.current_url,l):
+            if self.list_has_url(url,l):
                 lists.append(l)
         if len(lists) > 0:
             out += "Page appeard in following lists :\n"
@@ -986,6 +959,7 @@ Use "view feed" to see the the linked feed of the page (in any).
 Use "view feeds" to see available feeds on this page.
 (full, feed, feeds have no effect on non-html content)."""
         if self.current_url and args and args[0] != "":
+            u, m = unmode_url(self.current_url)
             if args[0] in ["full","debug"]:
                 self._go_to_url(self.current_url,mode=args[0])
             elif args[0] in ["normal","readable"]:
@@ -995,9 +969,9 @@ Use "view feeds" to see available feeds on this page.
                 if len(subs) > 1:
                     self.do_go(subs[1][0])
                 elif "rss" in subs[0][1] or "atom" in subs[0][1]:
-                    print("%s is already a feed" %self.current_url)
+                    print("%s is already a feed" %u)
                 else:
-                    print("No other feed found on %s"%self.current_url)
+                    print("No other feed found on %s"%u)
             elif args[0] == "feeds":
                 subs = self.get_renderer().get_subscribe_links()
                 stri = "Available views :\n"
@@ -1019,10 +993,11 @@ Use "view feeds" to see available feeds on this page.
         """Open current item with the configured handler or xdg-open.
 Uses "open url" to open current URL in a browser.
 see "handler" command to set your handler."""
+        u, m = unmode_url(self.current_url)
         if args[0] == "url":
-            run("xdg-open %s", parameter=self.current_url, direct_output=True)
+            run("xdg-open %s", parameter=u, direct_output=True)
         else:
-            self.opencache.opnk(self.current_url,terminal=False)
+            self.opencache.opnk(u,terminal=False)
 
     @needs_gi
     def do_shell(self, line):
@@ -1109,7 +1084,8 @@ see "handler" command to set your handler."""
     @needs_gi
     def do_url(self, *args):
         """Print URL of most recently visited item."""
-        print(self.current_url)
+        url,mode = unmode_url(self.current_url)
+        print(url)
 
     ### Bookmarking stuff
     @needs_gi
@@ -1212,7 +1188,8 @@ Bookmarks are stored using the 'add' command."""
 archives, which is a special historical list limited in size. It is similar to `move archives`."""
         for li in self.list_lists():
             if li not in ["archives", "history"]:
-                deleted = self.list_rm_url(self.current_url,li)
+                u,m = unmode_url(self.current_url)
+                deleted = self.list_rm_url(u,li)
                 if deleted:
                     print("Removed from %s"%li)
         self.list_add_top("archives",limit=self.options["archives_size"])
@@ -1242,7 +1219,7 @@ archives, which is a special historical list limited in size. It is similar to `
             return False
         else:
             if not url:
-                url = self.current_url
+                url,mode = unmode_url(self.current_url)
             # first we check if url already exists in the file
             with open(list_path,"r") as l_file:
                 lines = l_file.readlines()
@@ -1408,7 +1385,8 @@ If current page was not in a list, this command is similar to `add LIST`."""
                 lists = self.list_lists()
                 for l in lists:
                     if l != args[0] and l not in ["archives", "history"]:
-                        isremoved = self.list_rm_url(self.current_url,l)
+                        url, mode = unmode_url(self.current_url)
+                        isremoved = self.list_rm_url(url,l)
                         if isremoved:
                             print("Removed from %s"%l)
                 self.list_add_line(args[0])
@@ -1768,15 +1746,12 @@ Argument : duration of cache validity (in seconds)."""
     ### The end!
     def do_quit(self, *args):
         """Exit Offpunk."""
-        def unlink(filename):
-            if filename and os.path.exists(filename):
-                os.unlink(filename)
-
         for cert in self.transient_certs_created:
             for ext in (".crt", ".key"):
                 certfile = os.path.join(_CONFIG_DIR, "transient_certs", cert+ext)
                 if os.path.exists(certfile):
                     os.remove(certfile)
+        self.opencache.cleanup() 
         print("You can close your screen!")
         sys.exit()
 

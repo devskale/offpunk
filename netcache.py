@@ -15,7 +15,7 @@ import sqlite3
 from ssl import CertificateError
 import ansicat
 import offutils
-from offutils import _CACHE_PATH,_DATA_DIR
+from offutils import _CACHE_PATH,_DATA_DIR,_CONFIG_DIR
 import time
 try:
     import chardet
