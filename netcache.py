@@ -714,10 +714,12 @@ def _validate_cert(address, host, cert,accept_bad_ssl=False,automatic_choice=Non
             else:
                 choice = input("Accept this new certificate? Y/N ").strip().lower()
             if choice in ("y", "yes"):
-                self.db_cur.execute("""INSERT INTO cert_cache
-                    VALUES (?, ?, ?, ?, ?, ?)""",
-                    (host, address, fingerprint, now, now, 1))
-                self.db_conn.commit()
+                #TODO: this code has been commented out during refactor.
+                # It should be ported
+                #self.db_cur.execute("""INSERT INTO cert_cache
+                #    VALUES (?, ?, ?, ?, ?, ?)""",
+                #    (host, address, fingerprint, now, now, 1))
+                #self.db_conn.commit()
                 with open(os.path.join(certdir, fingerprint+".crt"), "wb") as fp:
                     fp.write(cert)
             else:
