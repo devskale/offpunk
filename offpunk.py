@@ -707,8 +707,8 @@ Take an integer as argument to go up multiple times."""
     @needs_gi
     def do_root(self, *args):
         """Go to root selector of the server hosting current item."""
-        parse = urllib.parse.urlparse(self.url)
-        self._go_to_url(urllib.parse.urlunparse(parse.scheme,parse.netloc,"/","","",""))
+        parse = urllib.parse.urlparse(self.current_url)
+        self._go_to_url(urllib.parse.urlunparse((parse.scheme,parse.netloc,"/","","","")))
 
     def do_tour(self, line):
         """Add index items as waypoints on a tour, which is basically a FIFO
