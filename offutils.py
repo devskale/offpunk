@@ -76,7 +76,7 @@ def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
 
 
 global TERM_WIDTH
-TERM_WIDTH = 80
+TERM_WIDTH = 72
 
 def term_width(new_width=None):
     if new_width:

@@ -2,9 +2,9 @@
 
 ## 2.0 - unreleased
 List of things before release
-TODO: restore gemini certificate code
 TODO: man pages for netcache, ansicat, opnk
-TODO: implement grep
+REGR: restore gemini certificate code
+REGR: implement grep
 This is an an experimental and unstable release. Lot of breakages are expected.
 Wait for 2.1 if you are not willing to do testing/bug reporting.
 - Licence has been changed to AGPL for ideological reasons

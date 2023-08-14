@@ -140,6 +140,18 @@ class AbstractRenderer():
         self.center = center
         self.last_mode = "readable"
 
+    def display(self,mode=None,directdisplay=False):
+        wtitle = self.get_formatted_title()
+        body = wtitle + "\n" + self.get_body(mode=mode)
+        if directdisplay:
+            print(body)
+            return True
+        else:
+            return body
+
+    def has_direct_display(self):
+        return False
+
     #This class hold an internal representation of the HTML text
     class representation:
         def __init__(self,width,title=None,center=True):
@@ -843,11 +855,19 @@ class ImageRenderer(AbstractRenderer):
         for l in lines:
             new_img += spaces*" " + l + "\n"
         return new_img, []
-    def display(self,mode=None,window_title=None,window_info=None,grep=None):
-        if window_title:
-            print(self._window_title(window_title,info=window_info))
-        terminal_image(self.body)
-        return True
+
+    def has_direct_display(self):
+        return _RENDER_IMAGE
+
+    def display(self,mode=None,directdisplay=False):
+        wtitle = self.get_formatted_title()
+        if not directdisplay:
+            body = wtitle + "\n" + self.get_body(mode=mode)
+            return body
+        else:
+            print(self._window_title(wtitle))
+            terminal_image(self.body)
+            return True
 
 class HtmlRenderer(AbstractRenderer):
     def get_mime(self):

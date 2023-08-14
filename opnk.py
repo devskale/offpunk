@@ -151,6 +151,7 @@ class opencache():
             if usecache and self.last_width != term_width():
                 self.cleanup(full=False)
                 usecache = False
+                self.last_width = term_width()
             if usecache:
                 if inpath in self.renderer_time.keys():
                     last_downloaded = netcache.cache_last_modified(inpath)
@@ -188,34 +189,38 @@ class opencache():
         #we use the full moded url as key for the dictionary
         key = mode_url(inpath,mode)
         if terminal and renderer:
-            wtitle = renderer.get_formatted_title()
-            body = wtitle + "\n" + renderer.get_body(mode=mode)
-            #Should we use the cache ?
-            # only if it is not local and there’s a cache
-            usecache = not is_local(inpath) and key in self.temp_files
-            if usecache:
-                #and the cache is still valid!
-                last_downloaded = netcache.cache_last_modified(inpath)
-                last_cached = os.path.getmtime(self.temp_files[key])
-                if last_downloaded > last_cached:
-                    usecache = False
-                    self.temp_files.pop(key)
-                    self.less_histfile.pop(key)
-            # We actually put the body in a tmpfile before giving it to less
-            if not usecache:
-                tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
-                self.temp_files[key] = tmpf.name
-                tmpf.write(body)
-                tmpf.close()
-            if key not in self.less_histfile:
-                firsttime = True
-                tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
-                self.less_histfile[key] = tmpf.name
+            #If this is an image and we have chafa/timg, we
+            #don’t use less, we call it directly
+            if renderer.has_direct_display():
+                renderer.display(mode=mode,directdisplay=True)
+                return True
             else:
-                firsttime = False
-            grep=None
-            less_cmd(self.temp_files[key], histfile=self.less_histfile[key],cat=firsttime,grep=grep)
-            return True
+                body = renderer.display(mode=mode)
+                #Should we use the cache ? only if it is not local and there’s a cache
+                usecache = not is_local(inpath) and key in self.temp_files
+                if usecache:
+                    #and the cache is still valid!
+                    last_downloaded = netcache.cache_last_modified(inpath)
+                    last_cached = os.path.getmtime(self.temp_files[key])
+                    if last_downloaded > last_cached:
+                        usecache = False
+                        self.temp_files.pop(key)
+                        self.less_histfile.pop(key)
+                # We actually put the body in a tmpfile before giving it to less
+                if not usecache:
+                    tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
+                    self.temp_files[key] = tmpf.name
+                    tmpf.write(body)
+                    tmpf.close()
+                if key not in self.less_histfile:
+                    firsttime = True
+                    tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
+                    self.less_histfile[key] = tmpf.name
+                else:
+                    firsttime = False
+                grep=None
+                less_cmd(self.temp_files[key], histfile=self.less_histfile[key],cat=firsttime,grep=grep)
+                return True
         #maybe, we have no renderer. Or we want to skip it.
         else:
             mimetype = ansicat.get_mime(inpath)

@@ -703,7 +703,6 @@ Take an integer as argument to go up multiple times."""
             return
         self.hist_index += 1
         url = links[self.hist_index]
-        print("back to %s"%url)
         self._go_to_url(url, update_hist=False)
 
     def do_forward(self, *args):
