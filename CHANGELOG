@@ -5,7 +5,6 @@ List of things before release
 TODO: man pages for netcache, ansicat, opnk
 REGR: restore gemini certificate code
 REGR: implement grep
-REGR: avoid asking for user input while in non-interactive mode
 This is an an experimental and unstable release. Lot of breakages are expected.
 Wait for 2.1 if you are not willing to do testing/bug reporting.
 - Licence has been changed to AGPL for ideological reasons

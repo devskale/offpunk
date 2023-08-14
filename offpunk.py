@@ -206,7 +206,6 @@ class GeminiClient(cmd.Cmd):
         self.page_index = 0
         self.permanent_redirects = {}
         # Sync-only mode is restriced by design
-        self.visited_hosts = set()
         self.offline_only = False
         self.sync_only = False
         self.support_http = _DO_HTTP
@@ -250,17 +249,6 @@ class GeminiClient(cmd.Cmd):
         term_width(new_width=self.options["width"])
         self.log = {
             "start_time": time.time(),
-            "requests": 0,
-            "ipv4_requests": 0,
-            "ipv6_requests": 0,
-            "bytes_recvd": 0,
-            "ipv4_bytes_recvd": 0,
-            "ipv6_bytes_recvd": 0,
-            "dns_failures": 0,
-            "refused_connections": 0,
-            "reset_connections": 0,
-            "timeouts": 0,
-            "cache_hits": 0,
         }
 
 
@@ -334,6 +322,7 @@ class GeminiClient(cmd.Cmd):
         if limit_size:
             params["max_size"] = int(self.options["max_size_download"])*1000000
         params["print_error"] = not self.sync_only
+        params["interactive"] = not self.sync_only
         params["offline"] = self.offline_only
         if not check_cache:
             params["validity"] = 1
@@ -1583,29 +1572,8 @@ current gemini browsing session."""
         delta = now - self.log["start_time"]
         hours, remainder = divmod(delta, 3600)
         minutes, seconds = divmod(remainder, 60)
-        # Count hosts
-        ipv4_hosts = len([host for host in self.visited_hosts if host[0] == socket.AF_INET])
-        ipv6_hosts = len([host for host in self.visited_hosts if host[0] == socket.AF_INET6])
         # Assemble lines
         lines.append(("Patrol duration", "%02d:%02d:%02d" % (hours, minutes, seconds)))
-        lines.append(("Requests sent:", self.log["requests"]))
-        lines.append(("   IPv4 requests:", self.log["ipv4_requests"]))
-        lines.append(("   IPv6 requests:", self.log["ipv6_requests"]))
-        lines.append(("Bytes received:", self.log["bytes_recvd"]))
-        lines.append(("   IPv4 bytes:", self.log["ipv4_bytes_recvd"]))
-        lines.append(("   IPv6 bytes:", self.log["ipv6_bytes_recvd"]))
-        lines.append(("Unique hosts visited:", len(self.visited_hosts)))
-        lines.append(("   IPv4 hosts:", ipv4_hosts))
-        lines.append(("   IPv6 hosts:", ipv6_hosts))
-        lines.append(("DNS failures:", self.log["dns_failures"]))
-        lines.append(("Timeouts:", self.log["timeouts"]))
-        lines.append(("Refused connections:", self.log["refused_connections"]))
-        lines.append(("Reset connections:", self.log["reset_connections"]))
-        lines.append(("Cache hits:", self.log["cache_hits"]))
-        # Print
-        for key, value in lines:
-            print(key.ljust(24) + str(value).rjust(8))
-
 
     def do_sync(self, line):
         """Synchronize all bookmarks lists and URLs from the to_fetch list.

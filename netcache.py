@@ -735,7 +735,7 @@ def _validate_cert(address, host, cert,accept_bad_ssl=False,automatic_choice=Non
         with open(os.path.join(certdir, fingerprint+".crt"), "wb") as fp:
             fp.write(cert)
 
-def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,**kwargs):
+def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,**kwargs):
     cache = None
     url_parts = urllib.parse.urlparse(url)
     host = url_parts.hostname
@@ -881,13 +881,16 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,**kwargs):
     # Handle non-SUCCESS headers, which don't have a response body
     # Inputs
     if status.startswith("1"):
-        print(meta)
-        if status == "11":
-            user_input = getpass.getpass("> ")
+        if interactive:
+            print(meta)
+            if status == "11":
+                user_input = getpass.getpass("> ")
+            else:
+                #TODO:FIXME we should not ask for user input while non-interactive
+                user_input = input("> ")
+            return _fetch_gemini(query(user_input))
         else:
-            #TODO:FIXME we should not ask for user input while non-interactive
-            user_input = input("> ")
-        return _fetch_gemini(query(user_input))
+            return None
     # Redirects
     elif status.startswith("3"):
         newurl = urllib.parse.urljoin(url,meta)
