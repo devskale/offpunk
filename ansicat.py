@@ -1131,7 +1131,9 @@ _FORMAT_RENDERERS = {
 }
 def get_mime(path):
     #Beware, this one is really a shaddy ad-hoc function
-    if path.startswith("mailto:"):
+    if not path:
+        return None
+    elif path.startswith("mailto:"):
         mime = "mailto"
     elif os.path.isdir(path):
         mime = "Local Folder"
@@ -1165,6 +1167,8 @@ def get_mime(path):
     return mime
 
 def renderer_from_file(path,url=None):
+    if not path:
+        return None
     mime = get_mime(path)
     if not url:
         url = path

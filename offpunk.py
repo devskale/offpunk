@@ -1685,15 +1685,17 @@ Argument : duration of cache validity (in seconds)."""
                 #we should only savetotour at the first level of recursion
                 # The code for this was removed so, currently, we savetotour
                 # at every level of recursion.
-                links = self.get_renderer(url).get_links(mode="links_only")
-                subcount = [0,len(links)]
-                d = depth - 1
-                for k in links:
-                    #recursive call (validity is always 0 in recursion)
-                    substri = strin + " -->"
-                    subcount[0] += 1
-                    fetch_url(k,depth=d,validity=0,savetotour=savetotour,\
-                                        count=subcount,strin=substri)
+                r = self.get_renderer(url)
+                if r:
+                    links = r.get_links(mode="links_only")
+                    subcount = [0,len(links)]
+                    d = depth - 1
+                    for k in links:
+                        #recursive call (validity is always 0 in recursion)
+                        substri = strin + " -->"
+                        subcount[0] += 1
+                        fetch_url(k,depth=d,validity=0,savetotour=savetotour,\
+                                            count=subcount,strin=substri)
         def fetch_list(list,validity=0,depth=1,tourandremove=False,tourchildren=False):
             links = self.list_get_links(list)
             end = len(links)

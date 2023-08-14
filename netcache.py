@@ -192,7 +192,7 @@ def get_cache_path(url):
     # Now, we have a partial path. Let’s make it full path.
     if local:
         cache_path = path
-    else:
+    elif scheme and host:
         cache_path = os.path.expanduser(_CACHE_PATH + scheme + "/" + host + path)
         #There’s an OS limitation of 260 characters per path.
         #We will thus cut the path enough to add the index afterward
@@ -222,6 +222,10 @@ def get_cache_path(url):
         #and we try to access folder
         if os.path.isdir(cache_path):
             cache_path += "/" + index
+    else:
+        #URL is missing either a supported scheme or a valid host
+        #print("Error: %s is not a supported url"%url)
+        return None
     if len(cache_path) > 259:
         print("Path is too long. This is an OS limitation.\n\n")
         print(url)
@@ -881,6 +885,7 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,**kwargs):
         if status == "11":
             user_input = getpass.getpass("> ")
         else:
+            #TODO:FIXME we should not ask for user input while non-interactive
             user_input = input("> ")
         return _fetch_gemini(query(user_input))
     # Redirects

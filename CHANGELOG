@@ -5,6 +5,7 @@ List of things before release
 TODO: man pages for netcache, ansicat, opnk
 REGR: restore gemini certificate code
 REGR: implement grep
+REGR: avoid asking for user input while in non-interactive mode
 This is an an experimental and unstable release. Lot of breakages are expected.
 Wait for 2.1 if you are not willing to do testing/bug reporting.
 - Licence has been changed to AGPL for ideological reasons
@@ -12,8 +13,8 @@ Wait for 2.1 if you are not willing to do testing/bug reporting.
 - New command-line tool: "ansicat"
 - New command-line tool: "opnk"
 - URL do not default anymore to "gemini://" if not protocol are indicated.
-- Images of html files are now always downloaded with the html (slower but better experience)
-- Reading position is now saved for the whole session
+- Images of html files are now downloaded with the html (slower but better experience)
+- Reading position is saved for the whole session
 - Gopher-only: we don’t support naming a page after the name of the incoming link
 
 ## 1.10 - July 31st 2023
