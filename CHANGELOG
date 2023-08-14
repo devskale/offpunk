@@ -3,6 +3,7 @@
 ## 2.0 - unreleased
 List of things before release
 TODO: man pages for netcache, ansicat, opnk
+TODO: better handling of folders with opnk
 REGR: restore gemini certificate code
 REGR: implement grep
 This is an an experimental and unstable release. Lot of breakages are expected.

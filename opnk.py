@@ -218,7 +218,7 @@ class opencache():
                     self.less_histfile[key] = tmpf.name
                 else:
                     #We don’t want to restore positions in lists
-                    firsttime = not is_local(inpath)
+                    firsttime = is_local(inpath)
                 grep=None
                 less_cmd(self.temp_files[key], histfile=self.less_histfile[key],cat=firsttime,grep=grep)
                 return True
