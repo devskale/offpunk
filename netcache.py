@@ -131,7 +131,7 @@ def get_cache_path(url):
     if not url:
         return None
     parsed = urllib.parse.urlparse(url)
-    if url[0] == "/" or url.startswith("./"):
+    if url[0] == "/" or url.startswith("./") or os.path.exists(url):
         scheme = "file"
     elif parsed.scheme:
         scheme = parsed.scheme
