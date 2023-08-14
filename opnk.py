@@ -197,7 +197,7 @@ class opencache():
             else:
                 body = renderer.display(mode=mode)
                 #Should we use the cache ? only if it is not local and there’s a cache
-                usecache = not is_local(inpath) and key in self.temp_files
+                usecache = key in self.temp_files
                 if usecache:
                     #and the cache is still valid!
                     last_downloaded = netcache.cache_last_modified(inpath)
@@ -217,7 +217,8 @@ class opencache():
                     tmpf = tempfile.NamedTemporaryFile("w", encoding="UTF-8", delete=False)
                     self.less_histfile[key] = tmpf.name
                 else:
-                    firsttime = False
+                    #We don’t want to restore positions in lists
+                    firsttime = not is_local(inpath)
                 grep=None
                 less_cmd(self.temp_files[key], histfile=self.less_histfile[key],cat=firsttime,grep=grep)
                 return True
