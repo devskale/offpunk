@@ -930,7 +930,6 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,**kwargs):
     elif not status.startswith("2"):
         raise RuntimeError("Server returned undefined status code %s!" % status)
     # If we're here, this must be a success and there's a response body
-    print("status : %s"%status)
     assert status.startswith("2")
     mime = meta
     # Read the response body over the network
@@ -973,7 +972,8 @@ def fetch(url,offline=False,download_image_first=True,validity=0,**kwargs):
         try:
             scheme = url.split("://")[0]
             if scheme not in standard_ports:
-                print("%s is not a supported protocol"%scheme)
+                if print_error:
+                    print("%s is not a supported protocol"%scheme)
                 path = None
             elif scheme in ("http","https"):
                 path=_fetch_http(url,**kwargs)
