@@ -648,7 +648,7 @@ Use with "cache" to copy the path of the cached content."""
     @needs_gi
     def do_reload(self, *args):
         """Reload the current URL."""
-        if self.offline_only:
+        if self.offline_only and not is_local(self.current_url):
             self.get_list("to_fetch")
             r = self.list_add_line("to_fetch",url=self.current_url,verbose=False)
             if r:
@@ -656,7 +656,7 @@ Use with "cache" to copy the path of the cached content."""
             else:
                 print("%s already marked for syncing" %self.current_url)
         else:
-            self._go_to_url(self.current_url, check_cache=False)
+            self._go_to_url(self.current_url, force_refresh=False)
 
     @needs_gi
     def do_up(self, *args):
