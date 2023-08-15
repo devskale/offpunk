@@ -17,6 +17,7 @@ Wait for 2.1 if you are not willing to do testing/bug reporting.
 - Reading position is saved for the whole session
 - Rendering is cached, allowing faster browsing
 - Gopher-only: we don’t support naming a page after the name of the incoming link
+- "--config-file" allows to start offpunk with custom config (#16)
 
 ## 1.10 - July 31st 2023
 - IMPORTANT : new optional dependency : python-chardet

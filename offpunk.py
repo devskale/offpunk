@@ -1740,6 +1740,8 @@ def main():
                         help='start with your list of bookmarks')
     parser.add_argument('--tls-cert', metavar='FILE', help='TLS client certificate file')
     parser.add_argument('--tls-key', metavar='FILE', help='TLS client certificate private key file')
+    parser.add_argument('--config-file',metavar='FILE',
+                        help='use this particular config file instead of default')
     parser.add_argument('--sync', action='store_true',
                         help='run non-interactively to build cache by exploring bookmarks')
     parser.add_argument('--assume-yes', action='store_true',
@@ -1780,8 +1782,9 @@ def main():
     # Interactive if offpunk started normally
     # False if started with --sync
     # Queue is a list of command (potentially empty)
-    def read_config(queue,interactive=True):
-        rcfile = os.path.join(_CONFIG_DIR, "offpunkrc")
+    def read_config(queue,rcfile=None,interactive=True):
+        if not rcfile:
+            rcfile = os.path.join(_CONFIG_DIR, "offpunkrc")
         if os.path.exists(rcfile):
             print("Using config %s" % rcfile)
             with open(rcfile, "r") as fp:
@@ -1841,14 +1844,14 @@ def main():
             depth = int(args.depth)
         else:
             depth = 1
-        read_config(torun_queue, interactive=False)
+        read_config(torun_queue,rcfile=args.config_file,interactive=False)
         for line in torun_queue:
             gc.onecmd(line)
         gc.call_sync(refresh_time=refresh_time,depth=depth)
         gc.onecmd("blackbox")
     else:
         # We are in the normal mode. First process config file
-        torun_queue = read_config(torun_queue,interactive=True)
+        torun_queue = read_config(torun_queue,rcfile=args.config_file,interactive=True)
         print("Welcome to Offpunk!")
         print("Type `help` to get the list of available command.")
         for line in torun_queue:
