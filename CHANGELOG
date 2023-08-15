@@ -2,7 +2,6 @@
 
 ## 2.0 - unreleased
 List of things before release
-BUG: even online, cache is used, no matter what
 TODO: man pages for netcache, ansicat, opnk
 TODO: better handling of folders with opnk
 REGR: restore gemini certificate code

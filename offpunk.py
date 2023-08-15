@@ -296,7 +296,7 @@ class GeminiClient(cmd.Cmd):
         if not url: url = self.current_url
         return self.opencache.get_renderer(url)
 
-    def _go_to_url(self, url, update_hist=True, check_cache=True, handle=True,\
+    def _go_to_url(self, url, update_hist=True, force_refresh=False, handle=True,\
                                             name=None, mode=None,limit_size=False):
         """This method might be considered "the heart of Offpunk".
         Everything involved in fetching a gemini resource happens here:
@@ -314,7 +314,7 @@ class GeminiClient(cmd.Cmd):
         # Obey permanent redirects
         if url in self.permanent_redirects:
             self._go_to_url(self.permanent_redirects[url],update_hist=update_hist,\
-                            check_cache=check_cache, handle=handle, name=name,mode=mode,\
+                            force_refresh=force_refresh, handle=handle, name=name,mode=mode,\
                             limit_size=limit_size)
             return
         params = {}
@@ -324,8 +324,11 @@ class GeminiClient(cmd.Cmd):
         params["print_error"] = not self.sync_only
         params["interactive"] = not self.sync_only
         params["offline"] = self.offline_only
-        if not check_cache:
+        if force_refresh:
             params["validity"] = 1
+        elif not self.offline_only:
+            #A cache is always valid at least 60seconds
+            params["validity"] = 60
         # Use cache or mark as to_fetch if resource is not cached
         if handle and not self.sync_only:
             displayed = self.opencache.opnk(url,mode=mode,**params)
