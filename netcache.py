@@ -89,8 +89,6 @@ def cache_last_modified(url):
     path = get_cache_path(url)
     if path:
         return os.path.getmtime(path)
-    elif self.local:
-        return 0
     else:
         print("ERROR : NO CACHE in cache_last_modified")
         return None
@@ -143,7 +141,7 @@ def get_cache_path(url):
         port = None
         # file:// is 7 char
         if url.startswith("file://"):
-            path = self.url[7:]
+            path = url[7:]
         elif scheme == "mailto":
             path = parsed.path
         elif url.startswith("list://"):
@@ -357,7 +355,6 @@ def _fetch_gopher(url,timeout=DEFAULT_TIMEOUT,**kwargs):
     addresses = socket.getaddrinfo(host, port, family=0,type=socket.SOCK_STREAM)
     s = socket.create_connection((host,port))
     for address in addresses:
-        self._debug("Connecting to: " + str(address[4]))
         s = socket.socket(address[0], address[1])
         s.settimeout(timeout)
         try:
@@ -449,151 +446,6 @@ def _fetch_spartan(url,**kwargs):
     if redirect_url:
         cache = _fetch_spartan(redirect_url)
     return cache
-
-def _activate_client_cert(certfile, keyfile):
-    #TODO
-    #self.client_certs["active"] = (certfile, keyfile)
-    #self.active_cert_domains = []
-    #self.prompt = self.cert_prompt + "+" + os.path.basename(certfile).replace('.crt','') + "> " + "\001\x1b[0m\002"
-    pass
-
-def _deactivate_client_cert():
-    #TODO
-# if self.active_is_transient:
-#        for filename in self.client_certs["active"]:
-#            os.remove(filename)
-#        for domain in self.active_cert_domains:
-#            self.client_certs.pop(domain)
-#    self.client_certs["active"] = None
-#    self.active_cert_domains = []
-#    self.prompt = self.no_cert_prompt
-#    self.active_is_transient = False
-    pass
-
-def _choose_client_cert():
-    """
-    Interactively select a previously generated client certificate and
-    activate it.
-    """
-    certdir = os.path.join(_CONFIG_DIR, "client_certs")
-    certs = glob.glob(os.path.join(certdir, "*.crt"))
-    if len(certs) == 0:
-        print("There are no previously generated certificates.")
-        return
-    certdir = {}
-    for n, cert in enumerate(certs):
-        certdir[str(n+1)] = (cert, os.path.splitext(cert)[0] + ".key")
-        print("{}. {}".format(n+1, os.path.splitext(os.path.basename(cert))[0]))
-    choice = input("> ").strip()
-    if choice in certdir:
-        certfile, keyfile = certdir[choice]
-        _activate_client_cert(certfile, keyfile)
-    else:
-        print("What?")
-
-def _load_client_cert(self):
-    """
-    Interactively load a TLS client certificate from the filesystem in PEM
-    format.
-    """
-    print("Loading client certificate file, in PEM format (blank line to cancel)")
-    certfile = input("Certfile path: ").strip()
-    if not certfile:
-        print("Aborting.")
-        return
-    certfile = os.path.expanduser(certfile)
-    if not os.path.isfile(certfile):
-        print("Certificate file {} does not exist.".format(certfile))
-        return
-    print("Loading private key file, in PEM format (blank line to cancel)")
-    keyfile = input("Keyfile path: ").strip()
-    if not keyfile:
-        print("Aborting.")
-        return
-    keyfile = os.path.expanduser(keyfile)
-    if not os.path.isfile(keyfile):
-        print("Private key file {} does not exist.".format(keyfile))
-        return
-    _activate_client_cert(certfile, keyfile)
-
-def _generate_client_cert(certdir, basename, transient=False):
-    """
-    Use `openssl` binary to generate a client certificate (which may be
-    transient or persistent) and save the certificate and private key to the
-    specified directory with the specified basename.
-    """
-    if not os.path.exists(certdir):
-        os.makedirs(certdir)
-    certfile = os.path.join(certdir, basename+".crt")
-    keyfile = os.path.join(certdir, basename+".key")
-    cmd = "openssl req -x509 -newkey rsa:2048 -days {} -nodes -keyout {} -out {}".format(1 if transient else 365, keyfile, certfile)
-    if transient:
-        cmd += " -subj '/CN={}'".format(basename)
-    os.system(cmd)
-    _activate_client_cert(certfile, keyfile)
-
-def _generate_transient_cert_cert():
-    """
-    Use `openssl` command to generate a new transient client certificate
-    with 24 hours of validity.
-    """
-    certdir = os.path.join(_CONFIG_DIR, "transient_certs")
-    name = str(uuid.uuid4())
-    _generate_client_cert(certdir, name, transient=True)
-    #TODO
-    #self.active_is_transient = True
-    #self.transient_certs_created.append(name)
-
-def _generate_persistent_client_cert():
-    """
-    Interactively use `openssl` command to generate a new persistent client
-    certificate with one year of validity.
-    """
-    certdir = os.path.join(_CONFIG_DIR, "client_certs")
-    print("What do you want to name this new certificate?")
-    print("Answering `mycert` will create `{0}/mycert.crt` and `{0}/mycert.key`".format(certdir))
-    name = input("> ")
-    if not name.strip():
-        print("Aborting.")
-        return
-    _generate_client_cert(certdir, name)
-
-def _handle_cert_request(meta):
-    print("SERVER SAYS: ", meta)
-    # Present different messages for different 6x statuses, but
-    # handle them the same.
-    if status in ("64", "65"):
-        print("The server rejected your certificate because it is either expired or not yet valid.")
-    elif status == "63":
-        print("The server did not accept your certificate.")
-        print("You may need to e.g. coordinate with the admin to get your certificate fingerprint whitelisted.")
-    else:
-        print("The site {} is requesting a client certificate.".format(gi.host))
-        print("This will allow the site to recognise you across requests.")
-
-    # Give the user choices
-    print("What do you want to do?")
-    print("1. Give up.")
-    print("2. Generate a new transient certificate.")
-    print("3. Generate a new persistent certificate.")
-    print("4. Load a previously generated persistent.")
-    print("5. Load certificate from an external file.")
-    if self.sync_only:
-        choice = 1
-    else:
-        choice = input("> ").strip()
-    if choice == "2":
-        self._generate_transient_cert_cert()
-    elif choice == "3":
-        self._generate_persistent_client_cert()
-    elif choice == "4":
-        self._choose_client_cert()
-    elif choice == "5":
-        self._load_client_cert()
-    else:
-        print("Giving up.")
-        raise UserAbortException()
-
 
 def _validate_cert(address, host, cert,accept_bad_ssl=False,automatic_choice=None):
     """
@@ -704,12 +556,10 @@ def _validate_cert(address, host, cert,accept_bad_ssl=False,automatic_choice=Non
             else:
                 choice = input("Accept this new certificate? Y/N ").strip().lower()
             if choice in ("y", "yes"):
-                #TODO: this code has been commented out during refactor.
-                # It should be ported
-                #self.db_cur.execute("""INSERT INTO cert_cache
-                #    VALUES (?, ?, ?, ?, ?, ?)""",
-                #    (host, address, fingerprint, now, now, 1))
-                #self.db_conn.commit()
+                db_cur.execute("""INSERT INTO cert_cache
+                                VALUES (?, ?, ?, ?, ?, ?)""",
+                            (host, address, fingerprint, now, now, 1))
+                db_conn.commit()
                 with open(os.path.join(certdir, fingerprint+".crt"), "wb") as fp:
                     fp.write(cert)
             else:
@@ -735,38 +585,6 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
     port = url_parts.port or standard_ports["gemini"]
     path = url_parts.path or "/"
     query = url_parts.query
-    # Be careful with client certificates!
-    # Are we crossing a domain boundary?
-    # TODO : code should be adapted to netcache
-#    if self.active_cert_domains and host not in self.active_cert_domains:
-#        if self.active_is_transient:
-#            print("Permanently delete currently active transient certificate?")
-#            resp = input("Y/N? ")
-#            if resp.strip().lower() in ("y", "yes"):
-#                print("Destroying certificate.")
-#                self._deactivate_client_cert()
-#            else:
-#                print("Staying here.")
-#                raise UserAbortException()
-#        else:
-#            print("PRIVACY ALERT: Deactivate client cert before connecting to a new domain?")
-#            resp = input("Y/N? ")
-#            if resp.strip().lower() in ("n", "no"):
-#                print("Keeping certificate active for {}".format(host))
-#            else:
-#                print("Deactivating certificate.")
-#                self._deactivate_client_cert()
-#
-#    # Suggest reactivating previous certs
-#    if not self.client_certs["active"] and host in self.client_certs:
-#        print("PRIVACY ALERT: Reactivate previously used client cert for {}?".format(host))
-#        resp = input("Y/N? ")
-#        if resp.strip().lower() in ("y", "yes"):
-#            self._activate_client_cert(*self.client_certs[host])
-#        else:
-#            print("Remaining unidentified.")
-#            self.client_certs.pop(host)
-
     # In AV-98, this was the _send_request method
     #Send a selector to a given host and port.
     #Returns the resolved address and binary file with the reply."""
@@ -810,13 +628,6 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
     except ssl.SSLError:
         # Rely on the server to only support sensible things, I guess...
         pass
-
-    #TODO: certificate handling to refactor
-#        # Load client certificate if needed
-#        if self.client_certs["active"]:
-#            certfile, keyfile = self.client_certs["active"]
-#            context.load_cert_chain(certfile, keyfile)
-
         # Connect to remote host by any address possible
     err = None
     for address in addresses:
@@ -836,13 +647,9 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
 
     # Do TOFU
     cert = s.getpeercert(binary_form=True)
-    # TODO: another cert handling to refactor
     # Remember that we showed the current cert to this domain...
     #TODO : accept badssl and automatic choice
     _validate_cert(address[4][0], host, cert,automatic_choice="y")
-#    if self.client_certs["active"]:
-#        self.active_cert_domains.append(host)
-#        self.client_certs[host] = self.client_certs["active"]
     # Send request and wrap response in a file descriptor
     url = urllib.parse.urlparse(url)
     new_netloc = host
@@ -920,7 +727,8 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
         raise RuntimeError(meta)
     # Client cert
     elif status.startswith("6"):
-        _handle_cert_request(meta)
+        print("Handling certificates for status 6X are not supported by offpunk\n")
+        print("Please open a bug report")
         _fetch_gemini(url)
     # Invalid status
     elif not status.startswith("2"):

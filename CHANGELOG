@@ -4,7 +4,6 @@
 List of things before release
 TODO: man pages for netcache, ansicat, opnk
 TODO: better handling of folders with opnk
-REGR: restore gemini certificate code
 This is an an experimental and unstable release. Lot of breakages are expected.
 Wait for 2.1 if you are not willing to do testing/bug reporting.
 - Licence has been changed to AGPL for ideological reasons
@@ -18,6 +17,7 @@ Wait for 2.1 if you are not willing to do testing/bug reporting.
 - Gopher-only: we don’t support naming a page after the name of the incoming link
 - "--config-file" allows to start offpunk with custom config (#16)
 - "accept_bad_ssl_certificates" now more agressive for http and really accepts them all
+- Gemini-only: support for client generated certificates has been removed
 
 ## 1.10 - July 31st 2023
 - IMPORTANT : new optional dependency : python-chardet
