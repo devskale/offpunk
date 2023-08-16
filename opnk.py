@@ -15,6 +15,7 @@ import time
 from offutils import run,term_width,mode_url,unmode_url,is_local
 
 _HAS_XDGOPEN = shutil.which('xdg-open')
+_GREP = "grep --color=auto"
 
 less_version = 0
 if not shutil.which("less"):
@@ -168,10 +169,7 @@ class opencache():
                 renderer = self.rendererdic[inpath]
         return renderer
 
-    def grep(self,inpath,searchterm):
-        print("TODO: implement grep")
-
-    def opnk(self,inpath,mode=None,terminal=True,**kwargs):
+    def opnk(self,inpath,mode=None,terminal=True,grep=None,**kwargs):
         #Return True if inpath opened in Terminal
         # False otherwise
         #if terminal = False, we don’t try to open in the terminal,
@@ -186,6 +184,9 @@ class opencache():
         if renderer and mode:
             renderer.set_mode(mode)
             self.last_mode[inpath] = mode
+        if not mode and inpath in self.last_mode.keys():
+            mode = self.last_mode[inpath]
+            renderer.set_mode(mode)
         #we use the full moded url as key for the dictionary
         key = mode_url(inpath,mode)
         if terminal and renderer:
@@ -219,7 +220,6 @@ class opencache():
                 else:
                     #We don’t want to restore positions in lists
                     firsttime = is_local(inpath)
-                grep=None
                 less_cmd(self.temp_files[key], histfile=self.less_histfile[key],cat=firsttime,grep=grep)
                 return True
         #maybe, we have no renderer. Or we want to skip it.

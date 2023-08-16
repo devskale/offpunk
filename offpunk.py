@@ -41,62 +41,6 @@ try:
 except ModuleNotFoundError:
     _DO_HTTP = False
 
-_GREP = "grep --color=auto"
-less_version = 0
-if not shutil.which("less"):
-    print("Please install the pager \"less\" to run Offpunk.")
-    print("If you wish to use another pager, send me an email.")
-    print("(I’m really curious to hear about people not having \"less\" on their system.)")
-    sys.exit()
-output = run("less --version")
-# We get less Version (which is the only integer on the first line)
-words = output.split("\n")[0].split()
-less_version = 0
-for w in words:
-    if w.isdigit():
-        less_version = int(w)
-# restoring position only works for version of less > 572
-if less_version >= 572:
-    _LESS_RESTORE_POSITION = True
-else:
-    _LESS_RESTORE_POSITION = False
-#_DEFAULT_LESS = "less -EXFRfM -PMurl\ lines\ \%lt-\%lb/\%L\ \%Pb\%$ %s"
-# -E : quit when reaching end of file (to behave like "cat")
-# -F : quit if content fits the screen (behave like "cat")
-# -X : does not clear the screen
-# -R : interpret ANSI colors correctly
-# -f : suppress warning for some contents
-# -M : long prompt (to have info about where you are in the file)
-# -W : hilite the new first line after a page skip (space)
-# -i : ignore case in search
-# -S : do not wrap long lines. Wrapping is done by offpunk, longlines
-# are there on purpose (surch in asciiart)
-#--incsearch : incremental search starting rev581
-if less_version >= 581:
-    less_base = "less --incsearch --save-marks -~ -XRfMWiS"
-elif less_version >= 572:
-    less_base = "less --save-marks -XRfMWiS"
-else:
-    less_base = "less -XRfMWiS"
-_DEFAULT_LESS = less_base + " \"+''\" %s"
-_DEFAULT_CAT = less_base + " -EF %s"
-def less_cmd(file, histfile=None,cat=False,grep=None):
-    if histfile:
-        env = {"LESSHISTFILE": histfile}
-    else:
-        env = {}
-    if cat:
-        cmd_str = _DEFAULT_CAT
-    elif grep:
-        grep_cmd = _GREP
-        #case insensitive for lowercase search
-        if grep.islower():
-            grep_cmd += " -i"
-        cmd_str = _DEFAULT_CAT + "|" + grep_cmd + " %s"%grep
-    else:
-        cmd_str = _DEFAULT_LESS
-    run(cmd_str, parameter=file, direct_output=True, env=env)
-
 # Command abbreviations
 _ABBREVS = {
     "..":   "up",
@@ -297,7 +241,7 @@ class GeminiClient(cmd.Cmd):
         return self.opencache.get_renderer(url)
 
     def _go_to_url(self, url, update_hist=True, force_refresh=False, handle=True,\
-                                            name=None, mode=None,limit_size=False):
+                                    grep=None,name=None, mode=None,limit_size=False):
         """This method might be considered "the heart of Offpunk".
         Everything involved in fetching a gemini resource happens here:
         sending the request over the network, parsing the response,
@@ -315,7 +259,7 @@ class GeminiClient(cmd.Cmd):
         if url in self.permanent_redirects:
             self._go_to_url(self.permanent_redirects[url],update_hist=update_hist,\
                             force_refresh=force_refresh, handle=handle, name=name,mode=mode,\
-                            limit_size=limit_size)
+                            limit_size=limit_size,grep=grep)
             return
         # Code to translate URLs to better frontends (think twitter.com -> nitter)
         parsed = urllib.parse.urlparse(url)
@@ -346,7 +290,7 @@ class GeminiClient(cmd.Cmd):
             params["validity"] = 60
         # Use cache or mark as to_fetch if resource is not cached
         if handle and not self.sync_only:
-            displayed = self.opencache.opnk(url,mode=mode,**params)
+            displayed = self.opencache.opnk(url,mode=mode,grep=grep,**params)
             modedurl = mode_url(url,mode)
             if not displayed:
                 #if we can’t display, we mark to sync what is not local
@@ -937,7 +881,7 @@ Use 'ls -l' to see URLs."""
     @needs_gi
     def do_find(self, searchterm):
         """Find in current page by displaying only relevant lines (grep)."""
-        self.get_renderer().display(grep=searchterm)
+        self._go_to_url(self.current_url,update_hist=False,grep=searchterm)
 
     def emptyline(self):
         """Page through index ten lines at a time."""
