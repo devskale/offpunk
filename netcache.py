@@ -291,32 +291,22 @@ def set_error(url,err):
                 cache.close()
     return cache
 
-def _fetch_http(url,max_size=None,timeout=DEFAULT_TIMEOUT,**kwargs):
+def _fetch_http(url,max_size=None,timeout=DEFAULT_TIMEOUT,accept_bad_ssl_certificates=False,**kwargs):
     def too_large_error(url,length,max_size):
         err = "Size of %s is %s Mo\n"%(url,length)
         err += "Offpunk only download automatically content under %s Mo\n" %(max_size/1000000)
         err += "To retrieve this content anyway, type 'reload'."
         return set_error(url,err)
+    if accept_bad_ssl_certificates:
+        requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL:@SECLEVEL=1'
+        requests.packages.urllib3.disable_warnings()
+        verify=False
+    else:
+        requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL:@SECLEVEL=2'
+        verify=True
     header = {}
     header["User-Agent"] = "Netcache"
-    parsed = urllib.parse.urlparse(url)
-    # Code to translate URLs to better frontends (think twitter.com -> nitter)
-    #if options["redirects"]:
-    #    netloc = parsed.netloc
-    #   if netloc.startswith("www."):
-#            netloc = netloc[4:]
-#        if netloc in self.redirects:
-#            if self.redirects[netloc] == "blocked":
-#                text = "This website has been blocked.\n"
-#                text += "Use the redirect command to unblock it."
-#                gi.write_body(text,"text/gemini")
-#                return gi
-#            else:
-#                parsed = parsed._replace(netloc = self.redirects[netloc])
-    url = urllib.parse.urlunparse(parsed)
-    with requests.get(url,headers=header, stream=True,timeout=DEFAULT_TIMEOUT) as response:
-        #print("This is header for %s"%gi.url)
-        #print(response.headers)
+    with requests.get(url,verify=verify,headers=header, stream=True,timeout=DEFAULT_TIMEOUT) as response:
         if "content-type" in response.headers:
             mime = response.headers['content-type']
         else:
@@ -737,7 +727,8 @@ def _validate_cert(address, host, cert,accept_bad_ssl=False,automatic_choice=Non
         with open(os.path.join(certdir, fingerprint+".crt"), "wb") as fp:
             fp.write(cert)
 
-def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,**kwargs):
+def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_certificates=False,\
+                    **kwargs):
     cache = None
     url_parts = urllib.parse.urlparse(url)
     host = url_parts.hostname

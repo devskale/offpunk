@@ -317,6 +317,20 @@ class GeminiClient(cmd.Cmd):
                             force_refresh=force_refresh, handle=handle, name=name,mode=mode,\
                             limit_size=limit_size)
             return
+        # Code to translate URLs to better frontends (think twitter.com -> nitter)
+        parsed = urllib.parse.urlparse(url)
+        netloc = parsed.netloc
+        if netloc.startswith("www."):
+            netloc = netloc[4:]
+        if netloc in self.redirects:
+            if self.redirects[netloc] == "blocked":
+                text = "This website has been blocked.\n"
+                text += "Use the redirect command to unblock it."
+                print(text)
+                return
+            else:
+                parsed = parsed._replace(netloc = self.redirects[netloc])
+                url = urllib.parse.urlunparse(parsed)
         params = {}
         params["timeout"] = self.options["short_timeout"]
         if limit_size:
@@ -324,6 +338,7 @@ class GeminiClient(cmd.Cmd):
         params["print_error"] = not self.sync_only
         params["interactive"] = not self.sync_only
         params["offline"] = self.offline_only
+        params["accept_bad_ssl_certificates"] = self.options["accept_bad_ssl_certificates"]
         if force_refresh:
             params["validity"] = 1
         elif not self.offline_only:
@@ -474,10 +489,8 @@ class GeminiClient(cmd.Cmd):
             elif option == "accept_bad_ssl_certificates":
                 if value.lower() == "false":
                     print("Only high security certificates are now accepted")
-                    requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL:@SECLEVEL=2'
                 elif value.lower() == "true":
                     print("Low security SSL certificates are now accepted")
-                    requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL:@SECLEVEL=1'
                 else:
                     print("accept_bad_ssl_certificates should be True or False")
                     return
