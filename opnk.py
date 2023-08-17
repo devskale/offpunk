@@ -169,6 +169,12 @@ class opencache():
                 renderer = self.rendererdic[inpath]
         return renderer
 
+    def get_temp_filename(self,url):
+        if url in self.temp_files.keys():
+            return self.temp_files[url]
+        else:
+            return None
+
     def opnk(self,inpath,mode=None,terminal=True,grep=None,**kwargs):
         #Return True if inpath opened in Terminal
         # False otherwise

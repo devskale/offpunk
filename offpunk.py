@@ -550,7 +550,9 @@ Use with "cache" to copy the path of the cached content."""
                         url,mode = unmode_url(self.current_url)
                     run("xsel -b -i", input=url, direct_output=True)
                 elif args and args[0] == "raw":
-                    run("xsel -b -i", input=open(self.get_renderer().get_temp_filename(), "rb"),\
+                    tmp = self.opencache.get_temp_filename(self.current_url)
+                    if tmp:
+                        run("xsel -b -i", input=open(tmp, "rb"),\
                                                 direct_output=True)
                 elif args and args[0] == "cache":
                     run("xsel -b -i", input=netcache.get_cache_path(self.current_url),\
@@ -903,7 +905,8 @@ Use 'ls -l' to see URLs."""
     @needs_gi
     def do_cat(self, *args):
         """Run most recently visited item through "cat" command."""
-        run("cat", input=open(self.get_renderer().get_temp_filename(), "rb"), direct_output=True)
+        run("cat", input=open(self.opencache.get_temp_filename(self.current_url), "rb"),\
+                                                                    direct_output=True)
 
     @needs_gi
     def do_view(self, *args):
@@ -959,7 +962,9 @@ see "handler" command to set your handler."""
     def do_shell(self, line):
         """'cat' most recently visited item through a shell pipeline.
 '!' is an useful shortcut."""
-        run(line, input=open(self.get_renderer().get_temp_filename(), "rb"), direct_output=True)
+        tmp = self.opencache.get_temp_filename(self.current_url)
+        if tmp:
+            run(line, input=open(tmp, "rb"), direct_output=True)
 
     @needs_gi
     def do_save(self, line):
