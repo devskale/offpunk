@@ -451,6 +451,7 @@ class GeminiClient(cmd.Cmd):
                     value = int(value)
                     print("changing width to ",value)
                     term_width(new_width=value)
+                    self.opencache.cleanup(full=False)
                 else:
                     print("%s is not a valid width (integer required)"%value)
             elif value.isnumeric():

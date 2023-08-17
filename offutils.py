@@ -78,12 +78,15 @@ def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
 global TERM_WIDTH
 TERM_WIDTH = 72
 
-def term_width(new_width=None):
+#if absolute, returns the real terminal width, not the text width
+def term_width(new_width=None,absolute=False):
     if new_width:
         global TERM_WIDTH
         TERM_WIDTH = new_width
-    width = TERM_WIDTH
     cur = shutil.get_terminal_size()[0]
+    if absolute:
+        return cur
+    width = TERM_WIDTH
     if cur < width:
         width = cur
     return width
