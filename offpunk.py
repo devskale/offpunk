@@ -182,12 +182,17 @@ class GeminiClient(cmd.Cmd):
         self.redirects = {
             "twitter.com" : "nitter.42l.fr",
             "facebook.com" : "blocked",
+            "tiktok.com"   : "blocked",
             "doubleclick.net": "blocked",
             "google-analytics.com" : "blocked",
             "youtube.com" : "yewtu.be",
             "reddit.com"  : "teddit.net",
             "old.reddit.com": "teddit.net",
             "medium.com"  : "scribe.rip",
+            "admanager.google.com": "blocked",
+            "google-health-ads.blogspot.com": "blocked",
+            "firebase.google.com": "blocked",
+            "google-webfonts-helper.herokuapp.com": "blocked",
 
         }
         term_width(new_width=self.options["width"])
@@ -266,15 +271,18 @@ class GeminiClient(cmd.Cmd):
         netloc = parsed.netloc
         if netloc.startswith("www."):
             netloc = netloc[4:]
-        if netloc in self.redirects:
-            if self.redirects[netloc] == "blocked":
-                text = "This website has been blocked.\n"
-                text += "Use the redirect command to unblock it."
-                print(text)
-                return
-            else:
-                parsed = parsed._replace(netloc = self.redirects[netloc])
-                url = urllib.parse.urlunparse(parsed)
+        #we block/redirect even subdomains
+        for key in self.redirects.keys():
+            if netloc.endswith(key):
+                if self.redirects[key] == "blocked":
+                    text = "This website has been blocked.\n"
+                    text += "Use the redirect command to unblock it."
+                    if handle:
+                        print(text)
+                    return
+                else:
+                    parsed = parsed._replace(netloc = self.redirects[key])
+                    url = urllib.parse.urlunparse(parsed)
         params = {}
         params["timeout"] = self.options["short_timeout"]
         if limit_size:
