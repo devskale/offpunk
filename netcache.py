@@ -846,8 +846,6 @@ def fetch(url,offline=False,download_image_first=True,validity=0,**kwargs):
                         #d_i_f is False to avoid recursive downloading 
                         #if that ever happen
                         fetch(image,offline=offline,download_image_first=False,validity=0,**kwargs)
-    else:
-        print("Not cached URL or not supported format (TODO)")
     return path
 
 
