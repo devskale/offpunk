@@ -9,7 +9,6 @@ __version__ = "1.10"
 import argparse
 import cmd
 import datetime
-import fnmatch
 import io
 import os
 import os.path

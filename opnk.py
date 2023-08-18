@@ -12,6 +12,7 @@ import ansicat
 import offutils
 import shutil
 import time
+import fnmatch
 from offutils import run,term_width,mode_url,unmode_url,is_local
 
 _HAS_XDGOPEN = shutil.which('xdg-open')
