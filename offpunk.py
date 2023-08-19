@@ -158,7 +158,6 @@ class GeminiClient(cmd.Cmd):
         }
         self.active_cert_domains = []
         self.active_is_transient = False
-        self.transient_certs_created = []
         self.options = {
             "debug" : False,
             "beta" : False,
@@ -465,29 +464,6 @@ class GeminiClient(cmd.Cmd):
                 except ValueError:
                     pass
             self.options[option] = value
-
-    def do_cert(self, line):
-        """Manage client certificates"""
-        print("Managing client certificates")
-        if self.client_certs["active"]:
-            print("Active certificate: {}".format(self.client_certs["active"][0]))
-        print("1. Deactivate client certificate.")
-        print("2. Generate new certificate.")
-        print("3. Load previously generated certificate.")
-        print("4. Load externally created client certificate from file.")
-        print("Enter blank line to exit certificate manager.")
-        choice = input("> ").strip()
-        if choice == "1":
-            print("Deactivating client certificate.")
-            netcache._deactivate_client_cert()
-        elif choice == "2":
-            netcache._generate_persistent_client_cert()
-        elif choice == "3":
-            netcache._choose_client_cert()
-        elif choice == "4":
-            netcache._load_client_cert()
-        else:
-            print("Aborting.")
 
     def do_handler(self, line):
         """View or set handler commands for different MIME types."""
@@ -1688,11 +1664,6 @@ Argument : duration of cache validity (in seconds)."""
     ### The end!
     def do_quit(self, *args):
         """Exit Offpunk."""
-        for cert in self.transient_certs_created:
-            for ext in (".crt", ".key"):
-                certfile = os.path.join(_CONFIG_DIR, "transient_certs", cert+ext)
-                if os.path.exists(certfile):
-                    os.remove(certfile)
         self.opencache.cleanup() 
         print("You can close your screen!")
         sys.exit()
@@ -1708,8 +1679,6 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bookmarks', action='store_true',
                         help='start with your list of bookmarks')
-    parser.add_argument('--tls-cert', metavar='FILE', help='TLS client certificate file')
-    parser.add_argument('--tls-key', metavar='FILE', help='TLS client certificate private key file')
     parser.add_argument('--config-file',metavar='FILE',
                         help='use this particular config file instead of default')
     parser.add_argument('--sync', action='store_true',
@@ -1774,9 +1743,6 @@ def main():
                         queue.append(line)
         return queue
     # Act on args
-    if args.tls_cert:
-        # If tls_key is None, python will attempt to load the key from tls_cert.
-        netcache._activate_client_cert(args.tls_cert, args.tls_key)
     if args.bookmarks:
         torun_queue.append("bookmarks")
     elif args.url:
