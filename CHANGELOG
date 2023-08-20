@@ -19,6 +19,7 @@ Wait for 2.1 if you are not willing to do testing/bug reporting.
 - "accept_bad_ssl_certificates" now more agressive for http and really accepts them all
 - Gemini-only: support for client generated certificates has been removed
 - blocked domains with "redirect" now also blocks related subdomains.
+- "file" is now marked as a dependency (thank Guillaume Loret)
 
 ## 1.10 - July 31st 2023
 - IMPORTANT : new optional dependency : python-chardet

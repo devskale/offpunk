@@ -1157,7 +1157,6 @@ def get_mime(path):
     #gmi Mimetype is not recognized yet
     if not mime and not shutil.which("file") :
         print("Cannot guess the mime type of the file. Please install \"file\".")
-        print("(and send me an email, I’m curious of systems without \"file\" installed!")
     if mime.startswith("text") and mime not in _FORMAT_RENDERERS:
         if mime2 and mime2 in _FORMAT_RENDERERS:
             mime = mime2

@@ -7,3 +7,4 @@ readability-lxml
 pillow
 setproctitle
 timg
+file
