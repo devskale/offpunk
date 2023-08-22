@@ -1127,7 +1127,8 @@ _FORMAT_RENDERERS = {
     "application/rss+xml" : FeedRenderer,
     "application/atom+xml" : FeedRenderer,
     "text/gopher": GopherRenderer,
-    "image/*": ImageRenderer
+    "image/*": ImageRenderer,
+    "application/javascript": HtmlRenderer,
 }
 def get_mime(path):
     #Beware, this one is really a shaddy ad-hoc function
@@ -1172,7 +1173,7 @@ def renderer_from_file(path,url=None):
     if not url:
         url = path
     if os.path.exists(path):
-        if mime.startswith("text/"):
+        if mime.startswith("text/") or mime in _FORMAT_RENDERERS:
             with open(path) as f:
                 content = f.read()
                 f.close()

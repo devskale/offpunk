@@ -186,6 +186,7 @@ class opencache():
         #may this should be migrated here.
         if not offutils.is_local(inpath):
             cachepath = netcache.fetch(inpath,**kwargs)
+            inpath = cachepath
             if not cachepath:
                 return False
         renderer = self.get_renderer(inpath,mode=mode)
