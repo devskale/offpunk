@@ -711,7 +711,8 @@ class FolderRenderer(GemtextRenderer):
             body = ""
             for li in l:
                 path = "list:///%s"%li
-                size = "TODO"
+                r = renderer_from_file(netcache.get_cache_path(path))
+                size = len(r.get_links())
                 body += "=> %s %s (%s items)\n" %(str(path),li,size)
             return body
         listdir = os.path.join(self.datadir,"lists")
