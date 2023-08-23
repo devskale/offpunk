@@ -277,16 +277,16 @@ def set_error(url,err):
             os.remove(root_dir)
         os.makedirs(cache_dir,exist_ok=True)
         if os.path.isdir(cache_dir):
-            with open(cache, "w") as cache:
-                cache.write(str(datetime.datetime.now())+"\n")
-                cache.write("ERROR while caching %s\n\n" %url)
-                cache.write("*****\n\n")
-                cache.write(str(type(err)) + " = " + str(err))
+            with open(cache, "w") as c:
+                c.write(str(datetime.datetime.now())+"\n")
+                c.write("ERROR while caching %s\n\n" %url)
+                c.write("*****\n\n")
+                c.write(str(type(err)) + " = " + str(err))
                 #cache.write("\n" + str(err.with_traceback(None)))
-                cache.write("\n*****\n\n")
-                cache.write("If you believe this error was temporary, type ""reload"".\n")
-                cache.write("The ressource will be tentatively fetched during next sync.\n")
-                cache.close()
+                c.write("\n*****\n\n")
+                c.write("If you believe this error was temporary, type ""reload"".\n")
+                c.write("The ressource will be tentatively fetched during next sync.\n")
+                c.close()
     return cache
 
 def _fetch_http(url,max_size=None,timeout=DEFAULT_TIMEOUT,accept_bad_ssl_certificates=False,**kwargs):
