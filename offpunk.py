@@ -276,7 +276,7 @@ class GeminiClient(cmd.Cmd):
                 if self.redirects[key] == "blocked":
                     text = "This website has been blocked.\n"
                     text += "Use the redirect command to unblock it."
-                    if handle:
+                    if handle and not self.sync_only:
                         print(text)
                     return
                 else:
