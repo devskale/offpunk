@@ -185,6 +185,7 @@ class opencache():
         #netcache currently provide the path if it’s a file.
         #may this should be migrated here.
         if not offutils.is_local(inpath):
+            kwargs["images_mode"] = mode
             cachepath = netcache.fetch(inpath,**kwargs)
             inpath = cachepath
             if not cachepath:

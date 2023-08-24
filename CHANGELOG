@@ -21,6 +21,7 @@ Wait for 2.1 if you are not willing to do testing/bug reporting.
 - Gemini-only: support for client generated certificates has been removed
 - blocked domains with "redirect" now also blocks related subdomains.
 - "file" is now marked as a dependency (thank Guillaume Loret)
+- "--images-mode" allow to choose at startup which images should be dowloaded (none,readable,full)
 
 ## 1.10 - July 31st 2023
 - IMPORTANT : new optional dependency : python-chardet

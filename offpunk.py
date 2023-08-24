@@ -171,6 +171,7 @@ class GeminiClient(cmd.Cmd):
             "max_size_download" : 10,
             "editor" : None,
             "download_images_first" : True,
+            "images_mode" : "readable",
             "redirects" : True,
             # the wikipedia entry needs two %s, one for lang, other for search
             "wikipedia" : "gemini://vault.transjovian.org:1965/search/%s/%s",
@@ -289,6 +290,10 @@ class GeminiClient(cmd.Cmd):
         params["interactive"] = not self.sync_only
         params["offline"] = self.offline_only
         params["accept_bad_ssl_certificates"] = self.options["accept_bad_ssl_certificates"]
+        if mode:
+            params["images_mode"] = mode
+        else:
+            params["images_mode"] = self.options["images_mode"]
         if force_refresh:
             params["validity"] = 1
         elif not self.offline_only:
@@ -1691,6 +1696,9 @@ def main():
                         help='run non-interactively with an URL as argument to fetch it later')
     parser.add_argument('--depth',
                         help='depth of the cache to build. Default is 1. More is crazy. Use at your own risks!')
+    parser.add_argument('--images-mode',
+                        help='the mode to use to choose which images to download in a HTML page.\
+                             one of (None, readable, full). Warning: full will slowdown your sync.')
     parser.add_argument('--cache-validity',
                         help='duration for which a cache is valid before sync (seconds)')
     parser.add_argument('--version', action='store_true',
@@ -1776,6 +1784,8 @@ def main():
         else:
             # if no refresh time, a default of 0 is used (which means "infinite")
             refresh_time = 0
+        if args.images_mode and args.images_mode in ["none","readable","normal","full"]:
+            gc.options["images_mode"] = args.images_mode
         if args.depth:
             depth = int(args.depth)
         else:

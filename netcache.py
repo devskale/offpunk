@@ -763,7 +763,7 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
     return cache
 
 
-def fetch(url,offline=False,download_image_first=True,validity=0,**kwargs):
+def fetch(url,offline=False,download_image_first=True,images_mode="readable",validity=0,**kwargs):
     url = normalize_url(url)
     path=None
     print_error = "print_error" in kwargs.keys() and kwargs["print_error"]
@@ -831,10 +831,10 @@ def fetch(url,offline=False,download_image_first=True,validity=0,**kwargs):
                     print(traceback.format_exc())
             return cache
         # We download images contained in the document (from full mode)
-        if not offline and download_image_first:
+        if not offline and download_image_first and images_mode:
             renderer = ansicat.renderer_from_file(path,url)
             if renderer:
-                for image in renderer.get_images(mode="full"):
+                for image in renderer.get_images(mode=images_mode):
                     #Image should exist, should be an url (not a data image)
                     #and should not be already cached
                     if image and not image.startswith("data:image/") and not is_cache_valid(image):
@@ -843,9 +843,10 @@ def fetch(url,offline=False,download_image_first=True,validity=0,**kwargs):
                         toprint = toprint[:width]
                         toprint += " "*(width-len(toprint))
                         print(toprint,end="\r")
-                        #d_i_f is False to avoid recursive downloading 
+                        #d_i_f and images_mode are False/None to avoid recursive downloading 
                         #if that ever happen
-                        fetch(image,offline=offline,download_image_first=False,validity=0,**kwargs)
+                        fetch(image,offline=offline,download_image_first=False,\
+                                images_mode=None,validity=0,**kwargs)
     return path
 
 
