@@ -1149,7 +1149,8 @@ archives, which is a special historical list limited in size. It is similar to `
             title = r.get_page_title()
         else:
             title = ""
-        return "=> {} {}\n".format(url,title)
+        toreturn = "=> {} {}\n".format(url,title)
+        return toreturn
 
     def list_add_line(self,list,url=None,verbose=True):
         list_path = self.list_path(list)

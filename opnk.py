@@ -187,7 +187,6 @@ class opencache():
         if not offutils.is_local(inpath):
             kwargs["images_mode"] = mode
             cachepath = netcache.fetch(inpath,**kwargs)
-            inpath = cachepath
             if not cachepath:
                 return False
         renderer = self.get_renderer(inpath,mode=mode)
@@ -234,7 +233,7 @@ class opencache():
                 return True
         #maybe, we have no renderer. Or we want to skip it.
         else:
-            mimetype = ansicat.get_mime(inpath)
+            mimetype = ansicat.get_mime(cachepath)
             if mimetype == "mailto":
                 resp = input("Send an email to %s Y/N? " %inpath)
                 if resp.strip().lower() in ("y", "yes"):
