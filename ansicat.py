@@ -381,20 +381,6 @@ class AbstractRenderer():
         self.last_mode = mode
     def get_mode(self):
         return self.last_mode
-    def get_links(self,mode=None):
-        if not mode: mode = self.last_mode
-        if mode not in self.links :
-            prepared_body = self.prepare(self.body,mode=mode)
-            results = self.render(prepared_body,mode=mode)
-            if results:
-                #we should absolutize all URLs here
-                self.links[mode] = []
-                for l in results[1]:
-                    abs_l = urllib.parse.urljoin(self.url,l.split()[0])
-                    self.links[mode].append(abs_l) 
-                for l in self.get_subscribe_links()[1:]:
-                    self.links[mode].append(l[0])
-        return self.links[mode]
     def get_link(self,nb):
         links = self.get_links()
         if len(links) < nb:
@@ -466,25 +452,41 @@ class AbstractRenderer():
             return []
     #This function will give gemtext to the gemtext renderer
     def prepare(self,body,mode=None):
-        return body
+        return [[body,None]]
+
+    def _build_body_and_links(self,mode,width=None):
+        if not width:
+            width = term_width()
+        prepared_bodies = self.prepare(self.body,mode=mode)
+        self.rendered_text[mode] = ""
+        self.links[mode] = []
+        for b in prepared_bodies:
+            results = None
+            size = len(self.links[mode])
+            if b[1] in _FORMAT_RENDERERS:
+                r = _FORMAT_RENDERERS[b[1]](b[0],self.url,center=self.center)
+                results = r.render(b[0],width=width,mode=mode,startlinks=size)
+            else:
+                results = self.render(b[0],width=width,mode=mode,startlinks=size)
+            if results:
+                self.rendered_text[mode] += results[0] + "\n"
+                #we should absolutize all URLs here
+                for l in results[1]:
+                    abs_l = urllib.parse.urljoin(self.url,l.split()[0])
+                    self.links[mode].append(abs_l) 
+                for l in self.get_subscribe_links()[1:]:
+                    self.links[mode].append(l[0])
 
     def get_body(self,width=None,mode=None):
         if not mode: mode = self.last_mode
-        if not width:
-            width = term_width()
         if mode not in self.rendered_text:
-            prepared_body = self.prepare(self.body,mode=mode)
-            result = self.render(prepared_body,width=width,mode=mode)
-            if result:
-                self.rendered_text[mode] = result[0]
-                #The following is there to prepoulate self.links
-                #but it seems to slow down a lot the loading
-                #self.links[mode] = []
-                #we should absolutize all URLs here
-                #for l in result[1]:
-                #    abs_l = urllib.parse.urljoin(self.url,l.split()[0])
-                #    self.links[mode].append(abs_l) 
+            self._build_body_and_links(mode,width)
         return self.rendered_text[mode]
+    def get_links(self,mode=None):
+        if not mode: mode = self.last_mode
+        if mode not in self.links :
+            self._build_body_and_links(mode)
+        return self.links[mode]
 
     def _window_title(self,title,info=None):
         title_r = self.representation(term_width())
@@ -502,6 +504,8 @@ class AbstractRenderer():
     # rendered content is not used, only the links are needed)
     # The prepare() function is called before the rendering. It is useful if
     # your renderer output in a format suitable for another existing renderer (such as gemtext)
+    # The prepare() function output a list of tuple. Each tuple is [output text, format] where
+    # format should be in _FORMAT_RENDERERS. If None, current renderer is used
 
 # Gemtext Rendering Engine
 class GemtextRenderer(AbstractRenderer):
@@ -531,7 +535,7 @@ class GemtextRenderer(AbstractRenderer):
             return "Unknown Gopher Page"
 
     #render_gemtext
-    def render(self,gemtext, width=None,mode=None):
+    def render(self,gemtext, width=None,mode=None,startlinks=0):
         if not width:
             width = term_width()
         r = self.representation(width)
@@ -569,7 +573,7 @@ class GemtextRenderer(AbstractRenderer):
                     name = None
                     if len(splitted) > 1:
                         name = splitted[1]
-                    link = format_link(url,len(links),name=name)
+                    link = format_link(url,len(links)+startlinks,name=name)
                     #r.open_color("blue")
                     #r.open_color("faint")
                     #r.open_color("underline")
@@ -634,11 +638,11 @@ class GopherRenderer(AbstractRenderer):
         return self.title
 
     #menu_or_text
-    def render(self,body,width=None,mode=None):
+    def render(self,body,width=None,mode=None,startlinks=0):
         if not width:
             width = term_width()
         try:
-            render,links = self._render_goph(body,width=width,mode=mode)
+            render,links = self._render_goph(body,width=width,mode=mode,startlinks=startlinks)
         except Exception as err:
             print("Error rendering Gopher ",err)
             r = self.representation(width)
@@ -647,7 +651,7 @@ class GopherRenderer(AbstractRenderer):
             links = []
         return render,links
 
-    def _render_goph(self,body,width=None,mode=None):
+    def _render_goph(self,body,width=None,mode=None,startlinks=0):
         if not width:
             width = term_width()
         # This was copied straight from Agena (then later adapted)
@@ -681,7 +685,8 @@ class GopherRenderer(AbstractRenderer):
                     url = url.replace(" ","%20")
                     linkline = url + " " + name
                     links.append(linkline)
-                    towrap = "[%s] "%len(links)+ name
+                    number = len(links) + startlinks
+                    towrap = "[%s] "%str(number)+ name
                     r.add_text(towrap)
                 else:
                     r.add_text(line)
@@ -754,7 +759,7 @@ class FolderRenderer(GemtextRenderer):
             if len(system_lists) > 0:
                 body +="\n## System Lists\n"
                 body += write_list(system_lists)
-            return body
+            return [[body,None]]
 
 class FeedRenderer(GemtextRenderer):
     def get_mime(self):
@@ -780,6 +785,7 @@ class FeedRenderer(GemtextRenderer):
         if not width:
             width = term_width()
         self.title = "RSS/Atom feed"
+        toreturn = []
         page = ""
         if _DO_FEED:
             parsed = feedparser.parse(content)
@@ -806,9 +812,11 @@ class FeedRenderer(GemtextRenderer):
             if "link" in parsed.feed:
                 page += "=> %s\n" %parsed.feed.link
             page += "\n## Entries\n"
+            toreturn.append([page,None])
             if len(parsed.entries) < 1:
                 self.validity = False
             for i in parsed.entries:
+                page = ""
                 line = "=> %s " %i.link
                 if "published" in i:
                     pub_date = time.strftime("%Y-%m-%d",i.published_parsed)
@@ -820,12 +828,12 @@ class FeedRenderer(GemtextRenderer):
                 page += line + "\n"
                 if mode == "full":
                     if "summary" in i:
-                        html = HtmlRenderer(i.summary,self.url,center=False)
-                        rendered = html.get_body(width=None,mode="full")
-                        page += "\n"
-                        page += rendered
-                        page += "\n------------\n\n"
-        return page
+                        #html = HtmlRenderer(i.summary,self.url,center=False)
+                        #rendered = html.get_body(width=None,mode="full")
+                        toreturn.append([page,None])
+                        toreturn.append([i.summary,"text/html"])
+                        toreturn.append(["------------",None])
+        return toreturn
 
 class ImageRenderer(AbstractRenderer):
     def get_mime(self):
@@ -839,7 +847,7 @@ class ImageRenderer(AbstractRenderer):
         return []
     def get_title(self):
         return "Picture file"
-    def render(self,img,width=None,mode=None):
+    def render(self,img,width=None,mode=None,startlinks=0):
         #with inline, we use symbols to be rendered with less.
         #else we use the best possible renderer.
         if mode == "links_only":
@@ -909,7 +917,7 @@ class HtmlRenderer(AbstractRenderer):
     # Our own HTML engine (crazy, isn’t it?)
     # Return [rendered_body, list_of_links]
     # mode is either links_only, readable or full
-    def render(self,body,mode=None,width=None,add_title=True):
+    def render(self,body,mode=None,width=None,add_title=True,startlinks=0):
         if not mode: mode = self.last_mode
         if not width:
             width = term_width()
@@ -1040,7 +1048,7 @@ class HtmlRenderer(AbstractRenderer):
                             recursive_render(child)
                             imgtext = "[IMG LINK %s]"
                     links.append(link+" "+text)
-                    link_id = str(len(links))
+                    link_id = str(len(links)+startlinks)
                     r.open_color("blue")
                     r.open_color("faint")
                     for child in element.children:
@@ -1073,7 +1081,7 @@ class HtmlRenderer(AbstractRenderer):
                         self.images[mode] = []
                     abs_url = urllib.parse.urljoin(self.url, src)
                     self.images[mode].append(abs_url)
-                    link_id = " [%s]"%(len(links))
+                    link_id = " [%s]"%(len(links)+startlinks)
                     r.add_block(ansi_img)
                     r.open_color("faint")
                     r.open_color("yellow")
