@@ -1,0 +1,63 @@
+.Dd August 27, 2023
+.Dt NETCACHE 1
+.Os Debian
+.
+.Sh NAME
+.Nm netcache
+.Nd local Internet cache handler for offpunk
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl \-path
+.Op Fl \-offline
+.Op Fl \-max\-size Ar MAX_SIZE
+.Op Fl \-timeout Ar TIMEOUT
+.Op Ar URL ...
+.Nm
+.Fl h | \-help
+.
+.Sh DESCRIPTION
+Netcache is the download and cache management engine of the browser
+.Xr offpunk 1 .
+It allows one to fetch a link and get its content,
+writing the content through the local cache for ulterior reference.
+Netcache can be forced into offline mode,
+in order to only fetch resources from the local cache,
+otherwise it would always refresh it from the version available online.
+It is also useful for mapping a given URL to its location in the cache,
+independently of whether it has been downloaded first.
+.Pp
+.Xr Offpunk 1
+is a command-line browser and feed reader dedicated to browsing the Web,
+Gemini, Gopher and Spartan.
+.Ss Positional arguments
+.Bl -tag -width Ds -offset indent
+.It Ar URL
+download the URL and output the content.
+.El
+.Ss Keyword arguments
+.Bl -tag -width Ds -offset indent
+.It Fl h , \-help
+show a help message and exit.
+.It Fl \-path
+output the path to the cache instead of the content of the URL.
+.It Fl \-max-size Ar MAX_SIZE
+cancel download of items above that size.
+The value is expressed in megabytes.
+.It Fl \-timeout Ar TIMEOUT
+time to wait before cancelling connection.
+The value is expressed in seconds.
+.El
+.
+.Sh EXIT STATUS
+.Ex -std
+.
+.Sh SEE ALSO
+.Xr ansicat 1 ,
+.Xr migrate-offpunk-cache 1 ,
+.Xr offpunk 1 ,
+.Xr opnk 1 ,
+.Lk https://sr.ht/~lioploum/offpunk/
+.
+.Sh AUTHORS
+.An Lionel Dricot (Ploum) Aq Mt offpunk2 at ploum.eu

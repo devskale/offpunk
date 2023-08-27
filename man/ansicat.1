@@ -1,0 +1,72 @@
+.Dd August 27, 2023
+.Dt ANSICAT 1
+.Os Debian
+.
+.Sh NAME
+.Nm ansicat
+.Nd terminal gemini gemtext renderer for offpunk
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl \-format Ar RENDERER
+.Op Fl \-mime Ar MIME
+.Op Fl \-url Ar URL ...
+.Op Ar INPUT ...
+.Nm
+.Fl h | \-help
+.
+.Sh DESCRIPTION
+Ansicat is the rendering engine of the browser
+.Xr offpunk 1 .
+It will render nicely on the terminal any gemtext,
+html,
+gopher,
+and a few other formats.
+.Pp
+.Xr Offpunk 1
+is a command-line browser and feed reader dedicated to browsing the Web,
+Gemini, Gopher and Spartan.
+.Ss Positional arguments
+.Bl -tag -width Ds -offset indent
+.It Ar INPUT
+path to the text to render.
+It defaults to the standard input.
+.El
+.Ss Keyword arguments
+.Bl -tag -width Ds -offset indent
+.It Fl h , \-help
+show a help message and exit.
+.It Fl \-format Ar RENDERER
+renderer to use.
+Available renderers are
+.Ic auto ,
+.Ic gemtext ,
+.Ic html ,
+.Ic feed ,
+.Ic gopher ,
+.Ic image ,
+and
+.Ic folder .
+The
+.Ic auto
+renderer will heuristically guess the format,
+either thanks to the MIME type,
+or from the file being rendered itself.
+.It Fl \-mime Ar MIME
+MIME type of the content to parse.
+.It Fl \-url Ar URL ...
+original URL of the content.
+.El
+.
+.Sh EXIT STATUS
+.Ex -std
+.
+.Sh SEE ALSO
+.Xr migrate-offpunk-cache 1 ,
+.Xr netcache 1 ,
+.Xr offpunk 1 ,
+.Xr opnk 1 ,
+.Lk https://sr.ht/~lioploum/offpunk/
+.
+.Sh AUTHORS
+.An Lionel Dricot (Ploum) Aq Mt offpunk2 at ploum.eu
