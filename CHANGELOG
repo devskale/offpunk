@@ -4,10 +4,10 @@
 List of things before release
 TODO: man pages for netcache, ansicat, opnk
 TODO: better handling of folders with opnk
-This is an an experimental and unstable release. Lot of breakages are expected.
-Wait for 2.1 if you are not willing to do testing/bug reporting.
-- Licence has been changed to AGPL for ideological reasons
-- Contact adress has been changed to offpunk2 on the same domain (because of spam)
+This is an an experimental and potentially unstable release. Bug reports are welcome.
+- IMPORTANT: Licence has been changed to AGPL for ideological reasons
+- IMPORTANT: Contact adress has been changed to offpunk2 on the same domain (because of spam)
+- IMPORTANT: code has been splitted into 5 differents files. Installation/packaging should be adapted.
 - New command-line tool: "netcache"
 - New command-line tool: "ansicat"
 - New command-line tool: "opnk"

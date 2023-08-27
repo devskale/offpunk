@@ -815,8 +815,8 @@ class FeedRenderer(GemtextRenderer):
             toreturn.append([page,None])
             if len(parsed.entries) < 1:
                 self.validity = False
+            postslist = ""
             for i in parsed.entries:
-                page = ""
                 line = "=> %s " %i.link
                 if "published" in i:
                     pub_date = time.strftime("%Y-%m-%d",i.published_parsed)
@@ -825,14 +825,17 @@ class FeedRenderer(GemtextRenderer):
                     line += "%s" %(i.title)
                 if "author" in i:
                     line += " (by %s)"%i.author
-                page += line + "\n"
                 if mode == "full":
+                    toreturn.append([line,None])
                     if "summary" in i:
-                        #html = HtmlRenderer(i.summary,self.url,center=False)
-                        #rendered = html.get_body(width=None,mode="full")
-                        toreturn.append([page,None])
                         toreturn.append([i.summary,"text/html"])
                         toreturn.append(["------------",None])
+                else:
+                    postslist += line + "\n"
+            #If each posts is append to toreturn, a \n is inserted
+            #between each item of the list. I don’t like it. Hence this hack
+            if mode != "full":
+                toreturn.append([postslist,None])
         return toreturn
 
 class ImageRenderer(AbstractRenderer):
