@@ -1,8 +1,6 @@
 # Offpunk History
 
 ## 2.0 - unreleased
-List of things before release
-TODO: man pages for netcache, ansicat, opnk
 TODO: better handling of folders with opnk
 This is an an experimental and potentially unstable release. Bug reports are welcome.
 - IMPORTANT: Licence has been changed to AGPL for ideological reasons
