@@ -152,7 +152,7 @@ class opencache():
             #Screen size may have changed
             width = term_width(absolute=True)
             if usecache and self.last_width != width:
-                self.cleanup(full=False)
+                self.cleanup()
                 usecache = False
                 self.last_width = width
             if usecache:
@@ -252,17 +252,16 @@ class opencache():
                 print("You can use the ! command to specify another handler program or pipeline.")
             return False
 
-    #If not full cleanup, we only remove tempfiles but keep the renderers
-    def cleanup(self,full=True):
+    #We remove the renderers from the cache and we also delete temp files
+    def cleanup(self):
         while len(self.temp_files) > 0:
             os.remove(self.temp_files.popitem()[1])
         while len(self.less_histfile) > 0:
             os.remove(self.less_histfile.popitem()[1])
         self.last_width = None
-        if full:
-            self.rendererdic = {}
-            self.renderer_time = {}
-            self.last_mode = {}
+        self.rendererdic = {}
+        self.renderer_time = {}
+        self.last_mode = {}
         
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
