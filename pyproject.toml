@@ -45,6 +45,9 @@ Source = "https://git.sr.ht/~lioploum/offpunk"
 
 [project.scripts]
 offpunk = "offpunk:main"
+netcache = "netcache:main"
+ansicat = "ansicat:main"
+opnk = "opnk:main"
 
 [tool.flit.sdist]
 include = ["doc/", "man/", "CHANGELOG"]
