@@ -13,6 +13,9 @@ import shutil
 import shlex
 import urllib.parse
 import urllib.parse
+import cache_migration
+
+CACHE_VERSION = 1
 
 ## Config directories
 ## We implement our own python-xdg to avoid conflict with existing libraries.
@@ -33,6 +36,30 @@ if not os.path.exists(data_home) and os.path.exists(_old_config):
 cache_home = os.environ.get('XDG_CACHE_HOME') or\
                 os.path.join(_home,'.cache')
 _CACHE_PATH = os.path.join(os.path.expanduser(cache_home),"offpunk/")
+
+#Let’s read current version of the cache
+version_path = _CACHE_PATH + ".version"
+current_version = 0
+if os.path.exists(version_path):
+    current_str = None
+    with open(version_path) as f:
+        current_str = f.read()
+        f.close()
+    try:
+        current_version = int(current_str)
+    except:
+        current_version = 0
+
+#Now, let’s upgrade the cache if needed
+while current_version < CACHE_VERSION:
+    current_version += 1
+    upgrade_func = getattr(cache_migration,"upgrade_to_"+str(current_version))
+    upgrade_func(_CACHE_PATH)
+    with open(version_path,"w") as f:
+        f.write(str(current_version))
+        f.close()
+
+
 
 ## Those two functions add/remove the mode to the
 # URLs. This is a gross hack to remember the mode

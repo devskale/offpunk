@@ -21,6 +21,7 @@ This is an an experimental and potentially unstable release. Bug reports are wel
 - "file" is now marked as a dependency (thank Guillaume Loret)
 - "--images-mode" allow to choose at startup which images should be dowloaded (none,readable,full)
 - Support for multi-format rendering (such as RSS feeds with html elements)
+- The cache is now automatically upgraded if needed (see .version in your cache)
 
 ## 1.10 - July 31st 2023
 - IMPORTANT : new optional dependency : python-chardet

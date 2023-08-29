@@ -18,30 +18,14 @@ import os
 import os.path
 
 
-def v1_10_0(cache_dir: str) -> None:
+def upgrade_to_1(cache_dir: str) -> None:
     """
     Rename index.txt to gophermap in the Gopher protocol cache.
     """
+    print("Upgrading cache to version 1: migrating index.txt to gophermap")
     for root, _, files in os.walk(os.path.join(cache_dir, 'gopher')):
         for f in files:
             if f == 'index.txt':
                 src = os.path.join(root, f)
                 dst = os.path.join(root, 'gophermap')
                 os.rename(src, dst)
-
-
-if __name__ == '__main__':
-    # Compute the default offpunk cache directory.
-    xdg_cache_home = os.environ.get('XDG_CACHE_HOME')
-    if xdg_cache_home:
-        default_cache_dir = os.path.join(xdg_cache_home, 'offpunk')
-    else:
-        default_cache_dir = os.path.join(os.path.expanduser('~'), '.cache/offpunk')
-    # Parse command line arguments.
-    parser = argparse.ArgumentParser(
-        description='Migrate the offpunk cache to a newer version.')
-    parser.add_argument('cache_dir', metavar='CACHE_DIR', nargs='?',
-        default=default_cache_dir, help='the path to the cache')
-    args = parser.parse_args()
-    # Run the cache migration functions from the oldest to the newest version.
-    v1_10_0(args.cache_dir)
