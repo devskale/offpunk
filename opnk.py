@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python3
 #opnk stand for "Open like a PuNK".
 #It will open any file or URL and display it nicely in less.
 #If not possible, it will fallback to xdg-open
