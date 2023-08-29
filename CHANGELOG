@@ -5,7 +5,7 @@ TODO: better handling of folders with opnk
 This is an an experimental and potentially unstable release. Bug reports are welcome.
 - IMPORTANT: Licence has been changed to AGPL for ideological reasons
 - IMPORTANT: Contact adress has been changed to offpunk2 on the same domain (because of spam)
-- IMPORTANT: code has been splitted into 5 differents files. Installation/packaging should be adapted.
+- IMPORTANT: code has been splitted into 6 differents files. Installation/packaging should be adapted.
 - New command-line tool: "netcache"
 - New command-line tool: "ansicat"
 - New command-line tool: "opnk"
