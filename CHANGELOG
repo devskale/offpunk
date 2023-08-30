@@ -2,10 +2,10 @@
 
 ## 2.0 - unreleased
 TODO: better handling of folders with opnk
-This is an an experimental and potentially unstable release. Bug reports are welcome.
+This is an an experimental release. Bug reports and feedbacks are welcome on the offpunk-devel list.
 - IMPORTANT: Licence has been changed to AGPL for ideological reasons
 - IMPORTANT: Contact adress has been changed to offpunk2 on the same domain (because of spam)
-- IMPORTANT: code has been splitted into 6 differents files. Installation/packaging should be adapted.
+- IMPORTANT: code has been splitted into 7 differents files. Installation/packaging should be adapted.
 - New command-line tool: "netcache"
 - New command-line tool: "ansicat"
 - New command-line tool: "opnk"
@@ -22,6 +22,7 @@ This is an an experimental and potentially unstable release. Bug reports are wel
 - "--images-mode" allow to choose at startup which images should be dowloaded (none,readable,full)
 - Support for multi-format rendering (such as RSS feeds with html elements)
 - The cache is now automatically upgraded if needed (see .version in your cache)
+- "theme" command allows customization of the colours
 
 ## 1.10 - July 31st 2023
 - IMPORTANT : new optional dependency : python-chardet

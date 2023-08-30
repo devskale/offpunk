@@ -134,7 +134,7 @@ class opencache():
             if previous:
                 print("Previous handler was %s"%previous)
 
-    def get_renderer(self,inpath,mode=None):
+    def get_renderer(self,inpath,mode=None,theme=None):
         # We remove the ##offpunk_mode= from the URL
         # If mode is already set, we don’t use the part from the URL
         inpath,newmode = unmode_url(inpath)
@@ -163,7 +163,7 @@ class opencache():
                 else:
                     usecache = False
             if not usecache:
-                renderer = ansicat.renderer_from_file(path,inpath)
+                renderer = ansicat.renderer_from_file(path,inpath,theme=theme)
                 if renderer:
                     self.rendererdic[inpath] = renderer
                     self.renderer_time[inpath] = int(time.time())

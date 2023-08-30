@@ -11,6 +11,7 @@ import argparse
 import mimetypes
 import fnmatch
 import netcache
+import offthemes
 from offutils import run,term_width,is_local,looks_like_base64
 from offutils import _DATA_DIR
 try:
@@ -139,6 +140,7 @@ class AbstractRenderer():
         self.temp_files = {}
         self.center = center
         self.last_mode = "readable"
+        self.theme = offthemes.default
 
     def display(self,mode=None,directdisplay=False):
         wtitle = self.get_formatted_title()
@@ -152,9 +154,16 @@ class AbstractRenderer():
     def has_direct_display(self):
         return False
 
+    def set_theme(self,theme):
+        if theme:
+            self.theme.update(theme)
+
+    def get_theme(self):
+        return self.theme
+
     #This class hold an internal representation of the HTML text
     class representation:
-        def __init__(self,width,title=None,center=True):
+        def __init__(self,width,title=None,center=True,theme={}):
             self.title=title
             self.center = center
             self.final_text = ""
@@ -170,40 +179,8 @@ class AbstractRenderer():
             self.current_indent = ""
             self.disabled_indents = None
             # each color is an [open,close] pair code
-            self.colors = {
-                            "bold"   : ["1","22"],
-                            "faint"  : ["2","22"],
-                            "italic" : ["3","23"],
-                            "underline": ["4","24"],
-                            "black"   : ["30","39"],
-                            "red"    : ["31","39"],
-                            "green"    : ["32","39"],
-                            "yellow" : ["33","39"],
-                            "blue"   : ["34","39"],
-                            "purple"   : ["35","39"],
-                            "cyan"   : ["36","39"],
-                            "white"   : ["37","39"],
-                            "bright_black"   : ["90","39"],
-                            "bright_red"    : ["91","39"],
-                            "bright_green"    : ["92","39"],
-                            "bright_yellow" : ["93","39"],
-                            "bright_blue"   : ["94","39"],
-                            "bright_purple"   : ["95","39"],
-                            "bright_cyan"   : ["96","39"],
-                            "bright_white"   : ["97","39"],
-                       }
-            self.theme = {
-                            "window_title" :    ["red","bold"],
-                            "window_subtitle" : ["red"],
-                            "title" :           ["blue","bold","underline"],
-                            "subtitle" :        ["blue"],
-                            "subsubtitle" :     ["blue","faint"], #fallback to subtitle if none
-                            "link"  :           ["blue","faint"],
-                            "oneline_link":     [],     #for gopher/gemini. fallback to link if none
-                            "image_link" :      ["yellow","faint"],
-                            "preformatted":     ["faint"],
-                            "blockquote" :      ["italic"],
-                         }  
+            self.theme = theme
+            self.colors = offthemes.colors
 
         def _insert(self,color,open=True):
             if open: o = 0
@@ -525,7 +502,7 @@ class AbstractRenderer():
         return self.links[mode]
 
     def _window_title(self,title,info=None):
-        title_r = self.representation(term_width())
+        title_r = self.representation(term_width(),theme=self.theme)
         title_r.open_theme("window_title")
         title_r.add_text(title)
         title_r.close_theme("window_title")
@@ -574,7 +551,7 @@ class GemtextRenderer(AbstractRenderer):
     def render(self,gemtext, width=None,mode=None,startlinks=0):
         if not width:
             width = term_width()
-        r = self.representation(width)
+        r = self.representation(width,theme=self.theme)
         links = []
         hidden_links = []
         preformatted = False
@@ -683,7 +660,7 @@ class GopherRenderer(AbstractRenderer):
             render,links = self._render_goph(body,width=width,mode=mode,startlinks=startlinks)
         except Exception as err:
             print("Error rendering Gopher ",err)
-            r = self.representation(width)
+            r = self.representation(width,theme=self.theme)
             r.add_block(body)
             render = r.get_final()
             links = []
@@ -694,7 +671,7 @@ class GopherRenderer(AbstractRenderer):
             width = term_width()
         # This was copied straight from Agena (then later adapted)
         links = []
-        r = self.representation(width)
+        r = self.representation(width,theme=self.theme)
         for line in self.body.split("\n"):
             r.newline()
             if line.startswith("i"):
@@ -966,7 +943,7 @@ class HtmlRenderer(AbstractRenderer):
             print("HTML document detected. Please install python-bs4 and python-readability.")
             return
         # This method recursively parse the HTML
-        r = self.representation(width,title=self.get_title(),center=self.center)
+        r = self.representation(width,title=self.get_title(),center=self.center,theme=self.theme)
         links = []
         # You know how bad html is when you realize that space sometimes meaningful, somtimes not.
         # CR are not meaniningful. Except that, somethimes, they should be interpreted as spaces.
@@ -1211,7 +1188,7 @@ def get_mime(path):
             mime = "text/gemini"
     return mime
 
-def renderer_from_file(path,url=None):
+def renderer_from_file(path,url=None,theme=None):
     if not path:
         return None
     mime = get_mime(path)
@@ -1224,15 +1201,17 @@ def renderer_from_file(path,url=None):
                 f.close()
         else:
             content = path
-        toreturn = set_renderer(content,url,mime)
+        toreturn = set_renderer(content,url,mime,theme=theme)
     else:
         toreturn = None
     return toreturn
 
-def set_renderer(content,url,mime):
+def set_renderer(content,url,mime,theme=None):
     renderer = None
     if mime == "Local Folder":
         renderer = FolderRenderer("",url,datadir=_DATA_DIR)
+        if theme:
+            renderer.set_theme(theme)
         return renderer
     mime_to_use = []
     for m in _FORMAT_RENDERERS:
@@ -1257,6 +1236,8 @@ def set_renderer(content,url,mime):
             renderer = func(content,url)
             if not renderer.is_valid():
                 renderer = None
+    if renderer and theme:
+        renderer.set_theme(theme)
     return renderer
 
 

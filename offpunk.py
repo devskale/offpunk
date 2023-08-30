@@ -23,6 +23,7 @@ import urllib.parse
 import subprocess
 import netcache
 import opnk
+import offthemes
 from offutils import run,term_width,is_local,mode_url,unmode_url
 from offutils import _CONFIG_DIR,_DATA_DIR,_CACHE_PATH
 try:
@@ -158,6 +159,7 @@ class GeminiClient(cmd.Cmd):
         }
         self.active_cert_domains = []
         self.active_is_transient = False
+        self.theme = {}
         self.options = {
             "debug" : False,
             "beta" : False,
@@ -238,11 +240,24 @@ class GeminiClient(cmd.Cmd):
         return [i+" " for i in allowed if i.startswith(text)]
     def complete_move(self,text,line,begidx,endidx):
         return self.complete_add(text,line,begidx,endidx)
+    
+    def complete_theme(self,text,line,begidx,endidx):
+        elements = offthemes.default
+        colors = offthemes.colors
+        words = len(line.split())
+        if words <= 1:
+            allowed = elements
+        elif words == 2 and text != "":
+            allowed = elements
+        else:
+            allowed = colors
+        return [i+" " for i in allowed if i.startswith(text)]
+
 
     def get_renderer(self,url=None):
         # If launched without argument, we return the renderer for the current URL
         if not url: url = self.current_url
-        return self.opencache.get_renderer(url)
+        return self.opencache.get_renderer(url,theme=self.theme)
 
     def _go_to_url(self, url, update_hist=True, force_refresh=False, handle=True,\
                                     grep=None,name=None, mode=None,limit_size=False):
@@ -469,6 +484,54 @@ class GeminiClient(cmd.Cmd):
                 except ValueError:
                     pass
             self.options[option] = value
+    def do_theme(self,line):
+        """Change the colors of your rendered text.
+
+"theme ELEMENT COLOR"
+
+ELEMENT is one of: window_title, window_subtitle, title,
+subtitle,subsubtitle,link,oneline_link,image_link,preformatted,blockquote.
+
+COLOR is one or many (separated by space) of: bold, faint, italic, underline, black,
+red, green, yellow, blue, purple, cyan, white.
+
+Each color can alternatively be prefaced with "bright_"."""
+        words = line.split()
+        le = len(words)
+        if le == 0: 
+            t = self.get_renderer("list:///").get_theme()
+            for e in t:
+                print("%s set to %s"%(e,t[e]))
+        else:
+            element = words[0]
+            if element not in offthemes.default.keys():
+                print("%s is not a valid theme element"%element)
+                print("Valid theme elements are: ")
+                valid = []
+                for k in offthemes.default:
+                    valid.append(k)
+                print(valid)
+            else:
+                if le == 1:
+                    if element in self.theme.keys():
+                        value = self.theme[element]
+                    else:
+                        value = offthemes.default[element]
+                    print("%s is set to %s"%(element,str(value))) 
+                else:
+                    #Now we parse the colors
+                    for w in words[1:]:
+                        if w not in offthemes.colors.keys():
+                            print("%s is not a valid color"%w)
+                            print("Valid colors are one of: ")
+                            valid = []
+                            for k in offthemes.colors:
+                                valid.append(k)
+                            print(valid)
+                            return
+                    self.theme[element] = words[1:]
+                    self.opencache.cleanup()
+
 
     def do_handler(self, line):
         """View or set handler commands for different MIME types."""
