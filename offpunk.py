@@ -1609,8 +1609,13 @@ Argument : duration of cache validity (in seconds)."""
                 # The code for this was removed so, currently, we savetotour
                 # at every level of recursion.
                 r = self.get_renderer(url)
+                url,oldmode = unmode_url(url)
+                if oldmode == "full":
+                    mode = "full_links_only"
+                else:
+                    mode = "links_only"
                 if r:
-                    links = r.get_links(mode="links_only")
+                    links = r.get_links(mode=mode)
                     subcount = [0,len(links)]
                     d = depth - 1
                     for k in links:

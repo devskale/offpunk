@@ -853,7 +853,7 @@ class ImageRenderer(AbstractRenderer):
     def render(self,img,width=None,mode=None,startlinks=0):
         #with inline, we use symbols to be rendered with less.
         #else we use the best possible renderer.
-        if mode == "links_only":
+        if mode in ["full_links_only","links_only"]:
             return "", []
         if not width:
             width = term_width()
@@ -937,7 +937,7 @@ class HtmlRenderer(AbstractRenderer):
         def render_image(src,width=40,mode=None):
             ansi_img = ""
             imgurl,imgdata = looks_like_base64(src,self.url)
-            if _RENDER_IMAGE and mode != "links_only" and imgurl:
+            if _RENDER_IMAGE and mode not in ["full_links_only","links_only"] and imgurl:
                 try:
                     #4 followings line are there to translate the URL into cache path
                     img = netcache.get_cache_path(imgurl)
@@ -1109,7 +1109,7 @@ class HtmlRenderer(AbstractRenderer):
                     for child in element.children:
                         recursive_render(child,indent=indent)
         # the real render_html hearth
-        if mode == "full":
+        if mode in ["full","full_links_only"]:
             summary = body
         elif _HAS_READABILITY:
             try:
