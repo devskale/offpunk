@@ -175,10 +175,35 @@ class AbstractRenderer():
                             "faint"  : ["2","22"],
                             "italic" : ["3","23"],
                             "underline": ["4","24"],
+                            "black"   : ["30","39"],
                             "red"    : ["31","39"],
+                            "green"    : ["32","39"],
                             "yellow" : ["33","39"],
                             "blue"   : ["34","39"],
+                            "purple"   : ["35","39"],
+                            "cyan"   : ["36","39"],
+                            "white"   : ["37","39"],
+                            "bright_black"   : ["90","39"],
+                            "bright_red"    : ["91","39"],
+                            "bright_green"    : ["92","39"],
+                            "bright_yellow" : ["93","39"],
+                            "bright_blue"   : ["94","39"],
+                            "bright_purple"   : ["95","39"],
+                            "bright_cyan"   : ["96","39"],
+                            "bright_white"   : ["97","39"],
                        }
+            self.theme = {
+                            "window_title" :    ["red","bold"],
+                            "window_subtitle" : ["red"],
+                            "title" :           ["blue","bold","underline"],
+                            "subtitle" :        ["blue"],
+                            "subsubtitle" :     ["blue","faint"], #fallback to subtitle if none
+                            "link"  :           ["blue","faint"],
+                            "oneline_link":     [],     #for gopher/gemini. fallback to link if none
+                            "image_link" :      ["yellow","faint"],
+                            "preformatted":     ["faint"],
+                            "blockquote" :      ["italic"],
+                         }  
 
         def _insert(self,color,open=True):
             if open: o = 0
@@ -236,6 +261,19 @@ class AbstractRenderer():
         def center_line(self):
             self.last_line_center = True
 
+        def open_theme(self,element):
+            if element in self.theme:
+                colors = self.theme[element]
+                for c in colors:
+                    self.open_color(c)
+                return True
+            else:
+                return False
+        def close_theme(self,element):
+            if element in self.theme:
+                colors = self.theme[element]
+                for c in colors:
+                    self.close_color(c)
         def open_color(self,color):
             if color in self.colors and color not in self.opened:
                 self._insert(color,open=True)
@@ -307,9 +345,7 @@ class AbstractRenderer():
             if self.title:
                 if not self.title == intext:
                     self._disable_indents()
-                    self.open_color("blue")
-                    self.open_color("bold")
-                    self.open_color("underline")
+                    self.open_theme("title")
                     self.add_text(self.title)
                     self.close_all()
                     self.newparagraph()
@@ -490,13 +526,13 @@ class AbstractRenderer():
 
     def _window_title(self,title,info=None):
         title_r = self.representation(term_width())
-        title_r.open_color("red")
-        title_r.open_color("bold")
+        title_r.open_theme("window_title")
         title_r.add_text(title)
-        title_r.close_color("bold")
+        title_r.close_theme("window_title")
         if info:
+            title_r.open_theme("window_subtitle")
             title_r.add_text("   (%s)"%info)
-        title_r.close_color("red")
+            title_r.close_theme("window_subtitle")
         return title_r.get_final()
 
     # An instance of AbstractRenderer should have a self.render(body,width,mode) method.
@@ -574,14 +610,16 @@ class GemtextRenderer(AbstractRenderer):
                     if len(splitted) > 1:
                         name = splitted[1]
                     link = format_link(url,len(links)+startlinks,name=name)
-                    #r.open_color("blue")
-                    #r.open_color("faint")
-                    #r.open_color("underline")
+                    if r.open_theme("oneline_link"):
+                        theme = "oneline_link"
+                    else:
+                        theme = "link"
+                        r.open_theme("link")
                     startpos = link.find("] ") + 2
                     r.startindent("",sub=startpos*" ")
                     r.add_text(link)
+                    r.close_theme(theme)
                     r.endindent()
-                    #r.close_all()
             elif line.startswith("* "):
                 line = line[1:].lstrip("\t ")
                 r.startindent("• ",sub="  ")
@@ -594,25 +632,25 @@ class GemtextRenderer(AbstractRenderer):
                 r.endindent()
             elif line.startswith("###"):
                 line = line[3:].lstrip("\t ")
-                r.open_color("blue")
+                if r.open_theme("subsubtitle"):
+                    theme = "subsubtitle"
+                else:
+                    r.open_theme("subtitle")
+                    theme = "subtitle"
                 r.add_text(line)
-                r.close_color("blue")
+                r.close_theme(theme)
             elif line.startswith("##"):
                 line = line[2:].lstrip("\t ")
-                r.open_color("blue")
+                r.open_theme("subtitle")
                 r.add_text(line)
-                r.close_color("blue")
+                r.close_theme("subtitle")
             elif line.startswith("#"):
                 line = line[1:].lstrip("\t ")
                 if not self.title:
                     self.title = line
-                r.open_color("bold")
-                r.open_color("blue")
-                r.open_color("underline")
+                r.open_theme("title")
                 r.add_text(line)
-                r.close_color("underline")
-                r.close_color("bold")
-                r.close_color("blue")
+                r.close_theme("title")
             else:
                 if "://" in line:
                     words = line.split()
@@ -977,9 +1015,9 @@ class HtmlRenderer(AbstractRenderer):
                 r.newparagraph()
                 r.startindent("   ",reverse="     ")
                 for child in element.children:
-                    r.open_color("italic")
+                    r.open_theme("blockquote")
                     recursive_render(child,indent="\t")
-                    r.close_color("italic")
+                    r.close_theme("blockquote")
                 r.endindent()
             elif element.name in ["div","p"]:
                 r.newparagraph()
@@ -992,14 +1030,13 @@ class HtmlRenderer(AbstractRenderer):
                     recursive_render(child,indent=indent)
                 r.add_space()
             elif element.name in ["h1","h2","h3","h4","h5","h6"]:
-                r.open_color("blue")
                 if element.name in ["h1"]:
-                    r.open_color("bold")
-                    r.open_color("underline")
-                elif element.name in ["h2"]:
-                    r.open_color("bold")
-                elif element.name in ["h5","h6"]:
-                    r.open_color("faint")
+                    r.open_theme("title")
+                elif element.name in ["h2","h3"]:
+                    r.open_theme("subtitle")
+                elif element.name in ["h4","h5","h6"]:
+                    if not r.open_theme("subsubtitle"):
+                        r.open_theme("subtitle")
                 for child in element.children:
                     r.newparagraph()
                     recursive_render(child)
@@ -1052,8 +1089,7 @@ class HtmlRenderer(AbstractRenderer):
                             imgtext = "[IMG LINK %s]"
                     links.append(link+" "+text)
                     link_id = str(len(links)+startlinks)
-                    r.open_color("blue")
-                    r.open_color("faint")
+                    r.open_theme("link")
                     for child in element.children:
                         if child.name != "img":
                             recursive_render(child,preformatted=preformatted)
@@ -1062,8 +1098,7 @@ class HtmlRenderer(AbstractRenderer):
                         r.add_text(imgtext%link_id)
                     else:
                         r.add_text(" [%s]"%link_id)
-                    r.close_color("blue")
-                    r.close_color("faint")
+                    r.close_theme("link")
                 else:
                     #No real link found
                     for child in element.children:
@@ -1086,21 +1121,19 @@ class HtmlRenderer(AbstractRenderer):
                     self.images[mode].append(abs_url)
                     link_id = " [%s]"%(len(links)+startlinks)
                     r.add_block(ansi_img)
-                    r.open_color("faint")
-                    r.open_color("yellow")
+                    r.open_theme("image_link")
                     r.center_line()
                     r.add_text(text + link_id)
-                    r.close_color("faint")
-                    r.close_color("yellow")
+                    r.close_theme("image_link")
                     r.newline()
             elif element.name == "br":
                 r.newline()
             elif element.name not in ["script","style","template"] and type(element) != Comment:
                 if element.string:
                     if preformatted :
-                        r.open_color("faint")
+                        r.open_theme("preformatted")
                         r.add_text(element.string)
-                        r.close_color("faint")
+                        r.close_theme("preformatted")
                     else:
                         s = sanitize_string(element.string)
                         if len(s.strip()) > 0:
