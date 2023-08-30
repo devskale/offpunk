@@ -148,7 +148,7 @@ class opencache():
         renderer = None
         path = netcache.get_cache_path(inpath)
         if path:
-            usecache = inpath in self.rendererdic.keys()
+            usecache = inpath in self.rendererdic.keys() and not is_local(inpath)
             #Screen size may have changed
             width = term_width(absolute=True)
             if usecache and self.last_width != width:
@@ -207,7 +207,7 @@ class opencache():
             else:
                 body = renderer.display(mode=mode)
                 #Should we use the cache ? only if it is not local and there’s a cache
-                usecache = key in self.temp_files
+                usecache = key in self.temp_files and not is_local(inpath)
                 if usecache:
                     #and the cache is still valid!
                     last_downloaded = netcache.cache_last_modified(inpath)
