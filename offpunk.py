@@ -350,19 +350,16 @@ class GeminiClient(cmd.Cmd):
 
     def _update_history(self, url):
         # We never update while in sync_only
-        if self.sync_only:
+        # We don’t add history to itself.
+        if self.sync_only or not url or url == "list:///history":
             return
-        # We don’t add lists to history
-        if not url or os.path.join(_DATA_DIR,"lists") in url:
-            return
-        histlist = self.get_list("history")
         links = self.list_get_links("history")
-        # avoid duplicate
         length = len(links)
-        if length > self.options["history_size"]:
-            length = self.options["history_size"]
+        #Don’t update history if we are back/forwarding through it
         if length > 0 and links[self.hist_index] == url:
             return
+        if length > self.options["history_size"]:
+            length = self.options["history_size"]
         self.list_add_top("history",limit=self.options["history_size"],truncate_lines=self.hist_index)
         self.hist_index = 0
 
