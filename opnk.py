@@ -189,6 +189,11 @@ class opencache():
             cachepath = netcache.fetch(inpath,**kwargs)
             if not cachepath:
                 return False
+        elif os.path.exists(inpath):
+            cachepath = inpath
+        else:
+            print("%s does not exist"%inpath)
+            return
         renderer = self.get_renderer(inpath,mode=mode)
         if renderer and mode:
             renderer.set_mode(mode)
