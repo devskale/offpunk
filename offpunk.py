@@ -1836,10 +1836,13 @@ def main():
         if args.url:
             gc.sync_only = True
             for u in args.url:
-                if netcache.is_cache_valid(u):
-                    gc.list_add_line("tour",u)
+                if looks_like_url(u):
+                    if netcache.is_cache_valid(u):
+                        gc.list_add_line("tour",u)
+                    else:
+                        gc.list_add_line("to_fetch",u)
                 else:
-                    gc.list_add_line("to_fetch",u)
+                    print("%s is not a valid URL to fetch"%u)
         else:
             print("--fetch-later requires an URL (or a list of URLS) as argument")
     elif args.sync:
