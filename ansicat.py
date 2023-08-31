@@ -572,6 +572,10 @@ class GemtextRenderer(AbstractRenderer):
             r.newline()
             if line.startswith("```"):
                 preformatted = not preformatted
+                if preformatted:
+                    r.open_theme("preformatted")
+                else:
+                    r.close_theme("preformatted")
             elif preformatted:
                 # infinite line to not wrap preformated
                 r.add_block(line+"\n")
@@ -605,7 +609,9 @@ class GemtextRenderer(AbstractRenderer):
             elif line.startswith(">"):
                 line = line[1:].lstrip("\t ")
                 r.startindent("> ")
+                r.open_theme("blockquote")
                 r.add_text(line)
+                r.close_theme("blockquote")
                 r.endindent()
             elif line.startswith("###"):
                 line = line[3:].lstrip("\t ")

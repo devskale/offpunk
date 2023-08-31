@@ -667,6 +667,7 @@ Use with "cache" to copy the path of the cached content."""
             else:
                 print("%s already marked for syncing" %self.current_url)
         else:
+            self.opencache.cleanup()
             self._go_to_url(self.current_url, force_refresh=False)
 
     @needs_gi
