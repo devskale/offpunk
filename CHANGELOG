@@ -17,7 +17,7 @@ This is an an experimental release. Bug reports and feedbacks are welcome on the
 - "--config-file" allows to start offpunk with custom config (#16)
 - "accept_bad_ssl_certificates" now more agressive for http and really accepts them all
 - Gemini-only: support for client generated certificates has been removed
-- blocked domains with "redirect" now also blocks related subdomains.
+- "redirect" supports domains starting with "*" to also block all subdomins
 - "file" is now marked as a dependency (thank Guillaume Loret)
 - "--images-mode" allow to choose at startup which images should be dowloaded (none,readable,full)
 - Support for multi-format rendering (such as RSS feeds with html elements)

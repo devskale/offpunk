@@ -189,6 +189,8 @@ class opencache():
             cachepath = netcache.fetch(inpath,**kwargs)
             if not cachepath:
                 return False
+        elif "://" in inpath:
+            cachepath = netcache.fetch(inpath,**kwargs)
         elif os.path.exists(inpath):
             cachepath = inpath
         else:

@@ -181,19 +181,18 @@ class GeminiClient(cmd.Cmd):
             "accept_bad_ssl_certificates" : False,
         }
         self.redirects = {
-            "twitter.com" : "nitter.42l.fr",
-            "facebook.com" : "blocked",
-            "tiktok.com"   : "blocked",
-            "doubleclick.net": "blocked",
-            "google-analytics.com" : "blocked",
+            "*twitter.com" : "nitter.42l.fr",
+            "*facebook.com" : "blocked",
+            "*tiktok.com"   : "blocked",
+            "*doubleclick.net": "blocked",
+            "*google-analytics.com" : "blocked",
             "youtube.com" : "yewtu.be",
-            "reddit.com"  : "teddit.net",
-            "old.reddit.com": "teddit.net",
-            "medium.com"  : "scribe.rip",
-            "admanager.google.com": "blocked",
-            "google-health-ads.blogspot.com": "blocked",
-            "firebase.google.com": "blocked",
-            "google-webfonts-helper.herokuapp.com": "blocked",
+            "*reddit.com"  : "teddit.net",
+            "*medium.com"  : "scribe.rip",
+            "*admanager.google.com": "blocked",
+            "*google-health-ads.blogspot.com": "blocked",
+            "*firebase.google.com": "blocked",
+            "*google-webfonts-helper.herokuapp.com": "blocked",
 
         }
         term_width(new_width=self.options["width"])
@@ -287,7 +286,10 @@ class GeminiClient(cmd.Cmd):
             netloc = netloc[4:]
         #we block/redirect even subdomains
         for key in self.redirects.keys():
-            if netloc.endswith(key):
+            match = key == netloc
+            if key.startswith("*"):
+                match = netloc.endswith(key[1:])
+            if match:
                 if self.redirects[key] == "blocked":
                     text = "This website has been blocked.\n"
                     text += "Use the redirect command to unblock it."
@@ -427,6 +429,7 @@ class GeminiClient(cmd.Cmd):
             toprint +="\nTo add new, use \"redirect origine.com destination.org\""
             toprint +="\nTo remove a redirect, use \"redirect origine.com NONE\""
             toprint +="\nTo completely block a website, use \"redirect origine.com BLOCK\""
+            toprint +="\nTo block also subdomains, prefix with *: \"redirect *origine.com BLOCK\""
             print(toprint)
 
     def do_set(self, line):
