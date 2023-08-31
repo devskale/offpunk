@@ -36,6 +36,7 @@ if not os.path.exists(data_home) and os.path.exists(_old_config):
 cache_home = os.environ.get('XDG_CACHE_HOME') or\
                 os.path.join(_home,'.cache')
 _CACHE_PATH = os.path.join(os.path.expanduser(cache_home),"offpunk/")
+os.makedirs(_CACHE_PATH,exist_ok=True)
 
 #Let’s read current version of the cache
 version_path = _CACHE_PATH + ".version"
