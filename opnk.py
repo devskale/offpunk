@@ -177,7 +177,7 @@ class opencache():
         else:
             return None
 
-    def opnk(self,inpath,mode=None,terminal=True,grep=None,**kwargs):
+    def opnk(self,inpath,mode=None,terminal=True,grep=None,theme=None,**kwargs):
         #Return True if inpath opened in Terminal
         # False otherwise
         #if terminal = False, we don’t try to open in the terminal,
@@ -196,7 +196,7 @@ class opencache():
         else:
             print("%s does not exist"%inpath)
             return
-        renderer = self.get_renderer(inpath,mode=mode)
+        renderer = self.get_renderer(inpath,mode=mode,theme=theme)
         if renderer and mode:
             renderer.set_mode(mode)
             self.last_mode[inpath] = mode

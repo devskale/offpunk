@@ -318,7 +318,7 @@ class GeminiClient(cmd.Cmd):
             params["validity"] = 60
         # Use cache or mark as to_fetch if resource is not cached
         if handle and not self.sync_only:
-            displayed = self.opencache.opnk(url,mode=mode,grep=grep,**params)
+            displayed = self.opencache.opnk(url,mode=mode,grep=grep,theme=self.theme,**params)
             modedurl = mode_url(url,mode)
             if not displayed:
                 #if we can’t display, we mark to sync what is not local
