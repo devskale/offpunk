@@ -431,6 +431,7 @@ class AbstractRenderer():
         #small intelligence to try to find a good name for a capsule
         #we try to find eithe ~username or /users/username
         #else we fallback to hostname
+        if not self.url: return ""
         if is_local(self.url):
             splitpath = self.url.split("/")
             filename = splitpath[-1]
@@ -1246,8 +1247,9 @@ def set_renderer(content,url,mime,theme=None):
         renderer.set_theme(theme)
     return renderer
 
-
 def render(input,path=None,format="auto",mime=None,url=None):
+    if not url: url = ""
+    else: url=url[0]
     if format == "gemtext":
         r = GemtextRenderer(input,url)
     elif format == "html":
@@ -1266,7 +1268,7 @@ def render(input,path=None,format="auto",mime=None,url=None):
         else:
             r = set_renderer(input,url,mime)
     if r:
-        r.display()
+        r.display(directdisplay=True)
     else:
         print("Could not render %s"%input)
 

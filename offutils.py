@@ -120,7 +120,8 @@ def term_width(new_width=None,absolute=False):
     return width
 
 def is_local(url):
-    if "://" in url:
+    if not url: return True
+    elif "://" in url:
         scheme,path = url.split("://",maxsplit=1)
         return scheme in ["file","mail","list","mailto"]
     else:
