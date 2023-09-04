@@ -23,6 +23,7 @@ import urllib.parse
 import subprocess
 import netcache
 import opnk
+import ansicat
 import offthemes
 from offutils import run,term_width,is_local,mode_url,unmode_url
 from offutils import _CONFIG_DIR,_DATA_DIR,_CACHE_PATH
@@ -355,6 +356,8 @@ class GeminiClient(cmd.Cmd):
         # We don’t add history to itself.
         if self.sync_only or not url or url == "list:///history":
             return
+        #First, we call get_list to create history if needed
+        self.get_list("history")
         links = self.list_get_links("history")
         length = len(links)
         #Don’t update history if we are back/forwarding through it
@@ -860,30 +863,30 @@ Marks are temporary until shutdown (not saved to disk)."""
         output += " - xdg-open            : " + has(opnk._HAS_XDGOPEN)
         output += "\nWeb browsing:\n"
         output += " - python-requests     : " + has(_DO_HTTP)
-        output += " - python-feedparser   : " + has(_DO_FEED)
-        output += " - python-bs4          : " + has(_HAS_SOUP)
-        output += " - python-readability  : " + has(_HAS_READABILITY)
-        output += " - timg 1.3.2+         : " + has(_NEW_TIMG)
-        if _NEW_CHAFA:
-            output += " - chafa 1.10+         : " + has(_HAS_CHAFA)
+        output += " - python-feedparser   : " + has(ansicat._DO_FEED)
+        output += " - python-bs4          : " + has(ansicat._HAS_SOUP)
+        output += " - python-readability  : " + has(ansicat._HAS_READABILITY)
+        output += " - timg 1.3.2+         : " + has(ansicat._NEW_TIMG)
+        if ansicat._NEW_CHAFA:
+            output += " - chafa 1.10+         : " + has(ansicat._HAS_CHAFA)
         else:
-            output += " - chafa               : " + has(_HAS_CHAFA)
-            output += " - python-pil          : " + has(_HAS_PIL)
+            output += " - chafa               : " + has(ansicat._HAS_CHAFA)
+            output += " - python-pil          : " + has(ansicat._HAS_PIL)
         output += "\nNice to have:\n"
         output += " - python-setproctitle : " + has(_HAS_SETPROCTITLE)
         output += " - xsel                : " + has(_HAS_XSEL)
 
         output += "\nFeatures :\n"
-        if _NEW_CHAFA:
-            output += " - Render images (chafa or timg)              : " + has(_RENDER_IMAGE)
+        if ansicat._NEW_CHAFA:
+            output += " - Render images (chafa or timg)              : " + has(ansicat._RENDER_IMAGE)
         else:
-            output += " - Render images (python-pil, chafa or timg)  : " + has(_RENDER_IMAGE)
-        output += " - Render HTML (bs4, readability)             : " + has(_DO_HTML)
-        output += " - Render Atom/RSS feeds (feedparser)         : " + has(_DO_FEED)
+            output += " - Render images (python-pil, chafa or timg)  : " + has(ansicat._RENDER_IMAGE)
+        output += " - Render HTML (bs4, readability)             : " + has(ansicat._DO_HTML)
+        output += " - Render Atom/RSS feeds (feedparser)         : " + has(ansicat._DO_FEED)
         output += " - Connect to http/https (requests)           : " + has(_DO_HTTP)
-        output += " - Detect text encoding (python-chardet)      : " + has(_HAS_CHARDET)
+        output += " - Detect text encoding (python-chardet)      : " + has(netcache._HAS_CHARDET)
         output += " - copy to/from clipboard (xsel)              : " + has(_HAS_XSEL)
-        output += " - restore last position (less 572+)          : " + has(_LESS_RESTORE_POSITION)
+        output += " - restore last position (less 572+)          : " + has(opnk._LESS_RESTORE_POSITION)
         output += "\n"
         output += "Config directory    : " +  _CONFIG_DIR + "\n"
         output += "User Data directory : " +  _DATA_DIR + "\n"
