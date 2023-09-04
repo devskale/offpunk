@@ -84,6 +84,9 @@ if not _RENDER_IMAGE:
 
 #return ANSI text that can be show by less
 def inline_image(img_file,width):
+    #We don’t even try displaying pictures that are not there
+    if not os.path.exists(img_file):
+        return ""
     #Chafa is faster than timg inline. Let use that one by default
     inline = None
     ansi_img = ""
