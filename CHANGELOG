@@ -1,8 +1,8 @@
 # Offpunk History
 
-## 2.0-beta1 - unreleased
+## 2.0-beta1 - September 05th 2023
 This is an an experimental release. Bug reports and feedbacks are welcome on the offpunk-devel list.
-WARNING: pyproject.toml has not been update and is currently non-functional. Help wanted!
+- WARNING: pyproject.toml has not been updated and is currently non-functional. Help needed!
 - IMPORTANT: Licence has been changed to AGPL for ideological reasons
 - IMPORTANT: Contact adress has been changed to offpunk2 on the same domain (because of spam)
 - IMPORTANT: code has been splitted into 7 differents files. Installation/packaging should be adapted.
@@ -21,7 +21,7 @@ Improvments:
 - The cache is now automatically upgraded if needed (see .version in your cache)
 Other changes from 1.X:
 - Images of html files are now downloaded with the html (slower sync but better reading experience)
-- URL do not default anymore to "gemini://" if not protocol are indicated.
+- URL do not default anymore to "gemini://" if not protocol are indicated. (ongoing discussion in #21)
 - "accept_bad_ssl_certificates" now more agressive for http and really accepts them all
 - Gopher-only: we don’t support naming a page after the name of the incoming link
 - Gemini-only: support for client generated certificates has been removed
