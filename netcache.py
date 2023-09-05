@@ -28,7 +28,7 @@ try:
     from cryptography.hazmat.backends import default_backend
     _HAS_CRYPTOGRAPHY = True
     _BACKEND = default_backend()
-except ModuleNotFoundError:
+except(ModuleNotFoundError,ImportError):
     _HAS_CRYPTOGRAPHY = False
 
 if not os.path.exists(_CACHE_PATH):
