@@ -1,5 +1,8 @@
 # Offpunk History
 
+## 2.0-beta2 - unreleased
+- "--sync" can optionnaly take some lists as arguments, in order to make for specific sync
+
 ## 2.0-beta1 - September 05th 2023
 This is an an experimental release. Bug reports and feedbacks are welcome on the offpunk-devel list.
 - WARNING: pyproject.toml has not been updated and is currently non-functional. Help needed!

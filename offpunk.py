@@ -1321,7 +1321,7 @@ archives, which is a special historical list limited in size. It is similar to `
 
     def list_get_links(self,list):
         list_path = self.list_path(list)
-        if os.path.exists(list_path):
+        if list_path and os.path.exists(list_path):
             return self.get_renderer("list:///%s"%list).get_links()
         else:
             return []
@@ -1622,7 +1622,7 @@ Argument : duration of cache validity (in seconds)."""
             validity = 0
         self.call_sync(refresh_time=validity)
 
-    def call_sync(self,refresh_time=0,depth=1):
+    def call_sync(self,refresh_time=0,depth=1,lists=None):
         # fetch_url is the core of the sync algorithm.
         # It takes as input :
         # - an URL to be fetched
@@ -1705,20 +1705,23 @@ Argument : duration of cache validity (in seconds)."""
                         self.list_rm_url(l,list)
 
         self.sync_only = True
-        lists = self.list_lists()
+        if not lists:
+            lists = self.list_lists()
         # We will fetch all the lists except "archives" and "history"
         # We keep tour for the last round
         subscriptions = []
         normal_lists = []
         fridge = []
         for l in lists:
-            if not self.list_is_system(l):
-                if self.list_is_frozen(l):
-                    fridge.append(l)
-                elif self.list_is_subscribed(l):
-                    subscriptions.append(l)
-                else:
-                    normal_lists.append(l)
+            #only try existing lists
+            if l in self.list_lists():
+                if not self.list_is_system(l):
+                    if self.list_is_frozen(l):
+                        fridge.append(l)
+                    elif self.list_is_subscribed(l):
+                        subscriptions.append(l)
+                    else:
+                        normal_lists.append(l)
         # We start with the "subscribed" as we need to find new items
         starttime = int(time.time())
         for l in subscriptions:
@@ -1760,7 +1763,8 @@ def main():
     parser.add_argument('--config-file',metavar='FILE',
                         help='use this particular config file instead of default')
     parser.add_argument('--sync', action='store_true',
-                        help='run non-interactively to build cache by exploring bookmarks')
+                        help='run non-interactively to build cache by exploring lists passed \
+                                as argument. Without argument, all lists are fetched.')
     parser.add_argument('--assume-yes', action='store_true',
                         help='assume-yes when asked questions about certificates/redirections during sync (lower security)')
     parser.add_argument('--disable-http',action='store_true',
@@ -1779,7 +1783,7 @@ def main():
     parser.add_argument('--features', action='store_true',
                         help='display available features and dependancies then quit')
     parser.add_argument('url', metavar='URL', nargs='*',
-                        help='start with this URL')
+                        help='Arguments should be URL to be fetched or, if --sync is used, lists')
     args = parser.parse_args()
 
     # Handle --version
@@ -1826,7 +1830,7 @@ def main():
     # Act on args
     if args.bookmarks:
         torun_queue.append("bookmarks")
-    elif args.url:
+    elif args.url and not args.sync:
         if len(args.url) == 1:
             torun_queue.append("go %s" % args.url[0])
         else:
@@ -1869,7 +1873,8 @@ def main():
         read_config(torun_queue,rcfile=args.config_file,interactive=False)
         for line in torun_queue:
             gc.onecmd(line)
-        gc.call_sync(refresh_time=refresh_time,depth=depth)
+        lists = None
+        gc.call_sync(refresh_time=refresh_time,depth=depth,lists=args.url)
         gc.onecmd("blackbox")
     else:
         # We are in the normal mode. First process config file
