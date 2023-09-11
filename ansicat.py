@@ -1162,16 +1162,38 @@ _FORMAT_RENDERERS = {
     "image/*": ImageRenderer,
     "application/javascript": HtmlRenderer,
 }
-def get_mime(path):
+def get_mime(path,url=None):
     #Beware, this one is really a shaddy ad-hoc function
     if not path:
         return None
+    elif url and url.startswith("gopher://"):
+        #special case for gopher
+        #code copy/pasted from netcache
+        parsed = urllib.parse.urlparse(url)
+        if len(parsed.path) >= 2:
+            itemtype = parsed.path[1]
+            path = parsed.path[2:]
+        else:
+            itemtype = "1"
+            path = ""
+        if itemtype == "0":
+            mime = "text/gemini"
+        elif itemtype == "1":
+            mime = "text/gopher"
+        elif itemtype == "h":
+            mime = "text/html"
+        elif itemtype in ("9","g","I","s"):
+            mime = "binary"
+        else:
+            mime = "text/gopher"
     elif path.startswith("mailto:"):
         mime = "mailto"
     elif os.path.isdir(path):
         mime = "Local Folder"
     elif path.endswith(".gmi"):
         mime = "text/gemini"
+    elif path.endswith("gophermap"):
+        mime = "text/gopher"
     elif shutil.which("file") :
         mime = run("file -b --mime-type %s", parameter=path).strip()
         mime2,encoding = mimetypes.guess_type(path,strict=False)
@@ -1201,7 +1223,7 @@ def get_mime(path):
 def renderer_from_file(path,url=None,theme=None):
     if not path:
         return None
-    mime = get_mime(path)
+    mime = get_mime(path,url=url)
     if not url:
         url = path
     if os.path.exists(path):
