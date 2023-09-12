@@ -23,6 +23,21 @@ except ModuleNotFoundError:
 try:
     from bs4 import BeautifulSoup
     from bs4 import Comment
+    #if bs4 version >= 4.9.1, we need to silent some xml warnings
+    import bs4
+    version = bs4.__version__.split(".")
+    recent = False
+    if int(version[0]) > 4:
+        recent = True
+    elif int(version[0]) == 4:
+        if int(version[1]) > 9:
+            recent = True
+        elif int(version[1]) == 9:
+            recent = version[2] >= 1
+    if recent:
+        from bs4 import XMLParsedAsHTMLWarning
+        import warnings
+        warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
     _HAS_SOUP = True
 except ModuleNotFoundError:
     _HAS_SOUP = False
