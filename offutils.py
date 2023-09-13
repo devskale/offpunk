@@ -136,7 +136,11 @@ def looks_like_base64(src,baseurl):
     if src and src.startswith("data:image/"):
         if ";base64," in src:
             splitted = src.split(";base64,")
-            extension = splitted[0].strip("data:image/")[:3]
+            #splitted[0] is something like data:image/jpg
+            if "/" in splitted[0]:
+                extension = splitted[0].split("/")[1]
+            else:
+                extension = "data"
             imgdata = splitted[1]
             imgname = imgdata[:20] + "." + extension
             imgurl = urllib.parse.urljoin(baseurl, imgname)

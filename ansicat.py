@@ -13,6 +13,7 @@ import fnmatch
 import netcache
 import offthemes
 from offutils import run,term_width,is_local,looks_like_base64
+import base64
 from offutils import _DATA_DIR
 try:
     from readability import Document
@@ -982,6 +983,7 @@ class HtmlRenderer(AbstractRenderer):
                     #4 followings line are there to translate the URL into cache path
                     img = netcache.get_cache_path(imgurl)
                     if imgdata:
+                        os.makedirs(os.path.dirname(img), exist_ok=True)
                         with open(img,"wb") as cached:
                             cached.write(base64.b64decode(imgdata))
                             cached.close()
@@ -1116,10 +1118,10 @@ class HtmlRenderer(AbstractRenderer):
                 else:
                     text += "[IMG]"
                 if src:
-                    links.append(src+" "+text)
                     if not mode in self.images:
                         self.images[mode] = []
-                    abs_url = urllib.parse.urljoin(self.url, src)
+                    abs_url,data = looks_like_base64(src,self.url)
+                    links.append(abs_url+" "+text)
                     self.images[mode].append(abs_url)
                     link_id = " [%s]"%(len(links)+startlinks)
                     r.add_block(ansi_img)
