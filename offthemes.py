@@ -41,6 +41,8 @@ offpunk1 = {
                 "image_link" :      ["yellow","faint"],
                 "preformatted":     ["faint"],
                 "blockquote" :      ["italic"],
+                "prompt_on" :       ["green"],
+                "prompt_off" :      ["green"],
              }  
 
 default = offpunk1

@@ -141,10 +141,8 @@ class GeminiClient(cmd.Cmd):
         # type sensitivie information.
         os.umask(0o077)
         self.opencache = opnk.opencache()
-        self.no_cert_prompt = "\001\x1b[38;5;76m\002" + "ON" + "\001\x1b[38;5;255m\002" + "> " + "\001\x1b[0m\002"
-        self.cert_prompt = "\001\x1b[38;5;202m\002" + "ON" + "\001\x1b[38;5;255m\002"
-        self.offline_prompt = "\001\x1b[38;5;76m\002" + "OFF" + "\001\x1b[38;5;255m\002" + "> " + "\001\x1b[0m\001"
-        self.prompt = self.no_cert_prompt
+        self.theme = offthemes.default
+        self.prompt = self.set_prompt("ON")
         self.current_url = None
         self.hist_index = 0
         self.marks = {}
@@ -160,7 +158,6 @@ class GeminiClient(cmd.Cmd):
         }
         self.active_cert_domains = []
         self.active_is_transient = False
-        self.theme = {}
         self.options = {
             "debug" : False,
             "beta" : False,
@@ -201,6 +198,30 @@ class GeminiClient(cmd.Cmd):
             "start_time": time.time(),
         }
 
+    def set_prompt(self,prompt):
+        key = "prompt_%s"%prompt.lower()
+        if key in self.theme:
+            colors = self.theme[key]
+        else:
+            #default color is green
+            colors = ["green"]
+        open_color = ""
+        close_color = ""
+        for c in colors:
+            if c in offthemes.colors:
+                ansi = offthemes.colors[c]
+            else:
+                ansi = ["32","39"]
+            open_color += "%s;"%ansi[0]
+            close_color += "%s;"%ansi[1]
+        #removing the last ";"
+        if open_color.endswith(";"):
+            open_color = open_color[:-1]
+        if close_color.endswith(";"):
+            close_color = close_color[:-1]
+        self.prompt = "\001\x1b[%sm\002"%open_color + prompt + "\001\x1b[%sm\002"%close_color + "> "
+        #support for 256 color mode:
+        #self.prompt = "\001\x1b[38;5;76m\002" + "ON" + "\001\x1b[38;5;255m\002" + "> " + "\001\x1b[0m\002"
 
     def complete_list(self,text,line,begidx,endidx):
         allowed = []
@@ -534,7 +555,11 @@ Each color can alternatively be prefaced with "bright_"."""
                             return
                     self.theme[element] = words[1:]
                     self.opencache.cleanup()
-
+        #now we upadte the prompt
+        if self.offline_only:
+            self.set_prompt("OFF")
+        else:
+            self.set_prompt("ON")
 
     def do_handler(self, line):
         """View or set handler commands for different MIME types."""
@@ -570,14 +595,14 @@ Each color can alternatively be prefaced with "bright_"."""
             print("Offline and undisturbed.")
         else:
             self.offline_only = True
-            self.prompt = self.offline_prompt
+            self.set_prompt("OFF")
             print("Offpunk is now offline and will only access cached content")
 
     def do_online(self, *args):
         """Use Offpunk online with a direct connection"""
         if self.offline_only:
             self.offline_only = False
-            self.prompt = self.no_cert_prompt
+            self.set_prompt("ON")
             print("Offpunk is online and will access the network")
         else:
             print("Already online. Try offline.")
