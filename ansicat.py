@@ -135,7 +135,9 @@ def terminal_image(img_file):
     #Render by timg is better than old chafa.
     # it is also centered
     cmd = None
-    if _NEW_TIMG:
+    if _NEW_CHAFA:
+        cmd = "chafa -C on -d 0 --bg white -t 1 -w 1"
+    elif _NEW_TIMG:
         cmd = "timg --loops=1 -C"
     elif _HAS_CHAFA:
         cmd = "chafa -d 0 --bg white -t 1 -w 1"
