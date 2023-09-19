@@ -7,6 +7,7 @@ Changes since beta1
 - improves handling of base64 images
 - fixes gophermap being considered as gemtext files 
 - fixes opening mailto links
+- fixes existing non-html ressources marked a to_fetch even when not needed (simple and/or confusion)
 - attempt at hiding XMLparsedAsHTMLWarning from BS4 library
 - chafa now used by default everywhere if version > 1.10
 

@@ -344,7 +344,7 @@ class GeminiClient(cmd.Cmd):
             modedurl = mode_url(url,mode)
             if not displayed:
                 #if we can’t display, we mark to sync what is not local
-                if not is_local(url) or not netcache.is_cache_valid(url):
+                if not is_local(url) and not netcache.is_cache_valid(url):
                     self.get_list("to_fetch")
                     r = self.list_add_line("to_fetch",url=modedurl,verbose=False)
                     if r:
