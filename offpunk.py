@@ -142,7 +142,7 @@ class GeminiClient(cmd.Cmd):
         os.umask(0o077)
         self.opencache = opnk.opencache()
         self.theme = offthemes.default
-        self.prompt = self.set_prompt("ON")
+        self.set_prompt("ON")
         self.current_url = None
         self.hist_index = 0
         self.marks = {}
@@ -222,6 +222,7 @@ class GeminiClient(cmd.Cmd):
         self.prompt = "\001\x1b[%sm\002"%open_color + prompt + "\001\x1b[%sm\002"%close_color + "> "
         #support for 256 color mode:
         #self.prompt = "\001\x1b[38;5;76m\002" + "ON" + "\001\x1b[38;5;255m\002" + "> " + "\001\x1b[0m\002"
+        return self.prompt
 
     def complete_list(self,text,line,begidx,endidx):
         allowed = []
