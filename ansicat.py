@@ -1247,7 +1247,7 @@ def renderer_from_file(path,url=None,theme=None):
         url = path
     if os.path.exists(path):
         if mime.startswith("text/") or mime in _FORMAT_RENDERERS:
-            with open(path) as f:
+            with open(path,errors="ignore") as f:
                 content = f.read()
                 f.close()
         else:
