@@ -183,12 +183,12 @@ class opencache():
         #if terminal = False, we don’t try to open in the terminal,
         #we immediately fallback to xdg-open.
         #netcache currently provide the path if it’s a file.
-        #may this should be migrated here.
         if not offutils.is_local(inpath):
             kwargs["images_mode"] = mode
             cachepath = netcache.fetch(inpath,**kwargs)
             if not cachepath:
                 return False
+        # folowing line is for :// which are locals (file,list)
         elif "://" in inpath:
             cachepath = netcache.fetch(inpath,**kwargs)
         elif inpath.startswith("mailto:"):
