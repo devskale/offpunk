@@ -3,6 +3,7 @@
 ## 2.0-beta2 - unreleased
 Changes since beta1
 - "--sync" can optionnaly take some lists as arguments, in order to make for specific sync
+- default URL blocked list is now its own file to make contributions easier
 - prompt color is now part of the theme
 - improves handling of base64 images
 - fixes gophermap being considered as gemtext files 

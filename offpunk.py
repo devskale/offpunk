@@ -27,6 +27,7 @@ import ansicat
 import offthemes
 from offutils import run,term_width,is_local,mode_url,unmode_url
 from offutils import _CONFIG_DIR,_DATA_DIR,_CACHE_PATH
+import offblocklist
 try:
     import setproctitle
     setproctitle.setproctitle("offpunk")
@@ -178,21 +179,9 @@ class GeminiClient(cmd.Cmd):
             "search"    : "gemini://kennedy.gemi.dev/search?%s",
             "accept_bad_ssl_certificates" : False,
         }
-        self.redirects = {
-            "*twitter.com" : "nitter.42l.fr",
-            "*facebook.com" : "blocked",
-            "*tiktok.com"   : "blocked",
-            "*doubleclick.net": "blocked",
-            "*google-analytics.com" : "blocked",
-            "youtube.com" : "yewtu.be",
-            "*reddit.com"  : "teddit.net",
-            "*medium.com"  : "scribe.rip",
-            "*admanager.google.com": "blocked",
-            "*google-health-ads.blogspot.com": "blocked",
-            "*firebase.google.com": "blocked",
-            "*google-webfonts-helper.herokuapp.com": "blocked",
-
-        }
+        self.redirects = offblocklist.redirects
+        for i in offblocklist.blocked:
+            self.redirects[i] = "blocked"
         term_width(new_width=self.options["width"])
         self.log = {
             "start_time": time.time(),
