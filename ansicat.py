@@ -860,7 +860,10 @@ class FeedRenderer(GemtextRenderer):
                 self.validity = False
             postslist = ""
             for i in parsed.entries:
-                line = "=> %s " %i.link
+                if "link" in i:
+                    line = "=> %s " %i.link
+                else:
+                    line = "* "
                 if "published" in i:
                     pub_date = time.strftime("%Y-%m-%d",i.published_parsed)
                     line += pub_date + " : "
