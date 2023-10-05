@@ -24,20 +24,18 @@ except ModuleNotFoundError:
 try:
     from bs4 import BeautifulSoup
     from bs4 import Comment
-    #if bs4 version >= 4.9.1, we need to silent some xml warnings
+    #if bs4 version >= 4.11, we need to silent some xml warnings
     import bs4
     version = bs4.__version__.split(".")
     recent = False
     if int(version[0]) > 4:
         recent = True
     elif int(version[0]) == 4:
-        if int(version[1]) > 9:
-            recent = True
-        elif int(version[1]) == 9:
-            recent = version[2] >= 1
+        recent = version[1] >= 11:
     if recent:
+        # As this is only for silencing some warnings, we fail
+        # silently. We don’t really care
         try:
-            #it looks like only recent versions of BS4 have the XMLParsed warning
             from bs4 import XMLParsedAsHTMLWarning
             import warnings
             warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
