@@ -36,9 +36,13 @@ try:
         elif int(version[1]) == 9:
             recent = version[2] >= 1
     if recent:
-        from bs4 import XMLParsedAsHTMLWarning
-        import warnings
-        warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
+        try:
+            #it looks like only recent versions of BS4 have the XMLParsed warning
+            from bs4 import XMLParsedAsHTMLWarning
+            import warnings
+            warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
+        except:
+            pass
     _HAS_SOUP = True
 except ModuleNotFoundError:
     _HAS_SOUP = False
