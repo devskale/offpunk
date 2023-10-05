@@ -31,7 +31,7 @@ try:
     if int(version[0]) > 4:
         recent = True
     elif int(version[0]) == 4:
-        recent = version[1] >= 11:
+        recent = int(version[1]) >= 11
     if recent:
         # As this is only for silencing some warnings, we fail
         # silently. We don’t really care
