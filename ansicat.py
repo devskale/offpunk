@@ -167,7 +167,10 @@ class AbstractRenderer():
 
     def display(self,mode=None,directdisplay=False):
         wtitle = self.get_formatted_title()
-        body = wtitle + "\n" + self.get_body(mode=mode)
+        if mode == "source":
+            body = self.body
+        else:
+            body = wtitle + "\n" + self.get_body(mode=mode)
         if directdisplay:
             print(body)
             return True
@@ -544,6 +547,30 @@ class AbstractRenderer():
     # The prepare() function output a list of tuple. Each tuple is [output text, format] where
     # format should be in _FORMAT_RENDERERS. If None, current renderer is used
 
+class PlaintextRenderer(AbstractRenderer):
+    def get_mime(self):
+        return "text/plain"
+    def get_title(self):
+        if self.title:
+            return self.title
+        elif self.body:
+            lines = self.body.splitlines()
+            if len(lines) > 0:
+                # If not title found, we take the first 50 char
+                # of the first line
+                title_line = lines[0].strip()
+                if len(title_line) > 50:
+                    title_line = title_line[:49] + "…"
+                self.title = title_line
+                return self.title
+            else:
+                self.title = "Empty Page"
+                return self.title
+        else:
+            return "(unknown)"
+    def render(self,gemtext, width=None,mode=None,startlinks=0):
+        return gemtext, []
+
 # Gemtext Rendering Engine
 class GemtextRenderer(AbstractRenderer):
     def get_mime(self):
@@ -569,7 +596,7 @@ class GemtextRenderer(AbstractRenderer):
                 self.title = "Empty Page"
                 return self.title
         else:
-            return "Unknown Gopher Page"
+            return "(unknown)"
 
     #render_gemtext
     def render(self,gemtext, width=None,mode=None,startlinks=0):
@@ -1179,6 +1206,7 @@ _FORMAT_RENDERERS = {
     "text/gemini":  GemtextRenderer,
     "text/html" :   HtmlRenderer,
     "text/xml" : FeedRenderer,
+    "text/plain" : PlaintextRenderer,
     "application/xml" : FeedRenderer,
     "application/rss+xml" : FeedRenderer,
     "application/atom+xml" : FeedRenderer,
@@ -1311,6 +1339,8 @@ def render(input,path=None,format="auto",mime=None,url=None):
         r = ImageRenderer(input,url)
     elif format == "folder":
         r = FolderRenderer(input,url)
+    elif format in ["plaintext","text"]:
+        r = PlaintextRenderer(input,url)
     else:
         if not mime and path:
             r= renderer_from_file(path,url)
@@ -1324,8 +1354,8 @@ def render(input,path=None,format="auto",mime=None,url=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--format", choices=["auto","gemtext","html","feed","gopher","image","folder"],
-                        help="Renderer to use. Available: auto, gemtext, html, feed, gopher, image, folder")
+    parser.add_argument("--format", choices=["auto","gemtext","html","feed","gopher","image","folder","text","plaintext"],
+                        help="Renderer to use. Available: auto, gemtext, html, feed, gopher, image, folder, plaintext")
     parser.add_argument("--mime", help="Mime of the content to parse")
     ## The argument needs to be a path to a file. If none, then stdin is used which allows
     ## to pipe text directly into ansirenderer

@@ -3,6 +3,8 @@
 ## 2.0-beta2 - unreleased
 Changes since beta1
 - "--sync" can optionnaly take some lists as arguments, in order to make for specific sync
+- "view source" to view the source code of a page
+- new PlaintextRenderer which display .txt files without any margin/color/linebreaks
 - default URL blocked list is now its own file to make contributions easier
 - prompt color is now part of the theme
 - improves handling of base64 images

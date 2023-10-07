@@ -6,6 +6,7 @@ Offline-First Gemini/Web/Gopher/RSS reader and browser
 
 __version__ = "2.0-beta1"
 
+## Initial imports and conditional imports {{{
 import argparse
 import cmd
 import datetime
@@ -34,14 +35,13 @@ try:
     _HAS_SETPROCTITLE = True
 except ModuleNotFoundError:
     _HAS_SETPROCTITLE = False
-
 _HAS_XSEL = shutil.which('xsel')
-
 try:
     import requests
     _DO_HTTP = True
 except ModuleNotFoundError:
     _DO_HTTP = False
+## }}} end of imports
 
 # Command abbreviations
 _ABBREVS = {
@@ -982,7 +982,7 @@ Use "view feeds" to see available feeds on this page.
 (full, feed, feeds have no effect on non-html content)."""
         if self.current_url and args and args[0] != "":
             u, m = unmode_url(self.current_url)
-            if args[0] in ["full","debug"]:
+            if args[0] in ["full","debug","source"]:
                 self._go_to_url(self.current_url,mode=args[0])
             elif args[0] in ["normal","readable"]:
                 self._go_to_url(self.current_url,mode="readable")
