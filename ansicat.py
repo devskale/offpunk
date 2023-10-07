@@ -1075,12 +1075,12 @@ class HtmlRenderer(AbstractRenderer):
                 elif element.name in ["h4","h5","h6"]:
                     if not r.open_theme("subsubtitle"):
                         r.open_theme("subtitle")
+                r.newparagraph()
                 for child in element.children:
-                    r.newparagraph()
                     recursive_render(child)
-                    r.newparagraph()
-                    r.close_all()
+                    #r.close_all()
                 r.close_all()
+                r.newparagraph()
             elif element.name in ["code","tt"]:
                 for child in element.children:
                    recursive_render(child,indent=indent,preformatted=True)
