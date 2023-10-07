@@ -1080,6 +1080,7 @@ class HtmlRenderer(AbstractRenderer):
                     recursive_render(child)
                     r.newparagraph()
                     r.close_all()
+                r.close_all()
             elif element.name in ["code","tt"]:
                 for child in element.children:
                    recursive_render(child,indent=indent,preformatted=True)
