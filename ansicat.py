@@ -1271,6 +1271,10 @@ def get_mime(path,url=None):
         else:
             #by default, we consider it’s gemini except for html
             mime = "text/gemini"
+    #file doesn’t recognise gemtext. It should be the default renderer.
+    #the only case were it doesn’t make sense is if the file is .txt
+    if mime == "text/plain" and not path.endswith(".txt"):
+        mime = "text/gemini"
     return mime
 
 def renderer_from_file(path,url=None,theme=None):
