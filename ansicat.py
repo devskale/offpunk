@@ -891,6 +891,15 @@ class FeedRenderer(GemtextRenderer):
             for i in parsed.entries:
                 if "link" in i:
                     line = "=> %s " %i.link
+                elif "links" in i and len(i.links) > 0:
+                    link = None
+                    j = 0
+                    while not link and j < len(i.links):
+                        link = i.links[j].href
+                    if link:
+                        line = "=> %s "%link
+                    else:
+                        line = "* "
                 else:
                     line = "* "
                 if "published" in i:
