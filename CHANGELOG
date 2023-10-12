@@ -14,6 +14,7 @@ Changes since beta1
 - fixes existing non-html ressources marked a to_fetch even when not needed (simple and/or confusion)
 - fixes a crash with RSS feeds without <link> element
 - fixes a bug in HTML renderer where some hX element were not closed properly
+- fixes input in Gemini while online
 - attempt at hiding XMLparsedAsHTMLWarning from BS4 library
 - chafa now used by default everywhere if version > 1.10
 - ignoring encoding error in ansicat
