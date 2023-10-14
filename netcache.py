@@ -268,7 +268,7 @@ def set_error(url,err):
     cache = get_cache_path(url)
     if is_cache_valid(url):
         os.utime(cache)
-    else:
+    elif cache:
         cache_dir = os.path.dirname(cache)
         root_dir = cache_dir
         while not os.path.exists(root_dir):
