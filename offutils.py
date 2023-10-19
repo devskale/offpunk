@@ -146,7 +146,8 @@ def looks_like_base64(src,baseurl):
             imgurl = urllib.parse.urljoin(baseurl, imgname)
         else:
             #We can’t handle other data:image such as svg for now
-            imgurl = None
+            #Url cannot be none so set to the base URL
+            imgurl = urllib.parse.urljoin(baseurl,"offpunk_does_not_support_inline.svg")
     else:
         imgurl = urllib.parse.urljoin(baseurl, imgname)
     return imgurl,imgdata

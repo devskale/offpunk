@@ -13,6 +13,7 @@ Changes since beta1
 - fixes opening mailto links
 - fixes existing non-html ressources marked a to_fetch even when not needed (simple and/or confusion)
 - fixes a crash with RSS feeds without <link> element
+- fixes a crash with data:image/svg+xml links
 - fixes a bug in HTML renderer where some hX element were not closed properly
 - fixes input in Gemini while online
 - fixes a crash with invalid URL
