@@ -1165,15 +1165,18 @@ class HtmlRenderer(AbstractRenderer):
                     if not mode in self.images:
                         self.images[mode] = []
                     abs_url,data = looks_like_base64(src,self.url)
-                    links.append(abs_url+" "+text)
-                    self.images[mode].append(abs_url)
-                    link_id = " [%s]"%(len(links)+startlinks)
-                    r.add_block(ansi_img)
-                    r.open_theme("image_link")
-                    r.center_line()
-                    r.add_text(text + link_id)
-                    r.close_theme("image_link")
-                    r.newline()
+                    #if abs_url is None, it means we don’t support
+                    #the image (such as svg+xml). So we hide it.
+                    if abs_url:
+                        links.append(abs_url+" "+text)
+                        self.images[mode].append(abs_url)
+                        link_id = " [%s]"%(len(links)+startlinks)
+                        r.add_block(ansi_img)
+                        r.open_theme("image_link")
+                        r.center_line()
+                        r.add_text(text + link_id)
+                        r.close_theme("image_link")
+                        r.newline()
             elif element.name == "br":
                 r.newline()
             elif element.name not in ["script","style","template"] and type(element) != Comment:
