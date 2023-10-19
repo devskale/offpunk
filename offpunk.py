@@ -785,7 +785,7 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
                 display = not self.sync_only
                 for l in self.get_renderer(url).get_links():
                     self.list_add_line("tour",url=l,verbose=False)
-        else:
+        elif self.current_url:
             for index in line.split():
                 try:
                     pair = index.split('-')
