@@ -1247,7 +1247,7 @@ def get_mime(path,url=None):
             mime = "text/gopher"
         elif itemtype == "h":
             mime = "text/html"
-        elif itemtype in ("9","g","I","s"):
+        elif itemtype in ("9","g","I","s",";"):
             mime = "binary"
         else:
             mime = "text/gopher"

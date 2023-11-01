@@ -371,7 +371,7 @@ def _fetch_gopher(url,timeout=DEFAULT_TIMEOUT,**kwargs):
     response = s.makefile("rb").read()
     # Transcode response into UTF-8
     #if itemtype in ("0","1","h"):
-    if not itemtype in ("9","g","I","s"):
+    if not itemtype in ("9","g","I","s",";"):
         # Try most common encodings
         for encoding in ("UTF-8", "ISO-8859-1"):
             try:
@@ -392,7 +392,7 @@ def _fetch_gopher(url,timeout=DEFAULT_TIMEOUT,**kwargs):
         mime = "text/gopher"
     elif itemtype == "h":
         mime = "text/html"
-    elif itemtype in ("9","g","I","s"):
+    elif itemtype in ("9","g","I","s",";"):
         mime = None
     else:
         # by default, we should consider Gopher
