@@ -903,8 +903,12 @@ class FeedRenderer(GemtextRenderer):
                 else:
                     line = "* "
                 if "published" in i:
-                    pub_date = time.strftime("%Y-%m-%d",i.published_parsed)
-                    line += pub_date + " : "
+                    #sometimes fails so protect it
+                    try:
+                        pub_date = time.strftime("%Y-%m-%d",i.published_parsed)
+                        line += pub_date + " : "
+                    except:
+                        pass
                 if "title" in i:
                     line += "%s" %(i.title)
                 if "author" in i:
