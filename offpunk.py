@@ -36,11 +36,6 @@ try:
 except ModuleNotFoundError:
     _HAS_SETPROCTITLE = False
 _HAS_XSEL = shutil.which('xsel')
-try:
-    import requests
-    _DO_HTTP = True
-except ModuleNotFoundError:
-    _DO_HTTP = False
 ## }}} end of imports
 
 # Command abbreviations
@@ -152,7 +147,7 @@ class GeminiClient(cmd.Cmd):
         # Sync-only mode is restriced by design
         self.offline_only = False
         self.sync_only = False
-        self.support_http = _DO_HTTP
+        self.support_http = netcache._DO_HTTP
         self.automatic_choice = "n"
         self.client_certs = {
             "active": None
@@ -349,7 +344,8 @@ class GeminiClient(cmd.Cmd):
                     self._update_history(modedurl)
         else:
             #we are asked not to handle or in sync_only mode
-            netcache.fetch(url,**params)
+            if self.support_http or not parsed.scheme in ["http","https"] :
+                netcache.fetch(url,**params)
 
     @needs_gi
     def _show_lookup(self, offset=0, end=None, show_url=False):
@@ -877,7 +873,7 @@ Marks are temporary until shutdown (not saved to disk)."""
         output += " - python-cryptography : " + has(netcache._HAS_CRYPTOGRAPHY)
         output += " - xdg-open            : " + has(opnk._HAS_XDGOPEN)
         output += "\nWeb browsing:\n"
-        output += " - python-requests     : " + has(_DO_HTTP)
+        output += " - python-requests     : " + has(netcache._DO_HTTP)
         output += " - python-feedparser   : " + has(ansicat._DO_FEED)
         output += " - python-bs4          : " + has(ansicat._HAS_SOUP)
         output += " - python-readability  : " + has(ansicat._HAS_READABILITY)
@@ -898,7 +894,7 @@ Marks are temporary until shutdown (not saved to disk)."""
             output += " - Render images (python-pil, chafa or timg)  : " + has(ansicat._RENDER_IMAGE)
         output += " - Render HTML (bs4, readability)             : " + has(ansicat._DO_HTML)
         output += " - Render Atom/RSS feeds (feedparser)         : " + has(ansicat._DO_FEED)
-        output += " - Connect to http/https (requests)           : " + has(_DO_HTTP)
+        output += " - Connect to http/https (requests)           : " + has(netcache._DO_HTTP)
         output += " - Detect text encoding (python-chardet)      : " + has(netcache._HAS_CHARDET)
         output += " - copy to/from clipboard (xsel)              : " + has(_HAS_XSEL)
         output += " - restore last position (less 572+)          : " + has(opnk._LESS_RESTORE_POSITION)

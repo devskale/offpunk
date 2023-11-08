@@ -3,7 +3,6 @@ import os
 import sys
 import urllib.parse
 import argparse
-import requests
 import codecs
 import getpass
 import socket
@@ -30,6 +29,11 @@ try:
     _BACKEND = default_backend()
 except(ModuleNotFoundError,ImportError):
     _HAS_CRYPTOGRAPHY = False
+try:
+    import requests
+    _DO_HTTP = True
+except (ModuleNotFoundError,ImportError):
+    _DO_HTTP = False
 
 if not os.path.exists(_CACHE_PATH):
     print("Creating cache directory {}".format(_CACHE_PATH))
@@ -290,6 +294,7 @@ def set_error(url,err):
     return cache
 
 def _fetch_http(url,max_size=None,timeout=DEFAULT_TIMEOUT,accept_bad_ssl_certificates=False,**kwargs):
+    if not _DO_HTTP: return None
     def too_large_error(url,length,max_size):
         err = "Size of %s is %s Mo\n"%(url,length)
         err += "Offpunk only download automatically content under %s Mo\n" %(max_size/1000000)
@@ -782,7 +787,10 @@ def fetch(url,offline=False,download_image_first=True,images_mode="readable",val
                     print("%s is not a supported protocol"%scheme)
                 path = None
             elif scheme in ("http","https"):
-                path=_fetch_http(url,**kwargs)
+                if _DO_HTTP:
+                    path=_fetch_http(url,**kwargs)
+                else:
+                    print("HTTP requires python-requests")
             elif scheme == "gopher":
                 path=_fetch_gopher(url,**kwargs)
             elif scheme == "finger":
@@ -815,13 +823,13 @@ def fetch(url,offline=False,download_image_first=True,images_mode="readable",val
                     print("""ERROR5: Trying to create a directory which already exists
                         in the cache : """)
                 print(err)
-            elif isinstance(err,requests.exceptions.SSLError):
+            elif _DO_HTTP and isinstance(err,requests.exceptions.SSLError):
                 if print_error:
                     print("""ERROR6: Bad SSL certificate:\n""")
                     print(err)
                     print("""\n If you know what you are doing, you can try to accept bad certificates with the following command:\n""")
                     print("""set accept_bad_ssl_certificates True""")
-            elif isinstance(err,requests.exceptions.ConnectionError):
+            elif _DO_HTTP and isinstance(err,requests.exceptions.ConnectionError):
                 if print_error:
                     print("""ERROR7: Cannot connect to URL:\n""")
                     print(str(err))
