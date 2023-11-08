@@ -174,7 +174,7 @@ def get_cache_path(url):
                 mime = "text/gopher"
             elif itemtype == "h":
                 mime = "text/html"
-            elif itemtype in ("9","g","I","s"):
+            elif itemtype in ("9","g","I","s",";"):
                 mime = "binary"
             else:
                 mime = "text/gopher"
@@ -368,7 +368,8 @@ def _fetch_gopher(url,timeout=DEFAULT_TIMEOUT,**kwargs):
         request = selector
     request += "\r\n"
     s.sendall(request.encode("UTF-8"))
-    response = s.makefile("rb").read()
+    response1 = s.makefile("rb")
+    response = response1.read()
     # Transcode response into UTF-8
     #if itemtype in ("0","1","h"):
     if not itemtype in ("9","g","I","s",";"):
