@@ -54,7 +54,7 @@ path = "offpunk.py" # read __version__
 
 [tool.hatch.build.targets.wheel]
 only-include = [
-  "ansicat.py", "cache_migration.py", "netcache.py",
+  "ansicat.py", "netcache_migration.py", "netcache.py",
   "offblocklist.py", "offpunk.py", "offthemes.py",
   "offutils.py", "opnk.py",
 ]

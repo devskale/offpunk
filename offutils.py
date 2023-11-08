@@ -13,7 +13,7 @@ import shutil
 import shlex
 import urllib.parse
 import urllib.parse
-import cache_migration
+import netcache_migration
 
 CACHE_VERSION = 1
 
@@ -54,7 +54,7 @@ if os.path.exists(version_path):
 #Now, let’s upgrade the cache if needed
 while current_version < CACHE_VERSION:
     current_version += 1
-    upgrade_func = getattr(cache_migration,"upgrade_to_"+str(current_version))
+    upgrade_func = getattr(netcache_migration,"upgrade_to_"+str(current_version))
     upgrade_func(_CACHE_PATH)
     with open(version_path,"w") as f:
         f.write(str(current_version))
