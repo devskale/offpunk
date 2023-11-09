@@ -1377,7 +1377,7 @@ def main():
     descri = "ansicat is a terminal rendering tool that will render multiple formats (HTML, \
             Gemtext, RSS, Gophermap, Image) into ANSI text and colors.\n\
             When used on a file, ansicat will try to autodetect the format. When used with \
-            standad input, the format must be manually specified.\n\
+            standard input, the format must be manually specified.\n\
             If the content contains links, the original URL of the content can be specified \
             in order to correctly modify relatives links."
     parser = argparse.ArgumentParser(prog="ansicat",description=descri)
