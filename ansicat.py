@@ -1394,13 +1394,16 @@ def main():
     # Detect if we are running interactively or in a pipe
     if sys.stdin.isatty():
         #we are interactive, not in stdin, we can have multiple files as input
-        for f in args.content:
-            path = os.path.abspath(f.name)
-            try:
-                content = f.read()
-            except UnicodeDecodeError:
-                content = f
-            render(content,path=path,format=args.format,url=args.url,mime=args.mime)
+        if isinstance(args.content,list):
+            for f in args.content:
+                path = os.path.abspath(f.name)
+                try:
+                    content = f.read()
+                except UnicodeDecodeError:
+                    content = f
+                render(content,path=path,format=args.format,url=args.url,mime=args.mime)
+        else:
+            print("Ansicat needs at least one file as an argument")
     else:
         #we are in stdin
         if not args.format and not args.mime:
