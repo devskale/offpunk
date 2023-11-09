@@ -862,8 +862,12 @@ def fetch(url,offline=False,download_image_first=True,images_mode="readable",val
 
 def main():
     
+    descri="Netcache is a command-line tool to retrieve, cache and access networked content.\n\
+            By default, netcache will returns a cached version of a given URL, downloading it \
+            only if not existing. A validity duration, in seconds, can also be given so that \
+            netcache downloads the content only if the existing cache is older than the validity."
     # Parse arguments
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(prog="netcache",description=descri)
     parser.add_argument("--path", action="store_true",
                         help="return path to the cache instead of the content of the cache")
     parser.add_argument("--offline", action="store_true",

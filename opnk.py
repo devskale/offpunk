@@ -274,7 +274,11 @@ class opencache():
         self.last_mode = {}
         
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    descri = "opnk is an universal open command tool that will try to display any file \
+             in the pager less after rendering its content with ansicat. If that fails, \
+             opnk will fallback to opening the file with xdg-open. If given an URL as input \
+             instead of a path, opnk will rely on netcache to get the networked content."
+    parser = argparse.ArgumentParser(prog="opnk",description=descri)
     parser.add_argument("content",metavar="INPUT", nargs="*", 
                          default=sys.stdin, help="Path to the file or URL to open")
     args = parser.parse_args()
