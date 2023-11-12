@@ -1,6 +1,36 @@
 # Offpunk History
 
-## 2.0 (beta3 ?) - Unreleased
+## 2.0 - Unreleased
+Changes since 1.10
+- IMPORTANT: Licence has been changed to AGPL for ideological reasons
+- IMPORTANT: Contact adress has been changed to offpunk2 on the same domain (because of spam)
+- IMPORTANT: code has been splitted into several differents files.
+- IMPORTANT: migrating from flit to hatchling (patch by Jean Abou Samra)
+Major features:
+- New command-line tool: "netcache" 
+- New command-line tool: "ansicat"
+- New command-line tool: "opnk"
+- "theme" command allows customization of the colours
+- "--config-file" allows to start offpunk with custom config (#16)
+- "view source" to view the source code of a page
+- introduced the "default_protocol" options (default to gemini)
+Improvments:
+- Reading position is saved in less for the whole session
+- Rendering is cached for the session, allowing faster browsing of a page already visited
+- "redirect" supports domains starting with "*" to also block all subdomins
+- "--images-mode" allow to choose at startup which images should be dowloaded (none,readable,full)
+- Support for embedded multi-format rendering (such as RSS feeds with html elements)
+- The cache is now automatically upgraded if needed (see .version in your cache)
+- Images of html files are now downloaded with the html (slower sync but better reading experience)
+- "--sync" can optionnaly take some lists as arguments, in order to make for specific sync
+- initial tentative to support podcasts in RSS/Atom feeds
+Other notable changes from 1.X:
+- "accept_bad_ssl_certificates" now more agressive for http and really accepts them all
+- Gopher-only: we don’t support naming a page after the name of the incoming link
+- Gemini-only: support for client generated certificates has been removed
+- "file" is now marked as a dependency (thank Guillaume Loret)
+
+## 2.0 (beta3 - final 2.0) - Released as 2.0
 Changes since beta2:
 - bug #25 : makes python-requests optional again
 - --disable-http had no effect: reimplemented
