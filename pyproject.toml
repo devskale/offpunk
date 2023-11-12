@@ -35,7 +35,6 @@ html = ["bs4", "readability-lxml"]
 http = ["requests"]
 process-title = ["setproctitle"]
 rss = ["feedparser"]
-file = ["file"]
 
 [project.urls]
 Homepage = "https://sr.ht/~lioploum/offpunk/"
