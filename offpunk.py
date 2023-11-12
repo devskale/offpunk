@@ -173,6 +173,7 @@ class GeminiClient(cmd.Cmd):
             "wikipedia" : "gemini://vault.transjovian.org:1965/search/%s/%s",
             "search"    : "gemini://kennedy.gemi.dev/search?%s",
             "accept_bad_ssl_certificates" : False,
+            "default_protocol" : "gemini",
         }
         self.redirects = offblocklist.redirects
         for i in offblocklist.blocked:
@@ -667,6 +668,9 @@ Use with "cache" to copy the path of the cached content."""
         # If this isn't a mark, treat it as a URL
         elif looks_like_url(line):
             self._go_to_url(line)
+        elif "://" not in line and "default_protocol" in self.options.keys()\
+                            and looks_like_url(self.options["default_protocol"]+"://"+line):
+            self._go_to_url(self.options["default_protocol"]+"://"+line)
         else:
             print("%s is not a valid URL to go"%line)
 
