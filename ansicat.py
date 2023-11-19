@@ -1345,7 +1345,7 @@ def set_renderer(content,url,mime,theme=None):
         renderer.set_theme(theme)
     return renderer
 
-def render(input,path=None,format="auto",mime=None,url=None):
+def render(input,path=None,format="auto",mime=None,url=None,mode=None):
     if not url: url = ""
     else: url=url[0]
     if format == "gemtext":
@@ -1368,7 +1368,7 @@ def render(input,path=None,format="auto",mime=None,url=None):
         else:
             r = set_renderer(input,url,mime)
     if r:
-        r.display(directdisplay=True)
+        r.display(directdisplay=True,mode=mode)
     else:
         print("Could not render %s"%input)
 
@@ -1388,6 +1388,9 @@ def main():
     ## to pipe text directly into ansirenderer
     parser.add_argument("--url",metavar="URL", nargs="*",
                         help="Original URL of the content")
+    parser.add_argument("--mode", metavar="MODE",
+                        help="Which mode should be used to render: normal (default), full or source.\
+                                With HTML, the normal mode try to extract the article.")
     parser.add_argument("content",metavar="INPUT", nargs="*", type=argparse.FileType("r"), 
                          default=sys.stdin, help="Path to the text to render (default to stdin)")
     args = parser.parse_args()
@@ -1401,7 +1404,7 @@ def main():
                     content = f.read()
                 except UnicodeDecodeError:
                     content = f
-                render(content,path=path,format=args.format,url=args.url,mime=args.mime)
+                render(content,path=path,format=args.format,url=args.url,mime=args.mime,mode=args.mode)
         else:
             print("Ansicat needs at least one file as an argument")
     else:
@@ -1409,7 +1412,7 @@ def main():
         if not args.format and not args.mime:
             print("Format or mime should be specified when running with stdin")
         else:
-            render(args.content.read(),path=None,format=args.format,url=args.url,mime=args.mime)
+            render(args.content.read(),path=None,format=args.format,url=args.url,mime=args.mime,mode=args.mode)
 
 if __name__ == '__main__':
     main()

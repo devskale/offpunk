@@ -1,5 +1,8 @@
 # Offpunk History
 
+## 2.1 - Unreleased
+- ansicat: added "--mode" option
+
 ## 2.0 - November 16th 2023
 Changes since 1.10
 - IMPORTANT: Licence has been changed to AGPL for ideological reasons
