@@ -91,10 +91,9 @@ def cache_last_modified(url):
     if not url:
         return None
     path = get_cache_path(url)
-    if path:
+    if path and os.path.isfile(path):
         return os.path.getmtime(path)
     else:
-        print("ERROR : NO CACHE in cache_last_modified")
         return None
 
 def is_cache_valid(url,validity=0):

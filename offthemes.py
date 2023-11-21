@@ -37,6 +37,7 @@ offpunk1 = {
                 "subtitle" :        ["blue"],
                 "subsubtitle" :     ["blue","faint"], #fallback to subtitle if none
                 "link"  :           ["blue","faint"],
+                "new_link":         ["bold"],
                 "oneline_link":     [],     #for gopher/gemini. fallback to link if none
                 "image_link" :      ["yellow","faint"],
                 "preformatted":     ["faint"],

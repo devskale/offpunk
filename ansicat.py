@@ -512,7 +512,12 @@ class AbstractRenderer():
                 self.rendered_text[mode] += results[0] + "\n"
                 #we should absolutize all URLs here
                 for l in results[1]:
-                    abs_l = urllib.parse.urljoin(self.url,l.split()[0])
+                    ll = l.split()[0]
+                    try:
+                        abs_l = urllib.parse.urljoin(self.url,ll)
+                    except Exception as err:
+                        print("Urljoin Error: Could not make an URL out of %s and %s"%(self.url,ll))
+                        abs_l = ll
                     self.links[mode].append(abs_l) 
                 for l in self.get_subscribe_links()[1:]:
                     self.links[mode].append(l[0])
@@ -642,7 +647,14 @@ class GemtextRenderer(AbstractRenderer):
                     if len(splitted) > 1:
                         name = splitted[1]
                     link = format_link(url,len(links)+startlinks,name=name)
-                    if r.open_theme("oneline_link"):
+                    # If the link point to a page that has been cached less than
+                    # 60 seconds after this page, we consider it as a new_link
+                    current_modif = netcache.cache_last_modified(self.url)
+                    link_modif = netcache.cache_last_modified(url)
+                    if current_modif and link_modif and current_modif - link_modif < 60 and\
+                                r.open_theme("new_link"):
+                        theme = "new_link"
+                    elif r.open_theme("oneline_link"):
                         theme = "oneline_link"
                     else:
                         theme = "link"
