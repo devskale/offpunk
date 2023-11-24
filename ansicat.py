@@ -648,10 +648,10 @@ class GemtextRenderer(AbstractRenderer):
                         name = splitted[1]
                     link = format_link(url,len(links)+startlinks,name=name)
                     # If the link point to a page that has been cached less than
-                    # 60 seconds after this page, we consider it as a new_link
+                    # 600 seconds after this page, we consider it as a new_link
                     current_modif = netcache.cache_last_modified(self.url)
                     link_modif = netcache.cache_last_modified(url)
-                    if current_modif and link_modif and current_modif - link_modif < 60 and\
+                    if current_modif and link_modif and current_modif - link_modif < 600 and\
                                 r.open_theme("new_link"):
                         theme = "new_link"
                     elif r.open_theme("oneline_link"):
