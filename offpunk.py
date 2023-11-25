@@ -501,7 +501,7 @@ class GeminiClient(cmd.Cmd):
 "theme ELEMENT COLOR"
 
 ELEMENT is one of: window_title, window_subtitle, title,
-subtitle,subsubtitle,link,oneline_link,image_link,preformatted,blockquote.
+subtitle,subsubtitle,link,oneline_link,new_link,image_link,preformatted,blockquote.
 
 COLOR is one or many (separated by space) of: bold, faint, italic, underline, black,
 red, green, yellow, blue, purple, cyan, white.
