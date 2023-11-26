@@ -4,6 +4,7 @@
 - ansicat: freshly updated gemtext/rss links are highlighted ("new_link" theme option)
 - ansicat: added "--mode" option
 - ansicat: avoid a crash when urllib.parse.urljoin fails
+- Fix a crash when gus is called without parameters (Von Hohenheiden)
 
 ## 2.0 - November 16th 2023
 Changes since 1.10

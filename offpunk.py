@@ -945,6 +945,9 @@ Use 'ls -l' to see URLs."""
 
     def do_gus(self, line):
         """Submit a search query to the geminispace.info search engine."""
+        if not line:
+            print("What?")
+            return 
         self._go_to_url(urllib.parse.urlunparse("gemini","geminispace.info","/search","",line,""))
 
     def do_history(self, *args):
