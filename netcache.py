@@ -125,9 +125,10 @@ def is_cache_valid(url,validity=0):
         #There’s not even a cache!
         return False
 
-def get_cache_path(url):
+def get_cache_path(url,add_index=True):
     # Sometimes, cache_path became a folder! (which happens for index.html/index.gmi)
     # In that case, we need to reconstruct it
+    # if add_index=False, we don’t add that "index.gmi" at the ends of the cache_path
     #First, we parse the URL
     if not url:
         return None
@@ -198,7 +199,7 @@ def get_cache_path(url):
         #There’s an OS limitation of 260 characters per path.
         #We will thus cut the path enough to add the index afterward
         cache_path = cache_path[:249]
-        # FIXME : this is a gross hack to give a name to
+        # this is a gross hack to give a name to
         # index files. This will break if the index is not
         # index.gmi. I don’t know how to know the real name
         # of the file. But first, we need to ensure that the domain name
@@ -216,12 +217,12 @@ def get_cache_path(url):
                 cache_path += "/"
             if not url.endswith("/"):
                 url += "/"
-        if cache_path.endswith("/"):
+        if add_index and cache_path.endswith("/"):
             cache_path += index
         #sometimes, the index itself is a dir
         #like when folder/index.gmi?param has been created
         #and we try to access folder
-        if os.path.isdir(cache_path):
+        if add_index and os.path.isdir(cache_path):
             cache_path += "/" + index
     else:
         #URL is missing either a supported scheme or a valid host
@@ -585,6 +586,7 @@ def _validate_cert(address, host, cert,accept_bad_ssl=False,automatic_choice=Non
 def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_certificates=False,\
                     **kwargs):
     cache = None
+    newurl = url
     url_parts = urllib.parse.urlparse(url)
     host = url_parts.hostname
     port = url_parts.port or standard_ports["gemini"]
@@ -696,7 +698,7 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
             newurl = url.split("?")[0]
             return _fetch_gemini(newurl+"?"+user_input)
         else:
-            return None
+            return None,None
     # Redirects
     elif status.startswith("3"):
         newurl = urllib.parse.urljoin(url,meta)
@@ -734,7 +736,7 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
     # Client cert
     elif status.startswith("6"):
         print("Handling certificates for status 6X are not supported by offpunk\n")
-        print("Please open a bug report")
+        print("See bug #31 for discussion about the problem")
         _fetch_gemini(url)
     # Invalid status
     elif not status.startswith("2"):
@@ -766,16 +768,21 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
     else:
         body = fbody
     cache = write_body(url,body,mime)
-    return cache
+    return cache,newurl
 
 
 def fetch(url,offline=False,download_image_first=True,images_mode="readable",validity=0,**kwargs):
     url = normalize_url(url)
+    newurl = url
     path=None
     print_error = "print_error" in kwargs.keys() and kwargs["print_error"]
-    if is_cache_valid(url,validity=validity):
-        path = get_cache_path(url)
+    #Firt, we look if we have a valid cache, even if offline
     #If we are offline, any cache is better than nothing
+    if is_cache_valid(url,validity=validity) or (offline and is_cache_valid(url,validity=0)):
+        path = get_cache_path(url)
+        #if the cache is a folder, we should add a "/" at the end of the URL
+        if not url.endswith("/") and os.path.isdir(get_cache_path(url,add_index=False)) :
+            newurl = url+"/"
     elif offline and is_cache_valid(url,validity=0):
         path = get_cache_path(url)
     elif "://" in url and not offline:
@@ -795,11 +802,11 @@ def fetch(url,offline=False,download_image_first=True,images_mode="readable",val
             elif scheme == "finger":
                 path=_fetch_finger(url,**kwargs)
             elif scheme == "gemini":
-                path=_fetch_gemini(url,**kwargs)
+                path,newurl=_fetch_gemini(url,**kwargs)
             else:
                 print("scheme %s not implemented yet")
         except UserAbortException:
-            return
+            return None, newurl
         except Exception as err:
             cache = set_error(url, err)
             # Print an error message
@@ -838,10 +845,10 @@ def fetch(url,offline=False,download_image_first=True,images_mode="readable",val
                     print("ERROR4: " + str(type(err)) + " : " + str(err))
                     #print("\n" + str(err.with_traceback(None)))
                     print(traceback.format_exc())
-            return cache
+            return cache, newurl
         # We download images contained in the document (from full mode)
         if not offline and download_image_first and images_mode:
-            renderer = ansicat.renderer_from_file(path,url)
+            renderer = ansicat.renderer_from_file(path,newurl)
             if renderer:
                 for image in renderer.get_images(mode=images_mode):
                     #Image should exist, should be an url (not a data image)
@@ -856,7 +863,7 @@ def fetch(url,offline=False,download_image_first=True,images_mode="readable",val
                         #if that ever happen
                         fetch(image,offline=offline,download_image_first=False,\
                                 images_mode=None,validity=0,**kwargs)
-    return path
+    return path, newurl
 
 
 def main():

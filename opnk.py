@@ -163,7 +163,7 @@ class opencache():
                 else:
                     usecache = False
             if not usecache:
-                renderer = ansicat.renderer_from_file(path,inpath,theme=theme)
+                renderer = ansicat.renderer_from_file(path,url=inpath,theme=theme)
                 if renderer:
                     self.rendererdic[inpath] = renderer
                     self.renderer_time[inpath] = int(time.time())
@@ -180,24 +180,25 @@ class opencache():
     def opnk(self,inpath,mode=None,terminal=True,grep=None,theme=None,**kwargs):
         #Return True if inpath opened in Terminal
         # False otherwise
+        # also returns the url in case it has been modified
         #if terminal = False, we don’t try to open in the terminal,
         #we immediately fallback to xdg-open.
         #netcache currently provide the path if it’s a file.
         if not offutils.is_local(inpath):
             kwargs["images_mode"] = mode
-            cachepath = netcache.fetch(inpath,**kwargs)
+            cachepath,inpath = netcache.fetch(inpath,**kwargs)
             if not cachepath:
-                return False
+                return False, inpath
         # folowing line is for :// which are locals (file,list)
         elif "://" in inpath:
-            cachepath = netcache.fetch(inpath,**kwargs)
+            cachepath,inpath = netcache.fetch(inpath,**kwargs)
         elif inpath.startswith("mailto:"):
             cachepath = inpath
         elif os.path.exists(inpath):
             cachepath = inpath
         else:
             print("%s does not exist"%inpath)
-            return
+            return False, inpath
         renderer = self.get_renderer(inpath,mode=mode,theme=theme)
         if renderer and mode:
             renderer.set_mode(mode)
@@ -212,7 +213,7 @@ class opencache():
             #don’t use less, we call it directly
             if renderer.has_direct_display():
                 renderer.display(mode=mode,directdisplay=True)
-                return True
+                return True, inpath
             else:
                 body = renderer.display(mode=mode)
                 #Should we use the cache ? only if it is not local and there’s a cache
@@ -239,7 +240,7 @@ class opencache():
                     #We don’t want to restore positions in lists
                     firsttime = is_local(inpath)
                 less_cmd(self.temp_files[key], histfile=self.less_histfile[key],cat=firsttime,grep=grep)
-                return True
+                return True, inpath
         #maybe, we have no renderer. Or we want to skip it.
         else:
             mimetype = ansicat.get_mime(cachepath)
@@ -252,7 +253,7 @@ class opencache():
                     else:
                          print("Cannot find a mail client to send mail to %s" %inpath)
                          print("Please install xdg-open (usually from xdg-util package)")
-                return
+                return False, inpath
             else:
                 cmd_str = self._get_handler_cmd(mimetype)
             try:
@@ -260,7 +261,7 @@ class opencache():
             except FileNotFoundError:
                 print("Handler program %s not found!" % shlex.split(cmd_str)[0])
                 print("You can use the ! command to specify another handler program or pipeline.")
-            return False
+            return False, inpath
 
     #We remove the renderers from the cache and we also delete temp files
     def cleanup(self):
