@@ -14,6 +14,7 @@ import shlex
 import urllib.parse
 import urllib.parse
 import netcache_migration
+import netcache
 
 CACHE_VERSION = 1
 
@@ -60,7 +61,46 @@ while current_version < CACHE_VERSION:
         f.write(str(current_version))
         f.close()
 
+#An IPV6 URL should be put between []
+#We try to detect them has location with more than 2 ":"
+def fix_ipv6_url(url):
+    if not url or url.startswith("mailto"):
+        return url
+    if "://" in url:
+        schema, schemaless = url.split("://",maxsplit=1)
+    else:
+        schema, schemaless = None, url
+    if "/" in schemaless:
+        netloc, rest = schemaless.split("/",1)
+        if netloc.count(":") > 2 and "[" not in netloc and "]" not in netloc:
+            schemaless = "[" + netloc + "]" + "/" + rest
+    elif schemaless.count(":") > 2:
+        schemaless = "[" + schemaless + "]/"
+    if schema:
+        return schema + "://" + schemaless
+    return schemaless
 
+# Cheap and cheerful URL detector
+def looks_like_url(word):
+    try:
+        if not word.strip():
+            return False
+        url = fix_ipv6_url(word).strip()
+        parsed = urllib.parse.urlparse(url)
+        #sometimes, urllib crashed only when requesting the port
+        port = parsed.port
+        scheme = word.split("://")[0]
+        mailto = word.startswith("mailto:")
+        start = scheme in netcache.standard_ports
+        local = scheme in ["file","list"]
+        if mailto:
+            return "@" in word
+        elif not local:
+            return start and ("." in word or "localhost" in word)
+        else:
+            return "/" in word
+    except ValueError:
+        return False
 
 ## Those two functions add/remove the mode to the
 # URLs. This is a gross hack to remember the mode

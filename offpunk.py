@@ -26,7 +26,7 @@ import netcache
 import opnk
 import ansicat
 import offthemes
-from offutils import run,term_width,is_local,mode_url,unmode_url
+from offutils import run,term_width,is_local,mode_url,unmode_url, looks_like_url
 from offutils import _CONFIG_DIR,_DATA_DIR,_CACHE_PATH
 import offblocklist
 try:
@@ -76,47 +76,6 @@ _ABBREVS = {
 
 _MIME_HANDLERS = {
 }
-
-#An IPV6 URL should be put between []
-#We try to detect them has location with more than 2 ":"
-def fix_ipv6_url(url):
-    if not url or url.startswith("mailto"):
-        return url
-    if "://" in url:
-        schema, schemaless = url.split("://",maxsplit=1)
-    else:
-        schema, schemaless = None, url
-    if "/" in schemaless:
-        netloc, rest = schemaless.split("/",1)
-        if netloc.count(":") > 2 and "[" not in netloc and "]" not in netloc:
-            schemaless = "[" + netloc + "]" + "/" + rest
-    elif schemaless.count(":") > 2:
-        schemaless = "[" + schemaless + "]/"
-    if schema:
-        return schema + "://" + schemaless
-    return schemaless
-
-# Cheap and cheerful URL detector
-def looks_like_url(word):
-    try:
-        if not word.strip():
-            return False
-        url = fix_ipv6_url(word).strip()
-        parsed = urllib.parse.urlparse(url)
-        #sometimes, urllib crashed only when requesting the port
-        port = parsed.port
-        scheme = word.split("://")[0]
-        mailto = word.startswith("mailto:")
-        start = scheme in netcache.standard_ports
-        local = scheme in ["file","list"]
-        if mailto:
-            return "@" in word
-        elif not local:
-            return start and ("." in word or "localhost" in word)
-        else:
-            return "/" in word
-    except ValueError:
-        return False
 
 # GeminiClient Decorators
 def needs_gi(inner):

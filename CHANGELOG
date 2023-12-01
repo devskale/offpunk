@@ -5,7 +5,8 @@
 - redirections is now reflected in links and the cache (bug #28)
 - ansicat: added "--mode" option
 - ansicat: avoid a crash when urllib.parse.urljoin fails
-- Fix a crash when gus is called without parameters (Von Hohenheiden)
+- offpunk: Fix a crash when gus is called without parameters (Von Hohenheiden)
+- ansicat: fixed a crash when parsing wrong hidden_url in gemini (bug #32)
 
 ## 2.0 - November 16th 2023
 Changes since 1.10

@@ -12,7 +12,7 @@ import mimetypes
 import fnmatch
 import netcache
 import offthemes
-from offutils import run,term_width,is_local,looks_like_base64
+from offutils import run,term_width,is_local,looks_like_base64, looks_like_url
 import base64
 from offutils import _DATA_DIR
 try:
@@ -515,10 +515,9 @@ class AbstractRenderer():
                     ll = l.split()[0]
                     try:
                         abs_l = urllib.parse.urljoin(self.url,ll)
+                        self.links[mode].append(abs_l) 
                     except Exception as err:
                         print("Urljoin Error: Could not make an URL out of %s and %s"%(self.url,ll))
-                        abs_l = ll
-                    self.links[mode].append(abs_l) 
                 for l in self.get_subscribe_links()[1:]:
                     self.links[mode].append(l[0])
 
@@ -701,7 +700,7 @@ class GemtextRenderer(AbstractRenderer):
                 if "://" in line:
                     words = line.split()
                     for w in words:
-                        if "://" in w:
+                        if "://" in w and looks_like_url(w):
                             hidden_links.append(w)
                 r.add_text(line.rstrip())
         links += hidden_links
