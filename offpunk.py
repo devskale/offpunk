@@ -554,10 +554,13 @@ Each color can alternatively be prefaced with "bright_"."""
             print("Already online. Try offline.")
 
     def do_copy(self, arg):
-        """Copy the content of the last visited page as gemtext in the clipboard.
+        """Copy the content of the last visited page as gemtext/html in the clipboard.
 Use with "url" as argument to only copy the adress.
-Use with "raw" to copy ANSI content as seen in your terminal (not gemtext).
-Use with "cache" to copy the path of the cached content."""
+Use with "raw" to copy ANSI content as seen in your terminal (with colour codes).
+Use with "cache" to copy the path of the cached content.
+Use with "title" to copy the title of the page.
+Use with "link" to copy a link in the gemtext format to that page with the title.
+"""
         if self.current_url:
             if _HAS_XSEL:
                 args = arg.split()
@@ -566,6 +569,7 @@ Use with "cache" to copy the path of the cached content."""
                         url = self.get_renderer().get_link(int(args[1])-1)
                     else:
                         url,mode = unmode_url(self.current_url)
+                    print(url)
                     run("xsel -b -i", input=url, direct_output=True)
                 elif args and args[0] == "raw":
                     tmp = self.opencache.get_temp_filename(self.current_url)
@@ -575,6 +579,15 @@ Use with "cache" to copy the path of the cached content."""
                 elif args and args[0] == "cache":
                     run("xsel -b -i", input=netcache.get_cache_path(self.current_url),\
                                                                     direct_output=True)
+                elif args and args[0] == "title":
+                    title = self.get_renderer().get_page_title()
+                    run("xsel -b -i",input=title, direct_output=True)
+                    print(title)
+                elif args and args[0] == "link":
+                    link = "=> %s %s"%(unmode_url(self.current_url)[0],\
+                                        self.get_renderer().get_page_title())
+                    print(link)
+                    run("xsel -b -i", input=link,direct_output=True)
                 else:
                     run("xsel -b -i", input=open(netcache.get_cache_path(self.current_url), "rb"),\
                                                 direct_output=True)

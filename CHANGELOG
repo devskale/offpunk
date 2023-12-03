@@ -3,6 +3,7 @@
 ## 2.1 - Unreleased
 - freshly updated gemtext/rss links are highlighted ("new_link" theme option)
 - redirections is now reflected in links and the cache (bug #28)
+- offpunk : new "copy title" and "copy link" function
 - ansicat: added "--mode" option
 - ansicat: avoid a crash when urllib.parse.urljoin fails
 - offpunk: Fix a crash when gus is called without parameters (Von Hohenheiden)
