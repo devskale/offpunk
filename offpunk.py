@@ -27,7 +27,7 @@ import opnk
 import ansicat
 import offthemes
 from offutils import run,term_width,is_local,mode_url,unmode_url, looks_like_url
-from offutils import _CONFIG_DIR,_DATA_DIR,_CACHE_PATH
+from offutils import xdg
 import offblocklist
 try:
     import setproctitle
@@ -875,9 +875,9 @@ Marks are temporary until shutdown (not saved to disk)."""
         output += " - copy to/from clipboard (xsel)              : " + has(_HAS_XSEL)
         output += " - restore last position (less 572+)          : " + has(opnk._LESS_RESTORE_POSITION)
         output += "\n"
-        output += "Config directory    : " +  _CONFIG_DIR + "\n"
-        output += "User Data directory : " +  _DATA_DIR + "\n"
-        output += "Cache directoy      : " +  _CACHE_PATH
+        output += "Config directory    : " +  xdg("config") + "\n"
+        output += "User Data directory : " +  xdg("data") + "\n"
+        output += "Cache directoy      : " +  xdg("cache")
 
         print(output)
 
@@ -1106,9 +1106,9 @@ If no argument given, URL is added to Bookmarks."""
     def get_list(self,list):
         list_path = self.list_path(list)
         if not list_path:
-            old_file_gmi = os.path.join(_CONFIG_DIR,list + ".gmi")
-            old_file_nogmi = os.path.join(_CONFIG_DIR,list)
-            target = os.path.join(_DATA_DIR,"lists")
+            old_file_gmi = os.path.join(xdg("config"),list + ".gmi")
+            old_file_nogmi = os.path.join(xdg("config"),list)
+            target = os.path.join(xdg("data"),"lists")
             if os.path.exists(old_file_gmi):
                 shutil.move(old_file_gmi,target)
             elif os.path.exists(old_file_nogmi):
@@ -1342,7 +1342,7 @@ archives, which is a special historical list limited in size. It is similar to `
     #return the path of the list file if list exists.
     #return None if the list doesn’t exist.
     def list_path(self,list):
-        listdir = os.path.join(_DATA_DIR,"lists")
+        listdir = os.path.join(xdg("data"),"lists")
         list_path = os.path.join(listdir, "%s.gmi"%list)
         if os.path.exists(list_path):
             return list_path
@@ -1354,7 +1354,7 @@ archives, which is a special historical list limited in size. It is similar to `
         if list in ["create","edit","delete","help"]:
             print("%s is not allowed as a name for a list"%list)
         elif not list_path:
-            listdir = os.path.join(_DATA_DIR,"lists")
+            listdir = os.path.join(xdg("data"),"lists")
             os.makedirs(listdir,exist_ok=True)
             list_path = os.path.join(listdir, "%s.gmi"%list)
             with open(list_path,"a") as lfile:
@@ -1392,7 +1392,7 @@ If current page was not in a list, this command is similar to `add LIST`."""
                 self.list_add_line(args[0])
 
     def list_lists(self):
-        listdir = os.path.join(_DATA_DIR,"lists")
+        listdir = os.path.join(xdg("data"),"lists")
         to_return = []
         if os.path.exists(listdir):
             lists = os.listdir(listdir)
@@ -1469,7 +1469,7 @@ The following lists cannot be removed or frozen but can be edited with "list edi
 - tour           : contains the next URLs to visit during a tour (see "help tour")
 
 """
-        listdir = os.path.join(_DATA_DIR,"lists")
+        listdir = os.path.join(xdg("data"),"lists")
         os.makedirs(listdir,exist_ok=True)
         if not arg:
             lists = self.list_lists()
@@ -1784,7 +1784,7 @@ def main():
         GeminiClient.do_version(None,None)
         sys.exit()
     else:
-        for f in [_CONFIG_DIR, _DATA_DIR]:
+        for f in [xdg("config"), xdg("data")]:
             if not os.path.exists(f):
                 print("Creating config directory {}".format(f))
                 os.makedirs(f)
@@ -1798,7 +1798,7 @@ def main():
     # Queue is a list of command (potentially empty)
     def read_config(queue,rcfile=None,interactive=True):
         if not rcfile:
-            rcfile = os.path.join(_CONFIG_DIR, "offpunkrc")
+            rcfile = os.path.join(xdg("config"), "offpunkrc")
         if os.path.exists(rcfile):
             print("Using config %s" % rcfile)
             with open(rcfile, "r") as fp:

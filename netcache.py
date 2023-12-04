@@ -14,7 +14,7 @@ import sqlite3
 from ssl import CertificateError
 import ansicat
 import offutils
-from offutils import _CACHE_PATH,_DATA_DIR,_CONFIG_DIR
+from offutils import xdg
 import time
 try:
     import chardet
@@ -34,10 +34,6 @@ try:
     _DO_HTTP = True
 except (ModuleNotFoundError,ImportError):
     _DO_HTTP = False
-
-if not os.path.exists(_CACHE_PATH):
-    print("Creating cache directory {}".format(_CACHE_PATH))
-    os.makedirs(_CACHE_PATH)
 
 # This list is also used as a list of supported protocols
 standard_ports = {
@@ -149,7 +145,7 @@ def get_cache_path(url,add_index=True):
         elif scheme == "mailto":
             path = parsed.path
         elif url.startswith("list://"):
-            listdir = os.path.join(_DATA_DIR,"lists")
+            listdir = os.path.join(xdg("data"),"lists")
             listname = url[7:].lstrip("/")
             if listname in [""]:
                 name = "My Lists"
@@ -195,7 +191,7 @@ def get_cache_path(url,add_index=True):
     if local:
         cache_path = path
     elif scheme and host:
-        cache_path = os.path.expanduser(_CACHE_PATH + scheme + "/" + host + path)
+        cache_path = os.path.expanduser(xdg("cache") + scheme + "/" + host + path)
         #There’s an OS limitation of 260 characters per path.
         #We will thus cut the path enough to add the index afterward
         cache_path = cache_path[:249]
@@ -504,7 +500,7 @@ def _validate_cert(address, host, cert,accept_bad_ssl=False,automatic_choice=Non
     sha.update(cert)
     fingerprint = sha.hexdigest()
 
-    db_path = os.path.join(_CONFIG_DIR, "tofu.db")
+    db_path = os.path.join(xdg("config"), "tofu.db")
     db_conn = sqlite3.connect(db_path)
     db_cur = db_conn.cursor()
 
@@ -534,7 +530,7 @@ def _validate_cert(address, host, cert,accept_bad_ssl=False,automatic_choice=Non
                 db_conn.commit()
                 break
         else:
-            certdir = os.path.join(_CONFIG_DIR, "cert_cache")
+            certdir = os.path.join(xdg("config"), "cert_cache")
             with open(os.path.join(certdir, most_frequent_cert+".crt"), "rb") as fp:
                 previous_cert = fp.read()
             if _HAS_CRYPTOGRAPHY:
@@ -577,7 +573,7 @@ def _validate_cert(address, host, cert,accept_bad_ssl=False,automatic_choice=Non
             VALUES (?, ?, ?, ?, ?, ?)""",
             (host, address, fingerprint, now, now, 1))
         db_conn.commit()
-        certdir = os.path.join(_CONFIG_DIR, "cert_cache")
+        certdir = os.path.join(xdg("config"), "cert_cache")
         if not os.path.exists(certdir):
             os.makedirs(certdir)
         with open(os.path.join(certdir, fingerprint+".crt"), "wb") as fp:
@@ -898,7 +894,7 @@ def main():
             path = get_cache_path(u)
         else:
             print("Download URL: %s" %u)
-            path = fetch(u,max_size=args.max_size,timeout=args.timeout)
+            path,url = fetch(u,max_size=args.max_size,timeout=args.timeout)
         if args.path:
             print(path)
         else:

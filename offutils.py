@@ -18,48 +18,67 @@ import netcache
 
 CACHE_VERSION = 1
 
-## Config directories
-## We implement our own python-xdg to avoid conflict with existing libraries.
-_home = os.path.expanduser('~')
-data_home = os.environ.get('XDG_DATA_HOME') or \
-            os.path.join(_home,'.local','share')
-config_home = os.environ.get('XDG_CONFIG_HOME') or \
-                os.path.join(_home,'.config')
-_CONFIG_DIR = os.path.join(os.path.expanduser(config_home),"offpunk/")
-_DATA_DIR = os.path.join(os.path.expanduser(data_home),"offpunk/")
-_old_config = os.path.expanduser("~/.offpunk/")
-## Look for pre-existing config directory, if any
-if os.path.exists(_old_config):
-    _CONFIG_DIR = _old_config
-#if no XDG .local/share and not XDG .config, we use the old config
-if not os.path.exists(data_home) and os.path.exists(_old_config):
-    _DATA_DIR = _CONFIG_DIR
-cache_home = os.environ.get('XDG_CACHE_HOME') or\
-                os.path.join(_home,'.cache')
-_CACHE_PATH = os.path.join(os.path.expanduser(cache_home),"offpunk/")
-os.makedirs(_CACHE_PATH,exist_ok=True)
+# We upgrade the cache only once at startup, hence the UPGRADED variable
+# This is only to avoid unecessary checks each time the cache is accessed
+UPGRADED=False
+def upgrade_cache(cache_folder):
+    #Let’s read current version of the cache
+    version_path = cache_folder + ".version"
+    current_version = 0
+    if os.path.exists(version_path):
+        current_str = None
+        with open(version_path) as f:
+            current_str = f.read()
+            f.close()
+        try:
+            current_version = int(current_str)
+        except:
+            current_version = 0
+    #Now, let’s upgrade the cache if needed
+    while current_version < CACHE_VERSION:
+        current_version += 1
+        upgrade_func = getattr(netcache_migration,"upgrade_to_"+str(current_version))
+        upgrade_func(cache_folder)
+        with open(version_path,"w") as f:
+            f.write(str(current_version))
+            f.close()
+    UPGRADED=True
 
-#Let’s read current version of the cache
-version_path = _CACHE_PATH + ".version"
-current_version = 0
-if os.path.exists(version_path):
-    current_str = None
-    with open(version_path) as f:
-        current_str = f.read()
-        f.close()
-    try:
-        current_version = int(current_str)
-    except:
-        current_version = 0
+#get xdg folder. Folder should be "cache", "data" or "config"
+def xdg(folder="cache"):
+    ## Config directories
+    ## We implement our own python-xdg to avoid conflict with existing libraries.
+    _home = os.path.expanduser('~')
+    data_home = os.environ.get('XDG_DATA_HOME') or \
+                os.path.join(_home,'.local','share')
+    config_home = os.environ.get('XDG_CONFIG_HOME') or \
+                    os.path.join(_home,'.config')
+    _CONFIG_DIR = os.path.join(os.path.expanduser(config_home),"offpunk/")
+    _DATA_DIR = os.path.join(os.path.expanduser(data_home),"offpunk/")
+    _old_config = os.path.expanduser("~/.offpunk/")
+    ## Look for pre-existing config directory, if any
+    if os.path.exists(_old_config):
+        _CONFIG_DIR = _old_config
+    #if no XDG .local/share and not XDG .config, we use the old config
+    if not os.path.exists(data_home) and os.path.exists(_old_config):
+        _DATA_DIR = _CONFIG_DIR
+    cache_home = os.environ.get('XDG_CACHE_HOME') or\
+                    os.path.join(_home,'.cache')
+    _CACHE_PATH = os.path.join(os.path.expanduser(cache_home),"offpunk/")
+    os.makedirs(_CACHE_PATH,exist_ok=True)
+    if folder == "cache" and not UPGRADED:
+        upgrade_cache(_CACHE_PATH)
+    if folder == "cache":
+        return _CACHE_PATH
+    elif folder == "config":
+        return _CONFIG_DIR
+    elif folder == "data":
+        return _DATA_DIR
+    else:
+        print("No XDG folder for %s. Check your code."%folder)
+        return None
 
-#Now, let’s upgrade the cache if needed
-while current_version < CACHE_VERSION:
-    current_version += 1
-    upgrade_func = getattr(netcache_migration,"upgrade_to_"+str(current_version))
-    upgrade_func(_CACHE_PATH)
-    with open(version_path,"w") as f:
-        f.write(str(current_version))
-        f.close()
+
 
 #An IPV6 URL should be put between []
 #We try to detect them has location with more than 2 ":"

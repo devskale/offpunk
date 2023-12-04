@@ -14,7 +14,7 @@ import netcache
 import offthemes
 from offutils import run,term_width,is_local,looks_like_base64, looks_like_url
 import base64
-from offutils import _DATA_DIR
+from offutils import xdg 
 try:
     from readability import Document
     _HAS_READABILITY = True
@@ -778,7 +778,7 @@ class GopherRenderer(AbstractRenderer):
 
 class FolderRenderer(GemtextRenderer):
     #it was initialized with:
-    #self.renderer = FolderRenderer("",self.get_cache_path(),datadir=_DATA_DIR)
+    #self.renderer = FolderRenderer("",self.get_cache_path(),datadir=xdg("data"))
     def __init__(self,content,url,center=True,datadir=None):
         GemtextRenderer.__init__(self,content,url,center)
         self.datadir = datadir
@@ -1325,7 +1325,7 @@ def renderer_from_file(path,url=None,theme=None):
 def set_renderer(content,url,mime,theme=None):
     renderer = None
     if mime == "Local Folder":
-        renderer = FolderRenderer("",url,datadir=_DATA_DIR)
+        renderer = FolderRenderer("",url,datadir=xdg("data"))
         if theme:
             renderer.set_theme(theme)
         return renderer
