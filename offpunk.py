@@ -954,6 +954,7 @@ Use "view normal" to see the default article view on html page.
 Use "view full" to see a complete html page instead of the article view.
 Use "view feed" to see the the linked feed of the page (in any).
 Use "view feeds" to see available feeds on this page.
+Use "view XX" where XX is a number to view information about link XX.
 (full, feed, feeds have no effect on non-html content)."""
         if self.current_url and args and args[0] != "":
             u, m = unmode_url(self.current_url)
@@ -980,8 +981,21 @@ Use "view feeds" to see available feeds on this page.
                 ans = input(stri)
                 if ans.isdigit() and 0 < int(ans) <= len(subs):
                     self.do_go(subs[int(ans)-1][0])
+            elif args[0].isdigit():
+                link_url = self.get_renderer().get_link(int(args[0]))
+                if link_url:
+                    print("Link %s is: %s"%(args[0],link_url))
+                    if netcache.is_cache_valid(link_url):
+                        last_modified = netcache.cache_last_modified(link_url)
+                        link_renderer = self.get_renderer(link_url)
+                        link_title = link_renderer.get_page_title()
+                        print(link_title)
+                        print("Last cached on %s"%time.ctime(last_modified))
+                    else:
+                        print("No cached version for this link")
+
             else:
-                print("Valid argument for view are : normal, full, feed, feeds")
+                print("Valid argument for view are : normal, full, feed, feeds or a number")
         else:
             self._go_to_url(self.current_url)
 
