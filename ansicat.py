@@ -1012,7 +1012,11 @@ class HtmlRenderer(AbstractRenderer):
                 except Exception as err:
                     pass
             soup = BeautifulSoup(self.body,"html.parser")
-            self.title = str(soup.title.string)
+            if soup.title:
+                self.title = str(soup.title.string)
+            else:
+                self.title = ""
+            return self.title
         else:
             return ""
 

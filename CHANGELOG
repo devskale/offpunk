@@ -10,6 +10,7 @@
 - offpunk: Fix a crash when gus is called without parameters (Von Hohenheiden)
 - ansicat: fixed a crash when parsing wrong hidden_url in gemini (bug #32)
 - offpunk: offpunk --version doesn’t create the cache anymore (bug #27)
+- ansicat: fix a crash with HTML without title (bug #33)
 
 ## 2.0 - November 16th 2023
 Changes since 1.10
