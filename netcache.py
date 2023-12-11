@@ -634,10 +634,10 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
         # Connect to remote host by any address possible
     err = None
     for address in addresses:
-        s = socket.socket(address[0], address[1])
-        s.settimeout(timeout)
-        s = context.wrap_socket(s, server_hostname = host)
         try:
+            s = socket.socket(address[0], address[1])
+            s.settimeout(timeout)
+            s = context.wrap_socket(s, server_hostname = host)
             s.connect(address[4])
             break
         except OSError as e:
