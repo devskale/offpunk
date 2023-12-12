@@ -1,6 +1,6 @@
 # Offpunk History
 
-## 2.1 - Unreleased
+## 2.1 - December 15th 2023
 - freshly updated gemtext/rss links are highlighted ("new_link" theme option)
 - offpunk : new "copy title" and "copy link" function
 - offpunk : new "view XX" feature where XX is a number to view information about a link
