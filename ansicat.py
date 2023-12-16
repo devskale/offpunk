@@ -130,7 +130,7 @@ def inline_image(img_file,width):
         try:
             ansi_img = run(cmd, parameter=img_file)
         except Exception as err:
-            ansi_img = "***image failed : %s***\n" %err
+            ansi_img = "***IMAGE ERROR: wrong or undisplayable picture***\n" %err
     return ansi_img
 
 def terminal_image(img_file):
