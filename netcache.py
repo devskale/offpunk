@@ -731,9 +731,9 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
         raise RuntimeError(meta)
     # Client cert
     elif status.startswith("6"):
-        print("Handling certificates for status 6X are not supported by offpunk\n")
-        print("See bug #31 for discussion about the problem")
-        _fetch_gemini(url)
+        error = "Handling certificates for status 6X are not supported by offpunk\n"
+        error += "See bug #31 for discussion about the problem"
+        raise RuntimeError(error)
     # Invalid status
     elif not status.startswith("2"):
         raise RuntimeError("Server returned undefined status code %s!" % status)
