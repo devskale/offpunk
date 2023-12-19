@@ -4,6 +4,7 @@
 ## 2.2 - Unpublished
 
 - netcache : solve an infinite gemini loop with code 6X (see also bug #31)
+- ansicat: added support for <video> HTML-element
 
 ## 2.1 - December 15th 2023
 - freshly updated gemtext/rss links are highlighted ("new_link" theme option)

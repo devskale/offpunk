@@ -1196,6 +1196,52 @@ class HtmlRenderer(AbstractRenderer):
                         r.add_text(text + link_id)
                         r.close_theme("image_link")
                         r.newline()
+
+            elif element.name == "video":
+                poster = element.get("poster")
+                src = element.get("src")
+                for child in element.children:
+                    if not src:
+                        if child.name == "source":
+                            src = child.get("src")
+                text = ""
+                if poster:
+                    ansi_img = render_image(poster,width=width,mode=mode)
+                alt = element.get("alt")
+                if alt:
+                    alt = sanitize_string(alt)
+                    text += "[VIDEO] %s"%alt
+                else:
+                    text += "[VIDEO]"
+
+                if poster:
+                    if not mode in self.images:
+                        self.images[mode] = []
+                    poster_url,d = looks_like_base64(poster,self.url)
+                    if poster_url:
+                        vid_url,d2 = looks_like_base64(src,self.url)
+                        self.images[mode].append(poster_url)
+                        r.add_block(ansi_img)
+                        r.open_theme("image_link")
+                        r.center_line()
+                        if vid_url and src:
+                            links.append(vid_url+" "+text)
+                            link_id = " [%s]"%(len(links)+startlinks)
+                            r.add_text(text + link_id)
+                        else:
+                            r.add_text(text)
+                        r.close_theme("image_link")
+                        r.newline()
+                elif src:
+                    vid_url,d = looks_like_base64(src,self.url)
+                    links.append(vid_url+" "+text)
+                    link_id = " [%s]"%(len(links)+startlinks)
+                    r.open_theme("image_link")
+                    r.center_line()
+                    r.add_text(text + link_id)
+                    r.close_theme("image_link")
+                    r.newline()
+
             elif element.name == "br":
                 r.newline()
             elif element.name not in ["script","style","template"] and type(element) != Comment:
