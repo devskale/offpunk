@@ -206,6 +206,8 @@ class GeminiClient(cmd.Cmd):
         return [i+" " for i in allowed if i.startswith(text)]
     def complete_move(self,text,line,begidx,endidx):
         return self.complete_add(text,line,begidx,endidx)
+    def complete_tour(self,text,line,begidx,endidx):
+        return self.complete_add(text,line,begidx,endidx)
     
     def complete_theme(self,text,line,begidx,endidx):
         elements = offthemes.default

@@ -6,6 +6,7 @@
 - netcache : solve an infinite gemini loop with code 6X (see also bug #31)
 - ansicat: added support for <video> HTML-element
 - ansicat: if chafa fails to load an image, fallback to timg is available
+- offpunk: add list autocompletion to "tour"
 
 ## 2.1 - December 15th 2023
 - freshly updated gemtext/rss links are highlighted ("new_link" theme option)
