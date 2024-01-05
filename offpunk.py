@@ -301,7 +301,7 @@ class GeminiClient(cmd.Cmd):
             else:
                 self.page_index = 0
                 # Update state (external files are not added to history)
-                self.current_url = url
+                self.current_url = modedurl
                 if update_hist and not self.sync_only:
                     self._update_history(modedurl)
         else:
@@ -1217,8 +1217,6 @@ archives, which is a special historical list limited in size. It is similar to `
             url = self.current_url
         r = self.get_renderer(url)
         if r:
-            mode = r.get_mode()
-            url = mode_url(url,mode)
             title = r.get_page_title()
         else:
             title = ""
@@ -1235,23 +1233,26 @@ archives, which is a special historical list limited in size. It is similar to `
             return False
         else:
             if not url:
-                url,mode = unmode_url(self.current_url)
+                url = self.current_url 
+            unmoded_url,mode = unmode_url(url)
             # first we check if url already exists in the file
-            with open(list_path,"r") as l_file:
-                lines = l_file.readlines()
-                l_file.close()
-                for l in lines:
-                    sp = l.split()
-                    if url in sp:
-                        if verbose:
-                            print("%s already in %s."%(url,list))
-                        return False
-            with open(list_path,"a") as l_file:
-                l_file.write(self.to_map_line(url))
-                l_file.close()
-            if verbose:
-                print("%s added to %s" %(url,list))
-            return True
+            if self.list_has_url(url,list,exact_mode=True):
+                if verbose:
+                    print("%s already in %s."%(url,list))
+                return False
+            # If the URL already exists but without a mode, we update the mode
+            # FIXME: this doesn’t take into account the case where you want to remove the mode
+            elif url != unmoded_url and self.list_has_url(unmoded_url,list):
+                self.list_update_url_mode(unmoded_url,list,mode)    
+                if verbose:
+                    print("%s has updated mode in %s to %s"%(url,list,mode))
+            else:
+                with open(list_path,"a") as l_file:
+                    l_file.write(self.to_map_line(url))
+                    l_file.close()
+                if verbose:
+                    print("%s added to %s" %(url,list))
+                return True
 
     @needs_gi
     def list_add_top(self,list,limit=0,truncate_lines=0):
@@ -1290,8 +1291,14 @@ archives, which is a special historical list limited in size. It is similar to `
     def list_rm_url(self,url,list):
         return self.list_has_url(url,list,deletion=True)
 
+    def list_update_url_mode(self,url,list,mode):
+        return self.list_has_url(url,list,update_mode = mode)
+
     # deletion and has_url are so similar, I made them the same method
-    def list_has_url(self,url,list,deletion=False):
+    # deletion : true or false if you want to delete the URL
+    # exact_mode : True if you want to check only for the exact url, not the canonical one
+    # update_mode : a new mode to update the URL
+    def list_has_url(self,url,list,deletion=False, exact_mode=False, update_mode = None):
         list_path = self.list_path(list)
         if list_path:
             to_return = False
@@ -1300,7 +1307,8 @@ archives, which is a special historical list limited in size. It is similar to `
                 lf.close()
             to_write = []
             # let’s remove the mode
-            url=unmode_url(url)[0]
+            if not exact_mode:
+                url=unmode_url(url)[0]
             for l in lines:
                 # we separate components of the line
                 # to ensure we identify a complete URL, not a part of it
@@ -1308,15 +1316,27 @@ archives, which is a special historical list limited in size. It is similar to `
                 if url not in splitted and len(splitted) > 1:
                     current = unmode_url(splitted[1])[0]
                     #sometimes, we must remove the ending "/"
-                    if url == current:
+                    if url == current or (url.endswith("/") and url[:-1] == current):
                         to_return = True
-                    elif url.endswith("/") and url[:-1] == current:
-                        to_return = True
+                        if update_mode:
+                            new_line = l.replace(current,mode_url(url,update_mode))
+                            to_write.append(new_line)
+                        elif not deletion:
+                            to_write.append(l)
                     else:
                         to_write.append(l)
-                else:
+                elif url in splitted:
                     to_return = True
-            if deletion :
+                    # We update the mode if asked by replacing the old url
+                    # by a moded one in the same line
+                    if update_mode:
+                        new_line = l.replace(url,mode_url(url,update_mode))
+                        to_write.append(new_line)
+                    elif not deletion:
+                        to_write.append(l)
+                else:
+                    to_write.append(l)
+            if deletion or update_mode:
                 with open(list_path,"w") as lf:
                     for l in to_write:
                         lf.write(l)
