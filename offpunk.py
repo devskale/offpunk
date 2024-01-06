@@ -922,7 +922,8 @@ Use 'ls -l' to see URLs."""
         if not line:
             print("What?")
             return 
-        self._go_to_url(urllib.parse.urlunparse("gemini","geminispace.info","/search","",line,""))
+        search = line.replace(" ","%20")
+        self._go_to_url("gemini://geminispace.info/search?%s"%search)
 
     def do_history(self, *args):
         """Display history."""
