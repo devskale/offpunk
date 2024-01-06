@@ -1610,19 +1610,6 @@ The following lists cannot be removed or frozen but can be edited with "list edi
         else:
             cmd.Cmd.do_help(self, arg)
 
-    ### Flight recorder
-    def do_blackbox(self, *args):
-        """Display contents of flight recorder, showing statistics for the
-current gemini browsing session."""
-        lines = []
-        # Compute flight time
-        now = time.time()
-        delta = now - self.log["start_time"]
-        hours, remainder = divmod(delta, 3600)
-        minutes, seconds = divmod(remainder, 60)
-        # Assemble lines
-        lines.append(("Patrol duration", "%02d:%02d:%02d" % (hours, minutes, seconds)))
-
     def do_sync(self, line):
         """Synchronize all bookmarks lists and URLs from the to_fetch list.
 - New elements in pages in subscribed lists will be added to tour
