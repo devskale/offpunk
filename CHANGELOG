@@ -2,6 +2,7 @@
 
 
 ## 2.2 - Unpublished
+- cache folder is now configurable through $OFFPUNK_CACHE_PATH environment variable (by prx)
 - offpunk: adding an URL to a list now update the view mode if url already present
 - netcache: solve an infinite gemini loop with code 6X (see also bug #31)
 - ansicat: added support for <video> HTML-element

@@ -68,6 +68,9 @@ def xdg(folder="cache"):
                     os.path.join(_home,'.cache')
     _CACHE_PATH = os.environ.get('OFFPUNK_CACHE_PATH', \
         os.path.join(os.path.expanduser(cache_home),"offpunk/"))
+    #Check that the cache path ends with "/"
+    if not _CACHE_PATH.endswith("/"):
+        _CACHE_PATH += "/"
     os.makedirs(_CACHE_PATH,exist_ok=True)
     if folder == "cache" and not UPGRADED:
         upgrade_cache(_CACHE_PATH)
