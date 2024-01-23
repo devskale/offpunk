@@ -3,9 +3,9 @@
 
 ## 2.2 - Unpublished
 - offpunk: adding an URL to a list now update the view mode if url already present
-- netcache : solve an infinite gemini loop with code 6X (see also bug #31)
+- netcache: solve an infinite gemini loop with code 6X (see also bug #31)
 - ansicat: added support for <video> HTML-element
-- ansicat: if chafa fails to load an image, fallback to timg is available
+- ansicat: if chafa fails to load an image, fallback to timg if available
 - offpunk: add list autocompletion to "tour"
 - offpunk: removed "blackbox", which has not been used nor maintained
 - offpunk: "gus" was broken, it is functionnal again
