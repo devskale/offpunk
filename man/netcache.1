@@ -27,6 +27,15 @@ otherwise it would always refresh it from the version available online.
 It is also useful for mapping a given URL to its location in the cache,
 independently of whether it has been downloaded first.
 .Pp
+Default cache path is
+.Pa ~/.cache/offpunk .
+Set
+.Ev OFFPUNK_CACHE_PATH
+environment variable to use another location.
+.Bd -literal
+OFFPUNK_CACHE_PATH=/home/ploum/custom-cache netcache.py gemini://some.url
+.Ed
+.Pp
 .Xr Offpunk 1
 is a command-line browser and feed reader dedicated to browsing the Web,
 Gemini, Gopher and Spartan.

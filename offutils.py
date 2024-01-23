@@ -62,9 +62,12 @@ def xdg(folder="cache"):
     #if no XDG .local/share and not XDG .config, we use the old config
     if not os.path.exists(data_home) and os.path.exists(_old_config):
         _DATA_DIR = _CONFIG_DIR
+    ## get _CACHE_PATH from OFFPUNK_CACHE_PATH environment variable
+    #  if OFFPUNK_CACHE_PATH empty, set default to ~/.cache/offpunk
     cache_home = os.environ.get('XDG_CACHE_HOME') or\
                     os.path.join(_home,'.cache')
-    _CACHE_PATH = os.path.join(os.path.expanduser(cache_home),"offpunk/")
+    _CACHE_PATH = os.environ.get('OFFPUNK_CACHE_PATH', \
+        os.path.join(os.path.expanduser(cache_home),"offpunk/"))
     os.makedirs(_CACHE_PATH,exist_ok=True)
     if folder == "cache" and not UPGRADED:
         upgrade_cache(_CACHE_PATH)
