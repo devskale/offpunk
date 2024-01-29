@@ -1085,7 +1085,7 @@ class HtmlRenderer(AbstractRenderer):
                 toreturn = " " + toreturn
             return toreturn
         def recursive_render(element,indent="",preformatted=False):
-            if element.name == "blockquote":
+            if element.name in ["blockquote", "dd"]:
                 r.newparagraph()
                 r.startindent("   ",reverse="     ")
                 for child in element.children:
@@ -1093,7 +1093,7 @@ class HtmlRenderer(AbstractRenderer):
                     recursive_render(child,indent="\t")
                     r.close_theme("blockquote")
                 r.endindent()
-            elif element.name in ["div","p"]:
+            elif element.name in ["div","p","dt"]:
                 r.newparagraph()
                 for child in element.children:
                     recursive_render(child,indent=indent)
