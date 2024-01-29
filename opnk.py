@@ -48,16 +48,16 @@ else:
 # -S : do not wrap long lines. Wrapping is done by offpunk, longlines
 # are there on purpose (surch in asciiart)
 #--incsearch : incremental search starting rev581
-if less_version >= 581:
-    less_base = "less --incsearch --save-marks -~ -XRfMWiS"
-elif less_version >= 572:
-    less_base = "less --save-marks -XRfMWiS"
-else:
-    less_base = "less -XRfMWiS"
-_DEFAULT_LESS = less_base + " \"+''\" %s"
-_DEFAULT_CAT = less_base + " -EF %s"
-
 def less_cmd(file, histfile=None,cat=False,grep=None):
+    less_prompt = "page %%d/%%D- lines %%l/%%L - %%Pb\%%"
+    if less_version >= 581:
+        less_base = "less --incsearch --save-marks -~ -XRfWiS -P \"%s\""%less_prompt
+    elif less_version >= 572:
+        less_base = "less --save-marks -XRfMWiS"
+    else:
+        less_base = "less -XRfMWiS"
+    _DEFAULT_LESS = less_base + " \"+''\" %s"
+    _DEFAULT_CAT = less_base + " -EF %s"
     if histfile:
         env = {"LESSHISTFILE": histfile}
     else:
