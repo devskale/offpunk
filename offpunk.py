@@ -1889,7 +1889,6 @@ def main():
             gc.onecmd(line)
         lists = None
         gc.call_sync(refresh_time=refresh_time,depth=depth,lists=args.url)
-        gc.onecmd("blackbox")
     else:
         # We are in the normal mode. First process config file
         torun_queue = read_config(torun_queue,rcfile=args.config_file,interactive=True)
