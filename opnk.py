@@ -280,12 +280,15 @@ def main():
              opnk will fallback to opening the file with xdg-open. If given an URL as input \
              instead of a path, opnk will rely on netcache to get the networked content."
     parser = argparse.ArgumentParser(prog="opnk",description=descri)
+    parser.add_argument("--mode", metavar="MODE",
+                        help="Which mode should be used to render: normal (default), full or source.\
+                                With HTML, the normal mode try to extract the article.")
     parser.add_argument("content",metavar="INPUT", nargs="*", 
                          default=sys.stdin, help="Path to the file or URL to open")
     args = parser.parse_args()
     cache = opencache()
     for f in args.content:
-        cache.opnk(f)
+        cache.opnk(f,mode=args.mode)
 
 if __name__ == "__main__":
     main()

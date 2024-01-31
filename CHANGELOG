@@ -12,6 +12,7 @@
 - offpunk: "gus" was broken, it is functionnal again
 - opnk/offpunk: more informative prompt in less
 - ansicat: added support for HTML description elements <dt> and <dd> (by Bert Livens)
+- opnk: added "--mode" command-line argument
 
 ## 2.1 - December 15th 2023
 - freshly updated gemtext/rss links are highlighted ("new_link" theme option)
