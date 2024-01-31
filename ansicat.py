@@ -365,15 +365,27 @@ class AbstractRenderer():
 
         # Beware, blocks are not wrapped nor indented and left untouched!
         # They are mostly useful for pictures and preformatted text.
-        def add_block(self,intext):
+        def add_block(self,intext,theme=None):
             # If necessary, we add the title before a block
             self._title_first()
             # we don’t want to indent blocks
             self._endline()
             self._disable_indents()
-            self.final_text += self.current_indent + intext
-            self.new_paragraph = False
-            self._endline()
+            #we have to apply the theme for every line in the intext
+            #applying theme to preformatted is controversial as it could change it
+            if theme:
+                block = ""
+                lines = intext.split("\n")
+                for l in lines:
+                    self.open_theme(theme)
+                    self.last_line += self.current_indent + l
+                    self.close_theme(theme)
+                    self._endline()
+            #one thing is sure : we need to keep unthemed blocks for images!
+            else:
+                self.final_text += self.current_indent + intext
+                self.new_paragraph = False
+                self._endline()
             self._enable_indents()
 
         def add_text(self,intext):
@@ -641,7 +653,7 @@ class GemtextRenderer(AbstractRenderer):
                     r.close_theme("preformatted")
             elif preformatted:
                 # infinite line to not wrap preformated
-                r.add_block(line+"\n")
+                r.add_block(line+"\n",theme="preformatted")
             elif len(line.strip()) == 0:
                 r.newparagraph(force=True)
             elif line.startswith("=>"):
@@ -1122,7 +1134,7 @@ class HtmlRenderer(AbstractRenderer):
                    recursive_render(child,indent=indent,preformatted=True)
             elif element.name in ["pre"]:
                 r.newparagraph()
-                r.add_block(element.text)
+                r.add_block(element.text,theme="preformatted")
                 r.newparagraph()
             elif element.name in ["li"]:
                 r.startindent(" • ",sub="   ")
