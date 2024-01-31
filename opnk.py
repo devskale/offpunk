@@ -285,10 +285,13 @@ def main():
                                 With HTML, the normal mode try to extract the article.")
     parser.add_argument("content",metavar="INPUT", nargs="*", 
                          default=sys.stdin, help="Path to the file or URL to open")
+    parser.add_argument("--cache-validity",type=int, default=0,
+                        help="maximum age, in second, of the cached version before \
+                                redownloading a new version")
     args = parser.parse_args()
     cache = opencache()
     for f in args.content:
-        cache.opnk(f,mode=args.mode)
+        cache.opnk(f,mode=args.mode,validity=args.cache_validity)
 
 if __name__ == "__main__":
     main()

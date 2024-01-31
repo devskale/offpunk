@@ -878,11 +878,12 @@ def main():
                         help="Cancel download of items above that size (value in Mb).")
     parser.add_argument("--timeout", type=int,
                         help="Time to wait before cancelling connection (in second).")
+    parser.add_argument("--cache-validity",type=int, default=0,
+                        help="maximum age, in second, of the cached version before \
+                                redownloading a new version")
     # No argument: write help
     parser.add_argument('url', metavar='URL', nargs='*',
                         help='download URL and returns the content or the path to a cached version')
-    # arg = URL: download and returns cached URI
-    # --cache-validity : do not download if cache is valid
     # --validity : returns the date of the cached version, Null if no version
     # --force-download : download and replace cache, even if valid
     args = parser.parse_args()
@@ -893,8 +894,8 @@ def main():
         if args.offline:
             path = get_cache_path(u)
         else:
-            print("Download URL: %s" %u)
-            path,url = fetch(u,max_size=args.max_size,timeout=args.timeout)
+            path,url = fetch(u,max_size=args.max_size,timeout=args.timeout,\
+                                validity=args.cache_validity)
         if args.path:
             print(path)
         else:
