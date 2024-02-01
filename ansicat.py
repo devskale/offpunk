@@ -131,7 +131,7 @@ def inline_image(img_file,width):
         cmd = inlines.pop(0)%width + " %s"
         try:
             ansi_img = run(cmd, parameter=img_file)
-            image_succes = True
+            image_success = True
         except Exception as err:
             ansi_img = "***IMAGE ERROR***\n%s…\n…%s" %(str(err)[:50],str(err)[-50:])
     return ansi_img
