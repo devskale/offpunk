@@ -381,6 +381,7 @@ class AbstractRenderer():
                     self.last_line += self.current_indent + l
                     self.close_theme(theme)
                     self._endline()
+                self.last_line += "\n"
             #one thing is sure : we need to keep unthemed blocks for images!
             else:
                 self.final_text += self.current_indent + intext
