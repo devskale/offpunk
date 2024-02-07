@@ -1136,7 +1136,7 @@ class HtmlRenderer(AbstractRenderer):
             elif element.name in ["pre"]:
                 r.newparagraph()
                 r.add_block(element.text,theme="preformatted")
-                r.newparagraph()
+                r.newparagraph(force=True)
             elif element.name in ["li"]:
                 r.startindent(" • ",sub="   ")
                 for child in element.children:
