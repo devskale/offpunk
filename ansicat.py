@@ -1355,6 +1355,9 @@ def get_mime(path,url=None):
         # If it’s a xml file, consider it as such, regardless of what file thinks
         elif path.endswith(".xml"):
             mime = "text/xml"
+        # If it doesn’t end with .svg, it is probably an xml, not a SVG file
+        elif "svg" in mime and not path.endswith(".svg"):
+            mime = "text/xml"
         #Some xml/html document are considered as octet-stream
         if mime == "application/octet-stream":
             mime = "text/xml"
