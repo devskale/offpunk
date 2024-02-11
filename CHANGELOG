@@ -16,6 +16,7 @@
 - offpunk: support for "preformatted" theming (bug #38)
 - opnk/netcache: added "--cache-validity" command-line argument (bug #37)
 - ansicat: consider files as XML, not SVG, if they don’t have .svg extension
+- offpunk: fix "view link" crashing with link to empty files
 
 ## 2.1 - December 15th 2023
 - freshly updated gemtext/rss links are highlighted ("new_link" theme option)

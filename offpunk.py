@@ -991,8 +991,11 @@ Use "view XX" where XX is a number to view information about link XX.
                     if netcache.is_cache_valid(link_url):
                         last_modified = netcache.cache_last_modified(link_url)
                         link_renderer = self.get_renderer(link_url)
-                        link_title = link_renderer.get_page_title()
-                        print(link_title)
+                        if link_renderer:
+                            link_title = link_renderer.get_page_title()
+                            print(link_title)
+                        else:
+                            print("Empty cached version")
                         print("Last cached on %s"%time.ctime(last_modified))
                     else:
                         print("No cached version for this link")
