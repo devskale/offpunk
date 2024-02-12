@@ -1,7 +1,7 @@
 # Offpunk History
 
 
-## 2.2 - Unpublished
+## 2.2 - February 13th 2023
 - cache folder is now configurable through $OFFPUNK_CACHE_PATH environment variable (by prx)
 - offpunk: adding an URL to a list now update the view mode if url already present
 - netcache: solve an infinite gemini loop with code 6X (see also bug #31)
