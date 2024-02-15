@@ -656,6 +656,9 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
     # Send request and wrap response in a file descriptor
     url = urllib.parse.urlparse(url)
     new_netloc = host
+    #Handle IPV6 hostname
+    if ":" in new_netloc:
+        new_netloc = "[" + new_netloc + "]"
     if port != standard_ports["gemini"]:
         new_netloc += ":" + str(port)
     url = urllib.parse.urlunparse(url._replace(netloc=new_netloc))
