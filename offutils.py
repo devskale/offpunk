@@ -99,7 +99,7 @@ def fix_ipv6_url(url):
         netloc, rest = schemaless.split("/",1)
         if netloc.count(":") > 2 and "[" not in netloc and "]" not in netloc:
             schemaless = "[" + netloc + "]" + "/" + rest
-    elif schemaless.count(":") > 2:
+    elif schemaless.count(":") > 2 and "[" not in schemaless and "]" not in schemaless:
         schemaless = "[" + schemaless + "]/"
     if schema:
         return schema + "://" + schemaless
@@ -121,7 +121,16 @@ def looks_like_url(word):
         if mailto:
             return "@" in word
         elif not local:
-            return start and ("." in word or "localhost" in word)
+            if start:
+                #IPv4
+                if "." in word or "localhost" in word:
+                    return True
+                #IPv6
+                elif "[" in word and ":" in word and "]" in word:
+                    return True
+                else: return False
+            else:   return False
+            return start and ("." in word or "localhost" in word or ":" in word)
         else:
             return "/" in word
     except ValueError:
