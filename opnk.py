@@ -49,7 +49,7 @@ else:
 # are there on purpose (surch in asciiart)
 #--incsearch : incremental search starting rev581
 def less_cmd(file, histfile=None,cat=False,grep=None):
-    less_prompt = "page %%d/%%D- lines %%lb/%%L - %%Pb\%%"
+    less_prompt = "page %%d/%%D- lines %%lb/%%L - %%Pb\\%%"
     if less_version >= 581:
         less_base = "less --incsearch --save-marks -~ -XRfWiS -P \"%s\""%less_prompt
     elif less_version >= 572:
