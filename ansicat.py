@@ -727,6 +727,13 @@ class GemtextRenderer(AbstractRenderer):
         links += hidden_links
         return r.get_final(), links
 
+class EmptyRenderer(GemtextRenderer):
+    def get_mime(self):
+        return "text/empty"
+    def prepare(self,body,mode=None):
+        text= "(empty file)"
+        return [[text, "GemtextRenderer"]]
+
 class GopherRenderer(AbstractRenderer):
     def get_mime(self):
         return "text/gopher"
@@ -1312,11 +1319,16 @@ _FORMAT_RENDERERS = {
     "text/gopher": GopherRenderer,
     "image/*": ImageRenderer,
     "application/javascript": HtmlRenderer,
+    "application/json": HtmlRenderer,
+    "text/empty": EmptyRenderer,
 }
 def get_mime(path,url=None):
     #Beware, this one is really a shaddy ad-hoc function
     if not path:
         return None
+    #If the file is empty, simply returns it
+    elif os.path.exists(path) and os.stat(path).st_size == 0:
+        return "text/empty"
     elif url and url.startswith("gopher://"):
         #special case for gopher
         #code copy/pasted from netcache

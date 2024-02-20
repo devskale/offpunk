@@ -2,6 +2,7 @@
 
 ## 2.3 - Unreleased
 - offpunk/netcache: fix IPv6 as an URL (bug #40)
+- ansicat: display empty files (instead of opening them with xdg-open)
 
 ## 2.2 - February 13th 2023
 - cache folder is now configurable through $OFFPUNK_CACHE_PATH environment variable (by prx)
