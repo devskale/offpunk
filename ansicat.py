@@ -877,10 +877,15 @@ class FeedRenderer(GemtextRenderer):
         return "application/rss+xml"
     def is_valid(self):
         if _DO_FEED:
-            parsed = feedparser.parse(self.body)
+            try:
+                parsed = feedparser.parse(self.body)
+            except:
+                parsed = False
         else:
             return False
-        if parsed.bozo:
+        if not parsed:
+            return False
+        elif parsed.bozo:
             return False
         else:
             #If no content, then fallback to HTML
