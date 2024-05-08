@@ -802,8 +802,10 @@ def fetch(url,offline=False,download_image_first=True,images_mode="readable",val
                 path=_fetch_finger(url,**kwargs)
             elif scheme == "gemini":
                 path,newurl=_fetch_gemini(url,**kwargs)
+            elif scheme == "spartan":
+                path,newurl=_fetch_spartan(url,**kwargs)
             else:
-                print("scheme %s not implemented yet")
+                print("scheme %s not implemented yet"%scheme)
         except UserAbortException:
             return None, newurl
         except Exception as err:
