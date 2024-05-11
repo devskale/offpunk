@@ -6,6 +6,7 @@
 - fix escape sequence warning in python 3.12 (by Étienne Mollier) (Debian #1064209)
 - ansicat : fix crash when feedparser is crashing on bad RSS
 - netcache: fix spartan protocol error
+- opnk: fix a crash when caching returns None
 
 ## 2.2 - February 13th 2023
 - cache folder is now configurable through $OFFPUNK_CACHE_PATH environment variable (by prx)

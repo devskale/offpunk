@@ -159,7 +159,10 @@ class opencache():
                 if inpath in self.renderer_time.keys():
                     last_downloaded = netcache.cache_last_modified(inpath)
                     last_cached = self.renderer_time[inpath]
-                    usecache = last_cached > last_downloaded
+                    if last_cached and last_downloaded:
+                        usecache = last_cached > last_downloaded
+                    else:
+                        usecache = False
                 else:
                     usecache = False
             if not usecache:
