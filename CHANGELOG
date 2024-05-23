@@ -7,6 +7,7 @@
 - ansicat : fix crash when feedparser is crashing on bad RSS
 - netcache: fix spartan protocol error
 - opnk: fix a crash when caching returns None
+- ansicat: remove the treshold argument when launching chafa (strange artifacts with new version)
 
 ## 2.2 - February 13th 2023
 - cache folder is now configurable through $OFFPUNK_CACHE_PATH environment variable (by prx)

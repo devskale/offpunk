@@ -141,9 +141,9 @@ def terminal_image(img_file):
     # it is also centered
     cmds = []
     if _NEW_CHAFA:
-        cmds.append("chafa -C on -d 0 --bg white -t 1 -w 1")
+        cmds.append("chafa -C on -d 0 --bg white -w 1")
     elif _HAS_CHAFA:
-        cmds.append("chafa -d 0 --bg white -t 1 -w 1")
+        cmds.append("chafa -d 0 --bg white -w 1")
     if _NEW_TIMG:
         cmds.append("timg --loops=1 -C")
     image_success = False
