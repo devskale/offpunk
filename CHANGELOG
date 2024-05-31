@@ -1,6 +1,7 @@
 # Offpunk History
 
 ## 2.3 - Unreleased
+- Wayland clipboard support through wl-clipboard (new suggested dependency)
 - offpunk/netcache: fix IPv6 as an URL (bug #40)
 - ansicat: display empty files (instead of opening them with xdg-open)
 - fix escape sequence warning in python 3.12 (by Étienne Mollier) (Debian #1064209)

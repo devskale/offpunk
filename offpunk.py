@@ -35,7 +35,42 @@ try:
     _HAS_SETPROCTITLE = True
 except ModuleNotFoundError:
     _HAS_SETPROCTITLE = False
-_HAS_XSEL = shutil.which('xsel')
+
+#This method copy a string to the system clipboard
+def clipboard_copy(to_copy):
+    copied = False
+    if shutil.which('xsel'):
+        run("xsel -b -i", input=to_copy, direct_output=True)
+        copied = True
+    if shutil.which('wl-copy'):
+        run("wl-copy", input=to_copy, direct_output=True)
+        copied = True
+    if not copied:
+        print("Install xsel (X11) or wl-clipboard (Wayland) to use copy")
+#This method returns an array with all the values in all system clipboards
+def clipboard_paste():
+    clipboards = []
+    cmds = []
+    pasted = False
+    if shutil.which('xsel'):
+        pasted = True
+        for selec in ["-p","-s","-b"]:
+            cmds.append("xsel "+selec)
+    if shutil.which('wl-paste'):
+        pasted = True
+        for selec in ["", "-p"]:
+            cmds.append("wl-paste "+selec)
+    for cmd in cmds:
+        try:
+            clipboards.append(run(cmd))
+        except Exception as err:
+            #print("Skippink clipboard %s because %s"%(selec,err))
+            pass
+    if not pasted: 
+        print("Install xsel (X11) or wl-clipboard (Wayland) to get URLs from your clipboard")
+    return clipboards
+
+
 ## }}} end of imports
 
 # Command abbreviations
@@ -564,37 +599,31 @@ Use with "title" to copy the title of the page.
 Use with "link" to copy a link in the gemtext format to that page with the title.
 """
         if self.current_url:
-            if _HAS_XSEL:
-                args = arg.split()
-                if args and args[0] == "url":
-                    if len(args) > 1 and args[1].isdecimal():
-                        url = self.get_renderer().get_link(int(args[1])-1)
-                    else:
-                        url,mode = unmode_url(self.current_url)
-                    print(url)
-                    run("xsel -b -i", input=url, direct_output=True)
-                elif args and args[0] == "raw":
-                    tmp = self.opencache.get_temp_filename(self.current_url)
-                    if tmp:
-                        run("xsel -b -i", input=open(tmp, "rb"),\
-                                                direct_output=True)
-                elif args and args[0] == "cache":
-                    run("xsel -b -i", input=netcache.get_cache_path(self.current_url),\
-                                                                    direct_output=True)
-                elif args and args[0] == "title":
-                    title = self.get_renderer().get_page_title()
-                    run("xsel -b -i",input=title, direct_output=True)
-                    print(title)
-                elif args and args[0] == "link":
-                    link = "=> %s %s"%(unmode_url(self.current_url)[0],\
-                                        self.get_renderer().get_page_title())
-                    print(link)
-                    run("xsel -b -i", input=link,direct_output=True)
+            args = arg.split()
+            if args and args[0] == "url":
+                if len(args) > 1 and args[1].isdecimal():
+                    url = self.get_renderer().get_link(int(args[1])-1)
                 else:
-                    run("xsel -b -i", input=open(netcache.get_cache_path(self.current_url), "rb"),\
-                                                direct_output=True)
+                    url,mode = unmode_url(self.current_url)
+                print(url)
+                clipboard_copy(url)
+            elif args and args[0] == "raw":
+                tmp = self.opencache.get_temp_filename(self.current_url)
+                if tmp:
+                    clipboard_copy(open(tmp,"rb"))
+            elif args and args[0] == "cache":
+                clipboard_copy(netcache.get_cache_path(self.current_url))
+            elif args and args[0] == "title":
+                title = self.get_renderer().get_page_title()
+                clipboard_copy(title)
+                print(title)
+            elif args and args[0] == "link":
+                link = "=> %s %s"%(unmode_url(self.current_url)[0],\
+                                    self.get_renderer().get_page_title())
+                print(link)
+                clipboard_copy(link)
             else:
-                print("Please install xsel to use copy")
+                clipboard_copy(open(netcache.get_cache_path(self.current_url),"rb"))
         else:
             print("No content to copy, visit a page first")
 
@@ -603,34 +632,25 @@ Use with "link" to copy a link in the gemtext format to that page with the title
         """Go to a gemini URL or marked item."""
         line = line.strip()
         if not line:
-            if shutil.which('xsel'):
-                clipboards = []
-                urls = []
-                for selec in ["-p","-s","-b"]:
-                    try:
-                        clipboards.append(run("xsel "+selec))
-                    except Exception as err:
-                        #print("Skippink clipboard %s because %s"%(selec,err))
-                        pass
-                for u in clipboards:
-                    if "://" in u and looks_like_url(u) and u not in urls :
-                        urls.append(u)
-                if len(urls) > 1:
-                    stri = "URLs in your clipboard\n"
-                    counter = 0
-                    for u in urls:
-                        counter += 1
-                        stri += "[%s] %s\n"%(counter,u)
-                    stri += "Where do you want to go today ?> "
-                    ans = input(stri)
-                    if ans.isdigit() and 0 < int(ans) <= len(urls):
-                        self.do_go(urls[int(ans)-1])
-                elif len(urls) == 1:
-                    self.do_go(urls[0])
-                else:
-                    print("Go where? (hint: simply copy an URL in your clipboard)")
+            clipboards = clipboard_paste()
+            urls = []
+            for u in clipboards:
+                if "://" in u and looks_like_url(u) and u not in urls :
+                    urls.append(u)
+            if len(urls) > 1:
+                stri = "URLs in your clipboard\n"
+                counter = 0
+                for u in urls:
+                    counter += 1
+                    stri += "[%s] %s\n"%(counter,u)
+                stri += "Where do you want to go today ?> "
+                ans = input(stri)
+                if ans.isdigit() and 0 < int(ans) <= len(urls):
+                    self.do_go(urls[int(ans)-1])
+            elif len(urls) == 1:
+                self.do_go(urls[0])
             else:
-                print("Go where? (hint: install xsel to go to copied URLs)")
+                print("Go where? (hint: simply copy an URL in your clipboard)")
 
         # First, check for possible marks
         elif line in self.marks:
@@ -862,8 +882,9 @@ Marks are temporary until shutdown (not saved to disk)."""
             output += " - chafa               : " + has(ansicat._HAS_CHAFA)
             output += " - python-pil          : " + has(ansicat._HAS_PIL)
         output += "\nNice to have:\n"
-        output += " - python-setproctitle : " + has(_HAS_SETPROCTITLE)
-        output += " - xsel                : " + has(_HAS_XSEL)
+        output += " - python-setproctitle       : " + has(_HAS_SETPROCTITLE)
+        output += " - xsel (for X11)            : " + shutil.which("xsel")
+        output += " - wl-clipboard (for Wayland): " + shutil.which("wl-copy")
 
         output += "\nFeatures :\n"
         if ansicat._NEW_CHAFA:
@@ -874,7 +895,8 @@ Marks are temporary until shutdown (not saved to disk)."""
         output += " - Render Atom/RSS feeds (feedparser)         : " + has(ansicat._DO_FEED)
         output += " - Connect to http/https (requests)           : " + has(netcache._DO_HTTP)
         output += " - Detect text encoding (python-chardet)      : " + has(netcache._HAS_CHARDET)
-        output += " - copy to/from clipboard (xsel)              : " + has(_HAS_XSEL)
+        output += " - X11 clipboard copy/paste (xsel)            : " + shutil.which("xsel")
+        output += " - Wayland clipboard copy/paste (wl-clipboard): " + shutil.which("wl-copy")
         output += " - restore last position (less 572+)          : " + has(opnk._LESS_RESTORE_POSITION)
         output += "\n"
         output += "Config directory    : " +  xdg("config") + "\n"

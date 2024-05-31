@@ -92,6 +92,7 @@ Older dependencies which are only needed on older systems (where chafa < 1.10)
 
 Nice to have (packagers should may make those optional):
 * [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). Also needed to use the `copy` command. (apt-get install xsel)
+* [Wl-clipboard](https://github.com/bugaevc/wl-clipboard) allows the same feature than xsel but under Wayland 
 * [Python-setproctitle](https://github.com/dvarrazzo/py-setproctitle) will change the process name from "python" to "offpunk". Useful to kill it without killing every python service.
 
 ## Features
