@@ -1,6 +1,6 @@
 #!/bin/python
 
-#This file contains some utilities common to offpunk, ansirenderer and netcache.
+#This file contains some utilities common to offpunk, ansicat and netcache.
 #Currently, there are the following utilities:
 #
 # run : run a shell command and get the results with some security
@@ -15,12 +15,14 @@ import urllib.parse
 import urllib.parse
 import netcache_migration
 import netcache
+import cert_migration
 
 CACHE_VERSION = 1
+CERT_VERSION = 1
 
-# We upgrade the cache only once at startup, hence the UPGRADED variable
-# This is only to avoid unecessary checks each time the cache is accessed
-UPGRADED=False
+# We upgrade the cache only once at startup, hence the CACHE_UPGRADED variable
+# This is only to avoid unnecessary checks each time the cache is accessed
+CACHE_UPGRADED=False
 def upgrade_cache(cache_folder):
     #Let’s read current version of the cache
     version_path = cache_folder + ".version"
@@ -42,7 +44,40 @@ def upgrade_cache(cache_folder):
         with open(version_path,"w") as f:
             f.write(str(current_version))
             f.close()
-    UPGRADED=True
+    CACHE_UPGRADED=True
+
+CERT_UPGRADED=False
+
+def upgrade_cert(config_folder: str, data_folder: str) -> None:
+    # read the current version
+    certdata = os.path.join(data_folder, 'certs')
+    if not os.path.exists(certdata):
+        os.mkdir(certdata)
+    version_path = os.path.join(certdata, ".version")
+    current_version = 0
+    if os.path.exists(version_path):
+        current_str = None
+        with open(version_path) as f:
+            current_str = f.read()
+            f.close()
+        try:
+            current_version = int(current_str)
+        except:
+            current_version = 0
+    else:
+        current_version = 0
+    #Now, let’s upgrade the certificate storage if needed
+    while current_version < CERT_VERSION:
+        current_version += 1
+        upgrade_func = getattr(cert_migration,"upgrade_to_"+str(current_version))
+        upgrade_func(data_folder, config_folder)
+        with open(version_path,"w") as f:
+            f.write(str(current_version))
+            f.close()
+    CERT_UPGRADED=True
+
+
+
 
 #get xdg folder. Folder should be "cache", "data" or "config"
 def xdg(folder="cache"):
@@ -72,13 +107,15 @@ def xdg(folder="cache"):
     if not _CACHE_PATH.endswith("/"):
         _CACHE_PATH += "/"
     os.makedirs(_CACHE_PATH,exist_ok=True)
-    if folder == "cache" and not UPGRADED:
+    if folder == "cache" and not CACHE_UPGRADED:
         upgrade_cache(_CACHE_PATH)
     if folder == "cache":
         return _CACHE_PATH
     elif folder == "config":
         return _CONFIG_DIR
     elif folder == "data":
+        if not CERT_UPGRADED:
+            upgrade_cert(_CONFIG_DIR, _DATA_DIR)
         return _DATA_DIR
     else:
         print("No XDG folder for %s. Check your code."%folder)

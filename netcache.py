@@ -10,7 +10,6 @@ import ssl
 import glob
 import datetime
 import hashlib
-import sqlite3
 from ssl import CertificateError
 import ansicat
 import offutils
@@ -158,7 +157,7 @@ def get_cache_path(url,add_index=True):
     else:
         local = False
         # Convert unicode hostname to punycode using idna RFC3490
-        host = parsed.hostname #.encode("idna").decode()
+        host = parsed.netloc #.encode("idna").decode()
         port = parsed.port or standard_ports.get(scheme, 0)
         # special gopher selector case
         if scheme == "gopher":
@@ -500,38 +499,36 @@ def _validate_cert(address, host, cert,accept_bad_ssl=False,automatic_choice=Non
     sha.update(cert)
     fingerprint = sha.hexdigest()
 
-    db_path = os.path.join(xdg("config"), "tofu.db")
-    db_conn = sqlite3.connect(db_path)
-    db_cur = db_conn.cursor()
+    # The directory of this host and IP-address, e.g.
+    # ~/.local/share/offpunk/certs/srht.site/46.23.81.157/
+    certdir = os.path.join(xdg("data"), "certs")
+    hostdir = os.path.join(certdir, host)
+    sitedir = os.path.join(hostdir, address)
+    # Have we been here before? (the directory exists)
 
-    db_cur.execute("""CREATE TABLE IF NOT EXISTS cert_cache
-        (hostname text, address text, fingerprint text,
-        first_seen date, last_seen date, count integer)""")
-    # Have we been here before?
-    db_cur.execute("""SELECT fingerprint, first_seen, last_seen, count
-        FROM cert_cache
-        WHERE hostname=? AND address=?""", (host, address))
-    cached_certs = db_cur.fetchall()
-
-    # If so, check for a match
-    if cached_certs:
+    if os.path.isdir(sitedir):
         max_count = 0
         most_frequent_cert = None
-        for cached_fingerprint, first, last, count in cached_certs:
+        files = os.listdir(sitedir)
+        count = 0
+
+        for cached_fingerprint in files:
+            filepath = os.path.join(sitedir, cached_fingerprint)
+            with open(filepath, 'r') as f:
+                count = int(f.read())
             if count > max_count:
                 max_count = count
                 most_frequent_cert = cached_fingerprint
             if fingerprint == cached_fingerprint:
                 # Matched!
-                db_cur.execute("""UPDATE cert_cache
-                    SET last_seen=?, count=?
-                    WHERE hostname=? AND address=? AND fingerprint=?""",
-                    (now, count+1, host, address, fingerprint))
-                db_conn.commit()
+                # Increase the counter for this certificate (this also updates
+                # the modification time of the file)
+                with open(filepath, 'w') as f:
+                    f.write(str(count+1))
                 break
         else:
-            certdir = os.path.join(xdg("config"), "cert_cache")
-            with open(os.path.join(certdir, most_frequent_cert+".crt"), "rb") as fp:
+            certcache = os.path.join(xdg("config"), "cert_cache")
+            with open(os.path.join(certcache, most_frequent_cert+".crt"), "rb") as fp:
                 previous_cert = fp.read()
             if _HAS_CRYPTOGRAPHY:
                 # Load the most frequently seen certificate to see if it has
@@ -558,25 +555,28 @@ def _validate_cert(address, host, cert,accept_bad_ssl=False,automatic_choice=Non
             else:
                 choice = input("Accept this new certificate? Y/N ").strip().lower()
             if choice in ("y", "yes"):
-                db_cur.execute("""INSERT INTO cert_cache
-                                VALUES (?, ?, ?, ?, ?, ?)""",
-                            (host, address, fingerprint, now, now, 1))
-                db_conn.commit()
-                with open(os.path.join(certdir, fingerprint+".crt"), "wb") as fp:
+                with open(os.path.join(sitedir, fingerprint), "w") as fp:
+                    fp.write("1")
+                with open(os.path.join(certcache, fingerprint+".crt"), "wb") as fp:
                     fp.write(cert)
             else:
                 raise Exception("TOFU Failure!")
 
     # If not, cache this cert
     else:
-        db_cur.execute("""INSERT INTO cert_cache
-            VALUES (?, ?, ?, ?, ?, ?)""",
-            (host, address, fingerprint, now, now, 1))
-        db_conn.commit()
-        certdir = os.path.join(xdg("config"), "cert_cache")
-        if not os.path.exists(certdir):
+        if not os.path.exists(certdir): # XDG_DATA/offpunk/certs
             os.makedirs(certdir)
-        with open(os.path.join(certdir, fingerprint+".crt"), "wb") as fp:
+        if not os.path.exists(hostdir): # XDG_DATA/offpunk/certs/site.net
+            os.makedirs(hostdir)
+        if not os.path.exists(sitedir): # XDG_DATA/offpunk/certs/site.net/123.123.123.123
+            os.makedirs(sitedir)
+
+        with open(os.path.join(sitedir, fingerprint), "w") as fp:
+            fp.write("1")
+        certcache = os.path.join(xdg("config"), "cert_cache")
+        if not os.path.exists(certcache):
+            os.makedirs(certcache)
+        with open(os.path.join(certcache, fingerprint+".crt"), "wb") as fp:
             fp.write(cert)
 
 def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_certificates=False,\
