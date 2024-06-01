@@ -91,7 +91,7 @@ Older dependencies which are only needed on older systems (where chafa < 1.10)
 * [Python-pil](http://python-pillow.github.io/) is required to only display the first frame of animated gif with chafa if chafa version is lower than 1.10. Might be deprecated in the future.
 
 Nice to have (packagers should may make those optional):
-* [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). Also needed to use the `copy` command. (apt-get install xsel)
+* [Xsel](http://www.vergenet.net/~conrad/software/xsel/) allows to `go` to the URL copied in the clipboard without having to paste it (both X and traditional clipboards are supported). Also needed to use the `copy` command. (apt-get install xsel). Xclip can be used too.
 * [Wl-clipboard](https://github.com/bugaevc/wl-clipboard) allows the same feature than xsel but under Wayland 
 * [Python-setproctitle](https://github.com/dvarrazzo/py-setproctitle) will change the process name from "python" to "offpunk". Useful to kill it without killing every python service.
 

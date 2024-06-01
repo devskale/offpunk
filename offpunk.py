@@ -42,33 +42,41 @@ def clipboard_copy(to_copy):
     if shutil.which('xsel'):
         run("xsel -b -i", input=to_copy, direct_output=True)
         copied = True
+    if shutil.which('xclip'):
+        run("xclip -selection clipboard", input=to_copy, direct_output=True)
+        copied = True
     if shutil.which('wl-copy'):
         run("wl-copy", input=to_copy, direct_output=True)
         copied = True
     if not copied:
-        print("Install xsel (X11) or wl-clipboard (Wayland) to use copy")
+        print("Install xsel/xclip (X11) or wl-clipboard (Wayland) to use copy")
 #This method returns an array with all the values in all system clipboards
 def clipboard_paste():
-    clipboards = []
-    cmds = []
+    #We use a set to avoid duplicates
+    clipboards = set()
+    cmds = set()
     pasted = False
     if shutil.which('xsel'):
         pasted = True
         for selec in ["-p","-s","-b"]:
-            cmds.append("xsel "+selec)
+            cmds.add("xsel "+selec)
+    if shutil.which('xclip'):
+        pasted = True
+        for selec in ["clipboard","primary","secondary"]:
+            cmds.add("xsel "+selec)
     if shutil.which('wl-paste'):
         pasted = True
         for selec in ["", "-p"]:
-            cmds.append("wl-paste "+selec)
+            cmds.add("wl-paste "+selec)
     for cmd in cmds:
         try:
-            clipboards.append(run(cmd))
+            clipboards.add(run(cmd))
         except Exception as err:
             #print("Skippink clipboard %s because %s"%(selec,err))
             pass
     if not pasted: 
-        print("Install xsel (X11) or wl-clipboard (Wayland) to get URLs from your clipboard")
-    return clipboards
+        print("Install xsel/xclip (X11) or wl-clipboard (Wayland) to get URLs from your clipboard")
+    return list(clipboards)
 
 
 ## }}} end of imports
@@ -883,8 +891,9 @@ Marks are temporary until shutdown (not saved to disk)."""
             output += " - python-pil          : " + has(ansicat._HAS_PIL)
         output += "\nNice to have:\n"
         output += " - python-setproctitle       : " + has(_HAS_SETPROCTITLE)
-        output += " - xsel (for X11)            : " + shutil.which("xsel")
-        output += " - wl-clipboard (for Wayland): " + shutil.which("wl-copy")
+        clip_support = shutil.which("xsel") or shutil.which("xclip")
+        output += " - X11 clipboard (xsel or xclip)   : " + has(clip_support)
+        output += " - Wayland clipboard (wl-clipboard): " + has(shutil.which("wl-copy"))
 
         output += "\nFeatures :\n"
         if ansicat._NEW_CHAFA:
@@ -895,8 +904,6 @@ Marks are temporary until shutdown (not saved to disk)."""
         output += " - Render Atom/RSS feeds (feedparser)         : " + has(ansicat._DO_FEED)
         output += " - Connect to http/https (requests)           : " + has(netcache._DO_HTTP)
         output += " - Detect text encoding (python-chardet)      : " + has(netcache._HAS_CHARDET)
-        output += " - X11 clipboard copy/paste (xsel)            : " + shutil.which("xsel")
-        output += " - Wayland clipboard copy/paste (wl-clipboard): " + shutil.which("wl-copy")
         output += " - restore last position (less 572+)          : " + has(opnk._LESS_RESTORE_POSITION)
         output += "\n"
         output += "Config directory    : " +  xdg("config") + "\n"
