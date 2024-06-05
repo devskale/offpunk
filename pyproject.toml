@@ -54,5 +54,5 @@ path = "offpunk.py" # read __version__
 only-include = [
   "ansicat.py", "netcache_migration.py", "netcache.py",
   "offblocklist.py", "offpunk.py", "offthemes.py",
-  "offutils.py", "opnk.py",
+  "offutils.py", "opnk.py", "cert_migration.py",
 ]
