@@ -4,6 +4,7 @@ requests
 feedparser
 bs4
 readability-lxml
+lxml-html-clean
 pillow
 setproctitle
 timg
