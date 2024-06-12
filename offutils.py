@@ -52,7 +52,7 @@ def upgrade_cert(config_folder: str, data_folder: str) -> None:
     # read the current version
     certdata = os.path.join(data_folder, 'certs')
     if not os.path.exists(certdata):
-        os.mkdir(certdata)
+        os.makedirs(certdata,exist_ok=True)
     version_path = os.path.join(certdata, ".version")
     current_version = 0
     if os.path.exists(version_path):
