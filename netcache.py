@@ -504,66 +504,76 @@ def _validate_cert(address, host, cert,accept_bad_ssl=False,automatic_choice=Non
     certdir = os.path.join(xdg("data"), "certs")
     hostdir = os.path.join(certdir, host)
     sitedir = os.path.join(hostdir, address)
-    # Have we been here before? (the directory exists)
-
+    #1. We check through cached certificates do extract the 
+    #most_frequent_cert  and to see if one is matching the current one.
+    #2. If we have no match but one valid most_frequent_cert, we do the 
+    #"throws warning" code.
+    #3. If no certificate directory or no valid cached certificates, we do 
+    #the "First-Use" routine.
+    most_frequent_cert = None
+    matching_fingerprint = False
+    # 1. Have we been here before? (the directory exists)
     if os.path.isdir(sitedir):
         max_count = 0
-        most_frequent_cert = None
         files = os.listdir(sitedir)
         count = 0
+        certcache = os.path.join(xdg("config"), "cert_cache")
 
         for cached_fingerprint in files:
             filepath = os.path.join(sitedir, cached_fingerprint)
+            certpath = os.path.join(certcache,cached_fingerprint+".crt")
             with open(filepath, 'r') as f:
                 count = int(f.read())
-            if count > max_count:
-                max_count = count
-                most_frequent_cert = cached_fingerprint
-            if fingerprint == cached_fingerprint:
-                # Matched!
-                # Increase the counter for this certificate (this also updates
-                # the modification time of the file)
-                with open(filepath, 'w') as f:
-                    f.write(str(count+1))
-                break
+            if os.path.exists(certpath):
+                if count > max_count:
+                    max_count = count
+                    most_frequent_cert = cached_fingerprint
+                if fingerprint == cached_fingerprint:
+                    # Matched!
+                    # Increase the counter for this certificate (this also updates
+                    # the modification time of the file)
+                    with open(filepath, 'w') as f:
+                        f.write(str(count+1))
+                    matching_fingerprint = True
+                    break
+    #2. Do we have some certificates but none of them is matching the current one?
+    if most_frequent_cert and not matching_fingerprint:
+        with open(os.path.join(certcache, most_frequent_cert+".crt"), "rb") as fp:
+            previous_cert = fp.read()
+        if _HAS_CRYPTOGRAPHY:
+            # Load the most frequently seen certificate to see if it has
+            # expired
+            previous_cert = x509.load_der_x509_certificate(previous_cert, _BACKEND)
+            previous_ttl = previous_cert.not_valid_after - now
+            print(previous_ttl)
+
+        print("****************************************")
+        print("[SECURITY WARNING] Unrecognised certificate!")
+        print("The certificate presented for {} ({}) has never been seen before.".format(host, address))
+        print("This MIGHT be a Man-in-the-Middle attack.")
+        print("A different certificate has previously been seen {} times.".format(max_count))
+        if _HAS_CRYPTOGRAPHY:
+            if previous_ttl < datetime.timedelta():
+                print("That certificate has expired, which reduces suspicion somewhat.")
+            else:
+                print("That certificate is still valid for: {}".format(previous_ttl))
+        print("****************************************")
+        print("Attempt to verify the new certificate fingerprint out-of-band:")
+        print(fingerprint)
+        if automatic_choice:
+            choice = automatic_choice
         else:
-            certcache = os.path.join(xdg("config"), "cert_cache")
-            with open(os.path.join(certcache, most_frequent_cert+".crt"), "rb") as fp:
-                previous_cert = fp.read()
-            if _HAS_CRYPTOGRAPHY:
-                # Load the most frequently seen certificate to see if it has
-                # expired
-                previous_cert = x509.load_der_x509_certificate(previous_cert, _BACKEND)
-                previous_ttl = previous_cert.not_valid_after - now
-                print(previous_ttl)
+            choice = input("Accept this new certificate? Y/N ").strip().lower()
+        if choice in ("y", "yes"):
+            with open(os.path.join(sitedir, fingerprint), "w") as fp:
+                fp.write("1")
+            with open(os.path.join(certcache, fingerprint+".crt"), "wb") as fp:
+                fp.write(cert)
+        else:
+            raise Exception("TOFU Failure!")
 
-            print("****************************************")
-            print("[SECURITY WARNING] Unrecognised certificate!")
-            print("The certificate presented for {} ({}) has never been seen before.".format(host, address))
-            print("This MIGHT be a Man-in-the-Middle attack.")
-            print("A different certificate has previously been seen {} times.".format(max_count))
-            if _HAS_CRYPTOGRAPHY:
-                if previous_ttl < datetime.timedelta():
-                    print("That certificate has expired, which reduces suspicion somewhat.")
-                else:
-                    print("That certificate is still valid for: {}".format(previous_ttl))
-            print("****************************************")
-            print("Attempt to verify the new certificate fingerprint out-of-band:")
-            print(fingerprint)
-            if automatic_choice:
-                choice = automatic_choice
-            else:
-                choice = input("Accept this new certificate? Y/N ").strip().lower()
-            if choice in ("y", "yes"):
-                with open(os.path.join(sitedir, fingerprint), "w") as fp:
-                    fp.write("1")
-                with open(os.path.join(certcache, fingerprint+".crt"), "wb") as fp:
-                    fp.write(cert)
-            else:
-                raise Exception("TOFU Failure!")
-
-    # If not, cache this cert
-    else:
+    #3. If no directory or no cert found in it, we cache it
+    if not most_frequent_cert:
         if not os.path.exists(certdir): # XDG_DATA/offpunk/certs
             os.makedirs(certdir)
         if not os.path.exists(hostdir): # XDG_DATA/offpunk/certs/site.net
