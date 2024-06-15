@@ -56,16 +56,12 @@ try:
 except ModuleNotFoundError:
     _DO_FEED = False
 
-try:
-    from PIL import Image
-    _HAS_PIL = True
-except ModuleNotFoundError:
-    _HAS_PIL = False
 _HAS_TIMG = shutil.which('timg')
 _HAS_CHAFA = shutil.which('chafa')
 _NEW_CHAFA = False
 _NEW_TIMG = False
 _RENDER_IMAGE = False
+_HAS_PIL = False
 
 # All this code to know if we render image inline or not
 if _HAS_CHAFA:
@@ -91,8 +87,13 @@ if _HAS_TIMG :
     if output and output[5:10] > "1.3.2":
         _NEW_TIMG = True
         _RENDER_IMAGE = True
-elif _HAS_CHAFA and _HAS_PIL:
-    _RENDER_IMAGE = True
+elif _HAS_CHAFA and not _NEW_CHAFA:
+    try:
+        from PIL import Image
+        _HAS_PIL = True
+        _RENDER_IMAGE = True
+    except ModuleNotFoundError:
+        _HAS_PIL = False
 if not _RENDER_IMAGE:
     print("To render images inline, you need either chafa or timg.")
     if not _NEW_CHAFA and not _NEW_TIMG:
