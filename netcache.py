@@ -11,6 +11,7 @@ import glob
 import datetime
 import hashlib
 from ssl import CertificateError
+import ansicat
 import offutils
 from offutils import xdg
 import time
@@ -858,8 +859,6 @@ def fetch(url,offline=False,download_image_first=True,images_mode="readable",val
             return cache, newurl
         # We download images contained in the document (from full mode)
         if not offline and download_image_first and images_mode:
-            if "ansicat" not in sys.modules:
-                import ansicat
             renderer = ansicat.renderer_from_file(path,newurl)
             if renderer:
                 for image in renderer.get_images(mode=images_mode):
