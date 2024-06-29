@@ -1,8 +1,8 @@
 # Offpunk History
 
-## 2.3 - Unreleased
+## 2.3 - June 29th 2024
 - Wayland clipboard support through wl-clipboard (new suggested dependency)
-- Xclip clipborad support (in case xsel is missing)
+- Xclip clipboard support (in case xsel is missing)
 - offpunk/netcache: fix IPv6 as an URL (bug #40)
 - ansicat: display empty files (instead of opening them with xdg-open)
 - fix escape sequence warning in python 3.12 (by Étienne Mollier) (Debian #1064209)
@@ -12,7 +12,7 @@
 - ansicat: remove the treshold argument when launching chafa (strange artifacts with new version)
 - netcache: moved the certificate cache to the filesystem instead of a database (by Bert Livens)
 
-## 2.2 - February 13th 2023
+## 2.2 - February 13th 2024
 - cache folder is now configurable through $OFFPUNK_CACHE_PATH environment variable (by prx)
 - offpunk: adding an URL to a list now update the view mode if url already present
 - netcache: solve an infinite gemini loop with code 6X (see also bug #31)
@@ -333,7 +333,7 @@ Other Small Improvements:
 => gemini://rawtext.club/~ploum/2022-01-31-offpunk02.gmi Announcing Offpunk 0.2
 
 ## 0.1 - Jan 3rd 2022
-- initial release as an independant software from AV-98 (thanks solarpunk)
+- initial release as an independant software from AV-98 (thanks solderpunk)
 - Including contributions published by Bjorn on Notabug (thanks ew0k)
 - less used by default for all content with custom options
 - online/offline mode
