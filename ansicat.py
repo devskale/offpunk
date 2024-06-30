@@ -118,6 +118,8 @@ def inline_image(img_file,width):
     if _HAS_CHAFA:
         if _HAS_PIL and not _NEW_CHAFA:
             # this code is a hack to remove frames from animated gif
+            print("WARNING: support for chafa < 1.10 will soon be removed")
+            print("If you can’t upgrade chafa or timg, please contact offpunk developers")
             img_obj = Image.open(img_file)
             if hasattr(img_obj,"n_frames") and img_obj.n_frames > 1:
                 # we remove all frames but the first one

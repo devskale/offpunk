@@ -1,5 +1,8 @@
 # Offpunk History
 
+## 2.4 - Unreleased
+- Deprecation warning if using Chafa < 1.10
+
 ## 2.3 - June 29th 2024
 - Wayland clipboard support through wl-clipboard (new suggested dependency)
 - Xclip clipboard support (in case xsel is missing)
