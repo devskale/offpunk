@@ -1,0 +1,11 @@
+image: alpine/3.19
+oauth: pages.sr.ht/PAGES:RW
+packages:
+- hut
+environment:
+  site1: offpunk.net
+tasks:
+- package-gemini: |
+  tar -cvzh offpunk/tutorial > capsule.tar.gz
+- deploy-gemini: |
+  hut pages publish capsule.tar.gz -p GEMINI -d $site1
