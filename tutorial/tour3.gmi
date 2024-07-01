@@ -1,0 +1,11 @@
+# Third link to demonstrate the tour
+
+This is quickly becoming boring, isn’t it?
+
+Type "t" to get the next link in your tour. If there’s any. Your tour might be empty now.
+
+By now, you probably understand how to use the tour. You will see, it will quickly becomes second nature to add links to your tour just like you open links in tabs in your graphical browser.
+
+You may now go back to the turorial homepage .
+
+=> /index.gmi Tutorial homepage

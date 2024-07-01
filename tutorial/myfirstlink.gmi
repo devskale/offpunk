@@ -1,0 +1,7 @@
+# First link
+
+Congratulations! You followed your first link in Offpunk.
+
+Now, you can type "back" followed by enter to come back to the previous page.
+
+Type "back" then enter.
