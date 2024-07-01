@@ -6,6 +6,6 @@ environment:
   site1: offpunk.net
 tasks:
 - package-gemini: |
-  tar -cvzh offpunk/tutorial > capsule.tar.gz
+    tar -cvzh offpunk/tutorial > capsule.tar.gz
 - deploy-gemini: |
-  hut pages publish capsule.tar.gz -p GEMINI -d $site1
+    hut pages publish capsule.tar.gz -p GEMINI -d $site1
