@@ -1,0 +1,37 @@
+# Simple bookmarking
+
+Bookmarking the current page is as simple as typing "add". You add the page to your bookmarks list. Try adding this page.
+
+> add
+
+
+Now, to see your bookmarks, type "bookmarks" (or "bm" as a shortcut).
+
+> bm
+
+As you can see, bookmarks are simply a page with links. You can have a direct access to a given link if you know its number.
+
+> bm 1
+
+
+The easiest way to remove a bookmark is to visit it and then type "archive"
+
+> archive
+
+We will talk a bit more about archiving later but, for now, you can use it.
+
+Remember to visit the page to archive first. This might be conterintuitive when starting with offpunk but each command always apply to the current page. When you see your bookmarks, the page you are visiting is your bookmarks list.
+
+Alternatively, you can edit your bookmarks by hand with the "list edit" command. 
+
+> list edit bookmarks
+
+Indeed, bookmarks is a simple gemtext file that you can modify by hand. You can even take note between links. The text editor should automatically be the default editor defined in your environment. 
+
+As you can see, you need to explicitely give the name "bookmarks" when editing. Does it means that we can have other lists?
+
+You guessed!
+
+=> /lists.gmi Multiple lists
+
+

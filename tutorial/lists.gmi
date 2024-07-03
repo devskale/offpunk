@@ -1,0 +1,55 @@
+# Multiple lists
+
+You discovered that your bookmarks list is a simple text file with links. But why not have multiple files so you can handle those differently?
+
+That’s the purpose of "list". Let’s see the list we already have:
+
+> list
+
+
+We see the bookmarks list and, surprise, we have "system lists". Let’s discuss those later and focus on normal lists first.
+
+You can create a list with "list create NAME". Let’s try to make a list with all the link you would like to read later. We will call it "toread" but anything will do as long as it doesn’t exist yet.
+
+> list create toread
+
+Adding a link to the "toread" list is only a matter of giving the name to "add".
+
+> add toread
+
+Pro tip: there’s autocompletion on the name of your lists when adding. If a list has a long name, simply press the tab key after the first letters. 
+
+To display your newly created list, use "list"
+
+> list toread
+
+Once again, you can use autocomplete.
+
+To remove a link from toread, you need to archive it. Just like in bookmarks. But remember that Offpunk has no other context than the current page. If you archive a page, it will be removed from every list (except history and archives)
+
+Try the following:
+
+> add
+> add toread
+> archive
+
+If you want to move the current page from a list to another, use "move". For example, we will put the current page in the bookmarks then move it into the "toread" list.
+
+> add
+> move toread
+
+You probably guessed that, to edit the list, you can simply:
+
+> list edit toread
+
+We start to use the "archive" command a lot. But what happens to archived links? Well, they are simply put in a list called "archives". The archives list is special as it contains the last 200 archived URL. You can see it with:
+
+> list archives
+
+List is probably one of the most powerful command in Offpunk. You can get a taste with:
+
+> help list
+
+Let’s now explore how you could manage your RSS/blog/gemlogs subscriptions through lists.
+
+=> /subscriptions.gmi Managing subscriptions with lists

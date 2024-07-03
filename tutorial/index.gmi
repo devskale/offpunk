@@ -13,11 +13,13 @@ Offpunk allows you to browse the Web, Gemini, Gopher and subscribe to RSS feeds 
 => /tour.gmi Efficient browsing with "tour"
 => /view.gmi Different views of the same page
 
-## Work offline
-
-
 ## Organize your bookmarks with Offpunk lists
 
+=> /bookmarks.gmi Simple bookmarking
+=> /lists.gmi Multiple lists and archives
+=> /subscriptions.gmi Managing RSS/blog/gemlog subscriptions
+
+## Work offline
 
 ## Offpunk workflows
 
