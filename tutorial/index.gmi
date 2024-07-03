@@ -2,6 +2,7 @@
 
 Offpunk allows you to browse the Web, Gemini, Gopher and subscribe to RSS feeds without leaving your terminal and while being offline.
 
+=> /screenshots/1.png Screenshot of Offpunk
 
 => /whatisoffpunk.gmi What is Offpunk?
 => /install.gmi Installing Offpunk

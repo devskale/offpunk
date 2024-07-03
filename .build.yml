@@ -10,3 +10,12 @@ tasks:
     tar -cvzh . > ../../capsule.tar.gz
 - deploy-gemini: |
     hut pages publish capsule.tar.gz -p GEMINI -d $site1
+- package-html: |
+    mkdir public_html
+    cd offpunk/tutorial
+    python make_website.py
+    cd ../../public_html
+    ln -s ../offpunk/screenshots .
+    tar -cvzh . > ../site.tar.gz
+- deploy-html: |
+    hut page publish site.tar.gz -d $site1

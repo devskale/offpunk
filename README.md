@@ -6,8 +6,8 @@ The goal of Offpunk is to be able to synchronise your content once (a day, a wee
 
 Official project page (repository/mailing lists) : https://sr.ht/~lioploum/offpunk/
 
-![Screenshot HTML page with picture](screenshot_offpunk1.png)
-![Screenshot Gemini page](screenshot_offpunk2.png)
+![Screenshot HTML page with picture](screenshots/1.png)
+![Screenshot Gemini page](screenshots/2.png)
 
 Offpunk is a fork of the original [AV-98](https://tildegit.org/solderpunk/AV-98) by Solderpunk and was originally called AV-98-offline as an experimental branch.
 
