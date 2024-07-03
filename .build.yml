@@ -18,4 +18,4 @@ tasks:
     ln -s ../offpunk/screenshots .
     tar -cvzh . > ../site.tar.gz
 - deploy-html: |
-    hut page publish site.tar.gz -d $site1
+    hut pages publish site.tar.gz -d $site1
