@@ -3,3 +3,8 @@
 Congratulations, this was the first link in your tour.
 
 Type "t" to get the next link for your tour.
+
+> t
+
+If you are at the end of tour, you can
+=> /index.gmi return to the tutorial

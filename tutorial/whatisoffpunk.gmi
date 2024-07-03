@@ -1,5 +1,6 @@
 # What is Offpunk?
 
+=> /screenshots/2.png Screenshot of Offpunk
 
 ## Offline-first
 
@@ -16,3 +17,7 @@ Offpunk transparently browse http/https/gemini/gopher/spartan/finger links. In y
 ## Unix philosophy
 
 Offpunk is made of 4 components that can be used separatly: netcache, ansicat, opnk and offpunk. While being written in python, dependencies are kept minimal and, when possible, optional.
+
+
+=> /install.gmi Install Offpunk
+=> /firsteps.gmi Start to use Offpunk

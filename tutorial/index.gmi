@@ -7,9 +7,33 @@ Offpunk allows you to browse the Web, Gemini, Gopher and subscribe to RSS feeds 
 => /whatisoffpunk.gmi What is Offpunk?
 => /install.gmi Installing Offpunk
 
-## Learn to use Offpunk
+## Browse online with Offpunk
 
-=> /firststeps.gmi First steps
-=> /tour.gmi Advanced browsing with "tour"
+=> /firststeps.gmi First steps in Offpunk
+=> /tour.gmi Efficient browsing with "tour"
+=> /view.gmi Different views of the same page
+
+## Work offline
 
 
+## Organize your bookmarks with Offpunk lists
+
+
+## Offpunk workflows
+
+
+## Use Offpunk in your own project
+
+Offpunk contains three tools that you can use independantly in your project.
+- netcache
+- ansicat
+- opnk
+
+## Get help
+
+=> https://lists.sr.ht/~lioploum/offpunk-users Offpunk-users mailing-list
+
+## Contribute to Offpunk
+
+=> https://sr.ht/~lioploum/offpunk/ Offpunk on Sourcehut
+=> https://lists.sr.ht/~lioploum/offpunk-devel Offpunk-devel mailing-list

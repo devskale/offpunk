@@ -3,3 +3,10 @@
 This link is not really interesting.
 
 Type "t" to get the next link in your tour.
+
+
+> t
+
+
+If you are at the end of tour, you can
+=> /index.gmi return to the tutorial

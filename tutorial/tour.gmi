@@ -17,6 +17,13 @@ You can also add multiple links: "t 1 2 3". Or add a range: "t 1-3".
 
 Try to add a range with "t 1-3" now.
 
+> t 1-3
+
 It looks like nothing happened but the links were added to your tour. If you use "tour" or "t" without any number, the next link in you tour will be displayed.
 
 Type "t" now.
+
+> t
+
+
+=> /index.gmi Back to the tutorial

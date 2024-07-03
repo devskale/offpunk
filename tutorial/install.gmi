@@ -6,6 +6,14 @@ Offpunk is already packaged for many distributions. Installing it is probably as
 
 => https://repology.org/project/offpunk/versions Offpunk packages listed by Repology
 
+
+Offpunk has optional dependencies. To check if those are installed, use "version"
+
+> version
+
+
+## Helping with packaging
+
 We welcome and encourage all efforts to make Offpunk availalbe on new distributions. If you want to give it a try, say hello to the dedicated mailing-list.
 
 => https://lists.sr.ht/~lioploum/offpunk-packagers Offpunk-packagers mailing-list
@@ -20,6 +28,8 @@ git clone https://git.sr.ht/~lioploum/offpunk
 ```
 
 Once cloned, no build is required. You can launch offpunk.py/opnk.py/ansicat.py/netcache.py directly.
+
+> python offpunk.py
 
 Anyone using the git version should feel comfortable to report any bug on the devel mailing-list.
 
