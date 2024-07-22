@@ -1039,11 +1039,33 @@ Use "view XX" where XX is a number to view information about link XX.
         """Open current item with the configured handler or xdg-open.
 Uses "open url" to open current URL in a browser.
 see "handler" command to set your handler."""
-        u, m = unmode_url(self.current_url)
-        if args[0] == "url":
-            run("xdg-open %s", parameter=u, direct_output=True)
+        #do we open the URL (true) or the cached file (false)
+        url_list = []
+        urlmode = False
+        arglist = args[0].split()
+        if len(arglist) > 0 and arglist[0] == "url":
+            arglist.pop(0)
+        if len(arglist) > 0:
+            #we try to match each argument with a link
+            for a in arglist:
+                try:
+                    n = int(a)
+                    u = self.get_renderer().get_link(n)
+                    url_list.append(u)
+                except ValueError:
+                    print("Non-numeric index %s, skipping." % index)
+                except IndexError:
+                    print("Invalid index %d, skipping." % n)
+
         else:
-            self.opencache.opnk(u,terminal=False)
+            #if no argument, we use current url
+            u, m = unmode_url(self.current_url)
+            url_list.append(u)
+        for u in url_list:
+            if urlmode:
+                run("xdg-open %s", parameter=u, direct_output=True)
+            else:
+                self.opencache.opnk(u,terminal=False)
 
     @needs_gi
     def do_shell(self, line):
