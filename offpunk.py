@@ -1037,7 +1037,9 @@ Use "view XX" where XX is a number to view information about link XX.
     @needs_gi
     def do_open(self, *args):
         """Open current item with the configured handler or xdg-open.
-Uses "open url" to open current URL in a browser.
+Use "open url" to open current URL in a browser.
+Use "open 2 4" to open links 2 and 4
+You can combine with "open url 2 4" to open URL of links
 see "handler" command to set your handler."""
         #do we open the URL (true) or the cached file (false)
         url_list = []
@@ -1045,6 +1047,7 @@ see "handler" command to set your handler."""
         arglist = args[0].split()
         if len(arglist) > 0 and arglist[0] == "url":
             arglist.pop(0)
+            urlmode = True
         if len(arglist) > 0:
             #we try to match each argument with a link
             for a in arglist:
@@ -1053,7 +1056,7 @@ see "handler" command to set your handler."""
                     u = self.get_renderer().get_link(n)
                     url_list.append(u)
                 except ValueError:
-                    print("Non-numeric index %s, skipping." % index)
+                    print("Non-numeric index %s, skipping." % a)
                 except IndexError:
                     print("Invalid index %d, skipping." % n)
 
