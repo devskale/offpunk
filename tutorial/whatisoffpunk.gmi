@@ -20,4 +20,5 @@ Offpunk is made of 4 components that can be used separatly: netcache, ansicat, o
 
 
 => /install.gmi Install Offpunk
-=> /firsteps.gmi Start to use Offpunk
+=> /firststeps.gmi Start to use Offpunk
+=> /index.gmi Back to the tutorial
