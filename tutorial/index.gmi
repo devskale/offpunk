@@ -12,6 +12,7 @@ Offpunk allows you to browse the Web, Gemini, Gopher and subscribe to RSS feeds 
 => /firststeps.gmi First steps in Offpunk
 => /tour.gmi Efficient browsing with "tour"
 => /view.gmi Different views of the same page
+=> /open.gmi Open outside of Offpunk
 
 ## Work offline
 *=> /offline.gmi Working offline and basic sync

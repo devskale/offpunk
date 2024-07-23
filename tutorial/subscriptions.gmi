@@ -19,9 +19,9 @@ Offpunk doesn’t really distinguish between "rss", "gemtext", "atom" or "html".
 
 WARNING: Offpunk considers a link as "new" if it doesn’t exist yet in its cache. This means that, when you add a new RSS feed, every single post will be added to the tour at the next "sync". This might be what you want but, in some case, this might be too much. A quick solution is to edit your tour manually with "list edit tour" (remember, tour is just another list).
 
-Of course, you may want to unsubscribe a list.
+Of course, you may want to unsubscribe a list by resetting it to "normal".
 
-> list unsubscribe rss
+> list normal rss
 
 What the command is doing is simply adding a "#subscribed" tag next to your list title. Another way to mark a list as a subscription is thus to add "#subscribed" next to its title.
 
@@ -62,3 +62,4 @@ Let’s try it:
 While subsciptions are nice, there are time where we don’t want to update the content of our lists.
 
 => /frozen.gmi Let’s learn to freeze lists.
+=> /index.gmi Back to the turorial

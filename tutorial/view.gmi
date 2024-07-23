@@ -28,5 +28,5 @@ View also allows you to preview a given link. Try "v 1".
 
 > v 1
 
-
+=> /open.gmi Open outside of Offpunk
 => /index.gmi Back to the turorial
