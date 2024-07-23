@@ -1,0 +1,47 @@
+# Working offline
+
+By default, Offpunk is working online as indicated by the green "ON" on your prompt. If you want to disconnect Offpunk, simply type:
+
+> offline
+
+You are now offline and offpunk will only allows you to view content that has already been cached. 
+
+The time and date at which the content you visit was cached is written in red, next its title. If you would like to see a fresh version, type:
+
+> reload
+
+Of course, this is not done immediately as you are offline. But, trust me, you will soon have the newest version of that page.
+
+Let’s try to visit this old blog post about releasing Offpunk 2.0. It should not be in your cache. If you can see the content, try to follow links until you don’t have a cached version.
+
+=> https://ploum.net/2023-11-25-offpunk2.html Announcing Offpunk 2.0
+
+When encountering a link that has never been seen before, offpunk will save it in a list called "to_fetch".
+
+Now, let’s come back online
+
+> online
+
+We will now ask offpunk to synchronize in order to fetch everything you wanted to see but couldn’t.
+
+> sync
+
+During a sync, offpunk does many things but, firstly, it will fetch everything in your "to_fetch" list and put it in your tour. You can now go back offline.
+
+> offline
+
+And browse what you wanted to browse previously.
+
+> tour
+
+or, shorter:
+
+> t
+
+WARNING: Offpunk has currently no automatic online detection. If in online mode, it will attempts to connect, even if the network is down. If in offline mode, it will never attempt to connect.
+
+
+=> /index.gmi Back to tutorial
+
+
+
