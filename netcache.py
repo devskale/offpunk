@@ -24,6 +24,9 @@ except ModuleNotFoundError:
 try:
     from cryptography import x509
     from cryptography.hazmat.backends import default_backend
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import rsa
+    from cryptography.hazmat.primitives import serialization
     _HAS_CRYPTOGRAPHY = True
     _BACKEND = default_backend()
 except(ModuleNotFoundError,ImportError):
@@ -589,12 +592,101 @@ def _validate_cert(address, host, cert,accept_bad_ssl=False,automatic_choice=Non
         with open(os.path.join(certcache, fingerprint+".crt"), "wb") as fp:
             fp.write(cert)
 
+def _get_client_certkey(site_id: str, host: str):
+    # returns {cert: str, key: str}
+    certdir = os.path.join(xdg("data"), "certs", host)
+    certf = os.path.join(certdir, "%s.cert" % site_id)
+    keyf = os.path.join(certdir, "%s.key" % site_id)
+    if not os.path.exists(certf) or not os.path.exists(keyf):
+        if host != "":
+            split = host.split(".")
+            #if len(split) > 2:  # Why not allow a global identity? Maybe I want
+                                 # to login to all sites with the same
+                                 # certificate.
+            return _get_client_certkey(site_id, ".".join(split[1:]))
+        return None
+    certkey = dict(cert=certf, key=keyf)
+    return certkey
+
+def _get_site_ids(url: str):
+    newurl = normalize_url(url)
+    u = urllib.parse.urlparse(newurl)
+    if u.scheme == "gemini" and u.username == None:
+        certdir = os.path.join(xdg("data"), "certs")
+        netloc_parts = u.netloc.split(".")
+        site_ids = []
+
+        for i in range(len(netloc_parts), 0, -1):
+            lasti = ".".join(netloc_parts[-i:])
+            direc = os.path.join(certdir, lasti)
+
+            for certfile in glob.glob(os.path.join(direc, "*.cert")):
+                site_id = certfile.split('/')[-1].split(".")[-2]
+                site_ids.append(site_id)
+        return site_ids
+    else:
+        return []
+
+def create_certificate(name: str, days: int, hostname: str):
+    key = rsa.generate_private_key(
+            public_exponent  = 65537,
+            key_size = 2048)
+    sitecertdir = os.path.join(xdg("data"), "certs", hostname)
+    keyfile = os.path.join(sitecertdir, name+".key")
+    # create the directory of it doesn't exist
+    os.makedirs(sitecertdir, exist_ok=True)
+    with open(keyfile, "wb") as f:
+        f.write(key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption()
+        ))
+    xname = x509.Name([
+        x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, name),
+        ])
+    # generate the cert, valid a week ago (timekeeping is hard, let's give it a
+    # little margin). issuer and subject are your name
+    cert = (x509.CertificateBuilder()
+            .subject_name(xname)
+            .issuer_name(xname)
+            .public_key(key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(datetime.datetime.utcnow() -
+                              datetime.timedelta(days=7))
+            .not_valid_after(datetime.datetime.utcnow() +
+                             datetime.timedelta(days=days))
+            .sign(key, hashes.SHA256())
+            )
+    certfile = os.path.join(sitecertdir, name + ".cert")
+    with open(certfile, "wb") as f:
+        f.write(cert.public_bytes(serialization.Encoding.PEM))
+
+def get_certs(url: str):
+    u = urllib.parse.urlparse(normalize_url(url))
+    if u.scheme == "gemini":
+        certdir = os.path.join(xdg("data"), "certs")
+        netloc_parts = u.netloc.split(".")
+        site_ids = []
+        if '@' in netloc_parts[0]:
+            netloc_parts[0] = netloc_parts[0].split('@')[1]
+
+        for i in range(len(netloc_parts), 0, -1):
+            lasti = ".".join(netloc_parts[-i:])
+            direc = os.path.join(certdir, lasti)
+            for certfile in glob.glob(os.path.join(direc, "*.cert")):
+                site_id = certfile.split('/')[-1].split(".")[-2]
+                site_ids.append(site_id)
+        return site_ids
+    else:
+        return []
+
 def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_certificates=False,\
                     **kwargs):
     cache = None
     newurl = url
     url_parts = urllib.parse.urlparse(url)
     host = url_parts.hostname
+    site_id = url_parts.username
     port = url_parts.port or standard_ports["gemini"]
     path = url_parts.path or "/"
     query = url_parts.query
@@ -622,8 +714,16 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
     # Prepare TLS context
     protocol = ssl.PROTOCOL_TLS_CLIENT if sys.version_info.minor >=6 else ssl.PROTOCOL_TLSv1_2
     context = ssl.SSLContext(protocol)
-    context.check_hostname=False
+    context.check_hostname = False
     context.verify_mode = ssl.CERT_NONE
+
+    # When using an identity, use the certificate and key
+    if site_id:
+        certkey = _get_client_certkey(site_id, host)
+        if certkey:
+            context.load_cert_chain(certkey["cert"], certkey["key"])
+        else:
+            print("This identity doesn't exist for this site (or is disabled).")
     # Impose minimum TLS version
     ## In 3.7 and above, this is easy...
     if sys.version_info.minor >= 7:
@@ -665,15 +765,21 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
     _validate_cert(address[4][0], host, cert,automatic_choice="y")
     # Send request and wrap response in a file descriptor
     url = urllib.parse.urlparse(url)
-    new_netloc = host
+    new_host = host
     #Handle IPV6 hostname
-    if ":" in new_netloc:
-        new_netloc = "[" + new_netloc + "]"
+    if ":" in new_host:
+        new_host = "[" + new_host + "]"
     if port != standard_ports["gemini"]:
-        new_netloc += ":" + str(port)
-    url = urllib.parse.urlunparse(url._replace(netloc=new_netloc))
-    s.sendall((url + CRLF).encode("UTF-8"))
-    f= s.makefile(mode = "rb")
+        new_host += ":" + str(port)
+    url_no_username = urllib.parse.urlunparse(url._replace(netloc=new_host))
+
+    if site_id:
+        url = urllib.parse.urlunparse(url._replace(netloc=site_id+"@"+new_host))
+    else:
+        url = url_no_username
+
+    s.sendall((url_no_username + CRLF).encode("UTF-8"))
+    f = s.makefile(mode = "rb")
     ## end of send_request in AV98
     # Spec dictates <META> should not exceed 1024 bytes,
     # so maximum valid header length is 1027 bytes.
@@ -744,8 +850,7 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
         raise RuntimeError(meta)
     # Client cert
     elif status.startswith("6"):
-        error = "Handling certificates for status 6X are not supported by offpunk\n"
-        error += "See bug #31 for discussion about the problem"
+        error = "You need to provide a client-certificate to access this page."
         raise RuntimeError(error)
     # Invalid status
     elif not status.startswith("2"):
@@ -785,7 +890,7 @@ def fetch(url,offline=False,download_image_first=True,images_mode="readable",val
     newurl = url
     path=None
     print_error = "print_error" in kwargs.keys() and kwargs["print_error"]
-    #Firt, we look if we have a valid cache, even if offline
+    #First, we look if we have a valid cache, even if offline
     #If we are offline, any cache is better than nothing
     if is_cache_valid(url,validity=validity) or (offline and is_cache_valid(url,validity=0)):
         path = get_cache_path(url)
@@ -803,13 +908,13 @@ def fetch(url,offline=False,download_image_first=True,images_mode="readable",val
                 path = None
             elif scheme in ("http","https"):
                 if _DO_HTTP:
-                    path=_fetch_http(url,**kwargs)
+                    path=_fetch_http(newurl,**kwargs)
                 else:
                     print("HTTP requires python-requests")
             elif scheme == "gopher":
-                path=_fetch_gopher(url,**kwargs)
+                path=_fetch_gopher(newurl,**kwargs)
             elif scheme == "finger":
-                path=_fetch_finger(url,**kwargs)
+                path=_fetch_finger(newurl,**kwargs)
             elif scheme == "gemini":
                 path,newurl=_fetch_gemini(url,**kwargs)
             elif scheme == "spartan":
@@ -819,7 +924,7 @@ def fetch(url,offline=False,download_image_first=True,images_mode="readable",val
         except UserAbortException:
             return None, newurl
         except Exception as err:
-            cache = set_error(url, err)
+            cache = set_error(newurl, err)
             # Print an error message
             # we fail silently when sync_only
             if isinstance(err, socket.gaierror):
@@ -902,17 +1007,20 @@ def main():
     # --validity : returns the date of the cached version, Null if no version
     # --force-download : download and replace cache, even if valid
     args = parser.parse_args()
-
     param = {}
     
     for u in args.url:
         if args.offline:
             path = get_cache_path(u)
+        elif args.ids:
+            ids = _get_site_ids(u)
         else:
             path,url = fetch(u,max_size=args.max_size,timeout=args.timeout,\
                                 validity=args.cache_validity)
         if args.path:
             print(path)
+        elif args.ids:
+            print(ids)
         else:
             with open(path,"r") as f:
                 print(f.read())

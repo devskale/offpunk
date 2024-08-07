@@ -89,6 +89,7 @@ _ABBREVS = {
     "bb":   "blackbox",
     "bm":   "bookmarks",
     "book": "bookmarks",
+    "cert": "certs",
     "cp":   "copy",
     "f":   "forward",
     "g":    "go",
@@ -814,6 +815,42 @@ Current tour can be listed with `tour ls` and scrubbed with `tour clear`."""
                     print("Non-numeric index %s, skipping." % index)
                 except IndexError:
                     print("Invalid index %d, skipping." % n)
+
+    @needs_gi
+    def do_certs(self, line) -> None:
+        """Manage your client certificates (identities) for a site.
+        `certs` will display all valid certificates for the current site
+        `certs new <name> <days-valid> <url[optional]>` will create a new certificate, if no url is specified, the current open site will be used.
+        """
+        line = line.strip()
+        if not line:
+            certs = netcache.get_certs(self.current_url)
+            if len(certs) == 0:
+                print("There are no certificates available for this site.")
+            else:
+                if len(certs) == 1:
+                    print("The one available certificate for this site is:")
+                else:
+                    print("The", len(certs) ,"available certificates for this site are:")
+
+                print(*certs)
+                print("Use the 'id@site.net' notation to activate a certificate.")
+        else:
+            lineparts = line.split(' ')
+            if lineparts[0] == 'new':
+                if len(lineparts) == 4:
+                    name = lineparts[1]
+                    days = lineparts[2]
+                    site = lineparts[3]
+                    netcache.create_certificate(name, int(days), site)
+                elif len(lineparts) == 3:
+                    name = lineparts[1]
+                    days = lineparts[2]
+                    site = urllib.parse.urlparse(self.current_url)
+                    netcache.create_certificate(name, int(days), site.hostname)
+
+                else:
+                    print("usage")
 
     @needs_gi
     def do_mark(self, line):
