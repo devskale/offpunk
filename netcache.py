@@ -986,12 +986,14 @@ def main():
     
     descri="Netcache is a command-line tool to retrieve, cache and access networked content.\n\
             By default, netcache will returns a cached version of a given URL, downloading it \
-            only if not existing. A validity duration, in seconds, can also be given so that \
-            netcache downloads the content only if the existing cache is older than the validity."
+            only if a cache version doesn't exist. A validity duration, in seconds, can also \
+            be given so netcache downloads the content only if the existing cache is older than the validity."
     # Parse arguments
     parser = argparse.ArgumentParser(prog="netcache",description=descri)
     parser.add_argument("--path", action="store_true",
                         help="return path to the cache instead of the content of the cache")
+    parser.add_argument("--ids", action="store_true",
+                        help="return a list of id's for the gemini-site instead of the content of the cache")
     parser.add_argument("--offline", action="store_true",
                         help="Do not attempt to download, return cached version or error")
     parser.add_argument("--max-size", type=int,
@@ -1008,7 +1010,7 @@ def main():
     # --force-download : download and replace cache, even if valid
     args = parser.parse_args()
     param = {}
-    
+
     for u in args.url:
         if args.offline:
             path = get_cache_path(u)
