@@ -25,9 +25,9 @@ Offpunk allows you to browse the Web, Gemini, Gopher and subscribe to RSS feeds 
 => /subscriptions.gmi Managing RSS/blog/gemlog subscriptions
 => /frozen.gmi Freezing lists to prevent update of content
 
-
 ## Offpunk workflows
 
+=> /workflow_ploum.gmi Ploum’s workflow
 
 ## Use Offpunk in your own project
 
