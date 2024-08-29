@@ -36,6 +36,30 @@ If the content is truncated, I ask to see the full version.
 
 > v full
 
+I may need to see the page in Firefox.
+
+> open url
+
+If I know that a given link will need to be open in Firefox, I do it directly.
+
+> open url X   
+
+(where X is the number of the link)
+
+I may also check first where the link is heading with.
+
+> v X 
+
+(where X is the number of the link)
+
+If it looks interesting, I add it to my tour:
+
+> t X
+
+Then I get back reading the article with
+
+> v
+
 Sometimes, I follow links and find new stuff to read that I also put in my "toread" list. If the author look interesting, I try to see what else (s)he wrote by immediately going to her/his RSS feed.
 
 > v feed
@@ -119,6 +143,12 @@ Toread is a zsh alias to the following :
 
 Now, the URL is in my list to_fetch and will be fetched next morning. 
 
+If Offpunk is already open, I simply type:
+
+> go
+
+(by default, "go" will use the content of the clipboard)
+
 If I don’t want to wait til tomorrow, I run a "short sync" which is the following:
 
 > offpunk --sync tour to_fetch --assume-yes --cache-validity 51840
@@ -137,5 +167,12 @@ If a bit older, I browse the archives.
 > list archives
 
 The archives are limited to 200 (this is configurable). For me, it means between 1 and 2 months of reading. If I really want to find something I’ve read months ago, I use "grep" in the "~/.cache/offpunk" folder. It is rare but… it worked several times.
+
+## Outside of Offpunk
+
+Inside my terminal, I now open files with:
+
+> opnk
+
 
 => /index.gmi Back to the tutorial
