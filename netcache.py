@@ -465,7 +465,7 @@ def _validate_cert(address, host, cert,accept_bad_ssl=False,automatic_choice=Non
     previously encountered a different certificate for this IP address and
     hostname.
     """
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.UTC)
     if _HAS_CRYPTOGRAPHY:
         # Using the cryptography module we can get detailed access
         # to the properties of even self-signed certs, unlike in
@@ -882,7 +882,7 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
     else:
         body = fbody
     cache = write_body(url,body,mime)
-    return cache,newurl
+    return cache,url
 
 
 def fetch(url,offline=False,download_image_first=True,images_mode="readable",validity=0,**kwargs):

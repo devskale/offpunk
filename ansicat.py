@@ -1361,7 +1361,7 @@ def get_mime(path,url=None):
         mime = "mailto"
     elif os.path.isdir(path):
         mime = "Local Folder"
-    elif path.endswith(".gmi"):
+    elif path.endswith(".gmi") or path.endswith(".gemini"):
         mime = "text/gemini"
     elif path.endswith("gophermap"):
         mime = "text/gopher"
