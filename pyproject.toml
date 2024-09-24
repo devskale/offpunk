@@ -37,7 +37,7 @@ process-title = ["setproctitle"]
 rss = ["feedparser"]
 
 [project.urls]
-Homepage = "https://sr.ht/~lioploum/offpunk/"
+Homepage = "https://offpunk.net/"
 Source = "https://git.sr.ht/~lioploum/offpunk"
 "Bug Tracker" = "https://todo.sr.ht/~lioploum/offpunk"
 

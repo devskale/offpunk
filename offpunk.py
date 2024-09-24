@@ -636,6 +636,7 @@ Use with "link" to copy a link in the gemtext format to that page with the title
         else:
             print("No content to copy, visit a page first")
 
+    
     ### Stuff for getting around
     def do_go(self, line):
         """Go to a gemini URL or marked item."""
@@ -1704,6 +1705,10 @@ The following lists cannot be removed or frozen but can be edited with "list edi
             cmd.Cmd.do_help(self, full_cmd)
         else:
             cmd.Cmd.do_help(self, arg)
+
+    def do_tutorial(self,arg):
+        """Access the offpunk.net tutorial (online)"""
+        self._go_to_url("gemini://offpunk.net/firststeps.gmi")
 
     def do_sync(self, line):
         """Synchronize all bookmarks lists and URLs from the to_fetch list.
