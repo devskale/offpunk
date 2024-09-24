@@ -547,7 +547,7 @@ def _validate_cert(address, host, cert,accept_bad_ssl=False,automatic_choice=Non
             # Load the most frequently seen certificate to see if it has
             # expired
             previous_cert = x509.load_der_x509_certificate(previous_cert, _BACKEND)
-            previous_ttl = previous_cert.not_valid_after - now
+            previous_ttl = previous_cert.not_valid_after_utc - now
             print(previous_ttl)
 
         print("****************************************")
