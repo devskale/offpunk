@@ -161,7 +161,10 @@ def get_cache_path(url,add_index=True):
         local = False
         # Convert unicode hostname to punycode using idna RFC3490
         host = parsed.netloc #.encode("idna").decode()
-        port = parsed.port or standard_ports.get(scheme, 0)
+        try:
+            port = parsed.port or standard_ports.get(scheme, 0)
+        except ValueError:
+           port = standard_ports.get(scheme,0) 
         # special gopher selector case
         if scheme == "gopher":
             if len(parsed.path) >= 2:

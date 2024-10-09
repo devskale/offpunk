@@ -4,12 +4,13 @@
 WARNING: official homepage is now https://offpunk.net (or gemini://offpunk.net)
 This release includes work by Bert Livens to add client-side certificates (see "help certs")
 - Deprecation warning if using Chafa < 1.10
-- "open" now accept integer as parameters to open links (suggested by Matthieu Rakotojaona)
+- introducing the "tutorial" command (which is only a link to offpunk.net for now)
 - netcache: use client-certificate when going to a url like gemini://username@site.net (by Bert Livens)
 - offpunk/netcache: added the "cert" command to list and create client certificates (Bert Livens)
+- "open" now accept integer as parameters to open links (suggested by Matthieu Rakotojaona)
 - fix cache not being properly accessed when server redirect to same host with standard port (gemini.ucant.org)
 - fix crash when expired certificate due to not_valid_after deprecation
-- introducing the "tutorial" command (which is only a link to offpunk.net for now)
+- fix crash in netcache when a port cannot be parsed in the URL
 
 ## 2.3 - June 29th 2024
 - Wayland clipboard support through wl-clipboard (new suggested dependency)
