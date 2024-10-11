@@ -811,7 +811,6 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
             if status == "11":
                 user_input = getpass.getpass("> ")
             else:
-                #TODO:FIXME we should not ask for user input while non-interactive
                 user_input = input("> ")
             newurl = url.split("?")[0]
             return _fetch_gemini(newurl+"?"+user_input)
@@ -847,7 +846,7 @@ def _fetch_gemini(url,timeout=DEFAULT_TIMEOUT,interactive=True,accept_bad_ssl_ce
 #        if status == "31":
 #            # Permanent redirect
 #            self.permanent_redirects[gi.url] = new_gi.url
-        return _fetch_gemini(newurl)
+        return _fetch_gemini(newurl,interactive=interactive)
     # Errors
     elif status.startswith("4") or status.startswith("5"):
         raise RuntimeError(meta)
