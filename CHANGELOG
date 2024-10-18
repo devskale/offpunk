@@ -12,6 +12,7 @@ This release includes work by Bert Livens to add client-side certificates (see "
 - fix crash when expired certificate due to not_valid_after deprecation
 - fix crash in netcache when a port cannot be parsed in the URL
 - fix parameter "interactive=False" not being sent to gemini redirections
+- fix problem with non-integer version of less (Patch by Peter Cock)
 
 ## 2.3 - June 29th 2024
 - Wayland clipboard support through wl-clipboard (new suggested dependency)

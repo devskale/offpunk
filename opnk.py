@@ -29,8 +29,9 @@ output = run("less --version")
 words = output.split("\n")[0].split()
 less_version = 0
 for w in words:
-    if w.isdigit():
-        less_version = int(w)
+    # On macOS the version can be something like 581.2 not just an int:
+    if all(_.isdigit() for _ in w.split(".")):
+        less_version = int(w.split(".", 1)[0])
 # restoring position only works for version of less > 572
 if less_version >= 572:
     _LESS_RESTORE_POSITION = True
