@@ -2,6 +2,9 @@
 
 => /screenshots/2.png Screenshot of Offpunk
 
+
+Offpunk is a command-line offline-first browser for your terminal. But what does it mean?
+
 ## Offline-first
 
 Every content you visit is cached and can be visited later while offline. If you try to visit a content not available in your cache, it will be marked to be downloaded later.
