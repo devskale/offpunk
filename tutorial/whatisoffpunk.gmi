@@ -2,8 +2,7 @@
 
 => /screenshots/2.png Screenshot of Offpunk
 
-
-Offpunk is a command-line offline-first browser for your terminal. But what does it mean?
+Offpunk is a command-line offline-first web browser for your terminal. But what does it mean?
 
 ## Command-line
 
@@ -13,7 +12,9 @@ No mouse, no shortcut, no hidden key to press. Every action requires you to type
 
 Every content you visit is cached and can be visited later while offline. If you try to visit a content not available in your cache, it will be marked to be downloaded later. Offpunk allows you to synchronise you computer once every hour, day or week and work offline without being interrupted.
 
-## Browser
+## Web Browser
+
+Yes, it browses the web. But not only.
 
 Offpunk transparently browse http/https/gemini/gopher/spartan/finger links. In your terminal, it will nicely display HTML, Gemtext, Gophermap, txt, RSS, Atom and even pictures. You can subscribe to an RSS feed or to any page. Offpunk merges the concept of browsing pages and subscribing to feeds.
 
