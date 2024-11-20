@@ -786,22 +786,25 @@ class GopherRenderer(AbstractRenderer):
                     parts = parts[:-1]
                 if len(parts) == 4:
                     name,path,host,port = parts
-                    itemtype = name[0]
-                    name = name[1:]
-                    if port == "70":
-                        port = ""
-                    else:
-                        port = ":%s"%port
-                    if itemtype == "h" and path.startswith("URL:"):
-                        url = path[4:]
-                    else:
-                        url = "gopher://%s%s/%s%s" %(host,port,itemtype,path)
-                    url = url.replace(" ","%20")
-                    linkline = url + " " + name
-                    links.append(linkline)
-                    number = len(links) + startlinks
-                    towrap = "[%s] "%str(number)+ name
-                    r.add_text(towrap)
+                    #If line starts with TAB, there’s no name.
+                    #We thus hide this line
+                    if name:
+                        itemtype = name[0]
+                        name = name[1:]
+                        if port == "70":
+                            port = ""
+                        else:
+                            port = ":%s"%port
+                        if itemtype == "h" and path.startswith("URL:"):
+                            url = path[4:]
+                        else:
+                            url = "gopher://%s%s/%s%s" %(host,port,itemtype,path)
+                        url = url.replace(" ","%20")
+                        linkline = url + " " + name
+                        links.append(linkline)
+                        number = len(links) + startlinks
+                        towrap = "[%s] "%str(number)+ name
+                        r.add_text(towrap)
                 else:
                     r.add_text(line)
         return r.get_final(),links
