@@ -1,5 +1,7 @@
 # Installing Offpunk
 
+=> /screenshots/decvt220.jpg Offpunk running on a DECVT220 (picture by Dylan D’Silva)
+
 ## Packages
 
 Offpunk is already packaged for many distributions. Installing it is probably as simple as "apt install offpunk" or "pacman -S offpunk".
