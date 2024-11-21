@@ -1,8 +1,8 @@
 # Offpunk History
 
-## 2.4 - Unreleased
-WARNING: official homepage is now https://offpunk.net (or gemini://offpunk.net)
-This release includes work by Bert Livens to add client-side certificates (see "help certs")
+## 2.4 - November 21st 2024
+NEW WEBSITE: Official homepage is now https://offpunk.net (or gemini://offpunk.net). Sources are in the /tutorial/ folder and contributions are welcome.
+NEW FEATURE: This release includes work by Bert Livens to add gemini client-side certificates (see "help certs"). This means you can browse gemini capsule while being identified (such as astrobotany)
 - Deprecation warning if using Chafa < 1.10
 - introducing the "tutorial" command (which is only a link to offpunk.net for now)
 - netcache: use client-certificate when going to a url like gemini://username@site.net (by Bert Livens)
