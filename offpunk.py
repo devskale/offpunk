@@ -188,25 +188,23 @@ class GeminiClient(cmd.Cmd):
 
     def set_prompt(self, prompt):
         key = "prompt_%s" % prompt.lower()
-        if key in self.theme:
-            colors = self.theme[key]
-        else:
-            # default color is green
-            colors = ["green"]
+
+        # default color is green
+        colors = self.theme.get(key, ["green"])
+
         open_color = ""
         close_color = ""
-        for c in colors:
-            if c in offthemes.colors:
-                ansi = offthemes.colors[c]
-            else:
-                ansi = ["32", "39"]
+        for color in colors:
+            # default to green 32 if color name `green` is not found
+            ansi = offthemes.colors.get(color, ["32", "39"])
+
             open_color += "%s;" % ansi[0]
             close_color += "%s;" % ansi[1]
+
         # removing the last ";"
-        if open_color.endswith(";"):
-            open_color = open_color[:-1]
-        if close_color.endswith(";"):
-            close_color = close_color[:-1]
+        open_color = open_color.rstrip(";")
+        close_color = close_color.rstrip(";")
+
         self.prompt = (
             "\001\x1b[%sm\002" % open_color
             + prompt
