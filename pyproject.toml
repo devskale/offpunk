@@ -56,3 +56,10 @@ only-include = [
   "offblocklist.py", "offpunk.py", "offthemes.py",
   "offutils.py", "opnk.py", "cert_migration.py",
 ]
+
+[tool.ruff]
+select = ["E"]
+
+# Never enforce `E501` (line length violations)
+# Never enforce `E741` (ambigous variable name for `l`)
+ignore = ["E501", "E741"]
