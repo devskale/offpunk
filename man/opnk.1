@@ -1,4 +1,4 @@
-.Dd August 27, 2023
+.Dd November 25, 2024
 .Dt OPNK 1
 .Os 
 .
@@ -8,26 +8,25 @@
 .
 .Sh SYNOPSIS
 .Nm
+.Op \-mode Ar MODE
+.Op \-cache-validity Ar CACHE_VALIDITY
 .Op Ar INPUT ...
 .Nm
 .Fl h | \-help
 .
 .Sh DESCRIPTION
-Opnk is the "universal open (like a punk)".
-Opnk is a tool that will try to render any file or URL in the terminal,
-using
-.Xr netcache 1
-and
-.Xr ansicat 1 ,
-and put them in
-.Xr less 1 .
-If that doesn’t work,
-it will fallback to
+opnk is an universal open command tool
+that will try to display any file in the pager
+.Xr less 1
+after rendering its content with
+.Xr ansicat 1 .
+If that fails,
+opnk will fallback to opening the file with
 .Xr xdg-open 1 .
-.Pp
-.Xr Offpunk 1
-is a command-line browser and feed reader dedicated to browsing the Web,
-Gemini, Gopher and Spartan.
+If given an URL as input instead of a path,
+opnk will rely on
+.Xr netcache 1
+to get the networked content.
 .Ss Positional arguments
 .Bl -tag -width Ds -offset indent
 .It Ar INPUT
