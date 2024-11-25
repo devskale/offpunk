@@ -1,4 +1,4 @@
-.Dd August 27, 2023
+.Dd November 25, 2024
 .Dt NETCACHE 1
 .Os 
 .
@@ -9,6 +9,7 @@
 .Sh SYNOPSIS
 .Nm
 .Op Fl \-path
+.Op Fl \-ids
 .Op Fl \-offline
 .Op Fl \-max\-size Ar MAX_SIZE
 .Op Fl \-timeout Ar TIMEOUT
@@ -17,28 +18,22 @@
 .Fl h | \-help
 .
 .Sh DESCRIPTION
-Netcache is the download and cache management engine of the browser
-.Xr offpunk 1 .
-It allows one to fetch a link and get its content,
-writing the content through the local cache for ulterior reference.
+Netcache is a command-line tool to retrieve,
+cache and access networked content.
+By default,
+netcache will returns a cached version of a given URL,
+downloading it only if a cache version doesn't exist.
+A validity duration,
+in seconds,
+can also be given
+so netcache downloads the content
+only if the existing cache is older than the validity.
+.Pp
 Netcache can be forced into offline mode,
 in order to only fetch resources from the local cache,
 otherwise it would always refresh it from the version available online.
 It is also useful for mapping a given URL to its location in the cache,
 independently of whether it has been downloaded first.
-.Pp
-Default cache path is
-.Pa ~/.cache/offpunk .
-Set
-.Ev OFFPUNK_CACHE_PATH
-environment variable to use another location.
-.Bd -literal
-OFFPUNK_CACHE_PATH=/home/ploum/custom-cache netcache.py gemini://some.url
-.Ed
-.Pp
-.Xr Offpunk 1
-is a command-line browser and feed reader dedicated to browsing the Web,
-Gemini, Gopher and Spartan.
 .Ss Positional arguments
 .Bl -tag -width Ds -offset indent
 .It Ar URL
@@ -50,6 +45,13 @@ download the URL and output the content.
 show a help message and exit.
 .It Fl \-path
 output the path to the cache instead of the content of the URL.
+.It Fl \-ids
+return a list of id's for the gemini-site
+instead of the content of the cache.
+.It Fl \-offline
+do not attempt to download,
+return the cached version instead,
+or error if absent from the cache.
 .It Fl \-max-size Ar MAX_SIZE
 cancel download of items above that size.
 The value is expressed in megabytes.
@@ -62,6 +64,18 @@ Maximum age (in second) of the cached version before redownloading a new version
 .
 .Sh EXIT STATUS
 .Ex -std
+.
+.Sh ENVIRONMENT
+Set
+.Ev OFFPUNK_CACHE_PATH
+environment variable to use another location.
+.Bd -literal
+OFFPUNK_CACHE_PATH=/home/ploum/custom-cache netcache.py gemini://some.url
+.Ed
+.
+.Sh FILES
+Default cache path is
+.Pa ~/.cache/offpunk .
 .
 .Sh SEE ALSO
 .Xr ansicat 1 ,
