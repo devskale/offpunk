@@ -1,4 +1,4 @@
-.Dd March 3, 2023
+.Dd November 25, 2024
 .Dt OFFPUNK 1
 .Os
 .
@@ -9,13 +9,12 @@
 .Sh SYNOPSIS
 .Nm
 .Op Fl \-bookmarks
-.Op Fl \-tls\-cert Ar FILE
-.Op Fl \-tls\-key Ar FILE
 .Op Fl \-sync
 .Op Fl \-assume\-yes
 .Op Fl \-disable\-http
 .Op Fl \-fetch\-later
 .Op Fl \-depth Ar DEPTH
+.Op Fl \-images\-mode Ar IMAGES_MODE
 .Op Fl \-cache\-validity Ar CACHE_VALIDITY
 .Op Ar URL ...
 .Nm
@@ -47,10 +46,6 @@ start with this URL
 Show a help message and exit
 .It Fl \-bookmarks
 start with your list of bookmarks
-.It Fl \-tls\-cert Ar FILE
-TLS client certificate file
-.It Fl \-tls\-key Ar FILE
-TLS client certificate private key file
 .It Fl \-sync
 run non\-interactively to build cache by exploring bookmarks
 .It Fl \-assume\-yes
@@ -65,6 +60,11 @@ depth of the cache to build.
 Default is 1.
 More is crazy.
 Use at your own risks!
+.It Fl \-images-mode Ar IMAGES_MODE
+the mode to use
+to choose which images to download in a HTML page.
+one of (None, readable, full).
+Warning: full will slowdown your sync.
 .It Fl \-cache\-validity Ar CACHE_VALIDITY
 duration for which a cache is valid before sync (seconds)
 .It Fl \-version
