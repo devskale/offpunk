@@ -1,4 +1,4 @@
-.Dd August 27, 2023
+.Dd November 25, 2024
 .Dt ANSICAT 1
 .Os 
 .
@@ -11,21 +11,23 @@
 .Op Fl \-format Ar RENDERER
 .Op Fl \-mime Ar MIME
 .Op Fl \-url Ar URL ...
+.Op Fl \-mode Ar MODE
 .Op Ar INPUT ...
 .Nm
 .Fl h | \-help
 .
 .Sh DESCRIPTION
-Ansicat is the rendering engine of the browser
-.Xr offpunk 1 .
-It will render nicely on the terminal any gemtext,
-html,
-gopher,
-and a few other formats.
-.Pp
-.Xr Offpunk 1
-is a command-line browser and feed reader dedicated to browsing the Web,
-Gemini, Gopher and Spartan.
+ansicat is a terminal rendering tool
+that will render multiple formats
+(HTML, Gemtext, RSS, Gophermap, Image)
+into ANSI text and colors.
+When used on a file,
+ansicat will try to autodetect the format.
+When used with standard input,
+the format must be manually specified.
+If the content contains links,
+the original URL of the content can be specified
+in order to correctly modify relatives links.
 .Ss Positional arguments
 .Bl -tag -width Ds -offset indent
 .It Ar INPUT
