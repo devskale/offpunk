@@ -468,7 +468,7 @@ def _validate_cert(address, host, cert,accept_bad_ssl=False,automatic_choice=Non
     previously encountered a different certificate for this IP address and
     hostname.
     """
-    now = datetime.datetime.now(datetime.UTC)
+    now = datetime.datetime.now(datetime.timezone.utc)
     if _HAS_CRYPTOGRAPHY:
         # Using the cryptography module we can get detailed access
         # to the properties of even self-signed certs, unlike in
