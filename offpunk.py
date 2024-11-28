@@ -116,6 +116,7 @@ _ABBREVS = {
     "wen": "wikipedia en",
     "wfr": "wikipedia fr",
     "wes": "wikipedia es",
+    "abbrevs": "alias",
 }
 
 _MIME_HANDLERS = {}
@@ -603,15 +604,40 @@ class GeminiClient(cmd.Cmd):
             mime, handler = line.split(" ", 1)
             self.opencache.set_handler(mime, handler)
 
-    def do_abbrevs(self, *args):
-        """Print all Offpunk command abbreviations."""
-        header = "Command Abbreviations:"
-        self.stdout.write("\n{}\n".format(str(header)))
-        if self.ruler:
-            self.stdout.write("{}\n".format(str(self.ruler * len(header))))
-        for k, v in _ABBREVS.items():
-            self.stdout.write("{:<7}  {}\n".format(k, v))
-        self.stdout.write("\n")
+    def do_alias(self, line):
+        """Create or modifiy an alias
+        alias : show all existing aliases
+        alias ALIAS : show the command linked to ALIAS
+        alias ALIAS CMD : create or replace existing ALIAS to be linked to command CMD"""
+        #building the list of existing commands to avoid conflicts
+        commands = []
+        for name in self.get_names():
+            if name.startswith("do_"):
+                commands.append(name[3:])
+        if not line.strip():
+            header = "Command Aliases:"
+            self.stdout.write("\n{}\n".format(str(header)))
+            if self.ruler:
+                self.stdout.write("{}\n".format(str(self.ruler * len(header))))
+            for k, v in _ABBREVS.items():
+                self.stdout.write("{:<7}  {}\n".format(k, v))
+            self.stdout.write("\n")
+        elif len(line.split()) == 1:
+            alias = line.strip()
+            if alias in commands:
+                print("%s is a command and cannot be aliased"%alias)
+            elif alias in _ABBREVS:
+                print("%s is currently aliased to \"%s\"" %(alias,_ABBREVS[alias]))
+            else:
+                print("there’s no alias for \"%s\""%alias)
+        else:
+            alias, cmd = line.split(None,1)
+            if alias in commands:
+                print("%s is a command and cannot be aliased"%alias)
+            else:
+                _ABBREVS[alias] = cmd
+                print("%s has been aliased to \"%s\""%(alias,cmd))
+        
 
     def do_offline(self, *args):
         """Use Offpunk offline by only accessing cached content"""

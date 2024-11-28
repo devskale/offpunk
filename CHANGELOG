@@ -1,6 +1,8 @@
 # Offpunk History
 
 ## 2.5 - Unreleased
+- "abbrevs" has been replaced by "alias"
+- "alias" now allows custom command to be aliased
 - PEP8-ification by Vincent Jousse
 - changing "datetime.UTC" to "datetime.timezone.utc" for retrocompatibility with python < 3.11
 
