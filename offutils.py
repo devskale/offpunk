@@ -20,6 +20,14 @@ import cert_migration
 CACHE_VERSION = 1
 CERT_VERSION = 1
 
+#let’s find if grep supports --color=auto
+try:
+    test=subprocess.run(["grep","--color=auto","x"],input=b"x",check=True,\
+                    stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    GREPCMD = "grep --color=auto"
+except Exception as err:
+    GREPCMD = "grep"
+
 # We upgrade the cache only once at startup, hence the CACHE_UPGRADED variable
 # This is only to avoid unnecessary checks each time the cache is accessed
 CACHE_UPGRADED=False

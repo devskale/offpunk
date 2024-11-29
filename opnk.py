@@ -13,10 +13,9 @@ import offutils
 import shutil
 import time
 import fnmatch
-from offutils import run,term_width,mode_url,unmode_url,is_local
+from offutils import run,term_width,mode_url,unmode_url,is_local,GREPCMD
 
 _HAS_XDGOPEN = shutil.which('xdg-open')
-_GREP = "grep --color=auto"
 
 less_version = 0
 if not shutil.which("less"):
@@ -66,7 +65,7 @@ def less_cmd(file, histfile=None,cat=False,grep=None):
     if cat:
         cmd_str = _DEFAULT_CAT
     elif grep:
-        grep_cmd = _GREP
+        grep_cmd = GREPCMD
         #case insensitive for lowercase search
         if grep.islower():
             grep_cmd += " -i"

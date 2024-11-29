@@ -5,6 +5,7 @@
 - "alias" now allows custom command to be aliased
 - PEP8-ification by Vincent Jousse
 - changing "datetime.UTC" to "datetime.timezone.utc" for retrocompatibility with python < 3.11
+- checking if "grep" supports "--color=auto" to supports OpenBSD (reported by Dylan D’Silva)
 
 ## 2.4 - November 21st 2024
 NEW WEBSITE: Official homepage is now https://offpunk.net (or gemini://offpunk.net). Sources are in the /tutorial/ folder and contributions are welcome.
