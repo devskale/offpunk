@@ -290,7 +290,7 @@ def set_error(url,err):
                 #cache.write("\n" + str(err.with_traceback(None)))
                 c.write("\n*****\n\n")
                 c.write("If you believe this error was temporary, type ""reload"".\n")
-                c.write("The ressource will be tentatively fetched during next sync.\n")
+                c.write("The resource will be tentatively fetched during next sync.\n")
                 c.close()
     return cache
 
