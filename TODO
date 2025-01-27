@@ -1,0 +1,21 @@
+TODO
+
+## Refactoring of redirections is needed
+
+#34: redirections are not kept while offline
+https://todo.sr.ht/~lioploum/offpunk/34
+#41:  Redirects should be handled in netcache, not offpunk 
+https://todo.sr.ht/~lioploum/offpunk/41
+
+## Refactoring of errors is needed
+
+#30:  Netcache: gemini status 4 and 5 should not emit a full traceback 
+https://todo.sr.ht/~lioploum/offpunk/30
+#3: Error pages are stored in the cache  
+https://todo.sr.ht/~lioploum/offpunk/3
+
+
+## Misc:
+
+#42: IDN handling 
+https://todo.sr.ht/~lioploum/offpunk/42
