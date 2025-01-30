@@ -1,6 +1,6 @@
 # Offpunk History
 
-## 2.5 - Unreleased
+## 2.5 - January 30th 2025
 - "abbrevs" has been replaced by "alias"
 - "alias" now allows custom command to be aliased
 - PEP8-ification by Vincent Jousse
