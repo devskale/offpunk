@@ -57,7 +57,7 @@ only-include = [
   "offutils.py", "opnk.py", "cert_migration.py",
 ]
 
-[tool.ruff]
+[tool.ruff.lint]
 select = ["E"]
 
 # Never enforce `E501` (line length violations)

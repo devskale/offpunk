@@ -1,5 +1,5 @@
-from offpunk import GeminiClient
 import offthemes
+from offpunk import GeminiClient
 
 
 def test_set_prompt():

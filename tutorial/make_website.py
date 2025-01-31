@@ -1,7 +1,7 @@
 #!/bin/python
+import html
 import os
 import unicodedata
-import html
 from datetime import datetime
 
 baseurl = "offpunk.net"

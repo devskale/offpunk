@@ -11,9 +11,10 @@ immediately previous format.
 """
 
 
-import sqlite3
-import os
 import datetime
+import os
+import sqlite3
+
 
 def upgrade_to_1(data_dir: str, config_dir: str) -> None:
     print("moving from tofu.db to certificates as files")

@@ -13,7 +13,6 @@ from the immediately previous cache format. All migration functions must be
 called at the end of this script from oldest to newest.
 """
 
-import argparse
 import os
 import os.path
 
@@ -23,9 +22,9 @@ def upgrade_to_1(cache_dir: str) -> None:
     Rename index.txt to gophermap in the Gopher protocol cache.
     """
     print("Upgrading cache to version 1: migrating index.txt to gophermap")
-    for root, _, files in os.walk(os.path.join(cache_dir, 'gopher')):
+    for root, _, files in os.walk(os.path.join(cache_dir, "gopher")):
         for f in files:
-            if f == 'index.txt':
+            if f == "index.txt":
                 src = os.path.join(root, f)
-                dst = os.path.join(root, 'gophermap')
+                dst = os.path.join(root, "gophermap")
                 os.rename(src, dst)

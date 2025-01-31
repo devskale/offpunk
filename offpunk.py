@@ -15,13 +15,21 @@ import shutil
 import sys
 import time
 import urllib.parse
-import netcache
-import opnk
+
 import ansicat
-import offthemes
-from offutils import run, term_width, is_local, mode_url, unmode_url, looks_like_url
-from offutils import xdg
+import netcache
 import offblocklist
+import offthemes
+import opnk
+from offutils import (
+    is_local,
+    looks_like_url,
+    mode_url,
+    run,
+    term_width,
+    unmode_url,
+    xdg,
+)
 
 try:
     import setproctitle
