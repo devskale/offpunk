@@ -15,7 +15,20 @@ bug #3: Error pages are stored in the cache
 https://todo.sr.ht/~lioploum/offpunk/3
 
 
+## Cache Triming
+
+We need work on a model that keep the cache within certain limit by removing older, inaccessed elements which are not linked to anything in lists.
+
+## HTML rendering
+
+Better rendering of tables using ASCII tables
+
+
 ## Misc:
 
 bug #42: IDN handling 
 https://todo.sr.ht/~lioploum/offpunk/42
+
+
+
+
