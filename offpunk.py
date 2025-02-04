@@ -2014,6 +2014,12 @@ def main():
         "--bookmarks", action="store_true", help="start with your list of bookmarks"
     )
     parser.add_argument(
+        "--command",
+        metavar="COMMAND",
+        nargs="*",
+        help="Launch this command after startup",
+    )
+    parser.add_argument(
         "--config-file",
         metavar="FILE",
         help="use this particular config file instead of default",
@@ -2176,7 +2182,9 @@ def main():
         print("Type `help` to get the list of available command.")
         for line in torun_queue:
             gc.onecmd(line)
-
+        if args.command:
+            for cmd in args.command:
+                gc.onecmd(cmd)
         while True:
             try:
                 gc.cmdloop()

@@ -10,6 +10,7 @@
 .Nm
 .Op Fl \-bookmarks
 .Op Fl \-config\-file Ar FILE
+.Op Fl \-command Ar COMMAND
 .Op Fl \-sync
 .Op Fl \-assume\-yes
 .Op Fl \-disable\-http
@@ -49,6 +50,8 @@ Show a help message and exit
 start with your list of bookmarks
 .It Fl \-config\-file Ar FILE
 use this particular config file instead of default
+.It Fl \-command Ar COMMAND
+launch this or those command(s) after startup (including config file).
 .It Fl \-sync
 run non\-interactively to build cache by exploring bookmarks
 .It Fl \-assume\-yes
