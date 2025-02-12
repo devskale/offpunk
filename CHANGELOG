@@ -2,6 +2,7 @@
 
 ## 2.6 - Unreleased
 - new "--command" command-line argument to immediately launch one or multiple commands
+- "url" now accepts link number as an argument (suggested by JMCS)
 
 ## 2.5 - January 30th 2025
 - "abbrevs" has been replaced by "alias"

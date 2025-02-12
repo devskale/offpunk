@@ -1291,9 +1291,20 @@ Use "view XX" where XX is a number to view information about link XX.
 
     @needs_gi
     def do_url(self, *args):
-        """Print URL of most recently visited item."""
-        url, mode = unmode_url(self.current_url)
-        print(url)
+        """Print the url of the current page.
+        Use "url XX" where XX is a number to print the url of link XX.
+        """
+        url = None
+        if args and args[0].isdigit():
+            link_id = int(args[0])
+            link_url = self.get_renderer().get_link(link_id)
+            if link_url:
+                url = link_url
+        else:
+            url = self.current_url
+        if url:
+            final_url, mode = unmode_url(url)
+            print(final_url)
 
     # Bookmarking stuff
     @needs_gi
