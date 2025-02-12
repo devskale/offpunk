@@ -1309,14 +1309,22 @@ Use "view XX" where XX is a number to view information about link XX.
     # Bookmarking stuff
     @needs_gi
     def do_add(self, line):
-        """Add the current URL to the list specied as argument.
-        If no argument given, URL is added to Bookmarks."""
+        """Add the current URL to the list specified as argument.
+        If no argument given, URL is added to Bookmarks.
+        You can pass a link number as the second argument to add the link.
+        "add $LIST XX" will add link number XX to $LIST
+        """
         args = line.split()
         if len(args) < 1:
             list = "bookmarks"
             if not self.list_path(list):
                 self.list_create(list)
             self.list_add_line(list)
+        elif len(args) > 1 and args[1].isdigit():
+            link_id = int(args[1])
+            link_url = self.get_renderer().get_link(link_id)
+            if link_url:
+                self.list_add_line(args[0],url=link_url)
         else:
             self.list_add_line(args[0])
 
