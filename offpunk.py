@@ -178,6 +178,7 @@ class GeminiClient(cmd.Cmd):
             "history_size": 200,
             "max_size_download": 10,
             "editor": None,
+            #FIXME: download_images_first is not used anywhere in the code
             "download_images_first": True,
             "images_mode": "readable",
             "redirects": True,
@@ -186,6 +187,7 @@ class GeminiClient(cmd.Cmd):
             "search": "gemini://kennedy.gemi.dev/search?%s",
             "accept_bad_ssl_certificates": False,
             "default_protocol": "gemini",
+            "ftr_site_config": None,
         }
         self.redirects = offblocklist.redirects
         for i in offblocklist.blocked:
@@ -352,6 +354,7 @@ class GeminiClient(cmd.Cmd):
         params["accept_bad_ssl_certificates"] = self.options[
             "accept_bad_ssl_certificates"
         ]
+        params["ftr_site_config"] = self.options["ftr_site_config"]
         if mode:
             params["images_mode"] = mode
         else:

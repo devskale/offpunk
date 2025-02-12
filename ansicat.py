@@ -183,6 +183,7 @@ class AbstractRenderer:
         self.center = center
         self.last_mode = "readable"
         self.theme = offthemes.default
+        self.ftr_site_config = None
 
     def display(self, mode=None, directdisplay=False):
         wtitle = self.get_formatted_title()
@@ -1381,6 +1382,7 @@ class HtmlRenderer(AbstractRenderer):
                         recursive_render(child, indent=indent)
 
         # the real render_html hearth
+        # note to vjousse: use self.ftr_site_config here
         if mode in ["full", "full_links_only"]:
             summary = body
         elif _HAS_READABILITY:
@@ -1488,7 +1490,7 @@ def get_mime(path, url=None):
     return mime
 
 
-def renderer_from_file(path, url=None, theme=None):
+def renderer_from_file(path, url=None, theme=None,ftr_site_config=None):
     if not path:
         return None
     mime = get_mime(path, url=url)
@@ -1501,13 +1503,14 @@ def renderer_from_file(path, url=None, theme=None):
                 f.close()
         else:
             content = path
-        toreturn = set_renderer(content, url, mime, theme=theme)
+        toreturn = set_renderer(content, url, mime, theme=theme\
+                                ,ftr_site_config=ftr_site_config)
     else:
         toreturn = None
     return toreturn
 
 
-def set_renderer(content, url, mime, theme=None):
+def set_renderer(content, url, mime, theme=None,ftr_site_config=None):
     renderer = None
     if mime == "Local Folder":
         renderer = FolderRenderer("", url, datadir=xdg("data"))
@@ -1539,6 +1542,8 @@ def set_renderer(content, url, mime, theme=None):
                 renderer = None
     if renderer and theme:
         renderer.set_theme(theme)
+    if renderer and ftr_site_config:
+        renderer.ftr_site_config = ftr_site_config
     return renderer
 
 
