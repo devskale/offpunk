@@ -16,7 +16,7 @@ Offpunk allows you to browse the Web, Gemini, Gopher and subscribe to RSS feeds 
 
 ## Work offline
 => /offline.gmi Working offline and basic sync
-*=> /sync.gmi Syncing Offpunk from the command-line
+=> /sync.gmi Syncing Offpunk from the command-line
 
 ## Organize your bookmarks with Offpunk lists
 
