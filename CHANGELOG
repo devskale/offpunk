@@ -3,6 +3,7 @@
 ## 2.6 - Unreleased
 FOR PACKAGERS: dependency to python-pil (or pillow) has been dropped
 - new "--command" command-line argument to immediately launch one or multiple commands
+- new "feed" command to replace the "view feed" (which is deprecated)
 - "url" now accepts link number as an argument (suggested by JMCS)
 - "add" now accepts link number as a second argument (suggested by JMCS)
 - removed support for chafa < 1.10, as announced in 2.4. python-pil is not used anymore. 

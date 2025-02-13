@@ -1103,6 +1103,31 @@ class GeminiClient(cmd.Cmd):
         )
 
     @needs_gi
+    def do_feed(self, *args):
+        """Display RSS or Atom feeds linked to the current page."""
+        subs = self.get_renderer().get_subscribe_links()
+        # No feed found
+        if len(subs) == 1:
+            if "rss" in subs[0][1] or "atom" in subs[0][1]:
+                print("Current page is already a feed")
+            else:
+                print("No other feed found on %s" % u)
+        # Multiple feeds found
+        elif len(subs) > 2:
+            stri = "Available feeds :\n"
+            counter = 0
+            for s in subs:
+                counter += 1
+                stri += "[%s] %s [%s]\n" % (counter, s[0], s[1])
+            stri += "Which view do you want to see ? >"
+            ans = input(stri)
+            if ans.isdigit() and 0 < int(ans) <= len(subs):
+                self.do_go(subs[int(ans) - 1][0])
+        # Only one feed found
+        else:
+            self.do_go(subs[1][0])
+
+    @needs_gi
     def do_view(self, *args):
         """Run most recently visited item through "less" command, restoring \
 previous position.
@@ -1119,24 +1144,8 @@ Use "view XX" where XX is a number to view information about link XX.
             elif args[0] in ["normal", "readable"]:
                 self._go_to_url(self.current_url, mode="readable")
             elif args[0] == "feed":
-                subs = self.get_renderer().get_subscribe_links()
-                if len(subs) > 1:
-                    self.do_go(subs[1][0])
-                elif "rss" in subs[0][1] or "atom" in subs[0][1]:
-                    print("%s is already a feed" % u)
-                else:
-                    print("No other feed found on %s" % u)
-            elif args[0] == "feeds":
-                subs = self.get_renderer().get_subscribe_links()
-                stri = "Available views :\n"
-                counter = 0
-                for s in subs:
-                    counter += 1
-                    stri += "[%s] %s [%s]\n" % (counter, s[0], s[1])
-                stri += "Which view do you want to see ? >"
-                ans = input(stri)
-                if ans.isdigit() and 0 < int(ans) <= len(subs):
-                    self.do_go(subs[int(ans) - 1][0])
+                print("view feed is deprecated. Use the command feed directly")
+                self.do_feed()
             elif args[0].isdigit():
                 link_url = self.get_renderer().get_link(int(args[0]))
                 if link_url:
