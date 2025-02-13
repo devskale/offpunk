@@ -61,50 +61,37 @@ try:
 except ModuleNotFoundError:
     _DO_FEED = False
 
-_HAS_TIMG = shutil.which("timg")
-_HAS_CHAFA = shutil.which("chafa")
-_NEW_CHAFA = False
-_NEW_TIMG = False
+_HAS_TIMG = False
+_HAS_CHAFA = False
 _RENDER_IMAGE = False
-_HAS_PIL = False
 
 # All this code to know if we render image inline or not
-if _HAS_CHAFA:
+#Do we have chafa >= 1.10 ?
+if shutil.which("chafa"):
     # starting with 1.10, chafa can return only one frame
-    # which allows us to drop dependancy for PIL
-    output = run("chafa --version")
+    # we thus requires chafa to be at least 1.10
     # output is "Chafa version M.m.p"
     # check for m < 1.10
     try:
+        output = run("chafa --version")
         chafa_major, chafa_minor, _ = output.split("\n")[0].split(" ")[-1].split(".")
         if int(chafa_major) >= 1 and int(chafa_minor) >= 10:
-            _NEW_CHAFA = True
+            _HAS_CHAFA = True
+            _RENDER_IMAGE = True
     except Exception:
         pass
-if _NEW_CHAFA:
-    _RENDER_IMAGE = True
-if _HAS_TIMG:
+#Do we have timg?
+if shutil.which("timg"):
     try:
         output = run("timg --version")
     except subprocess.CalledProcessError:
         output = False
     # We don’t deal with timg before 1.3.2 (looping options)
     if output and output[5:10] > "1.3.2":
-        _NEW_TIMG = True
+        _HAS_TIMG = True
         _RENDER_IMAGE = True
-elif _HAS_CHAFA and not _NEW_CHAFA:
-    try:
-        from PIL import Image
-
-        _HAS_PIL = True
-        _RENDER_IMAGE = True
-    except ModuleNotFoundError:
-        _HAS_PIL = False
 if not _RENDER_IMAGE:
-    print("To render images inline, you need either chafa or timg.")
-    if not _NEW_CHAFA and not _NEW_TIMG:
-        print("Before Chafa 1.10, you also need python-pil")
-
+    print("To render images inline, you need either chafa >= 1.10 or timg > 1.3.2")
 
 # return ANSI text that can be show by less
 def inline_image(img_file, width):
@@ -112,7 +99,8 @@ def inline_image(img_file, width):
     if not os.path.exists(img_file):
         return ""
     # Chafa is faster than timg inline. Let use that one by default
-    # But we keep a list of "inlines" in case chafa fails
+    # But we keep a list of "inlines" (possible commands to use)
+    # just in case chafa fails
     inlines = []
     ansi_img = ""
     # We avoid errors by not trying to render non-image files
@@ -121,20 +109,8 @@ def inline_image(img_file, width):
         if "image" not in mime:
             return ansi_img
     if _HAS_CHAFA:
-        if _HAS_PIL and not _NEW_CHAFA:
-            # this code is a hack to remove frames from animated gif
-            print("WARNING: support for chafa < 1.10 will soon be removed")
-            print(
-                "If you can’t upgrade chafa or timg, please contact offpunk developers"
-            )
-            img_obj = Image.open(img_file)
-            if hasattr(img_obj, "n_frames") and img_obj.n_frames > 1:
-                # we remove all frames but the first one
-                img_obj.save(img_file, format="gif", save_all=False)
-            inlines.append("chafa --bg white -s %s -f symbols")
-        elif _NEW_CHAFA:
-            inlines.append("chafa --bg white -t 1 -s %s -f symbols --animate=off")
-    if _NEW_TIMG:
+        inlines.append("chafa --bg white -t 1 -s %s -f symbols --animate=off")
+    if _HAS_TIMG:
         inlines.append("timg --frames=1 -p q -g %sx1000")
     image_success = False
     while not image_success and len(inlines) > 0:
@@ -151,11 +127,9 @@ def terminal_image(img_file):
     # Render by timg is better than old chafa.
     # it is also centered
     cmds = []
-    if _NEW_CHAFA:
+    if _HAS_CHAFA:
         cmds.append("chafa -C on -d 0 --bg white -w 1")
-    elif _HAS_CHAFA:
-        cmds.append("chafa -d 0 --bg white -w 1")
-    if _NEW_TIMG:
+    if _HAS_TIMG:
         cmds.append("timg --loops=1 -C")
     image_success = False
     while not image_success and len(cmds) > 0:

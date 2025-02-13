@@ -999,12 +999,8 @@ class GeminiClient(cmd.Cmd):
         output += " - python-feedparser   : " + has(ansicat._DO_FEED)
         output += " - python-bs4          : " + has(ansicat._HAS_SOUP)
         output += " - python-readability  : " + has(ansicat._HAS_READABILITY)
-        output += " - timg 1.3.2+         : " + has(ansicat._NEW_TIMG)
-        if ansicat._NEW_CHAFA:
-            output += " - chafa 1.10+         : " + has(ansicat._HAS_CHAFA)
-        else:
-            output += " - chafa               : " + has(ansicat._HAS_CHAFA)
-            output += " - python-pil          : " + has(ansicat._HAS_PIL)
+        output += " - timg 1.3.2+         : " + has(ansicat._HAS_TIMG)
+        output += " - chafa 1.10+         : " + has(ansicat._HAS_CHAFA)
         output += "\nNice to have:\n"
         output += " - python-setproctitle       : " + has(_HAS_SETPROCTITLE)
         clip_support = shutil.which("xsel") or shutil.which("xclip")
@@ -1012,12 +1008,7 @@ class GeminiClient(cmd.Cmd):
         output += " - Wayland clipboard (wl-clipboard): " + has(shutil.which("wl-copy"))
 
         output += "\nFeatures :\n"
-        if ansicat._NEW_CHAFA:
-            output += " - Render images (chafa or timg)              : " + has(
-                ansicat._RENDER_IMAGE
-            )
-        else:
-            output += " - Render images (python-pil, chafa or timg)  : " + has(
+        output += " - Render images (chafa or timg)              : " + has(
                 ansicat._RENDER_IMAGE
             )
         output += " - Render HTML (bs4, readability)             : " + has(
