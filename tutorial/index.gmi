@@ -28,6 +28,7 @@ Offpunk allows you to browse the Web, Gemini, Gopher and subscribe to RSS feeds 
 ## Offpunk workflows
 
 => /workflow_ploum.gmi Ploum’s workflow
+=> /workflow_jmcs.gmi JMCS’s workflow
 
 ## Use Offpunk in your own project
 
