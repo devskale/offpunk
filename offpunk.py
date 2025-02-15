@@ -1111,7 +1111,7 @@ class GeminiClient(cmd.Cmd):
             if "rss" in subs[0][1] or "atom" in subs[0][1]:
                 print("Current page is already a feed")
             else:
-                print("No other feed found on %s" % u)
+                print("No feed found on current page")
         # Multiple feeds found
         elif len(subs) > 2:
             stri = "Available feeds :\n"
