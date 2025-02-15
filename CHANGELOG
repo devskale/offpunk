@@ -7,6 +7,7 @@ FOR PACKAGERS: dependency to python-pil (or pillow) has been dropped
 - "url" now accepts link number as an argument (suggested by JMCS)
 - "add" now accepts link number as a second argument (suggested by JMCS)
 - removed support for chafa < 1.10, as announced in 2.4. python-pil is not used anymore. 
+- "opnk" now supports following link like in "opnk $URL XX" where XX is a link number.
 
 ## 2.5 - January 30th 2025
 - "abbrevs" has been replaced by "alias"

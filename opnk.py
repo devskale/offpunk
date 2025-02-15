@@ -190,13 +190,15 @@ class opencache:
         else:
             return None
 
-    def opnk(self, inpath, mode=None, terminal=True, grep=None, theme=None, **kwargs):
+    def opnk(self, inpath, mode=None, terminal=True, grep=None, theme=None, link=None,\
+                        **kwargs):
         # Return True if inpath opened in Terminal
         # False otherwise
         # also returns the url in case it has been modified
         # if terminal = False, we don’t try to open in the terminal,
         # we immediately fallback to xdg-open.
         # netcache currently provide the path if it’s a file.
+        # If link is a digit, we open that link number instead of the inpath
         if not offutils.is_local(inpath):
             kwargs["images_mode"] = mode
             cachepath, inpath = netcache.fetch(inpath, **kwargs)
@@ -217,6 +219,9 @@ class opencache:
         else:
             ftr = None
         renderer = self.get_renderer(inpath, mode=mode, theme=theme, ftr_site_config=ftr)
+        if link and link.isdigit():
+            inpath = renderer.get_link(int(link)) 
+            renderer = self.get_renderer(inpath, mode=mode, theme=theme, ftr_site_config=ftr)
         if renderer and mode:
             renderer.set_mode(mode)
             self.last_mode[inpath] = mode
@@ -335,8 +340,15 @@ def main():
     )
     args = parser.parse_args()
     cache = opencache()
-    for f in args.content:
-        cache.opnk(f, mode=args.mode, validity=args.cache_validity)
+    # if the second argument is an integer, we associate it with the previous url
+    # to use as a link_id
+    if len(args.content) == 2 and args.content[1].isdigit():
+        url = args.content[0]
+        link_id = args.content[1]
+        cache.opnk(url, mode=args.mode, validity=args.cache_validity, link=link_id)
+    else:
+        for f in args.content:
+            cache.opnk(f, mode=args.mode, validity=args.cache_validity)
 
 
 if __name__ == "__main__":
