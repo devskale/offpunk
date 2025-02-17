@@ -363,12 +363,19 @@ class AbstractRenderer:
             self._disable_indents()
             # we have to apply the theme for every line in the intext
             # applying theme to preformatted is controversial as it could change it
+            if "preformat_wrap" in self.theme.keys():
+                preformat_wrap = self.theme["preformat_wrap"]
+            else:
+                preformat_wrap = False
             if theme:
                 block = ""
                 lines = intext.split("\n")
                 for l in lines:
                     self.open_theme(theme)
-                    self.last_line += self.current_indent + l
+                    if preformat_wrap:
+                        self.add_text(intext)
+                    else:
+                        self.last_line += self.current_indent + l
                     self.close_theme(theme)
                     self._endline()
                 self.last_line += "\n"

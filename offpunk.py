@@ -580,8 +580,20 @@ class GeminiClient(cmd.Cmd):
                     print("%s is set to %s" % (element, str(value)))
                 else:
                     # Now we parse the colors
+                    preformat_wrap = False
+                    toset = None
                     for w in words[1:]:
-                        if w not in offthemes.colors.keys():
+                        #preformat_wrap takes an int, not a color
+                        if element == "preformat_wrap":
+                            if w.isdigit():
+                                preformat_wrap = True
+                                # should stay as a string for now to pass the later test
+                                # else, if ==0, test will fails
+                                int_toset = w
+                            else:
+                                print("%s takes an int as argument"%element)
+                                return
+                        if not preformat_wrap and w not in offthemes.colors.keys():
                             print("%s is not a valid color" % w)
                             print("Valid colors are one of: ")
                             valid = []
@@ -589,7 +601,10 @@ class GeminiClient(cmd.Cmd):
                                 valid.append(k)
                             print(valid)
                             return
-                    self.theme[element] = words[1:]
+                    if int_toset:
+                        self.theme[element] = int(int_toset)
+                    else:
+                        self.theme[element] = words[1:]
                     self.opencache.cleanup()
         # now we upadte the prompt
         if self.offline_only:
