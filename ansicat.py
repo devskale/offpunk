@@ -373,7 +373,7 @@ class AbstractRenderer:
                 for l in lines:
                     self.open_theme(theme)
                     if preformat_wrap:
-                        self.add_text(intext)
+                        self.add_text(l)
                     else:
                         self.last_line += self.current_indent + l
                     self.close_theme(theme)
