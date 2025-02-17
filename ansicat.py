@@ -608,7 +608,20 @@ class PlaintextRenderer(AbstractRenderer):
             return "(unknown)"
 
     def render(self, gemtext, width=None, mode=None, startlinks=0):
-        return gemtext, []
+        r = self.representation(width, theme=self.theme)
+        links = []
+        for line in gemtext.splitlines():
+            r.newline()
+            if len(line.strip()) == 0:
+                r.newparagraph(force=True)
+            else:
+                if "://" in line:
+                    words = line.split()
+                    for w in words:
+                        if "://" in w and looks_like_url(w):
+                            links.append(w)
+                r.add_text(line.rstrip())
+        return r.get_final(), links
 
 
 # Gemtext Rendering Engine
