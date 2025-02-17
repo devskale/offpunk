@@ -852,10 +852,12 @@ class FolderRenderer(GemtextRenderer):
         def write_list(l):
             body = ""
             for li in l:
-                path = "list:///%s" % li
-                r = renderer_from_file(netcache.get_cache_path(path))
-                size = len(r.get_links())
-                body += "=> %s %s (%s items)\n" % (str(path), li, size)
+                #making sure we don’t write ".gmi"
+                if l != "":
+                    path = "list:///%s" % li
+                    r = renderer_from_file(netcache.get_cache_path(path))
+                    size = len(r.get_links())
+                    body += "=> %s %s (%s items)\n" % (str(path), li, size)
             return body
 
         listdir = os.path.join(self.datadir, "lists")
@@ -875,9 +877,10 @@ class FolderRenderer(GemtextRenderer):
             frozen = []
             lists.sort()
             for l in lists:
+                # we don’t do anything with home which is ".gmi" thus ""
                 if l in ["history", "to_fetch", "archives", "tour"]:
                     system_lists.append(l)
-                else:
+                elif l != "":
                     first_line = get_first_line(l)
                     if first_line and "#subscribed" in first_line:
                         subscriptions.append(l)
