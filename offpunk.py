@@ -131,6 +131,7 @@ _MIME_HANDLERS = {}
 
 
 # GeminiClient Decorators
+# decorator to be sure that self.current_url exists
 def needs_gi(inner):
     def outer(self, *args, **kwargs):
         if not self.current_url:
@@ -141,7 +142,6 @@ def needs_gi(inner):
 
     outer.__doc__ = inner.__doc__
     return outer
-
 
 class GeminiClient(cmd.Cmd):
     def __init__(self, completekey="tab", synconly=False):
