@@ -44,7 +44,6 @@ offpunk1 = {
                 "blockquote" :      ["italic"],
                 "prompt_on" :       ["green"],
                 "prompt_off" :      ["green"],
-                "preformat_wrap" :  0, #should the preformatted text be wrapped (0) or not (1)?
              }  
 
 default = offpunk1

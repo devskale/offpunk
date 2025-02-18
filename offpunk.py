@@ -188,6 +188,7 @@ class GeminiClient(cmd.Cmd):
             "accept_bad_ssl_certificates": False,
             "default_protocol": "gemini",
             "ftr_site_config": None,
+            "preformat_wrap": False,
         }
         self.redirects = offblocklist.redirects
         for i in offblocklist.blocked:
@@ -355,6 +356,7 @@ class GeminiClient(cmd.Cmd):
             "accept_bad_ssl_certificates"
         ]
         params["ftr_site_config"] = self.options["ftr_site_config"]
+        params["preformat_wrap"] = self.options["preformat_wrap"]
         if mode:
             params["images_mode"] = mode
         else:
@@ -528,7 +530,6 @@ class GeminiClient(cmd.Cmd):
                     value = int(value)
                     print("changing width to ", value)
                     term_width(new_width=value)
-                    self.opencache.cleanup()
                 else:
                     print("%s is not a valid width (integer required)" % value)
             elif value.isnumeric():
@@ -543,6 +544,9 @@ class GeminiClient(cmd.Cmd):
                 except ValueError:
                     pass
             self.options[option] = value
+            #We clean the cache for some options that affect rendering
+            if option in ["preformat_wrap","width"]:
+                self.opencache.cleanup()
 
     def do_theme(self, line):
         """Change the colors of your rendered text.
@@ -571,6 +575,7 @@ class GeminiClient(cmd.Cmd):
                 for k in offthemes.default:
                     valid.append(k)
                 print(valid)
+                return
             else:
                 if le == 1:
                     if element in self.theme.keys():
@@ -580,20 +585,9 @@ class GeminiClient(cmd.Cmd):
                     print("%s is set to %s" % (element, str(value)))
                 else:
                     # Now we parse the colors
-                    preformat_wrap = False
                     toset = None
                     for w in words[1:]:
-                        #preformat_wrap takes an int, not a color
-                        if element == "preformat_wrap":
-                            if w.isdigit():
-                                preformat_wrap = True
-                                # should stay as a string for now to pass the later test
-                                # else, if ==0, test will fails
-                                int_toset = w
-                            else:
-                                print("%s takes an int as argument"%element)
-                                return
-                        if not preformat_wrap and w not in offthemes.colors.keys():
+                        if w not in offthemes.colors.keys():
                             print("%s is not a valid color" % w)
                             print("Valid colors are one of: ")
                             valid = []
@@ -601,12 +595,9 @@ class GeminiClient(cmd.Cmd):
                                 valid.append(k)
                             print(valid)
                             return
-                    if int_toset:
-                        self.theme[element] = int(int_toset)
-                    else:
-                        self.theme[element] = words[1:]
+                    self.theme[element] = words[1:]
                     self.opencache.cleanup()
-        # now we upadte the prompt
+        # now we update the prompt
         if self.offline_only:
             self.set_prompt("OFF")
         else:

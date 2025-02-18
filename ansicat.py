@@ -144,7 +144,7 @@ def terminal_image(img_file):
 # First, we define the different content->text renderers, outside of the rest
 # (They could later be factorized in other files or replaced)
 class AbstractRenderer:
-    def __init__(self, content, url, center=True):
+    def __init__(self, content, url, center=True,**kwargs):
         self.url = url
         self.body = str(content)
         # there’s one rendered text and one links table per mode
@@ -157,7 +157,7 @@ class AbstractRenderer:
         self.center = center
         self.last_mode = "readable"
         self.theme = offthemes.default
-        self.ftr_site_config = None
+        self.options = kwargs
 
     def display(self, mode=None, directdisplay=False):
         wtitle = self.get_formatted_title()
@@ -183,7 +183,7 @@ class AbstractRenderer:
 
     # This class hold an internal representation of the HTML text
     class representation:
-        def __init__(self, width, title=None, center=True, theme={}):
+        def __init__(self, width, title=None, center=True, theme={},options={}):
             self.title = title
             self.center = center
             self.final_text = ""
@@ -200,6 +200,7 @@ class AbstractRenderer:
             self.disabled_indents = None
             # each color is an [open,close] pair code
             self.theme = theme
+            self.options = options
             self.colors = offthemes.colors
 
         def _insert(self, color, open=True):
@@ -363,8 +364,8 @@ class AbstractRenderer:
             self._disable_indents()
             # we have to apply the theme for every line in the intext
             # applying theme to preformatted is controversial as it could change it
-            if "preformat_wrap" in self.theme.keys():
-                preformat_wrap = self.theme["preformat_wrap"]
+            if "preformat_wrap" in self.options:
+                preformat_wrap = self.options["preformat_wrap"]
             else:
                 preformat_wrap = False
             if theme:
@@ -565,7 +566,7 @@ class AbstractRenderer:
         return self.links[mode]
 
     def _window_title(self, title, info=None):
-        title_r = self.representation(term_width(), theme=self.theme)
+        title_r = self.representation(term_width(), theme=self.theme,options=self.options)
         title_r.open_theme("window_title")
         title_r.add_text(title)
         title_r.close_theme("window_title")
@@ -608,7 +609,7 @@ class PlaintextRenderer(AbstractRenderer):
             return "(unknown)"
 
     def render(self, gemtext, width=None, mode=None, startlinks=0):
-        r = self.representation(width, theme=self.theme)
+        r = self.representation(width, theme=self.theme,options=self.options)
         links = []
         for line in gemtext.splitlines():
             r.newline()
@@ -656,7 +657,7 @@ class GemtextRenderer(AbstractRenderer):
     def render(self, gemtext, width=None, mode=None, startlinks=0):
         if not width:
             width = term_width()
-        r = self.representation(width, theme=self.theme)
+        r = self.representation(width, theme=self.theme,options=self.options)
         links = []
         hidden_links = []
         preformatted = False
@@ -797,7 +798,7 @@ class GopherRenderer(AbstractRenderer):
             )
         except Exception as err:
             print("Error rendering Gopher ", err)
-            r = self.representation(width, theme=self.theme)
+            r = self.representation(width, theme=self.theme,options=self.options)
             r.add_block(body)
             render = r.get_final()
             links = []
@@ -808,7 +809,7 @@ class GopherRenderer(AbstractRenderer):
             width = term_width()
         # This was copied straight from Agena (then later adapted)
         links = []
-        r = self.representation(width, theme=self.theme)
+        r = self.representation(width, theme=self.theme,options=self.options)
         for line in self.body.split("\n"):
             r.newline()
             if line.startswith("i"):
@@ -1132,7 +1133,7 @@ class HtmlRenderer(AbstractRenderer):
         # This method recursively parse the HTML
         r = self.representation(
             width, title=self.get_title(), center=self.center, theme=self.theme
-        )
+            ,options=self.options)
         links = []
         # You know how bad html is when you realize that space sometimes meaningful, somtimes not.
         # CR are not meaniningful. Except that, somethimes, they should be interpreted as spaces.
@@ -1379,7 +1380,7 @@ class HtmlRenderer(AbstractRenderer):
                         recursive_render(child, indent=indent)
 
         # the real render_html hearth
-        # note to vjousse: use self.ftr_site_config here
+        # note to vjousse: use self.options["ftr_site_config"] here
         if mode in ["full", "full_links_only"]:
             summary = body
         elif _HAS_READABILITY:
@@ -1487,7 +1488,7 @@ def get_mime(path, url=None):
     return mime
 
 
-def renderer_from_file(path, url=None, theme=None,ftr_site_config=None):
+def renderer_from_file(path, url=None, theme=None,**kwargs):
     if not path:
         return None
     mime = get_mime(path, url=url)
@@ -1501,13 +1502,13 @@ def renderer_from_file(path, url=None, theme=None,ftr_site_config=None):
         else:
             content = path
         toreturn = set_renderer(content, url, mime, theme=theme\
-                                ,ftr_site_config=ftr_site_config)
+                                ,**kwargs)
     else:
         toreturn = None
     return toreturn
 
 
-def set_renderer(content, url, mime, theme=None,ftr_site_config=None):
+def set_renderer(content, url, mime, theme=None,**kwargs):
     renderer = None
     if mime == "Local Folder":
         renderer = FolderRenderer("", url, datadir=xdg("data"))
@@ -1522,7 +1523,7 @@ def set_renderer(content, url, mime, theme=None,ftr_site_config=None):
         current_mime = mime_to_use[0]
         func = _FORMAT_RENDERERS[current_mime]
         if current_mime.startswith("text"):
-            renderer = func(content, url)
+            renderer = func(content, url,**kwargs)
             # We double check if the renderer is correct.
             # If not, we fallback to html
             # (this is currently only for XHTML, often being
@@ -1530,17 +1531,15 @@ def set_renderer(content, url, mime, theme=None,ftr_site_config=None):
             if not renderer.is_valid():
                 func = _FORMAT_RENDERERS["text/html"]
                 # print("Set (fallback)RENDERER to html instead of %s"%mime)
-                renderer = func(content, url)
+                renderer = func(content, url,**kwargs)
         else:
             # TODO: check this code and then remove one if.
             # we don’t parse text, we give the file to the renderer
-            renderer = func(content, url)
+            renderer = func(content, url,**kwargs)
             if not renderer.is_valid():
                 renderer = None
     if renderer and theme:
         renderer.set_theme(theme)
-    if renderer and ftr_site_config:
-        renderer.ftr_site_config = ftr_site_config
     return renderer
 
 
