@@ -10,6 +10,7 @@ FOR PACKAGERS: dependency to python-pil (or pillow) has been dropped
 - "opnk" now supports following link like in "opnk $URL XX" where XX is a link number.
 - new "preformat_wrap" option available to wrap even <pre>
 - PlainText rendering has been vastly improved with wrap, margin and link detection
+- fix wrong warping in gophermap (patch by JMCS)
 
 ## 2.5 - January 30th 2025
 - "abbrevs" has been replaced by "alias"

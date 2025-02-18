@@ -815,7 +815,7 @@ class GopherRenderer(AbstractRenderer):
             if line.startswith("i"):
                 towrap = line[1:].split("\t")[0]
                 if len(towrap.strip()) > 0:
-                    r.add_text(towrap)
+                    r.add_block(towrap+"\n")
                 else:
                     r.newparagraph()
             elif line.strip() not in [".", ""]:
