@@ -2,6 +2,7 @@
 
 ## 2.6 - Unreleased
 FOR PACKAGERS: dependency to python-pil (or pillow) has been dropped
+- NEW BEHAVIOUR: externally opened ressources (like PDF) are now part of the history
 - new "--command" command-line argument to immediately launch one or multiple commands
 - new "feed" command to replace the "view feed" (which is deprecated)
 - "url" now accepts link number as an argument (suggested by JMCS)
@@ -10,8 +11,7 @@ FOR PACKAGERS: dependency to python-pil (or pillow) has been dropped
 - "opnk" now supports following link like in "opnk $URL XX" where XX is a link number.
 - new "preformat_wrap" option available to wrap even <pre>
 - PlainText rendering has been vastly improved with wrap, margin and link detection
-- fix wrong warping in gophermap (patch by JMCS)
-- externally opened ressources are now also part of the history
+- fix wrong wraping in gophermap (patch by JMCS)
 - "handler" with now automatically add "%s" at the end of the command if not present
 
 ## 2.5 - January 30th 2025
