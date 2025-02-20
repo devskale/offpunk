@@ -604,7 +604,13 @@ class GeminiClient(cmd.Cmd):
             self.set_prompt("ON")
 
     def do_handler(self, line):
-        """View or set handler commands for different MIME types."""
+        """View or set handler commands for different MIME types.
+        handler MIMETYPE : see handler for MIMETYPE
+        handler MIMETYPE CMD : set handler for MIMETYPE to CMD
+        in the CMD, %s will be replaced by the filename.
+        if no %s, it will be added at the end.
+
+        Example: handler application/pdf zathura %s"""
         if not line.strip():
             # Show all current handlers
             h = self.opencache.get_handlers()

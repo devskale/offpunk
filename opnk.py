@@ -131,16 +131,14 @@ class opencache:
             return self.mime_handlers
 
     def set_handler(self, mime, handler):
+        if "%s" not in handler:
+            #if no %s, we automatically add one. I can’t think of any usecase
+            # where it should not be part of the handler
+            handler += " %s"
         previous = None
         if mime in self.mime_handlers.keys():
             previous = self.mime_handlers[mime]
         self.mime_handlers[mime] = handler
-        if "%s" not in handler:
-            print(
-                "WARNING: this handler has no %%s, no filename will be provided to the command"
-            )
-            if previous:
-                print("Previous handler was %s" % previous)
 
     def get_renderer(self, inpath, mode=None, theme=None,**kwargs):
         # We remove the ##offpunk_mode= from the URL
@@ -289,6 +287,10 @@ class opencache:
                     parameter=netcache.get_cache_path(inpath),
                     direct_output=True,
                 )
+
+                print("External open of type %s with \"%s\""%(mimetype,cmd_str))
+                print("You can change it with \"handler %s MY_PREFERED_APP %%s\""%mimetype)
+                return True, inpath
             except FileNotFoundError:
                 print("Handler program %s not found!" % shlex.split(cmd_str)[0])
                 print(

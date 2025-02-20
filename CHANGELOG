@@ -11,6 +11,8 @@ FOR PACKAGERS: dependency to python-pil (or pillow) has been dropped
 - new "preformat_wrap" option available to wrap even <pre>
 - PlainText rendering has been vastly improved with wrap, margin and link detection
 - fix wrong warping in gophermap (patch by JMCS)
+- externally opened ressources are now also part of the history
+- "handler" with now automatically add "%s" at the end of the command if not present
 
 ## 2.5 - January 30th 2025
 - "abbrevs" has been replaced by "alias"
