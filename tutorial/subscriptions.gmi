@@ -40,21 +40,20 @@ You have now successfully added the english-only RSS feed of my personal blog to
 It is exactly equivalent to doing:
 
 > go https://ploum.net
-> view feeds 
+> feed
 > 3
 > add subscribed
 
 
 It takes a bit of time to realize that you can subscribe to anything and that RSS are not something magic but simple page written in a different format. In fact, RSS support is so good in Offpunk that you may acquire to reflex of browsing through a blog directly with the RSS feed instead of the homepage.
 
-The "view feed" command (without "s" at the end of "feed") try to find the best RSS if there are many.
-
-The "view full" command allows you to see the content of the articles in a RSS, not only the title.
+When browsing a feed, the "view full" command allows you to see the content of the articles in a RSS, not only the title.
 
 Let’s try it:
 
 > go https://ploum.net
-> view feed
+> feed
+> 3
 > view full
 > view normal
 

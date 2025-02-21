@@ -62,7 +62,7 @@ Then I get back reading the article with
 
 Sometimes, I follow links and find new stuff to read that I also put in my "toread" list. If the author look interesting, I try to see what else (s)he wrote by immediately going to her/his RSS feed.
 
-> v feed
+> feed
 
 How, that feed looks interesting. Let’s subscribe by putting it in my RSS subscriptions:
 
