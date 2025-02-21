@@ -281,21 +281,22 @@ class opencache:
                 return False, inpath
             else:
                 cmd_str = self._get_handler_cmd(mimetype)
+            change_cmd = "\"handler %s MY_PREFERED_APP %%s\""%mimetype
             try:
+                print("External open of type %s with \"%s\""%(mimetype,cmd_str))
+                print("You can change the default handler with %s"%change_cmd)
                 run(
                     cmd_str,
                     parameter=netcache.get_cache_path(inpath),
                     direct_output=True,
                 )
-
-                print("External open of type %s with \"%s\""%(mimetype,cmd_str))
-                print("You can change it with \"handler %s MY_PREFERED_APP %%s\""%mimetype)
                 return True, inpath
             except FileNotFoundError:
                 print("Handler program %s not found!" % shlex.split(cmd_str)[0])
-                print(
-                    "You can use the ! command to specify another handler program or pipeline."
-                )
+                print("You can use the ! command to specify another handler program\
+                        or pipeline.")
+
+                print("You can change the default handler with %s"%change_cmd)
             return False, inpath
 
     # We remove the renderers from the cache and we also delete temp files

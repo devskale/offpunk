@@ -158,6 +158,8 @@ class AbstractRenderer:
         self.last_mode = "readable"
         self.theme = offthemes.default
         self.options = kwargs
+        # self.mime should be used only in renderer with multiple mime
+        self.mime = None
 
     def display(self, mode=None, directdisplay=False):
         wtitle = self.get_formatted_title()
@@ -171,8 +173,14 @@ class AbstractRenderer:
         else:
             return body
 
+    #Return True if it should bypass less and access directly the terminal
     def has_direct_display(self):
         return False
+
+    #Return True if it is able to render the content.
+    #Return False if the content is of a format not supported by ansicat
+    def is_format_supported(self):
+        return True
 
     def set_theme(self, theme):
         if theme:
@@ -576,7 +584,9 @@ class AbstractRenderer:
             title_r.close_theme("window_subtitle")
         return title_r.get_final()
 
-    # An instance of AbstractRenderer should have a self.render(body,width,mode) method.
+    # An instance of AbstractRenderer should have a 
+    # self.render(body,width=,mode=,starlinks=0) method.
+    # It returns a tuple (rendered_body,[list of links])
     # 3 modes are used : readable (by default), full and links_only (the fastest, when
     # rendered content is not used, only the links are needed)
     # The prepare() function is called before the rendering. It is useful if
@@ -584,6 +594,35 @@ class AbstractRenderer:
     # The prepare() function output a list of tuple. Each tuple is [output text, format] where
     # format should be in _FORMAT_RENDERERS. If None, current renderer is used
 
+
+# A renderer for format that are not supported
+class FakeRenderer(AbstractRenderer):
+    def set_mime(self,mime):
+        self.mime = mime
+    def get_mime(self):
+        return self.mime
+    def get_title(self):
+        filename = self.url.split("/")[-1]
+        if not filename:
+            filename = self.url
+        return filename
+
+    def is_format_supported(self):
+        return False
+
+    def render(self,body,width=None,**kwargs):
+        gemtext = "\n"
+        gemtext += "File %s is of format %s.\n"%(self.get_title(),self.mime)
+        gemtext += "It cannot be rendered in your terminal.\n"
+        gemtext += "Use \"open\" to open the file using an external handler"
+        r = self.representation(width, theme=self.theme,options=self.options)
+        for line in gemtext.splitlines():
+            r.newline()
+            if len(line.strip()) == 0:
+                r.newparagraph(force=True)
+            else:
+                r.add_text(line.rstrip())
+        return r.get_final(), []
 
 class PlaintextRenderer(AbstractRenderer):
     def get_mime(self):
@@ -1538,6 +1577,10 @@ def set_renderer(content, url, mime, theme=None,**kwargs):
             renderer = func(content, url,**kwargs)
             if not renderer.is_valid():
                 renderer = None
+    #We have not found a renderer. Use a fake one.
+    if not renderer:
+        renderer = FakeRenderer("",url,**kwargs)
+        renderer.set_mime(mime)
     if renderer and theme:
         renderer.set_theme(theme)
     return renderer

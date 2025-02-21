@@ -2,7 +2,9 @@
 
 ## 2.6 - Unreleased
 FOR PACKAGERS: dependency to python-pil (or pillow) has been dropped
-- NEW BEHAVIOUR: externally opened ressources (like PDF) are now part of the history
+- NEW BEHAVIOUR: not rendered ressources (like PDF) are not opened automatically.
+The user is prompted to type "open" to see the ressource. This allows the ressource
+to be part of history, be bookmarked, etc…
 - new "--command" command-line argument to immediately launch one or multiple commands
 - new "feed" command to replace the "view feed" (which is deprecated)
 - "url" now accepts link number as an argument (suggested by JMCS)

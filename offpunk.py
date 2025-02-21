@@ -1423,14 +1423,16 @@ Use "view XX" where XX is a number to view information about link XX.
     def do_archive(self, args):
         """Archive current page by removing it from every list and adding it to
         archives, which is a special historical list limited in size. It is similar to `move archives`."""
+        u, m = unmode_url(self.current_url)
         for li in self.list_lists():
             if li not in ["archives", "history"]:
-                u, m = unmode_url(self.current_url)
                 deleted = self.list_rm_url(u, li)
                 if deleted:
                     print("Removed from %s" % li)
         self.list_add_top("archives", limit=self.options["archives_size"])
-        print("Archiving: %s" % self.get_renderer().get_page_title())
+        r = self.get_renderer()
+        title = r.get_page_title()
+        print("Archiving: %s" % title)
         print(
             "\x1b[2;34mCurrent maximum size of archives : %s\x1b[0m"
             % self.options["archives_size"]
