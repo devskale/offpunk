@@ -1104,16 +1104,6 @@ class GeminiClient(cmd.Cmd):
         self._show_lookup(offset=i, end=i + 10)
         self.page_index += 10
 
-    # Stuff that does something to most recently viewed item
-    @needs_gi
-    def do_cat(self, *args):
-        """Run most recently visited item through "cat" command."""
-        run(
-            "cat",
-            input=open(self.opencache.get_temp_filename(self.current_url), "rb"),
-            direct_output=True,
-        )
-
     @needs_gi
     def do_feed(self, *args):
         """Display RSS or Atom feeds linked to the current page."""

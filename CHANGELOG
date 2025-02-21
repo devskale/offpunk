@@ -15,6 +15,7 @@ to be part of history, be bookmarked, etc…
 - PlainText rendering has been vastly improved with wrap, margin and link detection
 - fix wrong wraping in gophermap (patch by JMCS)
 - "handler" with now automatically add "%s" at the end of the command if not present
+- removed the "cat" command as it has no purpose (you can use "!cat" instead) and there was a potential crash (reported by Stephen)
 
 ## 2.5 - January 30th 2025
 - "abbrevs" has been replaced by "alias"
