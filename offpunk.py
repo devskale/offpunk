@@ -29,6 +29,7 @@ from offutils import (
     term_width,
     unmode_url,
     xdg,
+    init_config,
 )
 
 try:
@@ -2129,36 +2130,6 @@ def main():
     gc = GeminiClient(synconly=args.sync)
     torun_queue = []
 
-    # Interactive if offpunk started normally
-    # False if started with --sync
-    # Queue is a list of command (potentially empty)
-    def read_config(queue, rcfile=None, interactive=True):
-        if not rcfile:
-            rcfile = os.path.join(xdg("config"), "offpunkrc")
-        if os.path.exists(rcfile):
-            print("Using config %s" % rcfile)
-            with open(rcfile, "r") as fp:
-                for line in fp:
-                    line = line.strip()
-                    if (args.bookmarks or args.url) and any(
-                        (line.startswith(x) for x in ("go", "g", "tour", "t"))
-                    ):
-                        if args.bookmarks:
-                            print(
-                                'Skipping rc command "%s" due to --bookmarks option.'
-                                % line
-                            )
-                        else:
-                            print(
-                                'Skipping rc command "%s" due to provided URLs.' % line
-                            )
-                        continue
-                    # We always consider redirect
-                    # for the rest, we need to be interactive
-                    if line.startswith("redirect") or interactive:
-                        queue.append(line)
-        return queue
-
     # Act on args
     if args.bookmarks:
         torun_queue.append("bookmarks")
@@ -2207,15 +2178,13 @@ def main():
             depth = int(args.depth)
         else:
             depth = 1
-        read_config(torun_queue, rcfile=args.config_file, interactive=False)
+        torun_queue += init_config(rcfile=args.config_file, interactive=False)
         for line in torun_queue:
             gc.onecmd(line)
         gc.call_sync(refresh_time=refresh_time, depth=depth, lists=args.url)
     else:
         # We are in the normal mode. First process config file
-        torun_queue = read_config(
-            torun_queue, rcfile=args.config_file, interactive=True
-        )
+        torun_queue += init_config(rcfile=args.config_file,interactive=True)
         print("Welcome to Offpunk!")
         print("Type `help` to get the list of available command.")
         for line in torun_queue:

@@ -14,7 +14,7 @@ import time
 import ansicat
 import netcache
 import offutils
-from offutils import GREPCMD, is_local, mode_url, run, term_width, unmode_url
+from offutils import GREPCMD, is_local, mode_url, run, term_width, unmode_url, init_config
 
 _HAS_XDGOPEN = shutil.which("xdg-open")
 
@@ -287,8 +287,11 @@ class opencache:
                 cmd_str = self._get_handler_cmd(mimetype)
             change_cmd = "\"handler %s MY_PREFERED_APP %%s\""%mimetype
             try:
-                print("External open of type %s with \"%s\""%(mimetype,cmd_str))
-                print("You can change the default handler with %s"%change_cmd)
+                #we don’t write the info if directly opening to avoid 
+                #being verbose in opnk
+                if not direct_open_unsupported:
+                    print("External open of type %s with \"%s\""%(mimetype,cmd_str))
+                    print("You can change the default handler with %s"%change_cmd)
                 run(
                     cmd_str,
                     parameter=netcache.get_cache_path(inpath),
@@ -343,6 +346,12 @@ def main():
     )
     args = parser.parse_args()
     cache = opencache()
+    #we read the startup config and we only care about the "handler" command
+    cmds = init_config(skip_go=True,interactive=False,verbose=False)
+    for cmd in cmds:
+        splitted = cmd.split(maxsplit=2)
+        if len(splitted) >= 3 and splitted[0] == "handler":
+            cache.set_handler(splitted[1],splitted[2])
     # if the second argument is an integer, we associate it with the previous url
     # to use as a link_id
     if len(args.content) == 2 and args.content[1].isdigit():

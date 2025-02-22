@@ -137,6 +137,34 @@ def xdg(folder="cache"):
         return None
 
 
+#Return a list of the commands that must be run
+#if skip_go = True, any command changing the url will be ignored (go, tour)
+#if not interactive, only redirects and handlers are considered
+def init_config(rcfile=None,skip_go=False,interactive=True,verbose=True):
+    cmds = []
+    if not rcfile:
+        rcfile = os.path.join(xdg("config"), "offpunkrc")
+    if os.path.exists(rcfile):
+        if verbose:
+            print("Using config %s" % rcfile)
+        with open(rcfile,"r") as fp:
+            for line in fp:
+                line = line.strip()
+                #Is this a command to go to an url ?
+                is_go = any(line.startswith(x) for x in ("go","g","tour","t"))
+                #Is this a command necessary, even when non-interactive ?
+                is_necessary = any(line.startswith(x) for x in ("redirect","handler"))
+                if is_necessary:
+                    cmds.append(line)
+                elif interactive:
+                    if skip_go and is_go:
+                        if verbose:
+                            print("Skipping startup command \"%s\" due to provided URL"%line)
+                        continue
+                    else:
+                        cmds.append(line)
+    return cmds
+
 # An IPV6 URL should be put between []
 # We try to detect them has location with more than 2 ":"
 def fix_ipv6_url(url):
