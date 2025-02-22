@@ -18,6 +18,7 @@ to be part of history, be bookmarked, etc…
 - removed the "cat" command as it has no purpose (you can use "!cat" instead) and there was a potential crash (reported by Stephen)
 - "url" can be piped to any shell command: "url|" or "url 121|" (suggestion of Stephen)
 - "opnk" is now reading the offpunrc file to use predefined handlers
+- "handler" now supports file exension or full mimetype
 
 ## 2.5 - January 30th 2025
 - "abbrevs" has been replaced by "alias"

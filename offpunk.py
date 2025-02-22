@@ -610,8 +610,12 @@ class GeminiClient(cmd.Cmd):
         handler MIMETYPE CMD : set handler for MIMETYPE to CMD
         in the CMD, %s will be replaced by the filename.
         if no %s, it will be added at the end.
+        MIMETYPE can be the true mimetype or the file extension.
 
-        Example: handler application/pdf zathura %s"""
+        Examples: 
+            handler application/pdf zathura %s
+            handler .odt lowriter
+            handler docx lowriter"""
         if not line.strip():
             # Show all current handlers
             h = self.opencache.get_handlers()

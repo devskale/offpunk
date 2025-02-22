@@ -98,7 +98,7 @@ class opencache:
         self.last_mode = {}
         self.last_width = term_width(absolute=True)
 
-    def _get_handler_cmd(self, mimetype):
+    def _get_handler_cmd(self, mimetype,file_extension=None):
         # Now look for a handler for this mimetype
         # Consider exact matches before wildcard matches
         exact_matches = []
@@ -110,6 +110,9 @@ class opencache:
                 exact_matches.append((handled_mime, cmd_str))
         for handled_mime, cmd_str in exact_matches + wildcard_matches:
             if fnmatch.fnmatch(mimetype, handled_mime):
+                break
+            #we try to match the file extension, with a starting dot or not
+            elif file_extension == handled_mime.strip("."): 
                 break
         else:
             # Use "xdg-open" as a last resort.
@@ -273,6 +276,12 @@ class opencache:
         # maybe, we have no renderer. Or we want to skip it.
         else:
             mimetype = ansicat.get_mime(cachepath)
+            #we find the file extension by taking the last part of the path
+            #and finding a dot.
+            last_part = cachepath.split("/")[-1]
+            extension = None
+            if last_part and "." in last_part:
+                extension = last_part.split(".")[-1]
             if mimetype == "mailto":
                 mail = inpath[7:]
                 resp = input("Send an email to %s Y/N? " % mail)
@@ -284,7 +293,7 @@ class opencache:
                         print("Please install xdg-open (usually from xdg-util package)")
                 return False, inpath
             else:
-                cmd_str = self._get_handler_cmd(mimetype)
+                cmd_str = self._get_handler_cmd(mimetype,file_extension=extension)
             change_cmd = "\"handler %s MY_PREFERED_APP %%s\""%mimetype
             try:
                 #we don’t write the info if directly opening to avoid 
