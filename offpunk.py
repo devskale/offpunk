@@ -1307,7 +1307,7 @@ Use "view XX" where XX is a number to view information about link XX.
         splitted = args.split("|",maxsplit=1)
         url = None
         final_url = None
-        if splitted[0].isdigit():
+        if splitted[0].strip().isdigit():
             link_id = int(splitted[0])
             link_url = self.get_renderer().get_link(link_id)
             if link_url:
