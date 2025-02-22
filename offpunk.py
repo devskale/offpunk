@@ -1207,11 +1207,20 @@ Use "view XX" where XX is a number to view information about link XX.
 
     @needs_gi
     def do_shell(self, line):
-        """'cat' most recently visited item through a shell pipeline.
-        '!' is an useful shortcut."""
+        """Send the content of the current page to the shell and pipe it.
+        You are supposed to write what will come after the pipe. For example,
+        if you want to count the number of lines containing STRING in the 
+        current page:
+        > shell grep STRING|wc -l
+        '!' is an useful shortcut.
+        > !grep STRING|wc -l
+        """
+        # input is used if we wand to send something else than current page
+        # to the shell
         tmp = self.opencache.get_temp_filename(self.current_url)
         if tmp:
-            run(line, input=open(tmp, "rb"), direct_output=True)
+            input = open(tmp, "rb")
+            run(line, input=input, direct_output=True)
 
     @needs_gi
     def do_save(self, line):
@@ -1290,13 +1299,16 @@ Use "view XX" where XX is a number to view information about link XX.
             self._go_to_url(last_url, handle=False)
 
     @needs_gi
-    def do_url(self, *args):
+    def do_url(self, args):
         """Print the url of the current page.
         Use "url XX" where XX is a number to print the url of link XX.
+        "url" can also be piped to the shell, using the pipe "|"
         """
+        splitted = args.split("|",maxsplit=1)
         url = None
-        if args and args[0].isdigit():
-            link_id = int(args[0])
+        final_url = None
+        if splitted[0].isdigit():
+            link_id = int(splitted[0])
             link_url = self.get_renderer().get_link(link_id)
             if link_url:
                 url = link_url
@@ -1305,6 +1317,8 @@ Use "view XX" where XX is a number to view information about link XX.
         if url:
             final_url, mode = unmode_url(url)
             print(final_url)
+        if final_url and len(splitted) > 1:
+            run(splitted[1], input=final_url, direct_output=True)
 
     # Bookmarking stuff
     @needs_gi
