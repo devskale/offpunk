@@ -1135,8 +1135,6 @@ class GeminiClient(cmd.Cmd):
 previous position.
 Use "view normal" to see the default article view on html page.
 Use "view full" to see a complete html page instead of the article view.
-Use "view feed" to see the the linked feed of the page (in any).
-Use "view feeds" to see available feeds on this page.
 Use "view XX" where XX is a number to view information about link XX.
 (full, feed, feeds have no effect on non-html content)."""
         if self.current_url and args and args[0] != "":
@@ -1166,7 +1164,7 @@ Use "view XX" where XX is a number to view information about link XX.
 
             else:
                 print(
-                    "Valid argument for view are : normal, full, feed, feeds or a number"
+                    "Valid argument for view are : normal, full, source or a number"
                 )
         else:
             self._go_to_url(self.current_url)
