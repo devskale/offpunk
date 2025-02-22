@@ -189,7 +189,7 @@ class opencache:
             return None
 
     def opnk(self, inpath, mode=None, terminal=True, grep=None, theme=None, link=None,\
-                        **kwargs):
+                        direct_open_unsupported=False, **kwargs):
         # Return True if inpath opened in Terminal
         # False otherwise
         # also returns the url in case it has been modified
@@ -197,6 +197,8 @@ class opencache:
         # we immediately fallback to xdg-open.
         # netcache currently provide the path if it’s a file.
         # If link is a digit, we open that link number instead of the inpath
+        # If direct_open_unsupported, we don’t print the "unsupported warning"
+        # and, instead, immediately fallback to external open
         if not offutils.is_local(inpath):
             kwargs["images_mode"] = mode
             cachepath, inpath = netcache.fetch(inpath, **kwargs)
@@ -224,6 +226,8 @@ class opencache:
             renderer.set_mode(mode)
         # we use the full moded url as key for the dictionary
         key = mode_url(inpath, mode)
+        if renderer and not renderer.is_format_supported() and direct_open_unsupported:
+            terminal = False
         if terminal and renderer:
             # If this is an image and we have chafa/timg, we
             # don’t use less, we call it directly
@@ -344,11 +348,12 @@ def main():
     if len(args.content) == 2 and args.content[1].isdigit():
         url = args.content[0]
         link_id = args.content[1]
-        cache.opnk(url, mode=args.mode, validity=args.cache_validity, link=link_id)
+        cache.opnk(url, mode=args.mode, validity=args.cache_validity, link=link_id,\
+                    direct_open_unsupported=True)
     else:
         for f in args.content:
-            cache.opnk(f, mode=args.mode, validity=args.cache_validity)
-
+            cache.opnk(f, mode=args.mode, validity=args.cache_validity,\
+                        direct_open_unsupported=True)
 
 if __name__ == "__main__":
     main()
