@@ -1,24 +1,29 @@
 # Offpunk History
 
-## 2.6 - Unreleased
+## 2.6 - February 24th 2025
 FOR PACKAGERS: dependency to python-pil (or pillow) has been dropped
 - NEW BEHAVIOUR: not rendered ressources (like PDF) are not opened automatically.
 The user is prompted to type "open" to see the ressource. This allows the ressource
 to be part of history, be bookmarked, etc…
+Offpunk:
 - new "--command" command-line argument to immediately launch one or multiple commands
-- new "feed" command to replace the "view feed" (which is deprecated)
-- "url" now accepts link number as an argument (suggested by JMCS)
 - "add" now accepts link number as a second argument (suggested by JMCS)
-- removed support for chafa < 1.10, as announced in 2.4. python-pil is not used anymore. 
-- "opnk" now supports following link like in "opnk $URL XX" where XX is a link number.
+- "url" now accepts link number as an argument (suggested by JMCS)
+- "url" can be piped to any shell command: "url|" or "url 121|" (suggestion of Stephen)
+Ansicat and rendering:
 - new "preformat_wrap" option available to wrap even <pre>
 - PlainText rendering has been vastly improved with wrap, margin and link detection
 - fix wrong wraping in gophermap (patch by JMCS)
-- "handler" with now automatically add "%s" at the end of the command if not present
-- removed the "cat" command as it has no purpose (you can use "!cat" instead) and there was a potential crash (reported by Stephen)
-- "url" can be piped to any shell command: "url|" or "url 121|" (suggestion of Stephen)
+Opnk and opening files:
+note: "opnk" will be renamed "openk" in 3.0
+- "opnk" now supports following link like in "opnk $URL XX" where XX is a link number.
 - "opnk" is now reading the offpunrc file to use predefined handlers
+- "handler" with now automatically add "%s" at the end of the command if not present
 - "handler" now supports file exension or full mimetype
+Deprecation and removal:
+- removed support for chafa < 1.10, as announced in 2.4. python-pil is not used anymore. 
+- removed the "cat" command as it has no purpose (you can use "!cat" instead) and there was a potential crash (reported by Stephen)
+- new "feed" command to replace the "view feed" (which is deprecated)
 
 ## 2.5 - January 30th 2025
 - "abbrevs" has been replaced by "alias"
