@@ -255,7 +255,9 @@ class AbstractRenderer:
                     self.last_line_center = False
                 else:
                     # should we lstrip the nextline in the addition ?
-                    nextline = self.current_indent + nextline.lstrip() + self.r_indent
+                    # nextline.lstrip() is breaking AsciiArt and I don’t remember
+                    # why it is there. Trying to replace it with a "rstrip"
+                    nextline = self.current_indent + nextline.rstrip() + self.r_indent
                     self.current_indent = self.s_indent
                 self.final_text += nextline
                 self.last_line = ""
@@ -660,7 +662,7 @@ class PlaintextRenderer(AbstractRenderer):
                     for w in words:
                         if "://" in w and looks_like_url(w):
                             links.append(w)
-                r.add_text(line.rstrip())
+                r.add_text(line)
         return r.get_final(), links
 
 
