@@ -1457,6 +1457,7 @@ _FORMAT_RENDERERS = {
     "application/javascript": HtmlRenderer,
     "application/json": HtmlRenderer,
     "text/empty": EmptyRenderer,
+    "message/news": GemtextRenderer,
 }
 
 
