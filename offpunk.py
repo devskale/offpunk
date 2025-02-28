@@ -1210,7 +1210,6 @@ Use "view XX" where XX is a number to view information about link XX.
             else:
                 self.opencache.opnk(u, terminal=False)
 
-    @needs_gi
     def do_shell(self, line):
         """Send the content of the current page to the shell and pipe it.
         You are supposed to write what will come after the pipe. For example,
@@ -1222,10 +1221,15 @@ Use "view XX" where XX is a number to view information about link XX.
         """
         # input is used if we wand to send something else than current page
         # to the shell
-        tmp = self.opencache.get_temp_filename(self.current_url)
+        tmp = None
+        if self.current_url:
+            tmp = self.opencache.get_temp_filename(self.current_url)
         if tmp:
             input = open(tmp, "rb")
             run(line, input=input, direct_output=True)
+        else:
+            run(line,direct_output=True)
+
 
     @needs_gi
     def do_save(self, line):

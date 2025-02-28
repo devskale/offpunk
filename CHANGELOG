@@ -2,6 +2,7 @@
 
 ## 2.7 - Unreleased
 - Consider mimetype "message/news" as "gemtext" because file is sometimes confused. (reported by JMCS)
+- "shell" (or "!") now works even without content (so you can run it on startup)
 
 ## 2.6 - February 24th 2025
 FOR PACKAGERS: dependency to python-pil (or pillow) has been dropped
