@@ -45,6 +45,12 @@ netcache = "netcache:main"
 ansicat = "ansicat:main"
 opnk = "opnk:main"
 
+[dependency-groups]
+test = [
+    "pytest",
+    "pytest-mock",
+]
+
 [tool.hatch.version]
 path = "offpunk.py" # read __version__
 
