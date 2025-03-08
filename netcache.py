@@ -11,6 +11,7 @@ import ssl
 import sys
 import time
 import urllib.parse
+import warnings
 from ssl import CertificateError
 
 import ansicat
@@ -35,7 +36,10 @@ try:
 except (ModuleNotFoundError, ImportError):
     _HAS_CRYPTOGRAPHY = False
 try:
-    import requests
+    with warnings.catch_warnings():
+        # Disable annoying warning shown to LibreSSL users
+        warnings.simplefilter("ignore")
+        import requests
 
     _DO_HTTP = True
 except (ModuleNotFoundError, ImportError):
