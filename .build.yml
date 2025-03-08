@@ -1,10 +1,25 @@
-image: alpine/3.19
+image: alpine/latest
 oauth: pages.sr.ht/PAGES:RW
 packages:
 - hut
+- uv
+secrets:  # see https://builds.sr.ht/secrets
+  - c4b4edb9-6d07-45fe-ac31-5d3ac6a27a8a  #~/.pypi-credentials mode 700
 environment:
   site1: offpunk.net
 tasks:
+  # The following, contributed by Anna Cybertailor, will automatically
+  # upload the package to pypi if it is a release
+- publish-pypi: |
+    if [[ ${GIT_REF} != refs/tags/* ]]; then
+      echo "Current commit is not a tag; not building anything"
+      exit 0
+    fi
+
+    rm -rf dist
+    uv build
+    ~/.pypi-credentials
+    #uv publish dist/*
 - package-gemini: |
     cd offpunk/tutorial
     tar -cvzh . > ../../capsule.tar.gz
