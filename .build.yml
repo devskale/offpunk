@@ -19,7 +19,7 @@ tasks:
     rm -rf dist
     uv build
     ~/.pypi-credentials
-    #uv publish dist/*
+    uv publish dist/*
 - package-gemini: |
     cd offpunk/tutorial
     tar -cvzh . > ../../capsule.tar.gz

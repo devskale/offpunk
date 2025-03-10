@@ -4,6 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "offpunk"
+description = "Offline-First Gemini/Web/Gopher/RSS reader and browser"
 authors = [
     {name = "Solderpunk", email = "solderpunk@sdf.org"},
     {name = "Lionel Dricot (Ploum)", email = "offpunk2@ploum.eu"},
@@ -24,7 +25,7 @@ classifiers = [
 ]
 keywords = ["gemini", "browser"]
 requires-python = ">=3.7"
-dynamic = ["version", "description"]
+dynamic = ["version"]
 
 [project.optional-dependencies]
 better-tofu = ["cryptography"]
