@@ -4,6 +4,7 @@
 - Consider mimetype "message/news" as "gemtext" because file is sometimes confused. (reported by JMCS)
 - "shell" (or "!") now works even without content (so you can run it on startup)
 - ignore annoying warnings for LibreSSL users (by Anna cyberTailor)
+- ansicat: workaround what seems to be a BS4 bug where elements after a <br/> were ignored
 
 ## 2.6 - February 24th 2025
 FOR PACKAGERS: dependency to python-pil (or pillow) has been dropped

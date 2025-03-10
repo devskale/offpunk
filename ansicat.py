@@ -1403,6 +1403,10 @@ class HtmlRenderer(AbstractRenderer):
 
             elif element.name == "br":
                 r.newline()
+                #weirdly, it seems that BS4 sometimes parse elements after <br>
+                #as children of <br>
+                for child in element.children:
+                    recursive_render(child, indent=indent)
             elif (
                 element.name not in ["script", "style", "template"]
                 and type(element) is not Comment
