@@ -2,9 +2,6 @@
 # Those are by default because they should make sens with offpunk
 
 redirects = {
-    "*twitter.com" : "nitter.net",
-    "youtube.com" : "yewtu.be",
-    "youtu.be" : "yewtu.be",
     "*reddit.com"  : "teddit.net",
     "*medium.com"  : "scribe.rip",
     }
@@ -14,6 +11,10 @@ redirects = {
 #Blocking them will save a lot of bandwith
 
 blocked = {
+    "*twitter.com",
+    "*x.com",
+    "**youtube.com",
+    "*youtu.be",
     "*facebook.com",
     "*facebook.net",
     "*fbcdn.net",
