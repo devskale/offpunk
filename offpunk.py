@@ -1012,7 +1012,9 @@ class GeminiClient(cmd.Cmd):
 
         output = "Offpunk " + __version__ + "\n"
         output += "===========\n"
-        output += "Highly recommended:\n"
+        output += "System: " + sys.platform + "\n"
+        output += "Python: " + sys.version + "\n"
+        output += "\nHighly recommended:\n"
         output += " - python-cryptography : " + has(netcache._HAS_CRYPTOGRAPHY)
         output += " - xdg-open            : " + has(opnk._HAS_XDGOPEN)
         output += "\nWeb browsing:\n"
