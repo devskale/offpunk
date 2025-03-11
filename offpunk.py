@@ -180,7 +180,7 @@ class GeminiClient(cmd.Cmd):
             "max_size_download": 10,
             "editor": None,
             #FIXME: download_images_first is not used anywhere in the code
-            "download_images_first": True,
+            #"download_images_first": True,
             "images_mode": "readable",
             "redirects": True,
             # the wikipedia entry needs two %s, one for lang, other for search
@@ -338,8 +338,12 @@ class GeminiClient(cmd.Cmd):
                 match = netloc.endswith(key[1:])
             if match:
                 if self.redirects[key] == "blocked":
-                    text = "This website has been blocked.\n"
-                    text += "Use the redirect command to unblock it."
+                    text = ""
+                    text += "Blocked URL: "+url + "\n"
+                    text += "This website has been blocked with the following rule:\n"
+                    text += key + "\n"
+                    text += "Use the following redirect command to unblock it:\n"
+                    text += "redirect %s NONE" %key
                     if handle and not self.sync_only:
                         print(text)
                     return

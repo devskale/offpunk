@@ -13,7 +13,7 @@ redirects = {
 blocked = {
     "*twitter.com",
     "*x.com",
-    "**youtube.com",
+    "*youtube.com",
     "*youtu.be",
     "*facebook.com",
     "*facebook.net",
