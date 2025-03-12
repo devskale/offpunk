@@ -11,14 +11,14 @@ redirects = {
 #Blocking them will save a lot of bandwith
 
 blocked = {
-    "*twitter.com",
-    "*x.com",
-    "*youtube.com",
-    "*youtu.be",
-    "*facebook.com",
-    "*facebook.net",
-    "*fbcdn.net",
-    "*linkedin.com",
+    "twitter.com",
+    "x.com",
+    "youtube.com",
+    "youtu.be",
+    "facebook.com",
+    "facebook.net",
+    "fbcdn.net",
+    "linkedin.com",
     "*licdn.com",
     "*admanager.google.com",
     "*google-health-ads.blogspot.com",
