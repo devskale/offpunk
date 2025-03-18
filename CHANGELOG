@@ -9,6 +9,7 @@
 - offpunk: be more explicit about how to unblock a blocked URL
 - offpunk: improved "version" to help debugging on the mailing-list
 - ansicat: if a file identified as html starts with "<rss ", then it is a XML, not HTML
+- fix a long-standing bug where "find" could not be used in lists
 
 ## 2.6 - February 24th 2025
 FOR PACKAGERS: dependency to python-pil (or pillow) has been dropped

@@ -67,7 +67,7 @@ def less_cmd(file, histfile=None, cat=False, grep=None):
         env = {"LESSHISTFILE": histfile}
     else:
         env = {}
-    if cat:
+    if cat and not grep:
         cmd_str = _DEFAULT_CAT
     elif grep:
         grep_cmd = GREPCMD
