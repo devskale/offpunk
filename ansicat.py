@@ -1509,12 +1509,15 @@ def get_mime(path, url=None):
             mime = "text/xml"
         # We will also check if the first line starts with <rss
         elif not mime2 and "html" in mime:
-            firstline = None
-            with open(path) as f:
-                firstline = f.readline()
-                f.close()
-            if firstline.startswith("<rss"):
-                mime = "text/xml"
+            if path and os.path.exists(path):
+                firstline = None
+                with open(path) as f:
+                    firstline = f.readline()
+                    f.close()
+                if firstline.startswith("<rss"):
+                    mime = "text/xml"
+                else:
+                    mime = "text/html"
             else:
                 mime = "text/html"
         # If it’s a xml file, consider it as such, regardless of what file thinks
