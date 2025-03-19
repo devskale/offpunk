@@ -184,7 +184,7 @@ class GeminiClient(cmd.Cmd):
             "images_mode": "readable",
             "redirects": True,
             # the wikipedia entry needs two %s, one for lang, other for search
-            "wikipedia": "gemini://vault.transjovian.org:1965/search/%s/%s",
+            "wikipedia": "gemini://gemi.dev/cgi-bin/wp.cgi/view/%s?%s",
             "search": "gemini://kennedy.gemi.dev/search?%s",
             "accept_bad_ssl_certificates": False,
             "default_protocol": "gemini",
