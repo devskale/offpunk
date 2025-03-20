@@ -21,9 +21,10 @@ tasks:
     ~/.pypi-credentials
     uv publish dist/*
 - package-gemini: |
-    cd offpunk/tutorial
+    cp -r offpunk/tutorial public_gemini
+    cd public_gemini
     ln -s ../offpunk/screenshots .
-    tar -cvzh . > ../../capsule.tar.gz
+    tar -cvzh . > ../capsule.tar.gz
 - deploy-gemini: |
     hut pages publish capsule.tar.gz -p GEMINI -d $site1
 - package-html: |
