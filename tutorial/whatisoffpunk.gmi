@@ -22,6 +22,8 @@ Offpunk transparently browse http/https/gemini/gopher/spartan/finger links. In y
 
 Offpunk is made of 4 components that can be used separatly: netcache, ansicat, opnk and offpunk. While being written in python, dependencies are kept minimal and, when possible, optional.
 
+=> /screenshots/resist.png RESIST!
+
 
 => /install.gmi Install Offpunk
 => /firststeps.gmi Start to use Offpunk
