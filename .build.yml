@@ -22,6 +22,7 @@ tasks:
     uv publish dist/*
 - package-gemini: |
     cd offpunk/tutorial
+    ln -s ../offpunk/screenshots .
     tar -cvzh . > ../../capsule.tar.gz
 - deploy-gemini: |
     hut pages publish capsule.tar.gz -p GEMINI -d $site1
