@@ -312,6 +312,7 @@ def _fetch_http(
     max_size=None,
     timeout=DEFAULT_TIMEOUT,
     accept_bad_ssl_certificates=False,
+    force_large_download=False,
     **kwargs,
 ):
     if not _DO_HTTP:
@@ -345,10 +346,10 @@ def _fetch_http(
             length = int(response.headers["content-length"])
         else:
             length = 0
-        if max_size and length > max_size:
+        if not force_large_download and max_size and length > max_size:
             response.close()
             return too_large_error(url, str(length / 100), max_size)
-        elif max_size and length == 0:
+        elif not force_large_download and max_size and length == 0:
             body = b""
             downloaded = 0
             for r in response.iter_content():

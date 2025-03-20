@@ -298,6 +298,7 @@ class GeminiClient(cmd.Cmd):
         name=None,
         mode=None,
         limit_size=False,
+        force_large_download=False,
     ):
         """This method might be considered "the heart of Offpunk".
         Everything involved in fetching a gemini resource happens here:
@@ -371,6 +372,7 @@ class GeminiClient(cmd.Cmd):
         elif not self.offline_only:
             # A cache is always valid at least 60seconds
             params["validity"] = 60
+        params["force_large_download"] = force_large_download
         # Use cache or mark as to_fetch if resource is not cached
         if handle and not self.sync_only:
             displayed, url = self.opencache.opnk(
@@ -1929,7 +1931,8 @@ Use "view XX" where XX is a number to view information about link XX.
                 return False
 
         def fetch_url(
-            url, depth=0, validity=0, savetotour=False, count=[0, 0], strin=""
+            url, depth=0, validity=0, savetotour=False, count=[0, 0], strin="",
+            force_large_download=False
         ):
             # savetotour = True will save to tour newly cached content
             # else, do not save to tour
@@ -1950,7 +1953,8 @@ Use "view XX" where XX is a number to view information about link XX.
                 print(toprint, end=endline)
                 # If not saving to tour, then we should limit download size
                 limit = not savetotour
-                self._go_to_url(url, update_hist=False, limit_size=limit)
+                self._go_to_url(url, update_hist=False, limit_size=limit,\
+                        force_large_download=force_large_download)
                 if savetotour and isnew and netcache.is_cache_valid(url):
                     # we add to the next tour only if we managed to cache
                     # the ressource
@@ -1989,7 +1993,8 @@ Use "view XX" where XX is a number to view information about link XX.
                         )
 
         def fetch_list(
-            list, validity=0, depth=1, tourandremove=False, tourchildren=False
+            list, validity=0, depth=1, tourandremove=False, tourchildren=False,
+            force_large_download=False
         ):
             links = self.list_get_links(list)
             end = len(links)
@@ -2004,6 +2009,7 @@ Use "view XX" where XX is a number to view information about link XX.
                     validity=validity,
                     savetotour=tourchildren,
                     count=[counter, end],
+                    force_large_download=force_large_download
                 )
                 if tourandremove:
                     if add_to_tour(l):
@@ -2031,13 +2037,14 @@ Use "view XX" where XX is a number to view information about link XX.
         starttime = int(time.time())
         for l in subscriptions:
             fetch_list(l, validity=refresh_time, depth=depth, tourchildren=True)
-        # Then the fetch list (item are removed from the list after fetch)
+        # Then the to_fetch list (item are removed from the list after fetch)
         # We fetch regarless of the refresh_time
         if "to_fetch" in lists:
             nowtime = int(time.time())
             short_valid = nowtime - starttime
             fetch_list(
-                "to_fetch", validity=short_valid, depth=depth, tourandremove=True
+                "to_fetch", validity=short_valid, depth=depth, tourandremove=True,
+                force_large_download=True
             )
         # then we fetch all the rest (including bookmarks and tour)
         for l in normal_lists:

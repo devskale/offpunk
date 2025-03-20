@@ -11,6 +11,7 @@
 - ansicat: if a file identified as html starts with "<rss ", then it is a XML, not HTML
 - fix a long-standing bug where "find" could not be used in lists
 - restored "wikipedia" command by using gemi.dev
+- "reload" on a too large content will actually fetch it
 
 ## 2.6 - February 24th 2025
 FOR PACKAGERS: dependency to python-pil (or pillow) has been dropped
