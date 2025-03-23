@@ -241,10 +241,14 @@ def get_cache_path(url, add_index=True):
         # print("Error: %s is not a supported url"%url)
         return None
     if len(cache_path) > 259:
-        print("Path is %s characters long which is too long. \
-                OS only allows 260 characters.\n\n"%(len(cache_path)))
-        print(url)
-        return None
+        #print("Path is %s characters long which is too long. \
+        #        OS only allows 260 characters.\n\n"%(len(cache_path)))
+        #print(url)
+        #return None
+        # path lenght is limited to 260 charaters. Let’s cut it and
+        # hope that there’s no major conflict here. (that’s still better
+        # than crashing, after all.
+        cache_path = cache_path[:259]
     return cache_path
 
 
