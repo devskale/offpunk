@@ -124,8 +124,7 @@ def inline_image(img_file, width):
 
 
 def terminal_image(img_file):
-    # Render by timg is better than old chafa.
-    # it is also centered
+    # This code will try chafa first and, if it fails, try timg
     cmds = []
     if _HAS_CHAFA:
         cmds.append("chafa -C on -d 0 --bg white -w 1")
@@ -1113,7 +1112,6 @@ class ImageRenderer(AbstractRenderer):
             terminal_image(self.body)
             return True
 
-
 class HtmlRenderer(AbstractRenderer):
     def get_mime(self):
         return "text/html"
@@ -1426,6 +1424,7 @@ class HtmlRenderer(AbstractRenderer):
 
         # the real render_html hearth
         # note to vjousse: use self.options["ftr_site_config"] here
+        # Use self.url to mach against an url
         if mode in ["full", "full_links_only"]:
             summary = body
         elif _HAS_READABILITY:
@@ -1445,6 +1444,69 @@ class HtmlRenderer(AbstractRenderer):
                 recursive_render(soup)
         return r.get_final(), links
 
+## Now the custom renderers
+class XkcdRenderer(HtmlRenderer):
+    def has_direct_display(self):
+        return _RENDER_IMAGE
+    #We implement render)
+    #def render(self, body, mode=None, width=None, add_title=True, startlinks=0):
+    #    return representation, links
+    #Custom renderer should return false when they can’t handle a specific content
+    #This allow fallback to normal html renderer
+    def is_valid(self):
+        path = urllib.parse.urlparse(self.url).path
+        #We strip the leading "/" to avoid empty elements in splitted
+        splitted = path.strip("/").split("/")
+        # Custom renderer only works for pure comics which have alphanumeric paths 
+        return splitted[0].isalnum()
+
+    def get_images(self, mode="readable"):
+        img_url,img_path,alttext,title = self.xkcd_extract()
+        return [img_url]
+
+    def get_links(self,mode="readable"):
+        img_url,img_path,alttext,title = self.xkcd_extract()
+        links = super().get_links(mode=mode)
+        if img_url not in links:
+            links.append(img_url)
+        return links
+
+    #return [image_url,image_path, image_alt_text,image_title]
+    def xkcd_extract(self):
+        soup = BeautifulSoup(self.body, "html.parser")
+        comic_div = soup.find("div",{"id":"comic"})
+        if comic_div:
+            img_element = comic_div.find("img")
+            src=img_element.get("src")
+            if src.startswith("//"):
+                scheme = urllib.parse.urlparse(self.url).scheme
+                img_url = scheme + ":" + src
+            else:
+                img_url = src
+            img_path = netcache.get_cache_path(img_url)
+            alttext=img_element.get("title")
+            title=img_element.get("alt")
+            return img_url,img_path,alttext,title
+        else:
+            return None,None,None,None
+
+    def display(self, mode=None, directdisplay=False):
+        wtitle = self.get_formatted_title()
+        if not directdisplay:
+            body = wtitle + "\n" + self.get_body(mode=mode)
+            return body
+        else:
+            print(self._window_title(wtitle))
+            print(self.get_title())
+            img_url,img_path,alttext,title = self.xkcd_extract()
+            #now displaying
+            if netcache.is_cache_valid(img_url):
+                terminal_image(img_path)
+            else:
+                print("missing picture, please reload")
+            print(alttext)
+            return True
+
 
 # Mapping mimetypes with renderers
 # (any content with a mimetype text/* not listed here will be rendered with as GemText)
@@ -1463,6 +1525,10 @@ _FORMAT_RENDERERS = {
     "text/empty": EmptyRenderer,
     "message/news": GemtextRenderer,
 }
+
+_CUSTOM_RENDERERS = {
+        "xkcd.com": XkcdRenderer,
+        }
 
 
 def get_mime(path, url=None):
@@ -1574,29 +1640,38 @@ def set_renderer(content, url, mime, theme=None,**kwargs):
         if theme:
             renderer.set_theme(theme)
         return renderer
-    mime_to_use = []
-    for m in _FORMAT_RENDERERS:
-        if fnmatch.fnmatch(mime, m):
-            mime_to_use.append(m)
-    if len(mime_to_use) > 0:
-        current_mime = mime_to_use[0]
-        func = _FORMAT_RENDERERS[current_mime]
-        if current_mime.startswith("text"):
+    # First, we check for a custom renderer based on url
+    if url:
+        netloc = urllib.parse.urlparse(url).netloc
+        is_http = urllib.parse.urlparse(url).scheme in ["http","https"]
+        #custom renderer are only for http/https, right?
+        if is_http and netloc and netloc in _CUSTOM_RENDERERS:
+            func = _CUSTOM_RENDERERS[netloc]
             renderer = func(content, url,**kwargs)
-            # We double check if the renderer is correct.
-            # If not, we fallback to html
-            # (this is currently only for XHTML, often being
-            # mislabelled as xml thus RSS feeds)
-            if not renderer.is_valid():
-                func = _FORMAT_RENDERERS["text/html"]
-                # print("Set (fallback)RENDERER to html instead of %s"%mime)
+    if not renderer or not renderer.is_valid():
+        mime_to_use = []
+        for m in _FORMAT_RENDERERS:
+            if fnmatch.fnmatch(mime, m):
+                mime_to_use.append(m)
+        while len(mime_to_use) > 0 and (not renderer or not renderer.is_valid()):
+            current_mime = mime_to_use.pop(0)
+            func = _FORMAT_RENDERERS[current_mime]
+            if current_mime.startswith("text"):
                 renderer = func(content, url,**kwargs)
-        else:
-            # TODO: check this code and then remove one if.
-            # we don’t parse text, we give the file to the renderer
-            renderer = func(content, url,**kwargs)
-            if not renderer.is_valid():
-                renderer = None
+                # We double check if the renderer is correct.
+                # If not, we fallback to html
+                # (this is currently only for XHTML, often being
+                # mislabelled as xml thus RSS feeds)
+                if not renderer.is_valid():
+                    func = _FORMAT_RENDERERS["text/html"]
+                    # print("Set (fallback)RENDERER to html instead of %s"%mime)
+                    renderer = func(content, url,**kwargs)
+            else:
+                # TODO: check this code and then remove one if.
+                # we don’t parse text, we give the file to the renderer
+                renderer = func(content, url,**kwargs)
+                if not renderer.is_valid():
+                    renderer = None
     #We have not found a renderer. Use a fake one.
     if not renderer:
         renderer = FakeRenderer("",url,**kwargs)
@@ -1606,6 +1681,7 @@ def set_renderer(content, url, mime, theme=None,**kwargs):
     return renderer
 
 
+# This function should be removed and replaced by a set_renderer()/r.display()
 def render(input, path=None, format="auto", mime=None, url=None, mode=None):
     if not url:
         url = ""

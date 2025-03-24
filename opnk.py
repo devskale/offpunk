@@ -191,7 +191,7 @@ class opencache:
         else:
             return None
 
-    def opnk(self, inpath, mode=None, terminal=True, grep=None, theme=None, link=None,\
+    def opnk(self, inpath, mode="readable", terminal=True, grep=None, theme=None, link=None,\
                         direct_open_unsupported=False, **kwargs):
         # Return True if inpath opened in Terminal
         # False otherwise
@@ -203,7 +203,8 @@ class opencache:
         # If direct_open_unsupported, we don’t print the "unsupported warning"
         # and, instead, immediately fallback to external open
         if not offutils.is_local(inpath):
-            kwargs["images_mode"] = mode
+            if mode:
+                kwargs["images_mode"] = mode
             cachepath, inpath = netcache.fetch(inpath, **kwargs)
             if not cachepath:
                 return False, inpath

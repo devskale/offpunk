@@ -179,8 +179,6 @@ class GeminiClient(cmd.Cmd):
             "history_size": 200,
             "max_size_download": 10,
             "editor": None,
-            #FIXME: download_images_first is not used anywhere in the code
-            #"download_images_first": True,
             "images_mode": "readable",
             "redirects": True,
             # the wikipedia entry needs two %s, one for lang, other for search
@@ -1091,6 +1089,14 @@ class GeminiClient(cmd.Cmd):
             search = urllib.parse.quote(line)
         url = self.options["wikipedia"] % (lang, search)
         self._go_to_url(url)
+
+    def do_xkcd(self,line):
+        """Open the specified XKCD comics (a number is required as parameter)"""
+        words = line.split(" ")
+        if len(words) > 0 and words[0].isalnum():
+            self._go_to_url("https://xkcd.com/%s"%words[0])
+        else:
+            print("Please enter the number of the XKCD comic you want to see")
 
     def do_gus(self, line):
         """Submit a search query to the geminispace.info search engine."""
