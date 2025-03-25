@@ -12,7 +12,7 @@
 - fix a long-standing bug where "find" could not be used in lists
 - restored "wikipedia" command by using gemi.dev
 - "reload" on a too large content will actually fetch it
-- netcache now path which are too long (>260 char) instead of raising an useless error
+- netcache now truncate path which are too long (>260 char) instead of raising an useless error
 
 ## 2.6 - February 24th 2025
 FOR PACKAGERS: dependency to python-pil (or pillow) has been dropped

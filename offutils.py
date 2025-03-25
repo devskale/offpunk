@@ -228,12 +228,15 @@ def mode_url(url, mode):
 
 
 def unmode_url(url):
-    mode = None
-    splitted = url.split("##offpunk_mode=")
-    if len(splitted) > 1:
-        url = splitted[0]
-        mode = splitted[1]
-    return [url, mode]
+    if url:
+        mode = None
+        splitted = url.split("##offpunk_mode=")
+        if len(splitted) > 1:
+            url = splitted[0]
+            mode = splitted[1]
+        return [url, mode]
+    else:
+        return [None,None]
 
 
 # In terms of arguments, this can take an input file/string to be passed to
