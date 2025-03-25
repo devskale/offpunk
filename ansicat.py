@@ -1446,11 +1446,15 @@ class HtmlRenderer(AbstractRenderer):
 
 ## Now the custom renderers
 class XkcdRenderer(HtmlRenderer):
+    def printgemtext(self,source):
+        if source:
+            gemtext_renderer = GemtextRenderer("",self.url)
+            final,links = gemtext_renderer.render(source)
+            print(final)
+
     def has_direct_display(self):
         return _RENDER_IMAGE
-    #We implement render)
-    #def render(self, body, mode=None, width=None, add_title=True, startlinks=0):
-    #    return representation, links
+
     #Custom renderer should return false when they can’t handle a specific content
     #This allow fallback to normal html renderer
     def is_valid(self):
@@ -1497,14 +1501,14 @@ class XkcdRenderer(HtmlRenderer):
             return body
         else:
             print(self._window_title(wtitle))
-            print(self.get_title())
+            self.printgemtext("# "+self.get_title())
             img_url,img_path,alttext,title = self.xkcd_extract()
             #now displaying
-            if netcache.is_cache_valid(img_url):
+            if img_path and netcache.is_cache_valid(img_url):
                 terminal_image(img_path)
             else:
-                print("missing picture, please reload")
-            print(alttext)
+                self.printgemtext("\n> missing picture, please reload\n")
+            self.printgemtext(alttext)
             return True
 
 
