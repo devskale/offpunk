@@ -1,17 +1,23 @@
 # Offpunk History
 
-## 2.7 - Unreleased
-- Consider mimetype "message/news" as "gemtext" because file is sometimes confused. (reported by JMCS)
+## 2.7 - April 1st 2025 - XKCDpunk release
+IMPORTANT: Offpunk is now renamed to XKCDpunk. See
+https://ploum.net/2025-04-01-xkcdpunk.html
+- Introducing command "xkcd" to display a given xkcd comic.
+- Switching website from offpunk.net to xkcdpunk.net
+- blocklist: marked x.com, twitter.com and youtube.com as blocked to save bandwith until we have a viable option to use them with offpunk. We plan to block everything but xkcd.com.
+CHANGES:
 - "shell" (or "!") now works even without content (so you can run it on startup)
+- offpunk: improved "version" to help debugging on the mailing-list
+FIXES:
+- "reload" on a too large content will actually fetch it
+- Consider mimetype "message/news" as "gemtext" because file is sometimes confused. (reported by JMCS)
 - ignore annoying warnings for LibreSSL users (by Anna cyberTailor)
 - ansicat: workaround what seems to be a BS4 bug where elements after a <br/> were ignored
-- blocklist: marked x.com, twitter.com and youtube.com as blocked to save bandwith until we have a viable option to use them with offpunk.
 - offpunk: be more explicit about how to unblock a blocked URL
-- offpunk: improved "version" to help debugging on the mailing-list
 - ansicat: if a file identified as html starts with "<rss ", then it is a XML, not HTML
 - fix a long-standing bug where "find" could not be used in lists
 - restored "wikipedia" command by using gemi.dev
-- "reload" on a too large content will actually fetch it
 - netcache now truncate path which are too long (>260 char) instead of raising an useless error
 
 ## 2.6 - February 24th 2025

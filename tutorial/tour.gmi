@@ -1,6 +1,6 @@
 # Advanced browsing with "tour"
 
-Unlike most browsers you may know, there are no tabs in Offpunk. Instead, Offpunk has the concept of "tour". (shortcut "t").
+Unlike most browsers you may know, there are no tabs in XKCDpunk. Instead, XKCDpunk has the concept of "tour". (shortcut "t").
 
 Technically, the tour is a FIFO list of all the pages you want to visit.
 

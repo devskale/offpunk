@@ -1,24 +1,24 @@
-# Installing Offpunk
+# Installing XKCDpunk
 
-=> /screenshots/decvt220.jpg Offpunk running on a DECVT220 (picture by Dylan D’Silva)
+=> /screenshots/decvt220.jpg XKCDpunk running on a DECVT220 (picture by Dylan D’Silva)
 
 ## Packages
 
-Offpunk is already packaged for many distributions. Installing it is probably as simple as "apt install offpunk" or "pacman -S offpunk".
+XKCDpunk is already packaged for many distributions. Installing it is probably as simple as "apt install offpunk" or "pacman -S offpunk".
 
-=> https://repology.org/project/offpunk/versions Offpunk packages listed by Repology
+=> https://repology.org/project/offpunk/versions XKCDpunk packages listed by Repology
 
 
-Offpunk has optional dependencies. To check if those are installed, use "version"
+XKCDpunk has optional dependencies. To check if those are installed, use "version"
 
 > version
 
 
 ## Helping with packaging
 
-We welcome and encourage all efforts to make Offpunk availalbe on new distributions. If you want to give it a try, say hello to the dedicated mailing-list.
+We welcome and encourage all efforts to make XKCDpunk availalbe on new distributions. If you want to give it a try, say hello to the dedicated mailing-list.
 
-=> https://lists.sr.ht/~lioploum/offpunk-packagers Offpunk-packagers mailing-list
+=> https://lists.sr.ht/~lioploum/offpunk-packagers XKCDpunk-packagers mailing-list
 
 
 ## Git
@@ -35,4 +35,4 @@ Once cloned, no build is required. You can launch offpunk.py/opnk.py/ansicat.py/
 
 Anyone using the git version should feel comfortable to report any bug on the devel mailing-list.
 
-=> https://lists.sr.ht/~lioploum/offpunk-devel Offpunk-devel mailing-list
+=> https://lists.sr.ht/~lioploum/offpunk-devel XKCDpunk-devel mailing-list

@@ -1,10 +1,10 @@
-# First steps with Offpunk
+# First steps with XKCDpunk
 
-Welcome to Offpunk. In Offpunk, there’s no way to "clic" or to open tabs. Everything is done by typing commands at the bottom of your screen, next to a green "ON>" prompt. It says "ON" to tell you that Offpunk is currently in "Online" mode.
+Welcome to XKCDpunk. In XKCDpunk, there’s no way to "clic" or to open tabs. Everything is done by typing commands at the bottom of your screen, next to a green "ON>" prompt. It says "ON" to tell you that XKCDpunk is currently in "Online" mode.
 
 ## Prompt and scrolling in Less
 
-If a page is too long to fit the screen, it will be displayed using Less. If you don’t see the "ON>" prompt, it means that you are in Less. In Less, you can scroll with arrows. You can also scroll to the whole next page using the space key. To leave Less and go back to Offpunk, simply quit by pressing "q" (without enter). 
+If a page is too long to fit the screen, it will be displayed using Less. If you don’t see the "ON>" prompt, it means that you are in Less. In Less, you can scroll with arrows. You can also scroll to the whole next page using the space key. To leave Less and go back to XKCDpunk, simply quit by pressing "q" (without enter). 
 
 Trust us, it will quickly become a second-nature to quit with "q".
 
@@ -46,9 +46,9 @@ Now that you can follow links and do back/forward, you only need to learn one mo
 
 > go gemini://offpunk.net/firststeps.gmi
 
-While "go/back/forward" are enough to get started, there is obviously a lot more in Offpunk.
+While "go/back/forward" are enough to get started, there is obviously a lot more in XKCDpunk.
 
-Let’s give you your first tip, as an appetizer: if you type "go" without any URL, Offpunk will automatically try to find one in your system clipboard. It means that you can simply copy an URL from a document or another browser and hit "go" in Offpunk to access it.
+Let’s give you your first tip, as an appetizer: if you type "go" without any URL, XKCDpunk will automatically try to find one in your system clipboard. It means that you can simply copy an URL from a document or another browser and hit "go" in XKCDpunk to access it.
 
 But interesting stuff starts with the tour.
 

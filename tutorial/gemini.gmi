@@ -14,10 +14,10 @@ or Cosmos
 
 Once in one of those aggregator, simply add the links that seem interesting to your tour.
 
-You can also browse the capsule of Offpunk’s contributors:
+You can also browse the capsule of XKCDpunk’s contributors:
 
 => gemini://ploum.net/index_en.gmi Ploum.net, the Gemini capsule of Ploum
 
-Offpunk is a Gemini browser first. But, sometimes, you need to browse the Web. As the web is more complex, you will sometimes need to use the "view" feature to better read the content.
+XKCDpunk is a Gemini browser first. But, sometimes, you need to browse the Web. As the web is more complex, you will sometimes need to use the "view" feature to better read the content.
 
 => /view.gmi Different views of the same page

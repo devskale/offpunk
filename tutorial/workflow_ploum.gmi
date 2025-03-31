@@ -1,4 +1,4 @@
-# How I use Offpunk (by Ploum)
+# How I use XKCDpunk (by Ploum)
 
 My offpunk is offline by default. The config file contains one line :
 
@@ -6,7 +6,7 @@ My offpunk is offline by default. The config file contains one line :
 
 ## A tour every morning
 
-Each morning, while water for my tea is boiling, I launch a full synchronisation of Offpunk. This synchronisation is done through a bash script called "do_the_internet.sh". The offpunk line contains the following:
+Each morning, while water for my tea is boiling, I launch a full synchronisation of XKCDpunk. This synchronisation is done through a bash script called "do_the_internet.sh". The offpunk line contains the following:
 
 > offpunk --sync --assume-yes --cache-validity 51840
 
@@ -131,7 +131,7 @@ I use "move" and not "add". Else the link would stay in both "toread" and "offpu
 
 ## Reading later from outside source
 
-Often, I’m forced to use Firefox. But I prefer reading articles in Offpunk. To do that, I simply copy the URL of the page in my clipboard (or the URL received through an email) then, in a terminal, I type:
+Often, I’m forced to use Firefox. But I prefer reading articles in XKCDpunk. To do that, I simply copy the URL of the page in my clipboard (or the URL received through an email) then, in a terminal, I type:
 
 > toread
 
@@ -143,7 +143,7 @@ Toread is a zsh alias to the following :
 
 Now, the URL is in my list to_fetch and will be fetched next morning. 
 
-If Offpunk is already open, I simply type:
+If XKCDpunk is already open, I simply type:
 
 > go
 
@@ -168,7 +168,7 @@ If a bit older, I browse the archives.
 
 The archives are limited to 200 (this is configurable). For me, it means between 1 and 2 months of reading. If I really want to find something I’ve read months ago, I use "grep" in the "~/.cache/offpunk" folder. It is rare but… it worked several times.
 
-## Outside of Offpunk
+## Outside of XKCDpunk
 
 Inside my terminal, I now open files with:
 

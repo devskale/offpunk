@@ -7,6 +7,7 @@ secrets:  # see https://builds.sr.ht/secrets
   - c4b4edb9-6d07-45fe-ac31-5d3ac6a27a8a  #~/.pypi-credentials mode 700
 environment:
   site1: offpunk.net
+  site2: xkcdpunk.net
 tasks:
   # The following, contributed by Anna Cybertailor, will automatically
   # upload the package to pypi if it is a release
@@ -27,6 +28,7 @@ tasks:
     tar -cvzh . > ../capsule.tar.gz
 - deploy-gemini: |
     hut pages publish capsule.tar.gz -p GEMINI -d $site1
+    hut pages publish capsule.tar.gz -p GEMINI -d $site2
 - package-html: |
     mkdir public_html
     cd offpunk/tutorial
@@ -36,3 +38,4 @@ tasks:
     tar -cvzh . > ../site.tar.gz
 - deploy-html: |
     hut pages publish site.tar.gz -d $site1
+    hut pages publish site.tar.gz -d $site2
