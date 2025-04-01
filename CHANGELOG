@@ -2,6 +2,7 @@
 
 ## 2.8 - Unreleased
 - added "application/xhtml+xml" mimetype to be rendered as html
+- according to html spec, <pre> content should be parsed as HTML.
 
 ## 2.7 - April 1st 2025 - XKCDpunk release
 IMPORTANT: Offpunk is now renamed to XKCDpunk. See

@@ -1266,13 +1266,9 @@ class HtmlRenderer(AbstractRenderer):
                     # r.close_all()
                 r.close_all()
                 r.newparagraph()
-            elif element.name in ["code", "tt"]:
+            elif element.name in ["code", "tt","pre"]:
                 for child in element.children:
                     recursive_render(child, indent=indent, preformatted=True)
-            elif element.name in ["pre"]:
-                r.newparagraph()
-                r.add_block(element.text, theme="preformatted")
-                r.newparagraph(force=True)
             elif element.name in ["li"]:
                 r.startindent(" • ", sub="   ")
                 for child in element.children:
