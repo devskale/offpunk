@@ -1517,6 +1517,7 @@ class XkcdRenderer(HtmlRenderer):
 _FORMAT_RENDERERS = {
     "text/gemini": GemtextRenderer,
     "text/html": HtmlRenderer,
+    "application/xhtml+xml": HtmlRenderer,
     "text/xml": FeedRenderer,
     "text/plain": PlaintextRenderer,
     "application/xml": FeedRenderer,
