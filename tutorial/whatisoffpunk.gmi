@@ -1,30 +1,30 @@
-# What is XKCDpunk?
+# What is Offpunk?
 
-=> /screenshots/2.png Screenshot of XKCDpunk
+=> /screenshots/2.png Screenshot of Offpunk
 
-XKCDpunk is a command-line offline-first web browser for your terminal. But what does it mean?
+Offpunk is a command-line offline-first web browser for your terminal. But what does it mean?
 
 ## Command-line
 
-No mouse, no shortcut, no hidden key to press. Every action requires you to type a command. Content is displayed in the venerable "less" pager. XKCDpunk is intented for people who live in their terminal and don’t want to leave it.
+No mouse, no shortcut, no hidden key to press. Every action requires you to type a command. Content is displayed in the venerable "less" pager. Offpunk is intented for people who live in their terminal and don’t want to leave it.
 
 ## Offline-first
 
-Every content you visit is cached and can be visited later while offline. If you try to visit a content not available in your cache, it will be marked to be downloaded later. XKCDpunk allows you to synchronise you computer once every hour, day or week and work offline without being interrupted.
+Every content you visit is cached and can be visited later while offline. If you try to visit a content not available in your cache, it will be marked to be downloaded later. Offpunk allows you to synchronise you computer once every hour, day or week and work offline without being interrupted.
 
 ## Web Browser
 
 Yes, it browses the web. But not only.
 
-XKCDpunk transparently browse http/https/gemini/gopher/spartan/finger links. In your terminal, it will nicely display HTML, Gemtext, Gophermap, txt, RSS, Atom and even pictures. You can subscribe to an RSS feed or to any page. XKCDpunk merges the concept of browsing pages and subscribing to feeds.
+Offpunk transparently browse http/https/gemini/gopher/spartan/finger links. In your terminal, it will nicely display HTML, Gemtext, Gophermap, txt, RSS, Atom and even pictures. You can subscribe to an RSS feed or to any page. Offpunk merges the concept of browsing pages and subscribing to feeds.
 
 ## Unix philosophy
 
-XKCDpunk is made of 4 components that can be used separatly: netcache, ansicat, opnk and offpunk. While being written in python, dependencies are kept minimal and, when possible, optional.
+Offpunk is made of 4 components that can be used separatly: netcache, ansicat, opnk and offpunk. While being written in python, dependencies are kept minimal and, when possible, optional.
 
 => /screenshots/resist.png RESIST!
 
 
-=> /install.gmi Install XKCDpunk
-=> /firststeps.gmi Start to use XKCDpunk
+=> /install.gmi Install Offpunk
+=> /firststeps.gmi Start to use Offpunk
 => /index.gmi Back to the tutorial

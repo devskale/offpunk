@@ -1,6 +1,6 @@
-# Open outside of XKCDpunk
+# Open outside of Offpunk
 
-Sometimes, XKCDpunk is not enough and you really want to open current file outside of your terminal.
+Sometimes, Offpunk is not enough and you really want to open current file outside of your terminal.
 
 Simply try:
 

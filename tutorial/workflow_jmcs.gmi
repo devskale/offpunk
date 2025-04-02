@@ -1,4 +1,4 @@
-# How I'm using XKCDpunk so far (by jmcs)
+# How I'm using Offpunk so far (by jmcs)
 
 Altough offpunk's great strength seems to be the cache mechanism that allows one to synchronize content and then read offline (using its tour feature), pretty much all of my offpunk usage has been 'online'. Here's what it looks like when I use offpunk:
 

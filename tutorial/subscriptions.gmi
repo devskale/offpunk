@@ -1,6 +1,6 @@
 # Managing subscriptions
 
-Each time you "sync" XKCDpunk, it will goes through all your lists to refresh the links in your lists. This ensures that the content in your bookmarks is always uptodate.
+Each time you "sync" Offpunk, it will goes through all your lists to refresh the links in your lists. This ensures that the content in your bookmarks is always uptodate.
 
 But what if you want more and be notified for every new link appearing in your bookmarks?
 
@@ -15,9 +15,9 @@ Starting from now one, each time you "sync" offpunk, the following will happen:
 1. Each link in the rss list will be refreshed
 2. If the refreshed page contains a new link, this link will be added to your tour.
 
-XKCDpunk doesn’t really distinguish between "rss", "gemtext", "atom" or "html". You can subscribe to any page as long as it contains link. Each time a new link is added, it will ends in your tour.
+Offpunk doesn’t really distinguish between "rss", "gemtext", "atom" or "html". You can subscribe to any page as long as it contains link. Each time a new link is added, it will ends in your tour.
 
-WARNING: XKCDpunk considers a link as "new" if it doesn’t exist yet in its cache. This means that, when you add a new RSS feed, every single post will be added to the tour at the next "sync". This might be what you want but, in some case, this might be too much. A quick solution is to edit your tour manually with "list edit tour" (remember, tour is just another list).
+WARNING: Offpunk considers a link as "new" if it doesn’t exist yet in its cache. This means that, when you add a new RSS feed, every single post will be added to the tour at the next "sync". This might be what you want but, in some case, this might be too much. A quick solution is to edit your tour manually with "list edit tour" (remember, tour is just another list).
 
 Of course, you may want to unsubscribe a list by resetting it to "normal".
 
@@ -25,7 +25,7 @@ Of course, you may want to unsubscribe a list by resetting it to "normal".
 
 What the command is doing is simply adding a "#subscribed" tag next to your list title. Another way to mark a list as a subscription is thus to add "#subscribed" next to its title.
 
-There’s also a "subscribe" command in XKCDpunk. When you use the "subscribe" command on a page, it offers you the different RSS feeds of that page. It then puts the selected number in a list called "subscribed" which is, by default, … subscribed.
+There’s also a "subscribe" command in Offpunk. When you use the "subscribe" command on a page, it offers you the different RSS feeds of that page. It then puts the selected number in a list called "subscribed" which is, by default, … subscribed.
 
 Try it. You will follow the next link to ploum.net the type the following:
 
@@ -45,7 +45,7 @@ It is exactly equivalent to doing:
 > add subscribed
 
 
-It takes a bit of time to realize that you can subscribe to anything and that RSS are not something magic but simple page written in a different format. In fact, RSS support is so good in XKCDpunk that you may acquire to reflex of browsing through a blog directly with the RSS feed instead of the homepage.
+It takes a bit of time to realize that you can subscribe to anything and that RSS are not something magic but simple page written in a different format. In fact, RSS support is so good in Offpunk that you may acquire to reflex of browsing through a blog directly with the RSS feed instead of the homepage.
 
 When browsing a feed, the "view full" command allows you to see the content of the articles in a RSS, not only the title.
 

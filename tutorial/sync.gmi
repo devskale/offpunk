@@ -1,4 +1,4 @@
-# Synchronise XKCDpunk with the external world
+# Synchronise Offpunk with the external world
 
 When launched with the "--sync" option, offpunk will run non-interactively and fetch content from your bookmarks, lists and ressources tentatively accessed while offline. New content found in your subscriptions (see `help subscribe`) will be automatically added to your tour (use `tour ls` to see your current tour, `tour` without argument to access the next item and `tour X` where X is a link number to add the content of a link to your tour).
 
@@ -15,7 +15,7 @@ Sync can be applied to only a subset of list.
 > offpunk --sync bookmarks tour to_fetch --cache-validity 3600
 
 
-XKCDpunk can also be configured as a browser by other tool. If you want to use offpunk directly with a given URL, simply type:
+Offpunk can also be configured as a browser by other tool. If you want to use offpunk directly with a given URL, simply type:
 
 > offpunk URL
 

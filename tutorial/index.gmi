@@ -1,52 +1,49 @@
-# XKCDpunk, an offline-first command-line browser
+# Offpunk, an offline-first command-line browser
 
-XKCDpunk allows you to browse the Web, Gemini, Gopher and subscribe to RSS feeds without leaving your terminal and while being offline.
+Offpunk allows you to browse the Web, Gemini, Gopher and subscribe to RSS feeds without leaving your terminal and while being offline.
 
-=> /screenshots/xkcdpunk2.png Screenshot of XKCDpunk
+=> /screenshots/1.png Screenshot of Offpunk
 
-=> https://ploum.net/2025-04-01-xkcdpunk.html Announcing XKCDpunk 1.0
-=> /whatisoffpunk.gmi What is XKCDpunk?
-=> /install.gmi Installing XKCDpunk
+=> /whatisoffpunk.gmi What is Offpunk?
+=> /install.gmi Installing Offpunk
 
-## Browse online with XKCDpunk
+## Browse online with Offpunk
 
-=> /firststeps.gmi First steps in XKCDpunk
+=> /firststeps.gmi First steps in Offpunk
 => /tour.gmi Efficient browsing with "tour"
 => /gemini.gmi Start exploring Gemini
 => /view.gmi Different views of the same page
-=> /open.gmi Open outside of XKCDpunk
+=> /open.gmi Open outside of Offpunk
 
-## Read XKCD offline
+## Work offline
 
 => /offline.gmi Working offline and basic sync
-=> /sync.gmi Syncing XKCDpunk from the command-line
+=> /sync.gmi Syncing Offpunk from the command-line
 
-=> /screenshots/xkcdpunk1.png Screenshot of XKCDpunk
-
-## Organize your favourites XKCD comics with XKCDpunk lists
+## Organize your bookmarks with Offpunk lists
 
 => /bookmarks.gmi Simple bookmarking
 => /lists.gmi Multiple lists and archives
 => /subscriptions.gmi Managing RSS/blog/gemlog subscriptions
 => /frozen.gmi Freezing lists to prevent update of content
 
-## XKCDpunk workflows
+## Offpunk workflows
 
 => /workflow_ploum.gmi Ploum’s workflow
 => /workflow_jmcs.gmi JMCS’s workflow
 
-## Use XKCDpunk in your own project
+## Use Offpunk in your own project
 
-XKCDpunk contains three tools that you can use independantly in your project.
+Offpunk contains three tools that you can use independantly in your project.
 - netcache
 - ansicat
 - opnk
 
 ## Get help
 
-=> https://lists.sr.ht/~lioploum/offpunk-users XKCDpunk-users mailing-list
+=> https://lists.sr.ht/~lioploum/offpunk-users Offpunk-users mailing-list
 
-## Contribute to XKCDpunk
+## Contribute to Offpunk
 
-=> https://sr.ht/~lioploum/offpunk/ XKCDpunk on Sourcehut
-=> https://lists.sr.ht/~lioploum/offpunk-devel XKCDpunk-devel mailing-list
+=> https://sr.ht/~lioploum/offpunk/ Offpunk on Sourcehut
+=> https://lists.sr.ht/~lioploum/offpunk-devel Offpunk-devel mailing-list
