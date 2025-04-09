@@ -1,14 +1,16 @@
 # Offpunk History
 
-## 2.8 - Unreleased
+## 2.7.1 - April 9th 2025 - The "2.7 was not (completely) a joke" release
+See 2.7 changelog. This was "real" release ;-)
+- Reverted the tutorial back to Offpunk. The name was a joke but the rest of the release is real.
 - added "application/xhtml+xml" mimetype to be rendered as html
 - according to html spec, <pre> content should be parsed as HTML.
 
 ## 2.7 - April 1st 2025 - XKCDpunk release
-IMPORTANT: Offpunk is now renamed to XKCDpunk. See
+APRIL FOOL: Offpunk is now renamed to XKCDpunk. See
 https://ploum.net/2025-04-01-xkcdpunk.html
 - Introducing command "xkcd" to display a given xkcd comic.
-- Switching website from offpunk.net to xkcdpunk.net
+- (April fool) Switching website from offpunk.net to xkcdpunk.net
 - blocklist: marked x.com, twitter.com and youtube.com as blocked to save bandwith until we have a viable option to use them with offpunk. We plan to block everything but xkcd.com.
 CHANGES:
 - "shell" (or "!") now works even without content (so you can run it on startup)
