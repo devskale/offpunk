@@ -365,7 +365,7 @@ class AbstractRenderer:
 
         # Beware, blocks are not wrapped nor indented and left untouched!
         # They are mostly useful for pictures and preformatted text.
-        def add_block(self, intext, theme=None):
+        def add_block(self, intext, theme=None, preformat_wrap=False):
             # If necessary, we add the title before a block
             self._title_first()
             # we don’t want to indent blocks
@@ -373,16 +373,17 @@ class AbstractRenderer:
             self._disable_indents()
             # we have to apply the theme for every line in the intext
             # applying theme to preformatted is controversial as it could change it
+            # We wrap preformatted text if requested or if it is set in the option
             if "preformat_wrap" in self.options:
-                preformat_wrap = self.options["preformat_wrap"]
+                preformwrap = preformat_wrap or self.options["preformat_wrap"]
             else:
-                preformat_wrap = False
+                preformwrap = preformat_wrap
             if theme:
                 block = ""
                 lines = intext.split("\n")
                 for l in lines:
                     self.open_theme(theme)
-                    if preformat_wrap:
+                    if preformwrap:
                         self.add_text(l)
                     else:
                         self.last_line += self.current_indent + l
@@ -1266,9 +1267,13 @@ class HtmlRenderer(AbstractRenderer):
                     # r.close_all()
                 r.close_all()
                 r.newparagraph()
-            elif element.name in ["code", "tt","pre"]:
+            elif element.name in ["code", "tt"]:
                 for child in element.children:
                     recursive_render(child, indent=indent, preformatted=True)
+            elif element.name in ["pre"]:
+                r.newparagraph()
+                r.add_block(element.text,theme="preformatted",preformat_wrap=True)
+                r.newparagraph(force=True)
             elif element.name in ["li"]:
                 r.startindent(" • ", sub="   ")
                 for child in element.children:
@@ -1407,9 +1412,7 @@ class HtmlRenderer(AbstractRenderer):
             ):
                 if element.string:
                     if preformatted:
-                        r.open_theme("preformatted")
-                        r.add_text(element.string)
-                        r.close_theme("preformatted")
+                        r.add_block(element.string,preformat_wrap=True,theme="preformatted")
                     else:
                         s = sanitize_string(element.string)
                         if len(s.strip()) > 0:

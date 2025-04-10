@@ -1,5 +1,8 @@
 # Offpunk History
 
+## 2.8 - Unreleased
+- Trying to get render preformatted text correctly in HTML
+
 ## 2.7.1 - April 9th 2025 - The "2.7 was not (completely) a joke" release
 See 2.7 changelog. This was "real" release ;-)
 - Reverted the tutorial back to Offpunk. The name was a joke but the rest of the release is real.
