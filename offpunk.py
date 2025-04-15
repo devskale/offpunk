@@ -284,7 +284,8 @@ class GeminiClient(cmd.Cmd):
         # If launched without argument, we return the renderer for the current URL
         if not url:
             url = self.current_url
-        return self.opencache.get_renderer(url, theme=self.theme)
+        if url:
+            return self.opencache.get_renderer(url, theme=self.theme)
 
     def _go_to_url(
         self,
@@ -1118,7 +1119,7 @@ class GeminiClient(cmd.Cmd):
     def emptyline(self):
         """Page through index ten lines at a time."""
         i = self.page_index
-        if not self.current_url or i > len(self.get_renderer().get_links()):
+        if not self.get_renderer() or i > len(self.get_renderer().get_links()):
             return
         self._show_lookup(offset=i, end=i + 10)
         self.page_index += 10
