@@ -1412,7 +1412,9 @@ class HtmlRenderer(AbstractRenderer):
             ):
                 if element.string:
                     if preformatted:
-                        r.add_block(element.string,preformat_wrap=True,theme="preformatted")
+                        r.open_theme("preformatted")
+                        r.add_text(element.string)
+                        r.close_theme("preformatted")
                     else:
                         s = sanitize_string(element.string)
                         if len(s.strip()) > 0:
