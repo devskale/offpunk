@@ -1267,7 +1267,7 @@ class HtmlRenderer(AbstractRenderer):
                     # r.close_all()
                 r.close_all()
                 r.newparagraph()
-            elif element.name in ["code", "tt"]:
+            elif element.name in ["code", "tt","abbr"]:
                 for child in element.children:
                     recursive_render(child, indent=indent, preformatted=True)
             elif element.name in ["pre"]:

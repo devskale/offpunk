@@ -1,9 +1,10 @@
 # Offpunk History
 
 ## 2.8 - Unreleased
-- Trying to get render preformatted text correctly in HTML
-- Fix a rare bug when listing urls in a non-existant page
+- Fix a rare crash when listing urls in a non-existant page
+- ansicat: Trying to get render preformatted text correctly in HTML
 - ansicat: html <code> should be inline, not a separate block like <pre>
+- ansicat: <abbr> is rendered as <code>
 
 ## 2.7.1 - April 9th 2025 - The "2.7 was not (completely) a joke" release
 See 2.7 changelog. This was "real" release ;-)
