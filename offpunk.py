@@ -812,7 +812,14 @@ class GeminiClient(cmd.Cmd):
             path = os.path.join(*pathbits)
             count += 1
         if parsed.scheme == "gopher":
-            path = "/1" + path
+            if path[:2] in ("/0","/1"):
+                #we should ensure that we are not at the root
+                if len(path) > 3:
+                    path = "/1" + path[2:]
+                else:
+                    path = "/"
+            else:
+                path = "/1" + path
         newurl = urllib.parse.urlunparse(
             (parsed.scheme, parsed.netloc, path, "", "", "")
         )
