@@ -406,6 +406,9 @@ def _fetch_gopher(url, timeout=DEFAULT_TIMEOUT, **kwargs):
             err = e
     if parsed.query:
         request = selector + "\t" + parsed.query
+    elif itemtype == "7":
+        user_input = input("> ")
+        request = selector + "\t" + user_input
     else:
         request = selector
     request += "\r\n"

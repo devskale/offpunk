@@ -6,6 +6,7 @@
 - ansicat: html <code> should be inline, not a separate block like <pre>
 - ansicat: <abbr> is rendered as <code>
 - fix "up" not working correctly on gopher (thanks JMCS)
+- gopher: implement support for item type 7 (by JMCS)
 
 ## 2.7.1 - April 9th 2025 - The "2.7 was not (completely) a joke" release
 See 2.7 changelog. This was "real" release ;-)
