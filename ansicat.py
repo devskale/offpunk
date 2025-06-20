@@ -455,9 +455,9 @@ class AbstractRenderer:
 
     def get_link(self, nb):
         links = self.get_links()
-        if len(links) < nb:
-            print("Index too high! No link %s for %s" % (nb, self.url))
-            return None
+        if nb not in range(1, len(links)+1):
+            print("%s is not a valid link for %s" % (nb, self.url))
+            return 0
         else:
             return links[nb - 1]
 
