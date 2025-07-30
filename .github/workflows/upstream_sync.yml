@@ -1,36 +1,69 @@
-# This is a basic workflow to help you get started with Actions
+name: Sync Upstream Repository
 
-name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  schedule:
+    # Runs daily at midnight UTC. Adjust the cron expression as needed.
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual triggering
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  sync:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      # Step 1: Checkout your repository
+      - name: Checkout Target Repository
+        uses: actions/checkout@v4
+        with:
+          # Use a Personal Access Token (PAT) with 'workflow' scope
+          # to allow pushing changes, especially if workflows are involved.
+          token: ${{ secrets.GH_PAT }}
+          # Fetch all history for all branches and tags
+          fetch-depth: 0
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      # Step 2: Add the upstream repository as a remote
+      # Choose ONE of the upstream URLs (SourceHut or Codeberg)
+      # Example using SourceHut:
+      - name: Add Upstream Remote (SourceHut)
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          git remote add upstream https://git.sr.ht/~lioploum/offpunk
+          git fetch upstream --tags
+
+      # Example using Codeberg (Comment out the SourceHut step if using this):
+      # - name: Add Upstream Remote (Codeberg)
+      #   run: |
+      #     git remote add upstream https://codeberg.org/bptato/chawan
+      #     git fetch upstream --tags
+
+      # Step: Set Git Identity
+      # Required for merge or commit operations
+      - name: Set Git Identity
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      # Step: Merge Upstream Changes (Allowing Unrelated Histories)
+      # OR Reset to Upstream (choose one)
+      - name: Merge Upstream Changes
+        run: |
+          git checkout main
+          git merge upstream/master --no-edit --allow-unrelated-histories
+
+      # Step: Push Changes to GitHub
+      - name: Push Changes to GitHub
+        run: |
+          git push origin main --tags
+
+
+      # Optional Step 5: Handle Conflicts or Reset (Alternative to Merge)
+      # If you prefer a strict mirror and don't want to deal with merge conflicts,
+      # you can reset your branch to match the upstream exactly.
+      # WARNING: This overwrites your local history/changes.
+      # Uncomment the block below and comment out the 'Merge Upstream Changes' step if preferred.
+      # - name: Reset to Upstream (Strict Mirror)
+      #   run: |
+      #     git checkout main
+      #     # Hard reset your local branch to match upstream/main
+      #     git reset --hard upstream/main
+      #     # Force push to update your GitHub branch
+      #     # Use with extreme caution!
+      #     # git push origin main --force
