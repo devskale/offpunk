@@ -1,0 +1,29 @@
+# Advanced browsing with "tour"
+
+Unlike most browsers you may know, there are no tabs in Offpunk. Instead, Offpunk has the concept of "tour". (shortcut "t").
+
+Technically, the tour is a FIFO list of all the pages you want to visit.
+
+Let’s imagine that you are on a page with multiple links that look interesting.
+
+
+=> tour1.gmi First link
+=> tour2.gmi Second link
+=> tour3.gmi Third link
+
+To add link number 1 to your tour, you can simply write "tour 1". Or, shorter, "t 1".
+
+You can also add multiple links: "t 1 2 3". Or add a range: "t 1-3".
+
+Try to add a range with "t 1-3" now.
+
+> t 1-3
+
+It looks like nothing happened but the links were added to your tour. If you use "tour" or "t" without any number, the next link in you tour will be displayed.
+
+Type "t" now.
+
+> t
+
+
+=> /index.gmi Back to the tutorial

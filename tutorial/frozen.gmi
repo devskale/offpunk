@@ -1,0 +1,29 @@
+# Frozen lists
+
+As we have seen when learning about subscriptions, pages in your lists are regularly updated to have the latest content.
+
+=> /subscriptions.gmi Back to list subscriptions in case you missed it
+
+So we currently have two kind of list: normal lists, which are updated, and subscribed lists which are updated and for which every new element is added to the tour.
+
+Sometimes, we don’t want to update pages in a list. For those case, we can "freeze" a list.
+
+> list create tokeep
+> list freeze tokeep
+
+(as always, list names are available through autocompletion)
+
+That’s it. The newly created list is now frozen.
+
+If you edit the list, you will see a "#frozen" next to its name. If you remove it, the list will not be frozen anymore.
+
+You can, of course, go back to normal through the command line.
+
+> list normal tokeep
+
+There’s one important point to keep in mind when using frozen list: pages in that list will not be updated except if they also happen to be in a page which is updated. 
+
+Having a page in a frozen list is thus not a guarantee to freeze all its content. The content might be in another list. It might be refreshed manually with "reload".
+
+
+=> /index.gmi Back to the turorial

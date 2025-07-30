@@ -1,0 +1,76 @@
+.Dd November 25, 2024
+.Dt ANSICAT 1
+.Os 
+.
+.Sh NAME
+.Nm ansicat
+.Nd terminal gemini gemtext renderer for offpunk
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl \-format Ar RENDERER
+.Op Fl \-mime Ar MIME
+.Op Fl \-url Ar URL ...
+.Op Fl \-mode Ar MODE
+.Op Ar INPUT ...
+.Nm
+.Fl h | \-help
+.
+.Sh DESCRIPTION
+ansicat is a terminal rendering tool
+that will render multiple formats
+(HTML, Gemtext, RSS, Gophermap, Image)
+into ANSI text and colors.
+When used on a file,
+ansicat will try to autodetect the format.
+When used with standard input,
+the format must be manually specified.
+If the content contains links,
+the original URL of the content can be specified
+in order to correctly modify relatives links.
+.Ss Positional arguments
+.Bl -tag -width Ds -offset indent
+.It Ar INPUT
+path to the text to render.
+It defaults to the standard input.
+.El
+.Ss Keyword arguments
+.Bl -tag -width Ds -offset indent
+.It Fl h , \-help
+show a help message and exit.
+.It Fl \-format Ar RENDERER
+renderer to use.
+Available renderers are
+.Ic auto ,
+.Ic gemtext ,
+.Ic html ,
+.Ic feed ,
+.Ic gopher ,
+.Ic image ,
+and
+.Ic folder .
+The
+.Ic auto
+renderer will heuristically guess the format,
+either thanks to the MIME type,
+or from the file being rendered itself.
+.It Fl \-mime Ar MIME
+MIME type of the content to parse.
+.It Fl \-mode Ar MODE
+MODE to use to render to choose between normal (default), full or source
+.It Fl \-url Ar URL ...
+original URL of the content.
+.El
+.
+.Sh EXIT STATUS
+.Ex -std
+.
+.Sh SEE ALSO
+.Xr migrate-offpunk-cache 1 ,
+.Xr netcache 1 ,
+.Xr offpunk 1 ,
+.Xr opnk 1 ,
+.Lk https://offpunk.net/
+.
+.Sh AUTHORS
+.An Lionel Dricot (Ploum) Aq Mt offpunk2 at ploum.eu

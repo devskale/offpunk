@@ -1,0 +1,41 @@
+image: alpine/latest
+oauth: pages.sr.ht/PAGES:RW
+packages:
+- hut
+- uv
+secrets:  # see https://builds.sr.ht/secrets
+  - c4b4edb9-6d07-45fe-ac31-5d3ac6a27a8a  #~/.pypi-credentials mode 700
+environment:
+  site1: offpunk.net
+  site2: xkcdpunk.net
+tasks:
+  # The following, contributed by Anna Cybertailor, will automatically
+  # upload the package to pypi if it is a release
+- publish-pypi: |
+    if [[ ${GIT_REF} != refs/tags/* ]]; then
+      echo "Current commit is not a tag; not building anything"
+      exit 0
+    fi
+
+    rm -rf dist
+    uv build
+    ~/.pypi-credentials
+    uv publish dist/*
+- package-gemini: |
+    cp -r offpunk/tutorial public_gemini
+    cd public_gemini
+    ln -s ../offpunk/screenshots .
+    tar -cvzh . > ../capsule.tar.gz
+- deploy-gemini: |
+    hut pages publish capsule.tar.gz -p GEMINI -d $site1
+    hut pages publish capsule.tar.gz -p GEMINI -d $site2
+- package-html: |
+    mkdir public_html
+    cd offpunk/tutorial
+    python make_website.py
+    cd ../../public_html
+    ln -s ../offpunk/screenshots .
+    tar -cvzh . > ../site.tar.gz
+- deploy-html: |
+    hut pages publish site.tar.gz -d $site1
+    hut pages publish site.tar.gz -d $site2

@@ -1,0 +1,25 @@
+# Synchronise Offpunk with the external world
+
+When launched with the "--sync" option, offpunk will run non-interactively and fetch content from your bookmarks, lists and ressources tentatively accessed while offline. New content found in your subscriptions (see `help subscribe`) will be automatically added to your tour (use `tour ls` to see your current tour, `tour` without argument to access the next item and `tour X` where X is a link number to add the content of a link to your tour).
+
+With "--sync", one could specify a "--cache validity" in seconds. This option will not refresh content if a cache exists and is less than the specified amount of seconds old.
+
+For example, running
+
+> offpunk --sync --cache-validity 43200
+
+will refresh your bookmarks if those are at least 12h old. If cache-validity is not set or set to 0, any cache is considered good and only content never cached before will be fetched. `--assume-yes` will automatically accept SSL certificates with errors instead of refusing them.
+
+Sync can be applied to only a subset of list.
+
+> offpunk --sync bookmarks tour to_fetch --cache-validity 3600
+
+
+Offpunk can also be configured as a browser by other tool. If you want to use offpunk directly with a given URL, simply type:
+
+> offpunk URL
+
+To have offpunk fetch the URL at next sync and close immediately, run:
+
+> offpunk --fetch-later URL
+

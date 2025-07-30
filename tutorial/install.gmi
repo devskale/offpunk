@@ -1,0 +1,38 @@
+# Installing Offpunk
+
+=> /screenshots/decvt220.jpg Offpunk running on a DECVT220 (picture by Dylan D’Silva)
+
+## Packages
+
+Offpunk is already packaged for many distributions. Installing it is probably as simple as "apt install offpunk" or "pacman -S offpunk".
+
+=> https://repology.org/project/offpunk/versions Offpunk packages listed by Repology
+
+
+Offpunk has optional dependencies. To check if those are installed, use "version"
+
+> version
+
+
+## Helping with packaging
+
+We welcome and encourage all efforts to make Offpunk availalbe on new distributions. If you want to give it a try, say hello to the dedicated mailing-list.
+
+=> https://lists.sr.ht/~lioploum/offpunk-packagers Offpunk-packagers mailing-list
+
+
+## Git
+
+Advanced users and developers may use the latest Git version.
+
+```
+git clone https://git.sr.ht/~lioploum/offpunk
+```
+
+Once cloned, no build is required. You can launch offpunk.py/opnk.py/ansicat.py/netcache.py directly.
+
+> python offpunk.py
+
+Anyone using the git version should feel comfortable to report any bug on the devel mailing-list.
+
+=> https://lists.sr.ht/~lioploum/offpunk-devel Offpunk-devel mailing-list

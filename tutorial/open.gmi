@@ -1,0 +1,25 @@
+# Open outside of Offpunk
+
+Sometimes, Offpunk is not enough and you really want to open current file outside of your terminal.
+
+Simply try:
+
+> open
+
+"open" will open the local cached version of the current file using an external handler. By default, xdg-open will be used.
+
+If you are connected and want to open the current website in your main browser, use:
+
+> open url
+
+Open also works with links in the current page, either with the url or not. You can do:
+
+> open 2 4
+
+or 
+
+> open url 2 4
+
+To externally open links 2 and 4 of the current page.
+
+=> /index.gmi Back to the turorial

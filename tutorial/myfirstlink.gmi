@@ -1,0 +1,14 @@
+# First link
+
+Congratulations! You followed your first link in Offpunk.
+
+Now, you can type "back" followed by enter to come back to the previous page.
+
+Type "back" then enter.
+
+> back
+
+
+Alternatively, you can follow the following link by typing its number:
+
+=> /firststeps.gmi Back to First steps with Offpunk

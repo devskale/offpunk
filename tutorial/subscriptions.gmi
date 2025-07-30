@@ -1,0 +1,64 @@
+# Managing subscriptions
+
+Each time you "sync" Offpunk, it will goes through all your lists to refresh the links in your lists. This ensures that the content in your bookmarks is always uptodate.
+
+But what if you want more and be notified for every new link appearing in your bookmarks?
+
+You can do that by "subscribing" to a given list. 
+
+Let say you have created a list called "rss" in which you put RSS feeds of blogs you want to follow. Simply type:
+
+> list subscribe rss
+
+Starting from now one, each time you "sync" offpunk, the following will happen: 
+
+1. Each link in the rss list will be refreshed
+2. If the refreshed page contains a new link, this link will be added to your tour.
+
+Offpunk doesn’t really distinguish between "rss", "gemtext", "atom" or "html". You can subscribe to any page as long as it contains link. Each time a new link is added, it will ends in your tour.
+
+WARNING: Offpunk considers a link as "new" if it doesn’t exist yet in its cache. This means that, when you add a new RSS feed, every single post will be added to the tour at the next "sync". This might be what you want but, in some case, this might be too much. A quick solution is to edit your tour manually with "list edit tour" (remember, tour is just another list).
+
+Of course, you may want to unsubscribe a list by resetting it to "normal".
+
+> list normal rss
+
+What the command is doing is simply adding a "#subscribed" tag next to your list title. Another way to mark a list as a subscription is thus to add "#subscribed" next to its title.
+
+There’s also a "subscribe" command in Offpunk. When you use the "subscribe" command on a page, it offers you the different RSS feeds of that page. It then puts the selected number in a list called "subscribed" which is, by default, … subscribed.
+
+Try it. You will follow the next link to ploum.net the type the following:
+
+=> https://ploum.net Go to Ploum.net
+
+> subscribe
+> 3
+> back
+
+You have now successfully added the english-only RSS feed of my personal blog to your "subscribed" list.
+
+It is exactly equivalent to doing:
+
+> go https://ploum.net
+> feed
+> 3
+> add subscribed
+
+
+It takes a bit of time to realize that you can subscribe to anything and that RSS are not something magic but simple page written in a different format. In fact, RSS support is so good in Offpunk that you may acquire to reflex of browsing through a blog directly with the RSS feed instead of the homepage.
+
+When browsing a feed, the "view full" command allows you to see the content of the articles in a RSS, not only the title.
+
+Let’s try it:
+
+> go https://ploum.net
+> feed
+> 3
+> view full
+> view normal
+
+
+While subsciptions are nice, there are time where we don’t want to update the content of our lists.
+
+=> /frozen.gmi Let’s learn to freeze lists.
+=> /index.gmi Back to the turorial

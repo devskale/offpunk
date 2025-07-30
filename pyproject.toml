@@ -1,0 +1,70 @@
+[build-system]
+requires = ["hatchling>=1.5"]
+build-backend = "hatchling.build"
+
+[project]
+name = "offpunk"
+description = "Offline-First Gemini/Web/Gopher/RSS reader and browser"
+authors = [
+    {name = "Solderpunk", email = "solderpunk@sdf.org"},
+    {name = "Lionel Dricot (Ploum)", email = "offpunk2@ploum.eu"},
+]
+maintainers = [
+    {name = "Lionel Dricot (Ploum)", email = "offpunk2@ploum.eu"},
+]
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
+readme = "README.md"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Communications",
+    "Topic :: Internet",
+]
+keywords = ["gemini", "browser"]
+requires-python = ">=3.7"
+dynamic = ["version"]
+
+[project.optional-dependencies]
+better-tofu = ["cryptography"]
+chardet = ["chardet"]
+html = ["bs4", "readability-lxml"]
+http = ["requests"]
+process-title = ["setproctitle"]
+rss = ["feedparser"]
+
+[project.urls]
+Homepage = "https://offpunk.net/"
+Source = "https://git.sr.ht/~lioploum/offpunk"
+"Bug Tracker" = "https://todo.sr.ht/~lioploum/offpunk"
+
+[project.scripts]
+offpunk = "offpunk:main"
+netcache = "netcache:main"
+ansicat = "ansicat:main"
+opnk = "opnk:main"
+
+[dependency-groups]
+test = [
+    "pytest",
+    "pytest-mock",
+]
+
+[tool.hatch.version]
+path = "offpunk.py" # read __version__
+
+[tool.hatch.build.targets.wheel]
+only-include = [
+  "ansicat.py", "netcache_migration.py", "netcache.py",
+  "offblocklist.py", "offpunk.py", "offthemes.py",
+  "offutils.py", "opnk.py", "cert_migration.py",
+]
+
+[tool.ruff.lint]
+select = ["E"]
+
+# Never enforce `E501` (line length violations)
+# Never enforce `E741` (ambigous variable name for `l`)
+ignore = ["E501", "E741"]

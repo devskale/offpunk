@@ -1,0 +1,23 @@
+# The Gemini network
+
+You probably know the Web : a website has an url starting with "https://" and is mostly done with pages written in HTML. Your web browser translate the HTML into something you can read, with pictures and features coded using Javascript. 
+
+Gemini is an alternative network. Instead of website, you have "gemini capsule". Their url starts with "gemini://" and, instead of HTML, the content is written using Gemtext, which is way simpler. This makes Gemini capsules look like simple texts that you can read without all the distraction seen on the web.
+
+You can start reading what’s happening on Gemini using Antenna:
+
+=> gemini://warmedal.se/~antenna/ Antenna
+
+or Cosmos
+
+=> gemini://skyjake.fi/~Cosmos/ Cosmos
+
+Once in one of those aggregator, simply add the links that seem interesting to your tour.
+
+You can also browse the capsule of Offpunk’s contributors:
+
+=> gemini://ploum.net/index_en.gmi Ploum.net, the Gemini capsule of Ploum
+
+Offpunk is a Gemini browser first. But, sometimes, you need to browse the Web. As the web is more complex, you will sometimes need to use the "view" feature to better read the content.
+
+=> /view.gmi Different views of the same page

@@ -1,0 +1,33 @@
+# Different views of the same page
+
+When you want to know where you are, simply type:
+
+> url
+
+Url returns the current url. It can also easily be shared with your system clipoard thanks to the "copy url" command:
+
+> copy url
+
+See "help copy" for other use of copy.
+
+If "url" is not enough, you can get plenty of information about the current page with "info".
+
+> info
+
+When you are in a gemini page, the page is straightforward. But, for HTML pages, Offpunk will try to extract the important informations and remove useless cruft.
+
+This doesn’t always work. If you want to see the full page, use "view full" (or "v full"). Go back with "v normal". View also allows you to see if there are any embedded RSS feeds with "feed". Feed is not really a view as it opens a new page. Try it now by going to https://ploum.net then trying views. Come back here with "back".
+
+> go https://ploum.net
+> v full
+> v normal
+> feed
+> back
+> back
+
+View also allows you to preview a given link. Try "v 1".
+
+> v 1
+
+=> /open.gmi Open outside of Offpunk
+=> /index.gmi Back to the turorial

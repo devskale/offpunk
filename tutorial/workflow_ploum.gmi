@@ -1,0 +1,178 @@
+# How I use Offpunk (by Ploum)
+
+My offpunk is offline by default. The config file contains one line :
+
+> offline
+
+## A tour every morning
+
+Each morning, while water for my tea is boiling, I launch a full synchronisation of Offpunk. This synchronisation is done through a bash script called "do_the_internet.sh". The offpunk line contains the following:
+
+> offpunk --sync --assume-yes --cache-validity 51840
+
+The "--assume-yes" insures I accept new SSL certificates. The cache validity is arbitrarly set around 15 hours which means that it will almost never do a full refresh twice a day but I will not miss a day if, for one reason, I was late yesterday but I’m really early this morning.
+
+
+Once this is done, I can browse through all the news from my subscribed RSS through "tour":
+
+> t
+
+When I see an article that looks interesting to read and is a bit too long to read right now (remember, I’m sipping tea), I add it to my "toread" list.
+
+> add toread
+
+At the end of my tour, I go to this list to read whatever I feel reading right now.
+
+> list toread
+> X  
+
+(where X is a number in the list)
+
+After reading, I archive it.
+
+> archive
+
+If the content is truncated, I ask to see the full version.
+
+> v full
+
+I may need to see the page in Firefox.
+
+> open url
+
+If I know that a given link will need to be open in Firefox, I do it directly.
+
+> open url X   
+
+(where X is the number of the link)
+
+I may also check first where the link is heading with.
+
+> v X 
+
+(where X is the number of the link)
+
+If it looks interesting, I add it to my tour:
+
+> t X
+
+Then I get back reading the article with
+
+> v
+
+Sometimes, I follow links and find new stuff to read that I also put in my "toread" list. If the author look interesting, I try to see what else (s)he wrote by immediately going to her/his RSS feed.
+
+> feed
+
+How, that feed looks interesting. Let’s subscribe by putting it in my RSS subscriptions:
+
+> add rss
+
+"rss" is a list I created with the following:
+
+> list create rss
+> list subscribe rss
+
+Alternatively, you could simply put it in your "subscribed" list. (mine is dedicated to gemlogs only).
+
+From time to time, I try to organize my subscription by grouping them into section in my list with 
+
+> list edit rss
+
+I can also remove some older no longer updated feeds. Another alternative is simply to archive them by doing
+
+> list rss
+> X 
+
+(where X is the number of the feed)
+
+> archive
+
+
+## Other news
+
+There are a few pages I want to regularly visit which don’t have a feed. Or feeds for which I don’t want each item to clutter my tour. For those, I’ve created a list called "news".
+
+> list create news
+
+I didn’t subscribe to that list. It is a simple list.  If the news are low and I still have cup in my tea, I browse the whole list with:
+
+> tour news
+> t
+
+Some RSS/Atom feeds don’t point to content but contain their own content. To access the whole content, simply ask for the full version of the feed.
+
+> v full
+
+Once in full mode, I add the feed to my news list.
+
+> add news
+
+It means I can browse regularly that feed (but no content will be pushed into my tour).
+
+
+## Remembering
+
+Sometimes, I want to remember a page to use it in a project. When this happen, I create a list for that project.
+
+> list create offpunk
+
+But I don’t want the content of the links there to be updated, ever. I want to preserve the content! So I freeze the list.
+
+> list freeze offpunk
+
+When something in my "toread" list should be kept for a given project, I move it there.
+
+> move offpunk
+
+I use "move" and not "add". Else the link would stay in both "toread" and "offpunk", which is not what I want.
+
+
+
+## Reading later from outside source
+
+Often, I’m forced to use Firefox. But I prefer reading articles in Offpunk. To do that, I simply copy the URL of the page in my clipboard (or the URL received through an email) then, in a terminal, I type:
+
+> toread
+
+Toread is a zsh alias to the following :
+
+> offpunk --fetch-later `wl-paste -p`
+
+(I use Wayland. If you use X, replace wl-paste by xclip or xsel)
+
+Now, the URL is in my list to_fetch and will be fetched next morning. 
+
+If Offpunk is already open, I simply type:
+
+> go
+
+(by default, "go" will use the content of the clipboard)
+
+If I don’t want to wait til tomorrow, I run a "short sync" which is the following:
+
+> offpunk --sync tour to_fetch --assume-yes --cache-validity 51840
+
+This means that offpunk will only tries to sync the content of lists "tour" and "to_fetch". It will thus ignore "rss", "subscribed" and "news".
+
+
+## Finding what you’ve read
+
+Sometimes, I want to go back to what I’ve just read today or a few days ago. If it’s very recent, I use history:
+
+> history
+
+If a bit older, I browse the archives.
+
+> list archives
+
+The archives are limited to 200 (this is configurable). For me, it means between 1 and 2 months of reading. If I really want to find something I’ve read months ago, I use "grep" in the "~/.cache/offpunk" folder. It is rare but… it worked several times.
+
+## Outside of Offpunk
+
+Inside my terminal, I now open files with:
+
+> opnk
+
+
+=> /index.gmi Back to the tutorial

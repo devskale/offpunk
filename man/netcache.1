@@ -1,0 +1,88 @@
+.Dd November 25, 2024
+.Dt NETCACHE 1
+.Os 
+.
+.Sh NAME
+.Nm netcache
+.Nd local Internet cache handler for offpunk
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl \-path
+.Op Fl \-ids
+.Op Fl \-offline
+.Op Fl \-max\-size Ar MAX_SIZE
+.Op Fl \-timeout Ar TIMEOUT
+.Op Ar URL ...
+.Nm
+.Fl h | \-help
+.
+.Sh DESCRIPTION
+Netcache is a command-line tool to retrieve,
+cache and access networked content.
+By default,
+netcache will returns a cached version of a given URL,
+downloading it only if a cache version doesn't exist.
+A validity duration,
+in seconds,
+can also be given
+so netcache downloads the content
+only if the existing cache is older than the validity.
+.Pp
+Netcache can be forced into offline mode,
+in order to only fetch resources from the local cache,
+otherwise it would always refresh it from the version available online.
+It is also useful for mapping a given URL to its location in the cache,
+independently of whether it has been downloaded first.
+.Ss Positional arguments
+.Bl -tag -width Ds -offset indent
+.It Ar URL
+download the URL and output the content.
+.El
+.Ss Keyword arguments
+.Bl -tag -width Ds -offset indent
+.It Fl h , \-help
+show a help message and exit.
+.It Fl \-path
+output the path to the cache instead of the content of the URL.
+.It Fl \-ids
+return a list of id's for the gemini-site
+instead of the content of the cache.
+.It Fl \-offline
+do not attempt to download,
+return the cached version instead,
+or error if absent from the cache.
+.It Fl \-max-size Ar MAX_SIZE
+cancel download of items above that size.
+The value is expressed in megabytes.
+.It Fl \-timeout Ar TIMEOUT
+time to wait before cancelling connection.
+The value is expressed in seconds.
+.It Fl \-cache-validity CACHE_VALIDITY
+Maximum age (in second) of the cached version before redownloading a new version.
+.El
+.
+.Sh EXIT STATUS
+.Ex -std
+.
+.Sh ENVIRONMENT
+Set
+.Ev OFFPUNK_CACHE_PATH
+environment variable to use another location.
+.Bd -literal
+OFFPUNK_CACHE_PATH=/home/ploum/custom-cache netcache.py gemini://some.url
+.Ed
+.
+.Sh FILES
+Default cache path is
+.Pa ~/.cache/offpunk .
+.
+.Sh SEE ALSO
+.Xr ansicat 1 ,
+.Xr migrate-offpunk-cache 1 ,
+.Xr offpunk 1 ,
+.Xr opnk 1 ,
+.Lk https://offpunk.net/
+.
+.Sh AUTHORS
+.An Lionel Dricot (Ploum) Aq Mt offpunk2 at ploum.eu

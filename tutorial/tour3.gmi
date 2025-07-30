@@ -1,0 +1,17 @@
+# Third link to demonstrate the tour
+
+Yay, yet another link from your tour. Funny, isn’t it?
+
+Type "t" to get the next link in your tour. If there’s any. Your tour might be empty now.
+
+> t
+
+By now, you probably understand how to use the tour. You will see, it will quickly becomes second nature to add links to your tour just like you open links in tabs in your graphical browser.
+
+You may now go back to the turorial homepage by typing the number of the related link.
+
+=> /index.gmi Tutorial homepage
+
+Or you may want to explore a bit the Gemini network
+
+=> /gemini.gmi Start exploring Gemini

@@ -1,0 +1,43 @@
+TODO
+
+# Godo first contributions
+
+## Cache Triming  (Good first-contribution - medium level)
+
+We need work on a model that keep the cache within certain limit by removing older, inaccessed elements which are not linked to anything in lists.
+
+This is a good first-contribution issue as the cache-triming script should be completely independant and interact little with existing code.
+
+## HTML rendering  (Good first-contribution - advanced level)
+
+Better rendering of tables using ASCII tables.
+
+This is a good first-contribution for someone interested in HTML parsing/rendering and ready to dig into ansicat. While quite complex, the issue will have little or no interaction with code outside of the HTML rendering engine of Ansicat.
+
+## UTF-8 in URL:
+
+bug #42: IDN handling 
+https://todo.sr.ht/~lioploum/offpunk/42
+
+# Heavy refactoring
+
+## Refactoring of redirections is needed
+
+bug #34: redirections are not kept while offline
+https://todo.sr.ht/~lioploum/offpunk/34
+bug #41:  Redirects should be handled in netcache, not offpunk 
+https://todo.sr.ht/~lioploum/offpunk/41
+
+## Refactoring of errors is needed
+
+bug #30:  Netcache: gemini status 4 and 5 should not emit a full traceback 
+https://todo.sr.ht/~lioploum/offpunk/30
+bug #3: Error pages are stored in the cache  
+https://todo.sr.ht/~lioploum/offpunk/3
+
+
+
+
+
+
+

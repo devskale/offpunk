@@ -1,0 +1,99 @@
+.Dd February 2, 2025
+.Dt OFFPUNK 1
+.Os
+.
+.Sh NAME
+.Nm offpunk
+.Nd command line gemini client
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl \-bookmarks
+.Op Fl \-config\-file Ar FILE
+.Op Fl \-command Ar COMMAND
+.Op Fl \-sync
+.Op Fl \-assume\-yes
+.Op Fl \-disable\-http
+.Op Fl \-fetch\-later
+.Op Fl \-depth Ar DEPTH
+.Op Fl \-images\-mode Ar IMAGES_MODE
+.Op Fl \-cache\-validity Ar CACHE_VALIDITY
+.Op Ar URL ...
+.Nm
+.Fl h | \-help
+.Nm
+.Fl \-version
+.Nm
+.Fl \-features
+.
+.Sh DESCRIPTION
+Offpunk is a command-line browser and feed reader dedicated to browsing the Web,
+Gemini, Gopher and Spartan.
+Thanks to its permanent cache, it is optimised to be used offline with rare
+connections but works as well when connected.
+.Pp
+Offpunk is optimised for reading and supports readability mode, displaying
+pictures, subscribing to pages or RSS feeds,
+managing complex lists of bookmarks.
+Its integrated help and easy commands make it a perfect tool for command-line
+novices while power-users will be amazed by its shell integration.
+.Ss Positional arguments
+.Bl -tag -width Ds -offset indent
+.It URL
+start with this URL
+.El
+.Ss Keyword arguments
+.Bl -tag -width Ds -offset indent
+.It Fl h , \-help
+Show a help message and exit
+.It Fl \-bookmarks
+start with your list of bookmarks
+.It Fl \-config\-file Ar FILE
+use this particular config file instead of default
+.It Fl \-command Ar COMMAND
+launch this or those command(s) after startup (including config file).
+.It Fl \-sync
+run non\-interactively to build cache by exploring bookmarks
+.It Fl \-assume\-yes
+assume\-yes when asked questions about certificates/redirections during sync
+(lower security)
+.It Fl \-disable\-http
+do not try to get http(s) links (but already cached will be displayed)
+.It Fl \-fetch\-later
+run non\-interactively with an URL as argument to fetch it later
+.It Fl \-depth Ar DEPTH
+depth of the cache to build.
+Default is 1.
+More is crazy.
+Use at your own risks!
+.It Fl \-images-mode Ar IMAGES_MODE
+the mode to use
+to choose which images to download in a HTML page.
+one of (None, readable, full).
+Warning: full will slowdown your sync.
+.It Fl \-cache\-validity Ar CACHE_VALIDITY
+duration for which a cache is valid before sync (seconds)
+.It Fl \-version
+display version information and quit
+.It Fl \-features
+display available features and dependancies then quit
+.El
+.
+.Sh EXIT STATUS
+.Ex -std
+.
+.Sh SEE ALSO
+.Xr ansicat 1 ,
+.Xr migrate-offpunk-cache 1 ,
+.Xr netcache 1 ,
+.Xr opnk 1 ,
+.Lk https://offpunk.net/
+.
+.Sh HISTORY
+.Nm
+is a fork of the original AV-98 by
+.An Solderpunk
+and was originally called AV-98-offline as an experimental branch.
+.
+.Sh AUTHORS
+.An Lionel Dricot (Ploum) Aq Mt offpunk2 at ploum.eu

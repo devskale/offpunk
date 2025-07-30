@@ -1,0 +1,56 @@
+.Dd November 25, 2024
+.Dt OPNK 1
+.Os 
+.
+.Sh NAME
+.Nm opnk
+.Nd universal open (like a punk) for offpunk
+.
+.Sh SYNOPSIS
+.Nm
+.Op \-mode Ar MODE
+.Op \-cache-validity Ar CACHE_VALIDITY
+.Op Ar INPUT ...
+.Nm
+.Fl h | \-help
+.
+.Sh DESCRIPTION
+opnk is an universal open command tool
+that will try to display any file in the pager
+.Xr less 1
+after rendering its content with
+.Xr ansicat 1 .
+If that fails,
+opnk will fallback to opening the file with
+.Xr xdg-open 1 .
+If given an URL as input instead of a path,
+opnk will rely on
+.Xr netcache 1
+to get the networked content.
+.Ss Positional arguments
+.Bl -tag -width Ds -offset indent
+.It Ar INPUT
+path to the file or URL to open.
+.El
+.Ss Keyword arguments
+.Bl -tag -width Ds -offset indent
+.It Fl h , \-help
+Show a help message and exit
+.It Fl \-mode Ar MODE
+MODE to use to render to choose between normal (default), full or source
+.It Fl \-cache-validity CACHE_VALIDITY
+Maximum age (in second) of the cached version before redownloading a new version.
+.El
+.
+.Sh EXIT STATUS
+.Ex -std
+.
+.Sh SEE ALSO
+.Xr ansicat 1 ,
+.Xr migrate-offpunk-cache 1 ,
+.Xr netcache 1 ,
+.Xr offpunk 1 ,
+.Lk https://offpunk.net/
+.
+.Sh AUTHORS
+.An Lionel Dricot (Ploum) Aq Mt offpunk2 at ploum.eu

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="$LANG"><head>
+<meta charset="UTF-8">
+<meta name="description" content="Offpunk Tutorial" >
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="fediverse:creator" content="@ploum@mamot.fr" >
+<meta property="og:title" content="$TITLE" >
+<meta property="og:url" content="$HTMLLINK" >
+<meta property="og:type" content="article" >
+<meta property="og:article:author" content="Ploum - Lionel Dricot" >
+<meta property="og:article:published_time" content="$PUBLISHED_DATE" >
+<meta property="og:image" content="$IMAGE_PREVIEW" >
+<title>$TITLE</title>
+<link rel="shortcut icon" href="/files/favicon.ico" >
+<link rel="canonical" href="$HTMLLINK">
+<style>
+body{	
+	color:#fff;background:#000;
+	margin:40px auto;
+	max-width:650px;
+	line-height:1.4;
+	font-size:18px;
+	padding:0 10px;}
+h1{line-height:1.2; text-align:center}
+h2,h3{line-height:1.2; border-bottom: 1px solid;}
+pre,blockquote,.signature{
+	padding: 1em;
+	background:#444;
+}
+blockquote,.signature{	
+	font-style: italic;
+	margin: 2em 1em;}
+p,ul,ol { list-style-type: circle;}
+a { color:#169;text-decoration:none; padding:0.5em 0;}
+a:hover { text-decoration:underline;}
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 80%;
+}
+figcaption{ font-style: italic; font-size: 90%; text-align: center;}
+.header{
+	margin: 1em 0;
+	display: block;
+	width:100%;
+}
+.horizontal { text-align: center; padding:10px 40px;}
+.horizontal li{display: inline-block; margin: 0 0.5em;}
+a[href^="mailto"]::after {content:' 📧';}
+a[href^="gemini"]::after {content:' 🚀';}
+</style>
+</head>
+<body>
+<article>
+<h1>$TITLE</h1>
+$CONTENT
+</article>
+<hr><p><small>
+Permalinks:<br>
+<a href="$HTMLLINK">$HTMLLINK</a><br>
+<a href="$GEMLINK">$GEMLINK</a>
+</small>
+</p>
+</body>
+</html>

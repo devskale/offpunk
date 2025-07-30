@@ -1,0 +1,55 @@
+# First steps with Offpunk
+
+Welcome to Offpunk. In Offpunk, there’s no way to "clic" or to open tabs. Everything is done by typing commands at the bottom of your screen, next to a green "ON>" prompt. It says "ON" to tell you that Offpunk is currently in "Online" mode.
+
+## Prompt and scrolling in Less
+
+If a page is too long to fit the screen, it will be displayed using Less. If you don’t see the "ON>" prompt, it means that you are in Less. In Less, you can scroll with arrows. You can also scroll to the whole next page using the space key. To leave Less and go back to Offpunk, simply quit by pressing "q" (without enter). 
+
+Trust us, it will quickly become a second-nature to quit with "q".
+
+## Following links
+
+Below, you will find a link.
+
+But you can’t click on it. That’s why links all have a number next to them. In order to follow a link, you simply need to type this number and hit "enter". If you don’t see the green "ON>" prompt, you are in Less and you must press "q" first.
+
+=> /myfirstlink.gmi This is a link! Follow it by typing its number now.
+
+> 1
+
+## Commands and help with "help"
+
+After you followed the link, you typed "back". Note that some commands have shortcut. Instead of typing "back", you can type "b". As you may have guessed, there’s also a "forward" command (shortcut "f"). You may try a few "back"/"forward" (but don’t forget to hit "q" if you are in Less).
+
+> forward
+> back
+
+The list of commands is available with "help". The list of shortcut/abbreviations is available with "abbrevs". You can also use "help" with another command name to learn more about it. For example "help back" will tells you what it is. This is specially useful for more advanced commands.
+
+> help back
+
+Now, if you type "help", you may not see this page anymore.  In order to see the current page, you can always type "view" (or its shortcut "v").
+
+Type "help" then "view" (each followed by enter).
+
+> help
+> view
+
+As you may be in Less, you may have to hit "q" to get back to the prompt.
+
+## Exploring the cyberspace with "go"
+
+Now that you can follow links and do back/forward, you only need to learn one more command: "go".
+
+"go" should always be followed by an URL. So "go gemini://offpunk.net" or "go https://offpunk.net" will brings you to the page you want to explore.
+
+> go gemini://offpunk.net/firststeps.gmi
+
+While "go/back/forward" are enough to get started, there is obviously a lot more in Offpunk.
+
+Let’s give you your first tip, as an appetizer: if you type "go" without any URL, Offpunk will automatically try to find one in your system clipboard. It means that you can simply copy an URL from a document or another browser and hit "go" in Offpunk to access it.
+
+But interesting stuff starts with the tour.
+
+=> /tour.gmi Follow this link to learn advanced browsing with "tour"

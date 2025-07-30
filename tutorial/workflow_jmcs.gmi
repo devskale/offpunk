@@ -1,0 +1,110 @@
+# How I'm using Offpunk so far (by jmcs)
+
+Altough offpunk's great strength seems to be the cache mechanism that allows one to synchronize content and then read offline (using its tour feature), pretty much all of my offpunk usage has been 'online'. Here's what it looks like when I use offpunk:
+
+## Most common workflow
+
+Most of the time, I use offpunk via ssh. I connect to my old laptop (that we have on the coffe table to watch videos most of the time), and reconnect to a screen session I have running there. Usually, offpunk is already open in one of the windows. If not, I create a new 'window', and start offpunk:
+
+> offpunk
+
+Most of the time, it seems I open it without a URL. Then, because I'm still a quite new user, usually take a look at my "lists" usually looking for the bookmarks list (you can type 'bm' to go directly, but for some reason I still don't have it in my "muscle memory" :) ):
+
+> ON> list
+>                       (6 items)   (local file)
+>
+>                      Bookmarks Lists (updated during sync)
+>                      [1] bookmarks (10 items)
+>                      [2] check_later (5 items)
+>
+>                      Subscriptions (new links in those are added to tour)
+>                      [3] subscribed (0 items)
+>
+>                      System Lists
+>                      [4] archives (4 items)
+>                      [5] history (201 items)
+>                      [6] tour (1 items)
+
+As you can see, bookmarks is my first list, and I already have saved some pages saved there. You see that I also have a list I created, called "check_later", we'll talk about it later, but the name should be self-explanatory. I press 1:
+
+> ON> 1
+
+This will show me my list of bookmarks. A couple of them are gemini aggregators (antenna, Cosmos), another two are the gemini "forums" BBS and Station. I press whatever number I would like to read:
+
+> ON> 2
+
+Usually, this is some sort of aggregator, which offpunk shows me as a list of links. Usually at this point, I scan for titles that look interesting, and add them to my tour:
+
+> ON> t 2 5 7-11
+
+and then I start reading:
+
+> ON> t
+
+for each of the pages I read, it may happen that I want to add some of the links in it to my current tour:
+
+> ON> t [number of the links]
+
+then I go back to read with v, or t to continue with the next page in my tour.
+
+or maybe, I want to see what else its author has published. For many pages, I can go check the root of the site:
+
+> ON> root
+
+But sometimes this doesn't work very well: some people have their gemini capsules (or http sites) in a shared tilde, and their "root" url would take me to the shared tilde root page. That's why every now and then I check what the url is:
+
+> ON> url
+
+sometimes to go to the "root" of this capsule I only have to navigate one or two levels up:
+
+> ON> up
+
+but sometimes, selecting the "base url" I saw earlier with my mouse and going directly is faster:
+
+> ON> go [middle click, or shift+insert, to paste url]
+
+At this point, I might want to add this capsule (or page) to my bookmarks, or to my "check_later" list:
+
+> ON> add
+> [PAGE] added to bookmarks
+> ON> add check_later
+> [PAGE] added to check_later
+
+Then I usually go back to the page I was reading, with "v" (short for 'view', meaning view current page), or, if I had already finished reading it, continue with my tour:
+
+> ON> t
+
+I usually like to read my tour in one go, so I try to not add too many links to it. If I don't have too much time, I'll rather add links to my "check_later" list. This feature has been introduced recently to offpunk. I'll have to test it, but it will look like this while reading a page:
+
+> ON> add check_later [number of interesting link]
+
+When I finish my tour, I might choose to check my bookmarks and maybe visit one of those 'forums', starting the process again, or exit:
+
+> ON> q
+
+## Alternative workflow
+### starting with a URL
+
+Sometimes, someone pastes a link in IRC while I'm hanging there, or any other source. I then would probably start offpunk with the URL as parameter, or if I already have it open, I type 'go [paste the URL]'. Then I proceed as if this was a link from an aggregator or from a page in my bookmarks
+
+
+## Summary, and to-do
+
+I've been using offpunk for just... some days, so my workflow is pretty simple. I'm barely scratching the surface of offpunk's commands capabilities by using it as a mere multi-protocol browser. Just now, while writing this document, I learned that you can tour the content of one of your lists by typing
+
+> ON> tour [name of the list]
+
+Even when I am using only some of what offpunk offers (mostly because I still haven't learnt and memorized all of its capabilities), it has proven to be a nice distraction-free way to read content from gemini, http and gopher. I have used text-based web browser in the past, but I like specially the way pages are displayed in offpunk (even when sometimes you'll need to "view full" to read all that the page brings)
+
+I'm probably not the most "usual" offpunk user, but maybe this document will show you that there are more than one way to use offpunk, and maybe you could try it and see how it can adapt to the way you want to read stuff from the internet :)
+
+## TO-DO
+
+There are some offpunk options I want to start exploring and understand better:
+
+* I plan to import some feeds I had from years ago from feedly and start using the 'subscriptions' list.
+* I'm most of the time using "list edit [list]" and deleting items, when maybe I should be using "archive"
+* I should check exactly how the "offline" mode works and try using it, since it is precisely the "offline" idea what made me read about offpunk in the first place
+
+
+=> /index.gmi Back to the tutorial
