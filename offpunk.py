@@ -188,6 +188,9 @@ class GeminiClient(cmd.Cmd):
             "default_protocol": "gemini",
             "ftr_site_config": None,
             "preformat_wrap": False,
+            # images_size should be an integer. If bigger than text width, 
+            # it will be reduced
+            "images_size": 40,
         }
         self.redirects = offblocklist.redirects
         for i in offblocklist.blocked:
@@ -366,6 +369,7 @@ class GeminiClient(cmd.Cmd):
             params["images_mode"] = mode
         else:
             params["images_mode"] = self.options["images_mode"]
+        params["images_size"] = self.options["images_size"]
         if force_refresh:
             params["validity"] = 1
         elif not self.offline_only:
