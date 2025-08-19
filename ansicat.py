@@ -1179,7 +1179,7 @@ class HtmlRenderer(AbstractRenderer):
         # CR are not meaniningful. Except that, somethimes, they should be interpreted as spaces.
         # HTML is real crap. At least the one people are generating.
 
-        def render_image(src, width=40, mode=None):
+        def render_image(src, width=None, mode=None):
             ansi_img = ""
             imgurl, imgdata = looks_like_base64(src, self.url)
             if (
@@ -1197,9 +1197,11 @@ class HtmlRenderer(AbstractRenderer):
                             cached.close()
                     if netcache.is_cache_valid(img):
                         renderer = ImageRenderer(img, imgurl)
-                        # Image are 40px wide except if terminal is smaller
-                        if width > 40:
-                            size = 40
+                        # Image width is set in the option to 40 by default
+                        # it cannot be bigger than the width of the text
+                        maxsize = self.options["images_size"]
+                        if width and width > maxsize :
+                            size = maxsize
                         else:
                             size = width
                         ansi_img = "\n" + renderer.get_body(width=size, mode="inline")
