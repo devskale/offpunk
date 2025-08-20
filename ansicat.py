@@ -1199,9 +1199,9 @@ class HtmlRenderer(AbstractRenderer):
                         renderer = ImageRenderer(img, imgurl)
                         # Image width is set in the option to 40 by default
                         # it cannot be bigger than the width of the text
-                        maxsize = self.options["images_size"]
-                        if width and width > maxsize :
-                            size = maxsize
+                        if "images_size" in self.options.keys() and width and \
+                                            width > self.options["images_size"] :
+                            size = self.options["images_size"]
                         else:
                             size = width
                         ansi_img = "\n" + renderer.get_body(width=size, mode="inline")
