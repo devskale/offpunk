@@ -339,7 +339,7 @@ def _fetch_http(
         requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = "ALL:@SECLEVEL=2"
         verify = True
     header = {}
-    header["User-Agent"] = "Netcache"
+    header["User-Agent"] = "Offpunk/Netcache - https://offpunk.net"
     with requests.get(
         url, verify=verify, headers=header, stream=True, timeout=DEFAULT_TIMEOUT
     ) as response:
