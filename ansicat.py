@@ -1532,6 +1532,7 @@ _FORMAT_RENDERERS = {
     "application/json": HtmlRenderer,
     "text/empty": EmptyRenderer,
     "message/news": GemtextRenderer,
+    "message/rfc822": GemtextRenderer,
 }
 
 _CUSTOM_RENDERERS = {
