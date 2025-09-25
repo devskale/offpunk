@@ -1572,7 +1572,10 @@ def get_mime(path, url=None):
             itemtype = "1"
             path = ""
         if itemtype == "0":
-            mime = "text/gemini"
+            if path.endswith("xml"):
+                mime="application/xml"
+            else:
+                mime = "text/gemini"
         elif itemtype == "1":
             mime = "text/gopher"
         elif itemtype == "h":
