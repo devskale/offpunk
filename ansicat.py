@@ -145,6 +145,8 @@ def terminal_image(img_file):
 class AbstractRenderer:
     def __init__(self, content, url, center=True,**kwargs):
         self.url = url
+        #base url is used to construct relative urls (see <base> in html)
+        self.base = None
         self.body = str(content)
         # there’s one rendered text and one links table per mode
         self.rendered_text = {}
@@ -1157,6 +1159,18 @@ class HtmlRenderer(AbstractRenderer):
         else:
             return ""
 
+    def get_base_url(self):
+        if not self.base :
+            if self.body:
+                soup = BeautifulSoup(self.body, "html.parser")
+                if soup.base :
+                    base = soup.base.get("href")
+                    self.base = urllib.parse.urljoin(self.url,base)
+                else:
+                    self.base = self.url
+            else:
+                self.base = self.url
+        return self.base
     # Our own HTML engine (crazy, isn’t it?)
     # Return [rendered_body, list_of_links]
     # mode is either links_only, readable or full
@@ -1181,7 +1195,7 @@ class HtmlRenderer(AbstractRenderer):
 
         def render_image(src, width=None, mode=None):
             ansi_img = ""
-            imgurl, imgdata = looks_like_base64(src, self.url)
+            imgurl, imgdata = looks_like_base64(src, self.get_base_url())
             if (
                 _RENDER_IMAGE
                 and mode not in ["full_links_only", "links_only"]
@@ -1343,7 +1357,7 @@ class HtmlRenderer(AbstractRenderer):
                 if src:
                     if mode not in self.images:
                         self.images[mode] = []
-                    abs_url, data = looks_like_base64(src, self.url)
+                    abs_url, data = looks_like_base64(src, self.get_base_url())
                     # if abs_url is None, it means we don’t support
                     # the image (such as svg+xml). So we hide it.
                     if abs_url:
@@ -1377,9 +1391,9 @@ class HtmlRenderer(AbstractRenderer):
                 if poster:
                     if mode not in self.images:
                         self.images[mode] = []
-                    poster_url, d = looks_like_base64(poster, self.url)
+                    poster_url, d = looks_like_base64(poster, self.get_base_url())
                     if poster_url:
-                        vid_url, d2 = looks_like_base64(src, self.url)
+                        vid_url, d2 = looks_like_base64(src, self.get_base_url())
                         self.images[mode].append(poster_url)
                         r.add_block(ansi_img)
                         r.open_theme("image_link")
@@ -1393,7 +1407,7 @@ class HtmlRenderer(AbstractRenderer):
                         r.close_theme("image_link")
                         r.newline()
                 elif src:
-                    vid_url, d = looks_like_base64(src, self.url)
+                    vid_url, d = looks_like_base64(src, self.get_base_url())
                     links.append(vid_url + " " + text)
                     link_id = " [%s]" % (len(links) + startlinks)
                     r.open_theme("image_link")

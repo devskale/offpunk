@@ -11,6 +11,7 @@
 - fix out of range index on page without links (by Alexander W. Jans)
 - User-agent now includes URL to avoid blocking (suggested by cks)
 - Adding gemtext rendering to message/rfc822 files 
+- ansicat: support for <base> in html rendering
 
 ## 2.7.1 - April 9th 2025 - The "2.7 was not (completely) a joke" release
 See 2.7 changelog. This was "real" release ;-)
