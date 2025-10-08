@@ -932,19 +932,9 @@ class GeminiClient(cmd.Cmd):
         """
         line = line.strip()
         if not line:
-            certs = netcache.get_certs(self.current_url)
-            if len(certs) == 0:
-                print("There are no certificates available for this site.")
-            else:
-                if len(certs) == 1:
-                    print("The one available certificate for this site is:")
-                else:
-                    print(
-                        "The", len(certs), "available certificates for this site are:"
-                    )
-
-                print(*certs)
-                print("Use the 'id@site.net' notation to activate a certificate.")
+            url_with_identity = netcache.ask_certs(self.current_url)
+            if url_with_identity != self.current_url:
+                self.onecmd("go " + url_with_identity)
         else:
             lineparts = line.split(" ")
             if lineparts[0] == "new":

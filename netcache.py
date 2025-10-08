@@ -733,6 +733,48 @@ def create_certificate(name: str, days: int, hostname: str):
     with open(certfile, "wb") as f:
         f.write(cert.public_bytes(serialization.Encoding.PEM))
 
+def ask_certs(url: str):
+    certs = get_certs(url)
+    if len(certs) == 0:
+        print("There are no certificates available for this site.")
+        create_cert = input("Do you want to create one? (y/n) ")
+        if create_cert == "y":
+            name = input("Name for this certificate: ")
+            days = input("Validity in days: ")
+            if name != "" and days.isdigit():
+                site = urllib.parse.urlparse(url)
+                create_certificate(name, int(days), site.hostname)
+                new_url = "gemini://" + name +"@"+ url.split("://")[1]
+                return(new_url)
+            else:
+                print("The name or validity you typed are invalid")
+                return(url)
+        else:
+            return(url)
+    if len(certs) == 1:
+        print("The one available certificate for this site is:")
+    elif len(certs) > 1:
+        print(
+                "The", len(certs), "available certificates for this site are:"
+        )
+    if len(certs) > 0:
+        counter = 0
+        stri = ""
+        for cert in certs:
+            stri += "[%s] %s \n" % (counter + 1, cert)
+            counter += 1
+        stri += "\n"
+        stri += "which certificate do you want to use? > "
+        ans = input(stri)
+        if ans.isdigit() and 0 < int(ans) <= len(certs):
+            identity = certs[int(ans) -1]
+        else:
+            identity = None
+        if identity:
+            new_url = "gemini://" + identity +"@"+ url.split("://")[1]
+            return(new_url)
+    return(url) #return the same url, no "cert" attached
+
 
 def get_certs(url: str):
     u = urllib.parse.urlparse(normalize_url(url))
@@ -742,7 +784,9 @@ def get_certs(url: str):
         site_ids = []
         if "@" in netloc_parts[0]:
             netloc_parts[0] = netloc_parts[0].split("@")[1]
-
+        # certdir does not contemplate ports, so we should take it out here if present
+        if ":" in netloc_parts[-1]:
+            netloc_parts[-1] = netloc_parts[-1].split(":")[0]
         for i in range(len(netloc_parts), 0, -1):
             lasti = ".".join(netloc_parts[-i:])
             direc = os.path.join(certdir, lasti)
@@ -936,7 +980,12 @@ def _fetch_gemini(
         raise RuntimeError(meta)
     # Client cert
     elif status.startswith("6"):
-        error = "You need to provide a client-certificate to access this page."
+        if interactive:
+            print("You need to provide a client-certificate to access this page.")
+            url_with_identity = ask_certs(url)
+            if (url_with_identity != url):
+                return fetch(url_with_identity)
+        error = "You need to provide a client-certificate to access this page.\r\nType \"certs\" to create or re-use one"
         raise RuntimeError(error)
     # Invalid status
     elif not status.startswith("2"):
