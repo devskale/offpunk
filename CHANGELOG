@@ -2,6 +2,7 @@
 
 ## 2.8 - Unreleased
 - New option "images_size" to use with "set" (idea by aelius)
+- Automatically use newly created certificates in Gemini (by JMCS)
 - Fix a rare crash when listing urls in a non-existant page
 - ansicat: Trying to get render preformatted text correctly in HTML
 - ansicat: html <code> should be inline, not a separate block like <pre>
