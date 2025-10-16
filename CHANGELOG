@@ -15,6 +15,7 @@
 - ansicat: support for <base> in html rendering
 - gopher: consider .xml files as feeds (by JMCS)
 - gopher: detect image types in gopher to open them internally (by JMCS)
+- "reload" now delete cached rendering, online and offline
 
 ## 2.7.1 - April 9th 2025 - The "2.7 was not (completely) a joke" release
 See 2.7 changelog. This was "real" release ;-)

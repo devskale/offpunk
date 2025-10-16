@@ -787,8 +787,9 @@ class GeminiClient(cmd.Cmd):
                 print("%s marked for syncing" % self.current_url)
             else:
                 print("%s already marked for syncing" % self.current_url)
+            self.opencache.clean_url(self.current_url)
         else:
-            self.opencache.cleanup()
+            self.opencache.clean_url(self.current_url)
             self._go_to_url(self.current_url, force_refresh=False)
 
     @needs_gi

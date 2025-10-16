@@ -327,6 +327,22 @@ class opencache:
         self.renderer_time = {}
         self.last_mode = {}
 
+    # Clean only a specificif url cache
+    def clean_url(self,url,mode=None):
+        def delfile(path):
+            if os.path.isfile(path):
+                os.remove(path)
+        # First, we take the full URL
+        if mode:
+            url = mode_url(url,mode)
+        delfile(self.temp_files.pop(url))
+        delfile(self.less_histfile.pop(url))
+        url, newmode = unmode_url(url)
+        if url in self.rendererdic:
+            self.rendererdic.pop(url)
+        if url in self.renderer_time:
+            self.renderer_time.pop(url)
+
 
 def main():
     descri = "opnk is an universal open command tool that will try to display any file \
