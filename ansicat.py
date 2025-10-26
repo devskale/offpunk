@@ -1230,6 +1230,8 @@ class HtmlRenderer(AbstractRenderer):
             # never start with a "\n"
             # string = string.lstrip("\n")
             string = string.replace("\r", "").replace("\n", " ").replace("\t", " ")
+            # remove soft hyphens
+            string = string.replace("\u00ad","")
             endspace = string.endswith(" ") or string.endswith("\xa0")
             startspace = string.startswith(" ") or string.startswith("\xa0")
             toreturn = string.replace("\n", " ").replace("\t", " ").strip()
