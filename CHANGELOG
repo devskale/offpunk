@@ -1,6 +1,6 @@
 # Offpunk History
 
-## 2.8 - Unreleased
+## 2.8 - November 13th 2025
 - New option "images_size" to use with "set" (idea by aelius)
 - Automatically use newly created certificates in Gemini (by JMCS)
 - Fix a rare crash when listing urls in a non-existant page
