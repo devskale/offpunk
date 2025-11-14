@@ -931,8 +931,10 @@ class FolderRenderer(GemtextRenderer):
             listfiles = os.listdir(listdir)
             if len(listfiles) > 0:
                 for l in listfiles:
-                    # removing the .gmi at the end of the name
-                    lists.append(l[:-4])
+                    #We only take gmi files
+                    if l.endswith(".gmi"):
+                        # removing the .gmi at the end of the name
+                        lists.append(l[:-4])
         if len(lists) > 0:
             body = ""
             my_lists = []
