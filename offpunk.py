@@ -1702,8 +1702,10 @@ Use "view XX" where XX is a number to view information about link XX.
             lists = os.listdir(listdir)
             if len(lists) > 0:
                 for l in lists:
-                    # removing the .gmi at the end of the name
-                    to_return.append(l[:-4])
+                    # Taking only files with .gmi
+                    if l.endswith(".gmi"):
+                        # removing the .gmi at the end of the name
+                        to_return.append(l[:-4])
         return to_return
 
     def list_has_status(self, list, status):
