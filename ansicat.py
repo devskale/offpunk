@@ -1445,25 +1445,31 @@ class HtmlRenderer(AbstractRenderer):
                         recursive_render(child, indent=indent)
 
         # the real render_html hearth
-        # note to vjousse: use self.options["ftr_site_config"] here
-        # Use self.url to mach against an url
+        # We will transform the body into a "summary" (clean-up version)
+        summary = None
+        # if mode full, we don’t clean anything
         if mode in ["full", "full_links_only"]:
             summary = body
+        # let’s try unmerdify
         elif "ftr_site_config" in self.options.keys() and self.options["ftr_site_config"]:
             try:
                 summary = unmerdify.unmerdify_html(body,url=self.url,\
                         ftr_site_config=self.options["ftr_site_config"],NOCONF_FAIL=False)
+                if not summary:
+                    print("** Unmerdify failed - returns empty html **")
             except Exception as e:
                 print("UNMERDIFY ERROR: %s"%e)
                 summary = body
-        elif _HAS_READABILITY:
-            try:
-                readable = Document(body)
-                summary = readable.summary()
-            except Exception:
+        if not summary:
+            # if no summary, we try readabilitty
+            if _HAS_READABILITY:
+                try:
+                    readable = Document(body)
+                    summary = readable.summary()
+                except Exception:
+                    summary = body
+            else:
                 summary = body
-        else:
-            summary = body
         soup = BeautifulSoup(summary, "html.parser")
         # soup = BeautifulSoup(summary, 'html5lib')
         if soup:
