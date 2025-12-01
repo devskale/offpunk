@@ -5,6 +5,8 @@ And the Offpunk tools suite: netcache, ansicat, opnk.
 Derived from AV-98 and Agena by Solderpunk,
 (C) 2019, 2020: Solderpunk <solderpunk@sdf.org>
 
+Unmerdify from Vincent Jousse
+(C) 2025: Vincent Jousse
 
 AV-98 received contributions from:
   - danceka <hannu.hartikainen@gmail.com>
@@ -17,3 +19,5 @@ AV-98 received contributions from:
 
 Offpunk received contributions from:
   - Maeve Sproule <code@sprock.dev>
+
+  and many others who were not added in this file

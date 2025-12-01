@@ -14,6 +14,7 @@ import urllib
 
 import netcache
 import offthemes
+import unmerdify
 from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg
 
 try:
@@ -1448,6 +1449,13 @@ class HtmlRenderer(AbstractRenderer):
         # Use self.url to mach against an url
         if mode in ["full", "full_links_only"]:
             summary = body
+        elif self.options["ftr_site_config"]:
+            try:
+                summary = unmerdify.unmerdify_html(body,url=self.url,\
+                        ftr_site_config=self.options["ftr_site_config"],NOCONF_FAIL=False)
+            except Exception as e:
+                print("UNMERDIFY ERROR: %s"%e)
+                summary = body
         elif _HAS_READABILITY:
             try:
                 readable = Document(body)
