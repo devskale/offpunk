@@ -1449,7 +1449,7 @@ class HtmlRenderer(AbstractRenderer):
         # Use self.url to mach against an url
         if mode in ["full", "full_links_only"]:
             summary = body
-        elif self.options["ftr_site_config"]:
+        elif "ftr_site_config" in self.options.keys() and self.options["ftr_site_config"]:
             try:
                 summary = unmerdify.unmerdify_html(body,url=self.url,\
                         ftr_site_config=self.options["ftr_site_config"],NOCONF_FAIL=False)
