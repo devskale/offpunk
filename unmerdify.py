@@ -360,10 +360,8 @@ def strip_image_src(site_config: dict, lxml_tree):
 
 def get_body_element(site_config: dict, lxml_tree):
     body_contents = []
-
     for pattern in site_config.get("body", []):
         elements = lxml_tree.xpath(pattern)
-
         for body_element in elements:
             body_contents.append(body_element)
 
@@ -374,7 +372,6 @@ def get_body_element(site_config: dict, lxml_tree):
         body = etree.Element("div")
         for element in elements:
             body.append(element)
-
         return body
 
 
@@ -382,7 +379,6 @@ def get_body_element_html(site_config: dict, lxml_tree):
     body = get_body_element(site_config, lxml_tree)
     if body is not None:
         return etree.tostring(body, encoding="unicode")
-
 
 def remove_hidden_elements(lxml_tree):
     remove_elements_by_xpath(
