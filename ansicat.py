@@ -1452,16 +1452,18 @@ class HtmlRenderer(AbstractRenderer):
             summary = body
         # let’s try unmerdify
         elif "ftr_site_config" in self.options.keys() and self.options["ftr_site_config"]:
-            try:
+            ftr = ftr_site_config=self.options["ftr_site_config"]
+            # we want to unmerdify only if there’s a rule
+            if unmerdify.is_unmerdifiable(self.url,ftr):
+                print("Unmerdify for %s" %self.url)
                 summary = unmerdify.unmerdify_html(body,url=self.url,\
-                        ftr_site_config=self.options["ftr_site_config"],NOCONF_FAIL=False)
+                        ftr_site_config=ftr,NOCONF_FAIL=False)
                 if not summary:
                     print("** Unmerdify failed - returns empty html **")
-            except Exception as e:
-                print("UNMERDIFY ERROR: %s"%e)
-                summary = body
+            else: 
+                print("NO Unmerdify for %s" %self.url)
         if not summary:
-            # if no summary, we try readabilitty
+            # if no summary from unmerdify, we try readabilitty
             if _HAS_READABILITY:
                 try:
                     readable = Document(body)
