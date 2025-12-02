@@ -45,6 +45,7 @@ offpunk = "offpunk:main"
 netcache = "netcache:main"
 ansicat = "ansicat:main"
 opnk = "opnk:main"
+unmerdify = "unmerdify:main"
 
 [dependency-groups]
 test = [
@@ -59,7 +60,7 @@ path = "offpunk.py" # read __version__
 only-include = [
   "ansicat.py", "netcache_migration.py", "netcache.py",
   "offblocklist.py", "offpunk.py", "offthemes.py",
-  "offutils.py", "opnk.py", "cert_migration.py",
+  "offutils.py", "opnk.py", "cert_migration.py", "unmerdify.py",
 ]
 
 [tool.ruff.lint]
