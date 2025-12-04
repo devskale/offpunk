@@ -886,8 +886,28 @@ class GopherRenderer(AbstractRenderer):
                         linkline = url + " " + name
                         links.append(linkline)
                         number = len(links) + startlinks
-                        towrap = "[%s] " % str(number) + name
+                        protocol = ""
+                        if not url.startswith("gopher"):
+                            protocol = " " + url.split("://")[0]
+                        towrap = "[%s%s] " % (str(number), protocol) + name
+                        # If the link point to a page that has been cached less than
+                        # 600 seconds after this page, we consider it as a new_link
+                        current_modif = netcache.cache_last_modified(self.url)
+                        link_modif = netcache.cache_last_modified(url)
+                        if (
+                            current_modif
+                            and link_modif
+                            and current_modif - link_modif < 600
+                            and r.open_theme("new_link")
+                        ):
+                            theme = "new_link"
+                        elif r.open_theme("oneline_link"):
+                            theme = "oneline_link"
+                        else:
+                            theme = "link"
+                            r.open_theme("link")
                         r.add_text(towrap)
+                        r.close_theme(theme)
                 else:
                     r.add_text(line)
         return r.get_final(), links
