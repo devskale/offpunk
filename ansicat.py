@@ -1456,8 +1456,11 @@ class HtmlRenderer(AbstractRenderer):
             # we want to unmerdify only if there’s a rule
             if unmerdify.is_unmerdifiable(self.url,ftr):
                 print("Unmerdify for %s" %self.url)
-                summary = unmerdify.unmerdify_html(body,url=self.url,\
-                        ftr_site_config=ftr,NOCONF_FAIL=False)
+                try:
+                    summary = unmerdify.unmerdify_html(body,url=self.url,\
+                            ftr_site_config=ftr,NOCONF_FAIL=False)
+                except Exception as e:
+                    print("Unmerdify CRASH - %s"%e)
                 if not summary:
                     print("** Unmerdify failed - returns empty html **")
             else: 
