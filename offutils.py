@@ -153,7 +153,7 @@ def init_config(rcfile=None,skip_go=False,interactive=True,verbose=True):
                 #Is this a command to go to an url ?
                 is_go = any(line.startswith(x) for x in ("go","g","tour","t"))
                 #Is this a command necessary, even when non-interactive ?
-                is_necessary = any(line.startswith(x) for x in ("redirect","handler"))
+                is_necessary = any(line.startswith(x) for x in ("redirect","handler","set"))
                 if is_necessary:
                     cmds.append(line)
                 elif interactive:

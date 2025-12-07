@@ -288,7 +288,8 @@ class GeminiClient(cmd.Cmd):
         if not url:
             url = self.current_url
         if url:
-            return self.opencache.get_renderer(url, theme=self.theme)
+            # we should pass the options to the renderer
+            return self.opencache.get_renderer(url, theme=self.theme,**self.options)
 
     def _go_to_url(
         self,
@@ -2212,6 +2213,7 @@ def main():
             depth = 1
         torun_queue += init_config(rcfile=args.config_file, interactive=False)
         for line in torun_queue:
+            # This doesn’t seem to run on sync. Why?
             gc.onecmd(line)
         gc.call_sync(refresh_time=refresh_time, depth=depth, lists=args.url)
     else:
