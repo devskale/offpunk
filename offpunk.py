@@ -707,7 +707,7 @@ class GeminiClient(cmd.Cmd):
             args = arg.split()
             if args and args[0] == "url":
                 if len(args) > 1 and args[1].isdecimal():
-                    url = self.get_renderer().get_link(int(args[1]) - 1)
+                    url = self.get_renderer().get_link(int(args[1]))
                 else:
                     url, mode = unmode_url(self.current_url)
                 print(url)
