@@ -4,6 +4,7 @@
 Unmerdify alpha support (by Vincent Jousse):
 - Add "unmerdify" tool
 - if "ftr_site_config" is set, unmerdify will be enabled instead of readabilty in "ansicat"
+- "info" now explain how the content was cleaned
 Others:
 - In "lists", only consider files ending with .gmi (bug #46 by woffs)
 - support for new links color in gopher (by JMCS)

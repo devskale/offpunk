@@ -983,7 +983,8 @@ class GeminiClient(cmd.Cmd):
             rend = rend.lstrip("<class '__main__.").rstrip("'>")
         else:
             rend = "None"
-        out += "Renderer :   " + rend + "\n\n"
+        out += "Renderer :   " + rend + "\n"
+        out += "Cleaned with : " + renderer.get_cleanlib() + "\n\n"
         lists = []
         for l in self.list_lists():
             if self.list_has_url(url, l):
