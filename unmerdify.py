@@ -456,7 +456,7 @@ def get_multiple_xpath_values(site_config: dict, xpath: str, lxml_tree):
     elements = lxml_tree.xpath(xpath)
 
     if isinstance(elements, str) or isinstance(elements, etree._ElementUnicodeResult):
-        return str(elements)
+        return [str(elements)]
 
     for element in elements:
         # Return the first entry found
