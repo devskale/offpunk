@@ -162,6 +162,8 @@ class AbstractRenderer:
         self.options = kwargs
         # self.mime should be used only in renderer with multiple mime
         self.mime = None
+        # The library used to clean the HTML
+        self.cleanlib = "No cleaning required"
 
     def display(self, mode=None, directdisplay=False):
         wtitle = self.get_formatted_title()
@@ -455,6 +457,9 @@ class AbstractRenderer:
 
     def get_mode(self):
         return self.last_mode
+
+    def get_cleanlib(self):
+        return self.cleanlib
 
     def get_link(self, nb):
         links = self.get_links()
@@ -1470,31 +1475,34 @@ class HtmlRenderer(AbstractRenderer):
         # if mode full, we don’t clean anything
         if mode in ["full", "full_links_only"]:
             summary = body
+            self.cleanlib = "Full as requested"
         # let’s try unmerdify
         elif "ftr_site_config" in self.options.keys() and self.options["ftr_site_config"]:
             ftr = ftr_site_config=self.options["ftr_site_config"]
             # we want to unmerdify only if there’s a rule
             if unmerdify.is_unmerdifiable(self.url,ftr):
-                print("Unmerdify for %s" %self.url)
                 try:
                     summary = unmerdify.unmerdify_html(body,url=self.url,\
                             ftr_site_config=ftr,NOCONF_FAIL=False)
                 except Exception as e:
                     print("Unmerdify CRASH - %s"%e)
                 if not summary:
-                    print("** Unmerdify failed - returns empty html **")
-            else: 
-                print("NO Unmerdify for %s" %self.url)
+                    print("** Unmerdify failed - returns empty html %s **" %self.url)
+                else:
+                    self.cleanlib = "Unmerdify with url %s"%self.url
         if not summary:
             # if no summary from unmerdify, we try readabilitty
             if _HAS_READABILITY:
                 try:
                     readable = Document(body)
                     summary = readable.summary()
+                    self.cleanlib = "Readability"
                 except Exception:
                     summary = body
+                    self.cleanlib = "Full (Readability failed)"
             else:
                 summary = body
+                self.cleanlib = "Full (No readability installed)"
         soup = BeautifulSoup(summary, "html.parser")
         # soup = BeautifulSoup(summary, 'html5lib')
         if soup:
