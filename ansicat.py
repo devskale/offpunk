@@ -1472,10 +1472,11 @@ class HtmlRenderer(AbstractRenderer):
         # the real render_html hearth
         # We will transform the body into a "summary" (clean-up version)
         summary = None
+        self.cleanlib = ""
         # if mode full, we don’t clean anything
         if mode in ["full", "full_links_only"]:
             summary = body
-            self.cleanlib = "Full as requested"
+            self.cleanlib += "Full as requested"
         # let’s try unmerdify
         elif "ftr_site_config" in self.options.keys() and self.options["ftr_site_config"]:
             ftr = ftr_site_config=self.options["ftr_site_config"]
@@ -1485,24 +1486,24 @@ class HtmlRenderer(AbstractRenderer):
                     summary = unmerdify.unmerdify_html(body,url=self.url,\
                             ftr_site_config=ftr,NOCONF_FAIL=False)
                 except Exception as e:
-                    print("Unmerdify CRASH - %s"%e)
+                    self.cleanlib += "Unmerdify CRASH - %s - "%e
                 if not summary:
-                    print("** Unmerdify failed - returns empty html %s **" %self.url)
+                    self.cleanlib += "Unmerdify failed - returns empty html"
                 else:
-                    self.cleanlib = "Unmerdify with url %s"%self.url
+                    self.cleanlib += "Unmerdify"
         if not summary:
             # if no summary from unmerdify, we try readabilitty
             if _HAS_READABILITY:
                 try:
                     readable = Document(body)
                     summary = readable.summary()
-                    self.cleanlib = "Readability"
-                except Exception:
+                    self.cleanlib += " - Readability"
+                except Exception as e:
                     summary = body
-                    self.cleanlib = "Full (Readability failed)"
+                    self.cleanlib += " - Full (Readability failed) %s"%e
             else:
                 summary = body
-                self.cleanlib = "Full (No readability installed)"
+                self.cleanlib += " - Full (No readability installed)"
         soup = BeautifulSoup(summary, "html.parser")
         # soup = BeautifulSoup(summary, 'html5lib')
         if soup:
