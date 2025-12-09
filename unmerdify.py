@@ -272,7 +272,7 @@ def parse_site_config_file(config_file_path: str) -> dict | None:
                 test_url = config.get("test_url")
                 if test_url is None or len(test_url) == 0:
                     logging.error(
-                        "-> 🚨 ERROR: No test_url found for given test_contains. Skipping."
+                        "-> 🚨 ERROR: No test_url found for given test_contains in file `{config_file_path}`. Skipping."
                     )
                     continue
 
