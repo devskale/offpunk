@@ -1010,10 +1010,16 @@ class FeedRenderer(GemtextRenderer):
         if not parsed:
             return False
         elif parsed.bozo:
+            # print("bozo "+str(parsed.bozo_exception))
             return False
         else:
-            # If no content, then fallback to HTML
-            return len(parsed.entries) > 0
+            # If the second element is <rss, no doubt
+            if self.body.split(">")[1].startswith("<rss"):
+                return True
+            # If not, we may suspect a HTML file if there
+            # is no entry in the ffed
+            else:
+                return len(parsed.entries) > 0
 
     def get_title(self):
         if not self.title:
