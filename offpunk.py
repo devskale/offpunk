@@ -184,6 +184,7 @@ class GeminiClient(cmd.Cmd):
             # the wikipedia entry needs two %s, one for lang, other for search
             "wikipedia": "gemini://gemi.dev/cgi-bin/wp.cgi/view/%s?%s",
             "search": "gemini://kennedy.gemi.dev/search?%s",
+            "websearch": "https://wiby.me/?q=%s",
             "accept_bad_ssl_certificates": False,
             "default_protocol": "gemini",
             "ftr_site_config": None,
@@ -1074,6 +1075,14 @@ class GeminiClient(cmd.Cmd):
         URL should contains one "%s" that will be replaced by the search term."""
         search = urllib.parse.quote(line)
         url = self.options["search"] % search
+        self._go_to_url(url)
+
+    def do_websearch(self, line):
+        """Search on the web using the engine configured (by default wiby.me)
+        You can configure it using "set websearch URL".
+        URL should contains one "%s" that will be replaced by the search term."""
+        search = urllib.parse.quote(line)
+        url = self.options["websearch"] % search
         self._go_to_url(url)
 
     def do_wikipedia(self, line):
