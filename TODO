@@ -1,6 +1,8 @@
-TODO
+# Good first contributions
 
-# Godo first contributions
+If you want to contribute to offpunk, here are a list of tasks which can probably be done with a little work but do not require to touch the whole codebase.
+
+If you are interested, please announce yourself on the offpunk-devel mailing list.
 
 ## Cache Triming  (Good first-contribution - medium level)
 
@@ -8,18 +10,30 @@ We need work on a model that keep the cache within certain limit by removing old
 
 This is a good first-contribution issue as the cache-triming script should be completely independant and interact little with existing code.
 
+You need to like playing with file systems properties.
+
 ## HTML rendering  (Good first-contribution - advanced level)
 
 Better rendering of tables using ASCII tables.
 
 This is a good first-contribution for someone interested in HTML parsing/rendering and ready to dig into ansicat. While quite complex, the issue will have little or no interaction with code outside of the HTML rendering engine of Ansicat.
 
+You need to like handling HTML/Ascii art/ANSI codes
+
 ## UTF-8 in URL:
 
 bug #42: IDN handling 
 https://todo.sr.ht/~lioploum/offpunk/42
 
+## Support for http cookies in netcache
+
+Allows netcache to use cookies to access website which need it. At first, cookies could be imported from another browser. So the code would be essentially check a config folder for cookies matching current URL and use it if there’s a match.
+
+Code would happen only in netcache and use the python-requests HTTP library
+
 # Heavy refactoring
+
+Those tasks are hard and requires touching the code everywhere.
 
 ## Refactoring of redirections is needed
 
@@ -35,6 +49,10 @@ https://todo.sr.ht/~lioploum/offpunk/30
 bug #3: Error pages are stored in the cache  
 https://todo.sr.ht/~lioploum/offpunk/3
 
+
+## Swicth from python-requests to curl
+
+Current netcache code is really slow using python-requests. It could be probably optimised greatly by using concurrent http requests and, maybe, switching to libcurl instead of requests (which would also give accesss to all protocols supported by libcurl)
 
 
 
