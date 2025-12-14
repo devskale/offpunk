@@ -11,6 +11,7 @@ import ssl
 import sys
 import time
 import urllib.parse
+import http.cookiejar
 import warnings
 from ssl import CertificateError
 
@@ -312,12 +313,29 @@ def set_error(url, err):
     return cache
 
 
+def get_cookiejar(url, create=False):
+    parsed = urllib.parse.urlparse(url)
+    basedir = os.path.join(xdg("data") + "cookies/" )
+    cookie_path = basedir + parsed.netloc + ".txt"
+    if not os.path.exists(cookie_path):
+        if create:
+            os.makedirs(basedir, exist_ok=True)
+            with open(cookie_path, 'w') as f:
+                f.write("# Netscape HTTP Cookie File\n\n")
+        else:
+            return None
+
+    jar = http.cookiejar.MozillaCookieJar(cookie_path)
+    jar.load()
+    return jar
+
 def _fetch_http(
     url,
     max_size=None,
     timeout=DEFAULT_TIMEOUT,
     accept_bad_ssl_certificates=False,
     force_large_download=False,
+    cookiejar=None,
     **kwargs,
 ):
     if not _DO_HTTP:
@@ -341,7 +359,8 @@ def _fetch_http(
     header = {}
     header["User-Agent"] = "Offpunk/Netcache - https://offpunk.net"
     with requests.get(
-        url, verify=verify, headers=header, stream=True, timeout=DEFAULT_TIMEOUT
+        url, verify=verify, headers=header, stream=True, timeout=DEFAULT_TIMEOUT,
+        cookies=cookiejar
     ) as response:
         if "content-type" in response.headers:
             mime = response.headers["content-type"]
@@ -374,10 +393,11 @@ def _fetch_http(
                 if size > max_size / 2:
                     response.close()
                     return too_large_error(url, "streaming", max_size)
-            response.close()
         else:
             body = response.content
-            response.close()
+        if cookiejar is not None:
+            requests.cookies.extract_cookies_to_jar(cookiejar, response.request, response.raw)
+        response.close()
     if mime and "text/" in mime:
         body = body.decode("UTF-8", "replace")
     cache = write_body(url, body, mime)
@@ -1032,6 +1052,7 @@ def fetch(
     download_image_first=True,
     images_mode="readable",
     validity=0,
+    cookiejar=None,
     **kwargs,
 ):
     url = normalize_url(url)
@@ -1060,7 +1081,9 @@ def fetch(
                 path = None
             elif scheme in ("http", "https"):
                 if _DO_HTTP:
-                    path = _fetch_http(newurl, **kwargs)
+                    if download_image_first and cookiejar is None:
+                        cookiejar = get_cookiejar(newurl)
+                    path = _fetch_http(newurl, cookiejar=cookiejar, **kwargs)
                 else:
                     print("HTTP requires python-requests")
             elif scheme == "gopher":
@@ -1142,8 +1165,11 @@ def fetch(
                             download_image_first=False,
                             images_mode=None,
                             validity=0,
+                            cookiejar=cookiejar,
                             **kwargs,
                         )
+    if download_image_first and cookiejar is not None:
+        cookiejar.save()
     return path, newurl
 
 
