@@ -9,11 +9,12 @@ Unmerdify alpha support (by Vincent Jousse):
 Imortant changes:
 - Default image size now 100 instead of 40 (can be restored with "set images_size 40")
 Features:
-- new "websearch" command wich default to wiby.me
+- new "websearch" command which default to wiby.me
 Others:
 - In "lists", only consider files ending with .gmi (bug #46 by woffs)
 - support for new links color in gopher (by JMCS)
 - fix an off by one bug in "cp url XX" 
+- Ansicat: Fix incorrectly identifying RSS feeds as XHTML when there was no entry
 
 ## 2.8 - November 13th 2025
 - New option "images_size" to use with "set" (idea by aelius)
