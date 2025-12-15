@@ -815,7 +815,7 @@ def _fetch_gemini(
     query = url_parts.query
     # In AV-98, this was the _send_request method
     # Send a selector to a given host and port.
-    # Returns the resolved address and binary file with the reply."""
+    # Returns the resolved address and binary file with the reply.
     host = host.encode("idna").decode()
     # Do DNS resolution
     # DNS lookup - will get IPv4 and IPv6 records if IPv6 is enabled
