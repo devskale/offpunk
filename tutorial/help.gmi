@@ -41,5 +41,5 @@ The volume is fairly low, this should not strain your inbox. Also, remember that
 
 There is also a Matrix room to discuss Offpunk. But as Offpunk users like being offline, it may not be the most active room in history.
 
-* TODO: add the Matrix room adress here.
-* TODO: create an IRC channel on liberachat?
+=> https://matrix.to/#/#offpunk:matrix.org Matrix discussion room
+* TODO: should we create an IRC channel on liberachat?
