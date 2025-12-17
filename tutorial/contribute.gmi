@@ -1,0 +1,95 @@
+# Contributing to Offpunk
+
+If you are familiar with Python and Git, contributing to Offpunk is probably a lot easier than it appears.
+
+## Joining the project
+
+The project is currently hosted on Sourcehut.
+
+=> https://sr.ht/~lioploum/offpunk/ Offpunk on Sourcehut
+
+All the technical discussions happen on the Offpunk-devel mailing list.
+
+=> https://lists.sr.ht/~lioploum/offpunk-devel Offpunk-devel mailing-list archives
+
+It is also currently the best place to report a bug or ask a technical question. No need to create an account, simply send an email to the list.
+
+=> mailto:~lioploum/offpunk-devel@lists.sr.ht Send an email to offpunk-devel
+
+IMPORTANT: when replying to a message on the list, be sure to use the "reply all". If you forget, only the original sender will receive your message.
+
+Also, emails should be sent in plaintext, not in HTML.
+
+If you plan to interact for more than one issue, its probably a good idea to subscribe to the list. Volume is relatively low and there’s no need to create any account.
+
+=> mailto:~lioploum/offpunk-devel+subscribe@lists.sr.ht Subscribe to Offpunk-devel
+
+## Making your first contribution
+
+The first step is, of course, to clone the git repository on your computer and check if you can run it locally without trouble.
+
+```
+git clone https://git.sr.ht/~lioploum/offpunk
+cd offpunk
+./offpunk.py
+version
+```
+
+Now, you can simply explore the source code by yourself or by asking questions on the mailing-list. One good opportunity to learn is to improve this tutorial that you will find in the "tutorial" folder. You can also add your own Offpunk workflow.
+
+Once it’s done, commit your change locally. Don’t forget to give a good description to your commit when asked.
+
+```
+git add PATH_TO_MODIFIED_FILE
+git commit
+```
+Try to keep your modifications in one meaningful commit. If you change something after the commit, simply amend it.
+
+```
+git commit -a --amend
+```
+Once you are satisfied with your commit, it’s time to send it.
+
+Offpunk doesn’t use Github. There’s no Pull Requests and web interface. Instead, your commit will be sent as a patch by email. Don’t worry, it is easier than it looks.
+
+If it’s the first time you send a git patch by email, your computer may requires some configuration. Follow the git-send-email tutorial.
+
+=> https://git-send-email.io/ Learn to use email with git! (git-send-email.io)
+
+Now, in your local offpunk folder, we will set offpunk-devel list as the default destination for patches. This should only be done once.
+
+```
+git config sendemail.to "~lioploum/offpunk-devel@lists.sr.ht"
+```
+Now, we are ready to send the latest commit as a patch.
+
+```
+git send-email HEAD^
+```
+
+That’s it! Your first patch to Offpunk is sent!
+
+## Improving the patch
+
+In most cases, the patch need to be discussed. This happens on the list itself, commenting the code by emails. You will probably receive suggestions on how to improve the patch. Modify your code accordingly then amend your commit.
+
+```
+git commit -a --amend
+```
+Once ready, send us the v2 of your patch by labelling it as such.
+
+```
+git send-email --annotate -v2 HEAD^
+```
+
+There can of course be a v3, v4, etc. What is important is to clearly communicate if you plan to work on a new version of the patch, if you consider that it should be merged as is or if you abandon the work on the subject for now.
+
+There’s no pressure. We all do this for fun. We simply need to communicate clearly.
+
+Also, mistakes happen. We all do mistakes. Your duty is inform the list as soon as you realize you did a mistake. We’ve all sent wrong emails or patches. That’s not a problem. But it may become a problem if people start working on reviewing code that was sent by mistake.
+
+## Rebasing your patch
+
+While you were working on a patch, other patches may modify the codebase. Your patch may not apply cleanly and maintainers may request a rebase of your patch.
+
+TODO

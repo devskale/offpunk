@@ -1,0 +1,45 @@
+# Getting help about Offpunk
+
+## In-app help
+
+The first thing to remember is that Offpunk has an "help" command.
+
+
+> help
+
+It will list the available commands and you can be more specific with "help CMD", for example:
+
+> help copy
+> help go
+
+## Getting human help
+
+As it may be intimidating, you can get help from a fellow human by sending an email to the user list.
+
+=> mailto:~lioploum/offpunk-users@lists.sr.ht Send an email the offpunk-users list
+
+Try to write a clear subject, present yourself and your usecase. The list is very open to every kind of discussions.
+
+IMPORTANT: when replying to a message on the list, be sure to use the "reply all". If you forget, only the original sender will receive your message.
+
+Also, emails should be sent in plaintext, not in HTML.
+
+But don’t worry: we all make mistakes, it is part of the process. Offpunk’s community is small and warmly welcome anyone. The fact that you are interested in using Offpunk is all we need from you.
+
+## Joining the community
+
+The best way to become part of the community is to join the offpunk-users list permanently. This means you will receive new messages from others.
+
+No need to create an account. Simply send an email.
+
+=> mailto:~lioploum/offpunk-users+subscribe@lists.sr.ht Send an email to subscribe to offpunk-users
+
+The volume is fairly low, this should not strain your inbox. Also, remember that you don’t need to read or understand everything. It is fine to just lurk. One day, you may be able to reply to an help request or have a great idea to a problem. But there’s no badge, no statistics. You being there is all that count for us.
+
+
+=> https://lists.sr.ht/~lioploum/offpunk-users Offpunk-users mailing-list archives
+
+There is also a Matrix room to discuss Offpunk. But as Offpunk users like being offline, it may not be the most active room in history.
+
+* TODO: add the Matrix room adress here.
+* TODO: create an IRC channel on liberachat?
