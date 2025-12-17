@@ -12,7 +12,7 @@ It will list the available commands and you can be more specific with "help CMD"
 > help copy
 > help go
 
-## Getting human help
+## Get human help
 
 As it may be intimidating, you can get help from a fellow human by sending an email to the user list.
 
@@ -26,7 +26,7 @@ Also, emails should be sent in plaintext, not in HTML.
 
 But don’t worry: we all make mistakes, it is part of the process. Offpunk’s community is small and warmly welcome anyone. The fact that you are interested in using Offpunk is all we need from you.
 
-## Joining the community
+## Join the community
 
 The best way to become part of the community is to join the offpunk-users list permanently. This means you will receive new messages from others.
 
@@ -43,3 +43,11 @@ There is also a Matrix room to discuss Offpunk. But as Offpunk users like being 
 
 => https://matrix.to/#/#offpunk:matrix.org Matrix discussion room
 * TODO: should we create an IRC channel on liberachat?
+
+## Contribute to Offpunk
+
+Do you think you’ve found a bug? Do you want to discuss an idea to improve Offpunk? Or do you want to simply fix a mistake in this tutorial?
+
+Well, it’s time to contribute! Don’t worry, it is easier than it sounds.
+
+=> /contribute.gmi Contribute to Offpunk
