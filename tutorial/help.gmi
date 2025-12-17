@@ -24,6 +24,8 @@ IMPORTANT: when replying to a message on the list, be sure to use the "reply all
 
 Also, emails should be sent in plaintext, not in HTML.
 
+=> https://useplaintext.email/ Use plaintext email (useplaintext.email)
+
 But don’t worry: we all make mistakes, it is part of the process. Offpunk’s community is small and warmly welcome anyone. The fact that you are interested in using Offpunk is all we need from you.
 
 ## Join the community
