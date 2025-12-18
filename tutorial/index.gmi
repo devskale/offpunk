@@ -27,7 +27,12 @@ Offpunk allows you to browse the Web, Gemini, Gopher and subscribe to RSS feeds 
 => /subscriptions.gmi Managing RSS/blog/gemlog subscriptions
 => /frozen.gmi Freezing lists to prevent update of content
 
-## Offpunk workflows
+## Join the Offpunk Community
+
+=> /help.gmi Getting help about Offpunk and joining the community
+=> /contribute.gmi How to contribute to Offpunk
+
+Here are some contributed users workflows that could inspire you
 
 => /workflow_ploum.gmi Ploum’s workflow
 => /workflow_jmcs.gmi JMCS’s workflow
@@ -39,11 +44,3 @@ Offpunk contains three tools that you can use independantly in your project.
 - ansicat
 - opnk
 
-## Get help
-
-=> https://lists.sr.ht/~lioploum/offpunk-users Offpunk-users mailing-list
-
-## Contribute to Offpunk
-
-=> https://sr.ht/~lioploum/offpunk/ Offpunk on Sourcehut
-=> https://lists.sr.ht/~lioploum/offpunk-devel Offpunk-devel mailing-list
