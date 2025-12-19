@@ -9,6 +9,7 @@
 .Sh SYNOPSIS
 .Nm
 .Op \-mode Ar MODE
+.Op \-linkmode Ar LINKMODE
 .Op \-cache-validity Ar CACHE_VALIDITY
 .Op Ar INPUT ...
 .Nm
@@ -38,6 +39,12 @@ path to the file or URL to open.
 Show a help message and exit
 .It Fl \-mode Ar MODE
 MODE to use to render to choose between normal (default), full or source
+.It Fl \-linkmode Ar LINKMODE
+LINKMODE to use to render links. Available are
+.Ic none
+(default) and
+.Ic afterended .
+This option will not effect render mode source.
 .It Fl \-cache-validity CACHE_VALIDITY
 Maximum age (in second) of the cached version before redownloading a new version.
 .El

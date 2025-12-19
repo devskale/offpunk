@@ -357,6 +357,14 @@ def main():
                                 With HTML, the normal mode try to extract the article.",
     )
     parser.add_argument(
+        "--linkmode",
+        choices=[
+            "none",
+            "afterended",
+        ],
+        help="Which mode should be used to render links: none (default) or afterended",
+    )
+    parser.add_argument(
         "content",
         metavar="INPUT",
         nargs="*",
@@ -384,11 +392,11 @@ def main():
         url = args.content[0]
         link_id = args.content[1]
         cache.opnk(url, mode=args.mode, validity=args.cache_validity, link=link_id,\
-                    direct_open_unsupported=True)
+                    direct_open_unsupported=True, linkmode=args.linkmode)
     else:
         for f in args.content:
             cache.opnk(f, mode=args.mode, validity=args.cache_validity,\
-                        direct_open_unsupported=True)
+                        direct_open_unsupported=True, linkmode=args.linkmode)
 
 if __name__ == "__main__":
     main()
