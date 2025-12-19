@@ -1161,22 +1161,24 @@ class HtmlRenderer(AbstractRenderer):
         return _DO_HTML and self.validity
 
     def get_subscribe_links(self):
-        subs = [[self.url, self.get_mime(), self.get_title()]]
-        soup = BeautifulSoup(self.body, "html.parser")
-        links = soup.find_all("link", rel="alternate", recursive=True)
-        for l in links:
-            ty = l.get("type")
-            if ty:
-                if "rss" in ty or "atom" in ty or "feed" in ty:
-                    # some rss links are relatives: we absolutise_url
-                    sublink = urllib.parse.urljoin(self.url, l.get("href"))
-                    subs.append([sublink, ty, l.get("title")])
+        subs = []
+        if _DO_HTML :
+            subs = [[self.url, self.get_mime(), self.get_title()]]
+            soup = BeautifulSoup(self.body, "html.parser")
+            links = soup.find_all("link", rel="alternate", recursive=True)
+            for l in links:
+                ty = l.get("type")
+                if ty:
+                    if "rss" in ty or "atom" in ty or "feed" in ty:
+                        # some rss links are relatives: we absolutise_url
+                        sublink = urllib.parse.urljoin(self.url, l.get("href"))
+                        subs.append([sublink, ty, l.get("title")])
         return subs
 
     def get_title(self):
         if self.title:
             return self.title
-        elif self.body:
+        elif _DO_HTML and self.body:
             if _HAS_READABILITY:
                 try:
                     readable = Document(self.body)
@@ -1195,7 +1197,7 @@ class HtmlRenderer(AbstractRenderer):
 
     def get_base_url(self):
         if not self.base :
-            if self.body:
+            if _DO_HTML and self.body:
                 soup = BeautifulSoup(self.body, "html.parser")
                 if soup.base :
                     base = soup.base.get("href")
@@ -1552,22 +1554,22 @@ class XkcdRenderer(HtmlRenderer):
 
     #return [image_url,image_path, image_alt_text,image_title]
     def xkcd_extract(self):
-        soup = BeautifulSoup(self.body, "html.parser")
-        comic_div = soup.find("div",{"id":"comic"})
-        if comic_div:
-            img_element = comic_div.find("img")
-            src=img_element.get("src")
-            if src.startswith("//"):
-                scheme = urllib.parse.urlparse(self.url).scheme
-                img_url = scheme + ":" + src
-            else:
-                img_url = src
-            img_path = netcache.get_cache_path(img_url)
-            alttext=img_element.get("title")
-            title=img_element.get("alt")
-            return img_url,img_path,alttext,title
-        else:
-            return None,None,None,None
+        if _DO_HTML :
+            soup = BeautifulSoup(self.body, "html.parser")
+            comic_div = soup.find("div",{"id":"comic"})
+            if comic_div:
+                img_element = comic_div.find("img")
+                src=img_element.get("src")
+                if src.startswith("//"):
+                    scheme = urllib.parse.urlparse(self.url).scheme
+                    img_url = scheme + ":" + src
+                else:
+                    img_url = src
+                img_path = netcache.get_cache_path(img_url)
+                alttext=img_element.get("title")
+                title=img_element.get("alt")
+                return img_url,img_path,alttext,title
+        return None,None,None,None
 
     def display(self, mode=None, directdisplay=False):
         wtitle = self.get_formatted_title()
@@ -1581,6 +1583,8 @@ class XkcdRenderer(HtmlRenderer):
             #now displaying
             if img_path and netcache.is_cache_valid(img_url):
                 terminal_image(img_path)
+            elif not _DO_HTML:
+                self.printgemtext("\n> Please install python-bs4 to parse HTML")
             else:
                 self.printgemtext("\n> missing picture, please reload\n")
             self.printgemtext(alttext)
