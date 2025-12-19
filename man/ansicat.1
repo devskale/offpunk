@@ -12,6 +12,7 @@
 .Op Fl \-mime Ar MIME
 .Op Fl \-url Ar URL ...
 .Op Fl \-mode Ar MODE
+.Op Fl \-linkmode Ar LINKMODE
 .Op Ar INPUT ...
 .Nm
 .Fl h | \-help
@@ -58,6 +59,12 @@ or from the file being rendered itself.
 MIME type of the content to parse.
 .It Fl \-mode Ar MODE
 MODE to use to render to choose between normal (default), full or source
+.It Fl \-linkmode Ar LINKMODE
+LINKMODE to use to render links. Available are
+.Ic none
+(default) and
+.Ic afterended .
+This option will not effect render mode source.
 .It Fl \-url Ar URL ...
 original URL of the content.
 .El
