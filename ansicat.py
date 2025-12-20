@@ -171,6 +171,11 @@ class AbstractRenderer:
             body = self.body
         else:
             body = wtitle + "\n" + self.get_body(mode=mode)
+            if "linkmode" in self.options:
+                if self.options["linkmode"] == "afterended":
+                    links = self.get_links(mode=mode)
+                    for i in range(len(links)):
+                        body += "[%s] %s\n" % (i + 1, links[i])
         if directdisplay:
             print(body)
             return True
@@ -1772,7 +1777,7 @@ def set_renderer(content, url, mime, theme=None,**kwargs):
 
 
 # This function should be removed and replaced by a set_renderer()/r.display()
-def render(input, path=None, format="auto", mime=None, url=None, mode=None):
+def render(input, path=None, format="auto", mime=None, url=None, mode=None, linkmode="none"):
     if not url:
         url = ""
     else:
@@ -1797,6 +1802,7 @@ def render(input, path=None, format="auto", mime=None, url=None, mode=None):
         else:
             r = set_renderer(input, url, mime)
     if r:
+        r.options["linkmode"] = linkmode
         r.display(directdisplay=True, mode=mode)
     else:
         print("Could not render %s" % input)
@@ -1840,6 +1846,14 @@ def main():
                                 With HTML, the normal mode try to extract the article.",
     )
     parser.add_argument(
+        "--linkmode",
+        choices=[
+            "none",
+            "afterended",
+        ],
+        help="Which mode should be used to render links: none (default) or afterended",
+    )
+    parser.add_argument(
         "content",
         metavar="INPUT",
         nargs="*",
@@ -1865,6 +1879,7 @@ def main():
                     url=args.url,
                     mime=args.mime,
                     mode=args.mode,
+                    linkmode=args.linkmode,
                 )
         else:
             print("Ansicat needs at least one file as an argument")
@@ -1880,6 +1895,7 @@ def main():
                 url=args.url,
                 mime=args.mime,
                 mode=args.mode,
+                linkmode=args.linkmode,
             )
 
 
