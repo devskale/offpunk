@@ -14,9 +14,16 @@ import time
 import ansicat
 import netcache
 import offutils
-from offutils import GREPCMD, is_local, mode_url, run, term_width, unmode_url, init_config
-
-_HAS_XDGOPEN = shutil.which("xdg-open")
+from offutils import (
+        GREPCMD, 
+        is_local, 
+        mode_url, 
+        run, 
+        term_width, 
+        unmode_url, 
+        init_config,
+        send_email,
+        )
 
 less_version = 0
 if not shutil.which("less"):
@@ -285,13 +292,7 @@ class opencache:
                 extension = last_part.split(".")[-1]
             if mimetype == "mailto":
                 mail = inpath[7:]
-                resp = input("Send an email to %s Y/N? " % mail)
-                if resp.strip().lower() in ("y", "yes"):
-                    if _HAS_XDGOPEN:
-                        run("xdg-open mailto:%s", parameter=mail, direct_output=True)
-                    else:
-                        print("Cannot find a mail client to send mail to %s" % inpath)
-                        print("Please install xdg-open (usually from xdg-util package)")
+                send_email(mail,toconfirm=True)
                 return False, inpath
             else:
                 cmd_str = self._get_handler_cmd(mimetype,file_extension=extension)

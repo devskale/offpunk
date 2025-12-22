@@ -30,6 +30,7 @@ from offutils import (
     unmode_url,
     xdg,
     init_config,
+    send_email,
 )
 
 try:
@@ -735,6 +736,39 @@ class GeminiClient(cmd.Cmd):
         else:
             print("No content to copy, visit a page first")
 
+    #Share current page by email
+    def do_share(self, arg):
+        """Send current page by email to someone else.
+        Use with "url" as first argument to send only the address.
+        Use with "text" as first argument to send the full content. TODO
+        Without argument, "url" is assumed.
+        Next argument is the email adress of the recipient. If not, it will be asked.
+        """
+        if self.current_url:
+            dest = None
+            args = arg.split()
+            if args :
+                if args[0] == "text":
+                    args.pop(0)
+                    print("TODO: sharing text is not yet implemented")
+                    return
+                elif args[0] == "url":
+                    args.pop(0)
+                if len(args) > 0:
+                    dest = args[0]
+            # we will not consider the url argument (which is the default)
+            # if other argument, we will see if it is an URL
+            if is_local(self.current_url):
+                print("The URL %s cannot be shared because it is local only"%self.current_url)
+            elif not dest:
+                dest = input("Enter the email of the recipient: ")
+            subject=self.get_renderer().get_page_title()
+            body=self.current_url
+            send_email(dest,subject=subject,body=body,toconfirm=False)
+        else:
+            print("Nothing to share, visit a page first")
+
+
     # Stuff for getting around
     def do_go(self, line):
         """Go to a gemini URL or marked item."""
@@ -1022,7 +1056,7 @@ class GeminiClient(cmd.Cmd):
         output += "Python: " + sys.version + "\n"
         output += "\nHighly recommended:\n"
         output += " - python-cryptography : " + has(netcache._HAS_CRYPTOGRAPHY)
-        output += " - xdg-open            : " + has(opnk._HAS_XDGOPEN)
+        output += " - xdg-open            : " + has(offutils._HAS_XDGOPEN)
         output += "\nWeb browsing:\n"
         output += " - python-requests     : " + has(netcache._DO_HTTP)
         output += " - python-feedparser   : " + has(ansicat._DO_FEED)
