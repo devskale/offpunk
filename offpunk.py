@@ -193,6 +193,8 @@ class GeminiClient(cmd.Cmd):
             # images_size should be an integer. If bigger than text width, 
             # it will be reduced
             "images_size": 100,
+            # avaliable linkmode are "none" and "afterended".
+            "linkmode": "none",
         }
         self.redirects = offblocklist.redirects
         for i in offblocklist.blocked:
@@ -373,6 +375,8 @@ class GeminiClient(cmd.Cmd):
         else:
             params["images_mode"] = self.options["images_mode"]
         params["images_size"] = self.options["images_size"]
+        # avaliable linkmode are "none" and "afterended".
+        params["linkmode"] = self.options["linkmode"]
         if force_refresh:
             params["validity"] = 1
         elif not self.offline_only:
@@ -545,6 +549,10 @@ class GeminiClient(cmd.Cmd):
                     term_width(new_width=value)
                 else:
                     print("%s is not a valid width (integer required)" % value)
+            elif option == "linkmode":
+                if value.lower() not in ("none", "afterended"):
+                    print("Avaliable linkmode are `none` and `afterended`.")
+                    return
             elif value.isnumeric():
                 value = int(value)
             elif value.lower() == "false":
@@ -558,7 +566,7 @@ class GeminiClient(cmd.Cmd):
                     pass
             self.options[option] = value
             #We clean the cache for some options that affect rendering
-            if option in ["preformat_wrap","width"]:
+            if option in ["preformat_wrap","width", "linkmode"]:
                 self.opencache.cleanup()
 
     def do_theme(self, line):
