@@ -193,7 +193,7 @@ class GeminiClient(cmd.Cmd):
             # images_size should be an integer. If bigger than text width, 
             # it will be reduced
             "images_size": 100,
-            # avaliable linkmode are "none" and "afterended".
+            # avaliable linkmode are "none" and "end".
             "linkmode": "none",
         }
         self.redirects = offblocklist.redirects
@@ -375,7 +375,7 @@ class GeminiClient(cmd.Cmd):
         else:
             params["images_mode"] = self.options["images_mode"]
         params["images_size"] = self.options["images_size"]
-        # avaliable linkmode are "none" and "afterended".
+        # avaliable linkmode are "none" and "end".
         params["linkmode"] = self.options["linkmode"]
         if force_refresh:
             params["validity"] = 1
@@ -550,8 +550,8 @@ class GeminiClient(cmd.Cmd):
                 else:
                     print("%s is not a valid width (integer required)" % value)
             elif option == "linkmode":
-                if value.lower() not in ("none", "afterended"):
-                    print("Avaliable linkmode are `none` and `afterended`.")
+                if value.lower() not in ("none", "end"):
+                    print("Avaliable linkmode are `none` and `end`.")
                     return
             elif value.isnumeric():
                 value = int(value)

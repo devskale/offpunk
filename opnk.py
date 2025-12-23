@@ -361,9 +361,9 @@ def main():
         "--linkmode",
         choices=[
             "none",
-            "afterended",
+            "end",
         ],
-        help="Which mode should be used to render links: none (default) or afterended",
+        help="Which mode should be used to render links: none (default) or end",
     )
     parser.add_argument(
         "content",
