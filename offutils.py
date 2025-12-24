@@ -33,6 +33,8 @@ try:
 except Exception:
     GREPCMD = "grep"
 
+_HAS_XDGOPEN = shutil.which("xdg-open")
+
 # We upgrade the cache only once at startup, hence the CACHE_UPGRADED variable
 # This is only to avoid unnecessary checks each time the cache is accessed
 CACHE_UPGRADED = False
@@ -299,6 +301,32 @@ def is_local(url):
     else:
         return True
 
+# open XDG mail client to compose an email to dest.
+# If toconfirm=True, the user is asked to confirm that he want to send an email
+def send_email(dest,subject=None,body=None,toconfirm=True):
+    if "@" not in dest:
+        print("%s is not a valid email address"%dest)
+        return
+    if toconfirm:
+        resp = input("Send an email to %s Y/N? " % dest)
+        confirmed = resp.strip().lower() in ("y", "yes")
+    else:
+        confirmed = True
+    if confirmed:
+        if _HAS_XDGOPEN:
+            param = dest
+            if subject or body:
+                param += "?"
+            if subject:
+                param += "subject=%s"%subject
+                if body:
+                    param += "&"
+            if body:
+                param += "body=%s"%body
+            run("xdg-open mailto:%s", parameter=param, direct_output=True)
+        else:
+            print("Cannot find a mail client to send mail to %s" % inpath)
+            print("Please install xdg-open (usually from xdg-util package)")
 
 # This method return the image URL or invent it if it’s a base64 inline image
 # It returns [url,image_data] where image_data is None for normal image

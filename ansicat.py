@@ -172,7 +172,8 @@ class AbstractRenderer:
         else:
             body = wtitle + "\n" + self.get_body(mode=mode)
             if "linkmode" in self.options:
-                if self.options["linkmode"] == "afterended":
+                # Avaliable linkmode are "none" and "end".
+                if self.options["linkmode"] == "end":
                     links = self.get_links(mode=mode)
                     for i in range(len(links)):
                         body += "[%s] %s\n" % (i + 1, links[i])
@@ -1849,9 +1850,9 @@ def main():
         "--linkmode",
         choices=[
             "none",
-            "afterended",
+            "end",
         ],
-        help="Which mode should be used to render links: none (default) or afterended",
+        help="Which mode should be used to render links: none (default) or end",
     )
     parser.add_argument(
         "content",
