@@ -23,6 +23,7 @@ from offutils import (
         unmode_url, 
         init_config,
         send_email,
+        _HAS_XDGOPEN,
         )
 
 less_version = 0
