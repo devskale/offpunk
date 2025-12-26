@@ -58,6 +58,10 @@ If it’s the first time you send a git patch by email, your computer may requir
 
 => https://git-send-email.io/ Learn to use email with git! (git-send-email.io)
 
+If it is not sufficient, some informations could be found on the Linux kernel development documentation. In most cases, this is not needed.
+
+=> https://docs.kernel.org/process/email-clients.html How to configure your mail client (kernel.org)
+
 Now, in your local offpunk folder, we will set offpunk-devel list as the default destination for patches. This should only be done once.
 
 ```
