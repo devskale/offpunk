@@ -15,6 +15,7 @@
 * A mistake should be acknowledged and corrected as quick as possible.
 * Nobody should be blamed for honest mistakes
 * Developers are assumed to work offline, development should be done asynchronously by email.
+* Each commit should probably comes with an CHANGELOG entry
 
 ## Code structure
 
