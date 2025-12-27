@@ -30,14 +30,16 @@ Offpunk allows you to browse the Web, Gemini, Gopher and subscribe to RSS feeds 
 ## Join the Offpunk Community
 
 => /help.gmi Getting help about Offpunk and joining the community
-=> /contribute.gmi How to contribute to Offpunk
 
 Here are some contributed users workflows that could inspire you
 
 => /workflow_ploum.gmi Ploum’s workflow
 => /workflow_jmcs.gmi JMCS’s workflow
 
-## Use Offpunk in your own project
+## Developing Offpunk
+
+=> /contribute.gmi How to contribute to Offpunk
+=> /dev-guidelines.gmi Offpunk’s development guidelines
 
 Offpunk contains three tools that you can use independantly in your project.
 - netcache
