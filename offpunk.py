@@ -411,13 +411,10 @@ class GeminiClient(cmd.Cmd):
 
     @needs_gi
     def _show_lookup(self, offset=0, end=None, show_url=False):
-        for n, u in enumerate(self.get_renderer().get_links()[offset:end]):
+        l = self.get_renderer().get_links()
+        for n, u in enumerate(l[offset:end]):
             index = n + offset + 1
             line = "[%s] %s" % (index, u)
-            # TODO: implement proper listing of url (with protocol and show_url)
-            #   protocol = "" if gi.scheme == "gemini" else " %s" % gi.scheme
-            #   line = "[%d%s] %s" % (index, protocol, gi.name or gi.url)
-            # line += " (%s)" % gi.url
             print(line)
 
     def _update_history(self, url):

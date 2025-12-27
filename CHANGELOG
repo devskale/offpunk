@@ -19,6 +19,7 @@ Others:
 - Ansicat: Fix incorrectly identifying RSS feeds as XHTML when there was no entry
 - Fix sync hanging on gopher interactive prompt (by JMCS)
 - Fix crash when trying to parse HTML without BS4 (reported by Hoël Bézier)
+- Automatically replace space by %20 in img url in HTML
 
 ## 2.8 - November 13th 2025
 - New option "images_size" to use with "set" (idea by aelius)

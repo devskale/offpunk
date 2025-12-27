@@ -1365,6 +1365,8 @@ class HtmlRenderer(AbstractRenderer):
                 link = element.get("href")
                 # support for images nested in links
                 if link:
+                    # First, we transform any space that can be found in that link
+                    link = link.replace(" ","%20")
                     text = ""
                     imgtext = ""
                     # we display images first in a link
@@ -1405,6 +1407,7 @@ class HtmlRenderer(AbstractRenderer):
                     # if abs_url is None, it means we don’t support
                     # the image (such as svg+xml). So we hide it.
                     if abs_url:
+                        abs_url = abs_url.replace(" ","%20")
                         links.append(abs_url + " " + text)
                         self.images[mode].append(abs_url)
                         link_id = " [%s]" % (len(links) + startlinks)
@@ -1443,6 +1446,7 @@ class HtmlRenderer(AbstractRenderer):
                         r.open_theme("image_link")
                         r.center_line()
                         if vid_url and src:
+                            vid_url = vid_url.replace(" ","%20")
                             links.append(vid_url + " " + text)
                             link_id = " [%s]" % (len(links) + startlinks)
                             r.add_text(text + link_id)
@@ -1452,6 +1456,7 @@ class HtmlRenderer(AbstractRenderer):
                         r.newline()
                 elif src:
                     vid_url, d = looks_like_base64(src, self.get_base_url())
+                    vid_url = vid_url.replace(" ","%20")
                     links.append(vid_url + " " + text)
                     link_id = " [%s]" % (len(links) + startlinks)
                     r.open_theme("image_link")
