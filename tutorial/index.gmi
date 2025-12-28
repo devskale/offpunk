@@ -5,6 +5,7 @@ Offpunk allows you to browse the Web, Gemini, Gopher and subscribe to RSS feeds 
 => /screenshots/1.png Screenshot of Offpunk
 
 => /whatisoffpunk.gmi What is Offpunk?
+=> https://geminiprotocol.net/ What is Gemini?
 => /install.gmi Installing Offpunk
 
 ## Browse online with Offpunk
