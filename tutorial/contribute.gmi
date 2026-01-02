@@ -88,6 +88,8 @@ Once ready, send us the v2 of your patch by labelling it as such.
 git send-email --annotate -v2 HEAD^
 ```
 
+The version 2 of your patch should be sent as a new email in its own thread. Don’t reply to the previous thread (which is what the Linux Kernel is recommending because they are way bigger than Offpunk).
+
 There can of course be a v3, v4, etc. What is important is to clearly communicate if you plan to work on a new version of the patch, if you consider that it should be merged as is or if you abandon the work on the subject for now.
 
 There’s no pressure. We all do this for fun. We simply need to communicate clearly.

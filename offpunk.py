@@ -101,6 +101,7 @@ _ABBREVS = {
     "book": "bookmarks",
     "cert": "certs",
     "cp": "copy",
+    "coo": "cookies",
     "f": "forward",
     "g": "go",
     "h": "history",
@@ -772,9 +773,63 @@ class GeminiClient(cmd.Cmd):
             send_email(dest,subject=subject,body=body,toconfirm=False)
         else:
             print("Nothing to share, visit a page first")
-
-
     # Stuff for getting around
+
+    def do_cookies(self, arg):
+        """Manipulate cookies:
+        "cookies import <file> [url]" - import cookies from file to be use=d with url
+        "cookies list [url]" - list existing cookies for current url
+        default is list for current domain.
+        
+        To get a cookie as a txt file,use the cookie-txt extension for Firefox. 
+        """
+        al = arg.split()
+        if len(al) == 0:
+            al = ["list"]
+        mode = al[0]
+        url = self.current_url
+        if mode == "list":
+            if len(al) == 2:
+                url = al[1]
+            elif len(al) > 2:
+                print("Too many arguments to list.")
+                return
+            if not url:
+                print("URL required (or visit a page).")
+                return
+            cj = netcache.get_cookiejar(url)
+            if not cj:
+                print("Cookies not enabled for url")
+                return
+            print("Cookies for url:")
+            for c in cj:
+                print("%s %s expires:%s %s=%s" % (c.domain, c.path,
+                    time.ctime(c.expires), c.name, c.value))
+            return
+        elif mode == "import":
+            if len(al) < 2:
+                print("File parameter required for import.")
+                return
+            if len(al) == 3:
+                url = al[2]
+            elif len(al) > 3:
+                print("Too many arguments to import")
+                return
+            if not url:
+                print("URL required (or visit a page).")
+                return
+            cj = netcache.get_cookiejar(url, create=True)
+            try:
+                cj.load(os.path.expanduser(al[1]))
+                cj.save()
+            except FileNotFoundError:
+                print("File not found")
+                return
+            print("Imported.")
+            return
+        print("Huh?")
+        return
+
     def do_go(self, line):
         """Go to a gemini URL or marked item."""
         line = line.strip()
