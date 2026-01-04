@@ -92,7 +92,7 @@ def clipboard_paste():
 # }}} end of imports
 
 # Command abbreviations
-_ABBREVS = {
+_ABBREVS = {# {{{
     "..": "up",
     "a": "add",
     "b": "back",
@@ -128,7 +128,7 @@ _ABBREVS = {
     "wfr": "wikipedia fr",
     "wes": "wikipedia es",
     "abbrevs": "alias",
-}
+}# }}}
 
 _MIME_HANDLERS = {}
 
