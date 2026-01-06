@@ -1272,6 +1272,8 @@ class HtmlRenderer(AbstractRenderer):
             # never start with a "\n"
             # string = string.lstrip("\n")
             string = string.replace("\r", "").replace("\n", " ").replace("\t", " ")
+            #now we replace the rarely found Start of guarded area
+            string = string.replace("\x96","–")
             # remove soft hyphens
             string = string.replace("\u00ad","")
             endspace = string.endswith(" ") or string.endswith("\xa0")
