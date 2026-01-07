@@ -22,6 +22,7 @@
 * Offpunk should run directly as a Python script without any installation, environment settings or anything else. This is non-negotiable core value.
 * Code should be in as few files as possible in one single folder.
 * Code should be split in separate files only if it makes sense to use some part of the code as an independent tool.
+* Everything is a file. The only database is user’s hard disk. No complex datastructure but plain text files.
 
 ## Crash and errors
 

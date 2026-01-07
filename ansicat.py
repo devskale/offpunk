@@ -1272,6 +1272,8 @@ class HtmlRenderer(AbstractRenderer):
             # never start with a "\n"
             # string = string.lstrip("\n")
             string = string.replace("\r", "").replace("\n", " ").replace("\t", " ")
+            #now we replace the rarely found Start of guarded area
+            string = string.replace("\x96","–").replace("\x91","'")
             # remove soft hyphens
             string = string.replace("\u00ad","")
             endspace = string.endswith(" ") or string.endswith("\xa0")
@@ -1393,7 +1395,6 @@ class HtmlRenderer(AbstractRenderer):
             elif element.name == "img":
                 src = element.get("src")
                 text = ""
-                ansi_img = render_image(src, width=width, mode=mode)
                 alt = element.get("alt")
                 if alt:
                     alt = sanitize_string(alt)
@@ -1406,7 +1407,12 @@ class HtmlRenderer(AbstractRenderer):
                     abs_url, data = looks_like_base64(src, self.get_base_url())
                     # if abs_url is None, it means we don’t support
                     # the image (such as svg+xml). So we hide it.
+                    # But we first check if there’s a data-src
+                    if not abs_url:
+                        src = element.get("data-src")
+                        abs_url, data = looks_like_base64(src,self.get_base_url())
                     if abs_url:
+                        ansi_img = render_image(src, width=width, mode=mode)
                         abs_url = abs_url.replace(" ","%20")
                         links.append(abs_url + " " + text)
                         self.images[mode].append(abs_url)
