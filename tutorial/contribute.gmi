@@ -101,3 +101,19 @@ Also, mistakes happen. We all do mistakes. Your duty is inform the list as soon 
 While you were working on a patch, other patches may modify the codebase. Your patch may not apply cleanly and maintainers may request a rebase of your patch.
 
 TODO
+
+## After your patch was accepted
+
+Once your patch is accepted, it will be both local and upstream.
+
+First do
+
+```
+git pull
+```
+
+You will be warned that your git branches have diverged. But, in reality, they diverged with the same patch on each side. You can simply resolve this with:
+
+```
+git rebase
+```
