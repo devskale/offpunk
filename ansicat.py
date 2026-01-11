@@ -572,8 +572,8 @@ class AbstractRenderer:
                             "Urljoin Error: Could not make an URL out of %s and %s"
                             % (self.url, ll)
                         )
-                for l in self.get_subscribe_links()[1:]:
-                    self.links[mode].append(l[0])
+                #for l in self.get_subscribe_links()[1:]:
+                #    self.links[mode].append(l[0])
 
     def get_body(self, width=None, mode=None):
         if not mode:
@@ -1536,6 +1536,22 @@ class HtmlRenderer(AbstractRenderer):
                 recursive_render(soup.body)
             else:
                 recursive_render(soup)
+        # inserting available feeds at the end of the page (if any)
+        sublinks = self.get_subscribe_links()
+        if len(sublinks) > 1:
+            r.open_theme("subtitle")
+            r.add_text("Available feeds: ")
+            r.close_theme("link")
+            r.newparagraph()
+        for s in sublinks[1:]:
+            text = s[2] + " - " + s[1]
+            url = s[0]
+            links.append(url + " " + text)
+            link_id = str(len(links) + startlinks)
+            r.open_theme("link")
+            r.add_text("%s [%s]" %(text,link_id))
+            r.close_theme("link")
+            r.newline()
         return r.get_final(), links
 
 ## Now the custom renderers
