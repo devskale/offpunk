@@ -1544,8 +1544,12 @@ class HtmlRenderer(AbstractRenderer):
             r.close_theme("link")
             r.newparagraph()
         for s in sublinks[1:]:
-            text = s[2] + " - " + s[1]
-            url = s[0]
+            title = str(s[2])
+            mime = str(s[1])
+            # we remove the "application/" part of the mime
+            if "/" in mime: mime = mime.split("/")[1]
+            text = title + " (%s)"%mime
+            url = str(s[0])
             links.append(url + " " + text)
             link_id = str(len(links) + startlinks)
             r.open_theme("link")
