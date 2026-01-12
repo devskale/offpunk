@@ -1539,6 +1539,7 @@ class HtmlRenderer(AbstractRenderer):
         # inserting available feeds at the end of the page (if any)
         sublinks = self.get_subscribe_links()
         if len(sublinks) > 1:
+            r.newparagraph()
             r.open_theme("subtitle")
             r.add_text("Available feeds: ")
             r.close_theme("link")
