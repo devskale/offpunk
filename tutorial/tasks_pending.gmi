@@ -22,14 +22,10 @@ You need to like handling HTML/Ascii art/ANSI codes
 
 ## UTF-8 in URL:
 
-bug #42: IDN handling 
-https://todo.sr.ht/~lioploum/offpunk/42
+See info on the bugtracker:
 
-## Support for http cookies in netcache
+=> https://todo.sr.ht/~lioploum/offpunk/42 bug #42: IDN handling 
 
-Allows netcache to use cookies to access website which need it. At first, cookies could be imported from another browser. So the code would be essentially check a config folder for cookies matching current URL and use it if there’s a match.
-
-Code would happen only in netcache and use the python-requests HTTP library
 
 # Heavy refactoring
 
