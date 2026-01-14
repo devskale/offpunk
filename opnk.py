@@ -337,8 +337,11 @@ class opencache:
         # First, we take the full URL
         if mode:
             url = mode_url(url,mode)
-        delfile(self.temp_files.pop(url))
-        delfile(self.less_histfile.pop(url))
+        # Unrendered element, such as picture, are not in the dictionnaries
+        if url in self.temp_files:
+            delfile(self.temp_files.pop(url))
+        if url in self.less_histfile:
+            delfile(self.less_histfile.pop(url))
         url, newmode = unmode_url(url)
         if url in self.rendererdic:
             self.rendererdic.pop(url)
