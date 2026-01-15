@@ -41,6 +41,7 @@ Here are some contributed users workflows that could inspire you
 
 => /contribute.gmi How to contribute to Offpunk
 => /dev-guidelines.gmi Offpunk’s development guidelines
+=> /tasks_pending.gmi Proposal for good first contributions
 
 Offpunk contains three tools that you can use independantly in your project.
 - netcache
