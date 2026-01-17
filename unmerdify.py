@@ -82,6 +82,7 @@ COMMANDS: list[Command] = [
     Command("single_page_link", accept_multiple_values=True),
     Command("skip_json_ld", is_bool=True),
     Command("strip", accept_multiple_values=True),
+    Command("strip_attr", accept_multiple_values=True, xpath_value=True),
     Command("strip_id_or_class", accept_multiple_values=True),
     Command("strip_image_src", accept_multiple_values=True),
     Command("test_contains", special_command=True),
@@ -209,12 +210,6 @@ def parse_site_config_file(config_file_path: str) -> dict | None:
             command_name = result.group(1).lower()
             command_arg = result.group(2)
             command_value = result.group(3)
-
-            # strip_attr is now an alias for strip, for example:
-            # strip_attr: //img/@srcset
-            if "strip_attr" == command_name:
-                command_name = "strip"
-
             command = COMMANDS_PER_NAME.get(command_name)
 
             if command is None:
@@ -345,6 +340,9 @@ def strip_elements(site_config: dict, lxml_tree):
     for pattern in site_config.get("strip", []):
         remove_elements_by_xpath(pattern, lxml_tree)
 
+def strip_elements_attributes(site_config: dict, lxml_tree):
+    for pattern in site_config.get("strip_attr", []):
+        remove_attributes_by_xpath(pattern, lxml_tree)
 
 def strip_elements_by_id_or_class(site_config: dict, lxml_tree):
     for pattern in site_config.get("strip_id_or_class", []):
@@ -398,6 +396,15 @@ def remove_a_empty_elements(lxml_tree):
         lxml_tree,
     )
 
+def remove_attributes_by_xpath(xpath_class_expression, lxml_tree):
+    parts = xpath_class_expression.split("/")
+    class_to_remove = parts.pop().replace("@", "")
+    xpath_expression = "/".join(parts)
+
+    elements = lxml_tree.xpath(xpath_expression)
+
+    for element in elements:
+        element.attrib.pop(class_to_remove)
 
 def remove_elements_by_xpath(xpath_expression, lxml_tree):
     elements = lxml_tree.xpath(xpath_expression)
@@ -406,7 +413,7 @@ def remove_elements_by_xpath(xpath_expression, lxml_tree):
             element.getparent().remove(element)
         else:
             logging.error(
-                f"🚨 ERROR: remove by xpath, element is not a Node, got {type(element)}."
+                f"🚨 ERROR: remove by xpath, `{xpath_expression}` element is not a Node, got {type(element)}."
             )
 
 
