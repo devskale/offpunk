@@ -425,13 +425,12 @@ class GeminiClient(cmd.Cmd):
             return
         # First, we call get_list to create history if needed
         self.get_list("history")
-        links = self.list_get_links("history")
-        length = len(links)
         # Don’t update history if we are back/forwarding through it
-        if length > 0 and links[self.hist_index] == url:
-            return
-        if length > self.options["history_size"]:
-            length = self.options["history_size"]
+        if self.hist_index > 0:
+            links = self.list_get_links("history")
+            length = len(links)
+            if length > 0 and links[self.hist_index] == url:
+                return
         self.list_add_top(
             "history",
             limit=self.options["history_size"],
