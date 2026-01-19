@@ -165,10 +165,6 @@ class GeminiClient(cmd.Cmd):
         self.offline_only = False
         self.sync_only = False
         self.support_http = netcache._DO_HTTP
-        self.automatic_choice = "n"
-        self.client_certs = {"active": None}
-        self.active_cert_domains = []
-        self.active_is_transient = False
         self.options = {
             "debug": False,
             "beta": False,
@@ -609,7 +605,6 @@ class GeminiClient(cmd.Cmd):
                     print("%s is set to %s" % (element, str(value)))
                 else:
                     # Now we parse the colors
-                    toset = None
                     for w in words[1:]:
                         if w not in offthemes.colors.keys():
                             print("%s is not a valid color" % w)
@@ -722,7 +717,7 @@ class GeminiClient(cmd.Cmd):
                 if len(args) > 1 and args[1].isdecimal():
                     url = self.get_renderer().get_link(int(args[1]))
                 else:
-                    url, mode = unmode_url(self.current_url)
+                    url, _ = unmode_url(self.current_url)
                 print(url)
                 clipboard_copy(url)
             elif args and args[0] == "raw":
@@ -903,7 +898,7 @@ class GeminiClient(cmd.Cmd):
         elif args[0] != "":
             print("Up only take integer as arguments")
         # TODO : implement up, this code is copy/pasted from GeminiItem
-        url, mode = unmode_url(self.current_url)
+        url, _ = unmode_url(self.current_url)
         parsed = urllib.parse.urlparse(url)
         path = parsed.path.rstrip("/")
         count = 0
@@ -1073,7 +1068,7 @@ class GeminiClient(cmd.Cmd):
     def do_info(self, line):
         """Display information about current page."""
         renderer = self.get_renderer()
-        url, mode = unmode_url(self.current_url)
+        url, _ = unmode_url(self.current_url)
         out = renderer.get_page_title() + "\n\n"
         out += "URL      :   " + url + "\n"
         out += "Mime     :   " + renderer.get_mime() + "\n"
@@ -1348,8 +1343,8 @@ Use "view XX" where XX is a number to view information about link XX.
 
         else:
             # if no argument, we use current url
-            u, m = unmode_url(self.current_url)
-            url_list.append(u)
+            url, _ = unmode_url(self.current_url)
+            url_list.append(url)
         for u in url_list:
             if urlmode:
                 run("xdg-open %s", parameter=u, direct_output=True)
@@ -1470,7 +1465,7 @@ Use "view XX" where XX is a number to view information about link XX.
         else:
             url = self.current_url
         if url:
-            final_url, mode = unmode_url(url)
+            final_url, _ = unmode_url(url)
             print(final_url)
         if final_url and len(splitted) > 1:
             run(splitted[1], input=final_url, direct_output=True)
@@ -1551,7 +1546,7 @@ Use "view XX" where XX is a number to view information about link XX.
         stri += "Which feed do you want to subscribe ? > "
         ans = input(stri)
         if ans.isdigit() and 0 < int(ans) <= len(subs):
-            sublink, mime, title = subs[int(ans) - 1]
+            sublink, _, _ = subs[int(ans) - 1]
         else:
             sublink = None
         if sublink:
@@ -1580,10 +1575,10 @@ Use "view XX" where XX is a number to view information about link XX.
     def do_archive(self, args):
         """Archive current page by removing it from every list and adding it to
         archives, which is a special historical list limited in size. It is similar to `move archives`."""
-        u, m = unmode_url(self.current_url)
+        url, _ = unmode_url(self.current_url)
         for li in self.list_lists():
             if li not in ["archives", "history"]:
-                deleted = self.list_rm_url(u, li)
+                deleted = self.list_rm_url(url, li)
                 if deleted:
                     print("Removed from %s" % li)
         self.list_add_top("archives", limit=self.options["archives_size"])
@@ -1818,7 +1813,7 @@ Use "view XX" where XX is a number to view information about link XX.
                 lists = self.list_lists()
                 for l in lists:
                     if l != args[0] and l not in ["archives", "history"]:
-                        url, mode = unmode_url(self.current_url)
+                        url, _ = unmode_url(self.current_url)
                         isremoved = self.list_rm_url(url, l)
                         if isremoved:
                             print("Removed from %s" % l)
@@ -2321,7 +2316,6 @@ def main():
             print("--fetch-later requires an URL (or a list of URLS) as argument")
     elif args.sync:
         if args.assume_yes:
-            gc.automatic_choice = "y"
             gc.onecmd("set accept_bad_ssl_certificates True")
         if args.cache_validity:
             refresh_time = int(args.cache_validity)
