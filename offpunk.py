@@ -147,8 +147,8 @@ def needs_gi(inner):
     return outer
 
 class GeminiClient(cmd.Cmd):
-    def __init__(self, completekey="tab", synconly=False):
-        cmd.Cmd.__init__(self)
+    def __init__(self, completekey="tab", sync_only=False):
+        super().__init__(completekey=completekey)
         # Set umask so that nothing we create can be read by anybody else.
         # The certificate cache and TOFU database contain "browser history"
         # type sensitivie information.
@@ -161,9 +161,9 @@ class GeminiClient(cmd.Cmd):
         self.marks = {}
         self.page_index = 0
         self.permanent_redirects = {}
-        # Sync-only mode is restriced by design
+        # Sync-only mode is restricted by design
         self.offline_only = False
-        self.sync_only = False
+        self.sync_only = sync_only
         self.support_http = netcache._DO_HTTP
         self.options = {
             "debug": False,
@@ -2283,7 +2283,7 @@ def main():
                 os.makedirs(f)
 
     # Instantiate client
-    gc = GeminiClient(synconly=args.sync)
+    gc = GeminiClient(sync_only=args.sync)
     torun_queue = []
 
     # Act on args
