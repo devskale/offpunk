@@ -1282,10 +1282,10 @@ class GeminiClient(cmd.Cmd):
 previous position.
 Use "view normal" to see the default article view on html page.
 Use "view full" to see a complete html page instead of the article view.
+Use "view swich" to switch between normal and full
 Use "view XX" where XX is a number to view information about link XX.
 (full, feed, feeds have no effect on non-html content)."""
         if self.current_url and args and args[0] != "":
-            u, m = unmode_url(self.current_url)
             if args[0] in ["full", "debug", "source"]:
                 self._go_to_url(self.current_url, mode=args[0])
             elif args[0] in ["normal", "readable"]:
@@ -1293,6 +1293,10 @@ Use "view XX" where XX is a number to view information about link XX.
             elif args[0] == "feed":
                 print("view feed is deprecated. Use the command feed directly")
                 self.do_feed()
+            elif args[0] == "switch":
+                _, mode = unmode_url(self.current_url)
+                new_mode = "readable" if mode is not None and mode not in ["normal", "readable"] else "full"
+                self._go_to_url(self.current_url, mode=new_mode)
             elif args[0].isdigit():
                 link_url = self.get_renderer().get_link(int(args[0]))
                 if link_url:
@@ -1311,7 +1315,7 @@ Use "view XX" where XX is a number to view information about link XX.
 
             else:
                 print(
-                    "Valid argument for view are : normal, full, source or a number"
+                    "Valid argument for view are : normal, full, switch, source or a number"
                 )
         else:
             self._go_to_url(self.current_url)
