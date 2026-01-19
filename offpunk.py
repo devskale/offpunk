@@ -156,7 +156,6 @@ class GeminiClient(cmd.Cmd):
         os.umask(0o077)
         self.opencache = opnk.opencache()
         self.theme = offthemes.default
-        self.set_prompt("ON")
         self.current_url = None
         self.hist_index = 0
         self.marks = {}
@@ -195,7 +194,12 @@ class GeminiClient(cmd.Cmd):
             "linkmode": "none",
             #command that will be used on empty line,
             "default_cmd": "links",
+            # user prompt in on and offline mode
+            "prompt_on": "ON",
+            "prompt_off": "OFF",
+            "prompt_close": "> ",
         }
+        self.set_prompt("ON")
         self.redirects = offblocklist.redirects
         for i in offblocklist.blocked:
             self.redirects[i] = "blocked"
@@ -225,9 +229,9 @@ class GeminiClient(cmd.Cmd):
 
         self.prompt = (
             "\001\x1b[%sm\002" % open_color
-            + prompt
+            + self.options[key]
             + "\001\x1b[%sm\002" % close_color
-            + "> "
+            + self.options["prompt_close"]
         )
         # support for 256 color mode:
         # self.prompt = "\001\x1b[38;5;76m\002" + "ON" + "\001\x1b[38;5;255m\002" + "> " + "\001\x1b[0m\002"
@@ -559,6 +563,9 @@ class GeminiClient(cmd.Cmd):
                 value = False
             elif value.lower() == "true":
                 value = True
+            elif value.startswith('"') and value.endswith('"'):
+                # unquote values if they are quoted
+                value = value[1:-1]
             else:
                 try:
                     value = float(value)
