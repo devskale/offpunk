@@ -196,6 +196,8 @@ class GeminiClient(cmd.Cmd):
             "images_size": 100,
             # avaliable linkmode are "none" and "end".
             "linkmode": "none",
+            #command that will be used on empty line,
+            "default_cmd": "links",
         }
         self.redirects = offblocklist.redirects
         for i in offblocklist.blocked:
@@ -425,13 +427,12 @@ class GeminiClient(cmd.Cmd):
             return
         # First, we call get_list to create history if needed
         self.get_list("history")
-        links = self.list_get_links("history")
-        length = len(links)
         # Don’t update history if we are back/forwarding through it
-        if length > 0 and links[self.hist_index] == url:
-            return
-        if length > self.options["history_size"]:
-            length = self.options["history_size"]
+        if self.hist_index > 0:
+            links = self.list_get_links("history")
+            length = len(links)
+            if length > 0 and links[self.hist_index] == url:
+                return
         self.list_add_top(
             "history",
             limit=self.options["history_size"],
@@ -440,30 +441,34 @@ class GeminiClient(cmd.Cmd):
         self.hist_index = 0
 
     # Cmd implementation follows
-    def default(self, line):
+    def default(self, line, verbose=True):
         if line.strip() == "EOF":
-            return self.onecmd("quit")
+            self.onecmd("quit")
+            return True
         elif line.startswith("/"):
-            return self.do_find(line[1:])
+            self.do_find(line[1:])
+            return True
         # Expand abbreviated commands
         first_word = line.split()[0].strip()
         if first_word in _ABBREVS:
             full_cmd = _ABBREVS[first_word]
             expanded = line.replace(first_word, full_cmd, 1)
-            return self.onecmd(expanded)
+            self.onecmd(expanded)
+            return True
         # Try to access it like an URL
         if looks_like_url(line):
-            return self.do_go(line)
+            self.do_go(line)
+            return True
         # Try to parse numerical index for lookup table
         try:
             n = int(line.strip())
         except ValueError:
-            print("What?")
-            return
+            if verbose: print("What?")
+            return False
         # if we have no url, there's nothing to do
         if self.current_url is None:
-            print("No links to index")
-            return
+            if verbose: print("No links to index")
+            return False
         else:
             r = self.get_renderer()
             if r:
@@ -471,7 +476,7 @@ class GeminiClient(cmd.Cmd):
                 self._go_to_url(url)
             else:
                 print("No page with links")
-                return
+                return False
 
     # Settings
     def do_redirect(self, line):
@@ -1223,13 +1228,28 @@ class GeminiClient(cmd.Cmd):
         """Find in current page by displaying only relevant lines (grep)."""
         self._go_to_url(self.current_url, update_hist=False, grep=searchterm)
 
-    def emptyline(self):
+    def do_links(self, line):
         """Page through index ten lines at a time."""
         i = self.page_index
         if not self.get_renderer() or i > len(self.get_renderer().get_links()):
             return
         self._show_lookup(offset=i, end=i + 10)
         self.page_index += 10
+
+    def emptyline(self):
+        """Default action when line is empty"""
+        if "default_cmd" in self.options:
+            cmd = self.options["default_cmd"]
+        else:
+            #fallback to historical links command
+            cmd = "links"
+        #if there’s a default command, we first run it
+        #through default, in case it is an alias
+        if cmd:
+            success = self.default(cmd, verbose=False)
+            # if no alias, we call onecmd()
+            if not success:
+                self.onecmd(cmd)
 
     @needs_gi
     def do_feed(self, *args):
