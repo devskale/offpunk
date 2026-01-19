@@ -31,6 +31,7 @@ from offutils import (
     xdg,
     init_config,
     send_email,
+    _HAS_XDGOPEN,
 )
 
 try:
@@ -1116,7 +1117,7 @@ class GeminiClient(cmd.Cmd):
         output += "Python: " + sys.version + "\n"
         output += "\nHighly recommended:\n"
         output += " - python-cryptography : " + has(netcache._HAS_CRYPTOGRAPHY)
-        output += " - xdg-open            : " + has(offutils._HAS_XDGOPEN)
+        output += " - xdg-open            : " + has(_HAS_XDGOPEN)
         output += "\nWeb browsing:\n"
         output += " - python-requests     : " + has(netcache._DO_HTTP)
         output += " - python-feedparser   : " + has(ansicat._DO_FEED)
