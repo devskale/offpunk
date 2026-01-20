@@ -14,6 +14,7 @@ Features:
 - new "share" command to send a page by email
 - "cookies" command and http cookies are now supported in netcache (by Urja)
 - "set default_cmd" now allows to configure what happen on empty lines
+- "view switch" changes between readable/full view (by Andrew Fowlie)
 Others:
 - In "lists", only consider files ending with .gmi (bug #46 by woffs)
 - support for new links color in gopher (by JMCS)
