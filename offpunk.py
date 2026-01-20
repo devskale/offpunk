@@ -725,7 +725,7 @@ class GeminiClient(cmd.Cmd):
                 if len(args) > 1 and args[1].isdecimal():
                     url = self.get_renderer().get_link(int(args[1]))
                 else:
-                    url, _ = unmode_url(self.current_url)
+                    url, mode = unmode_url(self.current_url)
                 print(url)
                 clipboard_copy(url)
             elif args and args[0] == "raw":
@@ -906,7 +906,7 @@ class GeminiClient(cmd.Cmd):
         elif args[0] != "":
             print("Up only take integer as arguments")
         # TODO : implement up, this code is copy/pasted from GeminiItem
-        url, _ = unmode_url(self.current_url)
+        url, mode = unmode_url(self.current_url)
         parsed = urllib.parse.urlparse(url)
         path = parsed.path.rstrip("/")
         count = 0
@@ -1076,7 +1076,7 @@ class GeminiClient(cmd.Cmd):
     def do_info(self, line):
         """Display information about current page."""
         renderer = self.get_renderer()
-        url, _ = unmode_url(self.current_url)
+        url, mode = unmode_url(self.current_url)
         out = renderer.get_page_title() + "\n\n"
         out += "URL      :   " + url + "\n"
         out += "Mime     :   " + renderer.get_mime() + "\n"
@@ -1351,7 +1351,7 @@ Use "view XX" where XX is a number to view information about link XX.
 
         else:
             # if no argument, we use current url
-            url, _ = unmode_url(self.current_url)
+            url, mode = unmode_url(self.current_url)
             url_list.append(url)
         for u in url_list:
             if urlmode:
@@ -1473,7 +1473,7 @@ Use "view XX" where XX is a number to view information about link XX.
         else:
             url = self.current_url
         if url:
-            final_url, _ = unmode_url(url)
+            final_url, mode = unmode_url(url)
             print(final_url)
         if final_url and len(splitted) > 1:
             run(splitted[1], input=final_url, direct_output=True)
@@ -1554,7 +1554,7 @@ Use "view XX" where XX is a number to view information about link XX.
         stri += "Which feed do you want to subscribe ? > "
         ans = input(stri)
         if ans.isdigit() and 0 < int(ans) <= len(subs):
-            sublink, _, _ = subs[int(ans) - 1]
+            sublink, mime, title = subs[int(ans) - 1]
         else:
             sublink = None
         if sublink:
@@ -1583,7 +1583,7 @@ Use "view XX" where XX is a number to view information about link XX.
     def do_archive(self, args):
         """Archive current page by removing it from every list and adding it to
         archives, which is a special historical list limited in size. It is similar to `move archives`."""
-        url, _ = unmode_url(self.current_url)
+        url, mode = unmode_url(self.current_url)
         for li in self.list_lists():
             if li not in ["archives", "history"]:
                 deleted = self.list_rm_url(url, li)
@@ -1821,7 +1821,7 @@ Use "view XX" where XX is a number to view information about link XX.
                 lists = self.list_lists()
                 for l in lists:
                     if l != args[0] and l not in ["archives", "history"]:
-                        url, _ = unmode_url(self.current_url)
+                        url, mode = unmode_url(self.current_url)
                         isremoved = self.list_rm_url(url, l)
                         if isremoved:
                             print("Removed from %s" % l)
