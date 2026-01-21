@@ -1129,7 +1129,6 @@ class GeminiClient(cmd.Cmd):
         output += "System: " + sys.platform + "\n"
         output += "Python: " + sys.version + "\n"
         output += "\nHighly recommended:\n"
-        output += " - python-cryptography : " + has(netcache._HAS_CRYPTOGRAPHY)
         output += " - xdg-open            : " + has(_HAS_XDGOPEN)
         output += "\nWeb browsing:\n"
         output += " - python-requests     : " + has(netcache._DO_HTTP)
@@ -1139,7 +1138,8 @@ class GeminiClient(cmd.Cmd):
         output += " - timg 1.3.2+         : " + has(ansicat._HAS_TIMG)
         output += " - chafa 1.10+         : " + has(ansicat._HAS_CHAFA)
         output += "\nNice to have:\n"
-        output += " - python-setproctitle       : " + has(_HAS_SETPROCTITLE)
+        output += " - python-setproctitle             : " + has(_HAS_SETPROCTITLE)
+        output += " - python-cryptography             : " + has(netcache._HAS_CRYPTOGRAPHY)
         clip_support = shutil.which("xsel") or shutil.which("xclip")
         output += " - X11 clipboard (xsel or xclip)   : " + has(clip_support)
         output += " - Wayland clipboard (wl-clipboard): " + has(shutil.which("wl-copy"))
