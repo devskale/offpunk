@@ -15,6 +15,7 @@ import shutil
 import sys
 import time
 import urllib.parse
+import gettext
 
 import ansicat
 import netcache
@@ -32,7 +33,12 @@ from offutils import (
     init_config,
     send_email,
     _HAS_XDGOPEN,
+    _LOCALE_DIR,
 )
+
+gettext.bindtextdomain('offpunk', _LOCALE_DIR)
+gettext.textdomain('offpunk')
+_ = gettext.gettext
 
 try:
     import setproctitle

@@ -14,10 +14,15 @@ import urllib.parse
 import http.cookiejar
 import warnings
 from ssl import CertificateError
+import gettext
 
 import ansicat
 import offutils
-from offutils import xdg
+from offutils import xdg, _LOCALE_DIR
+
+gettext.bindtextdomain('offpunk', _LOCALE_DIR)
+gettext.textdomain('offpunk')
+_ = gettext.gettext
 
 try:
     import chardet

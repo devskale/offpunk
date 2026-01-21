@@ -11,11 +11,16 @@ import sys
 import textwrap
 import time
 import urllib
+import gettext
 
 import netcache
 import offthemes
 import unmerdify
-from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg
+from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg, _LOCALE_DIR
+
+gettext.bindtextdomain('offpunk', _LOCALE_DIR)
+gettext.textdomain('offpunk')
+_ = gettext.gettext
 
 try:
     from readability import Document

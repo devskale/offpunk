@@ -12,10 +12,19 @@ import shlex
 import shutil
 import subprocess
 import urllib.parse
+import gettext
 
 import cert_migration
 import netcache
 import netcache_migration
+
+# We can later add some logic to decide this based on OS family/version if needed?
+# With "None", the defaults should make this work in debian and RedHat based systems at least
+_LOCALE_DIR = None
+
+gettext.bindtextdomain('offpunk', _LOCALE_DIR)
+gettext.textdomain('offpunk')
+_ = gettext.gettext
 
 CACHE_VERSION = 1
 CERT_VERSION = 1
