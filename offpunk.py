@@ -2011,7 +2011,16 @@ Use "view XX" where XX is a number to view information about link XX.
 
     def do_help(self, arg):
         """ALARM! Recursion detected! ALARM! Prepare to eject!"""
-        if arg == "!":
+        if arg == "help":
+            print("Need help from a fellow human? Simply send an email to the offpunk-users list.")
+            dest = "~lioploum/offpunk-users@lists.sr.ht"
+            subject = "Getting started with Offpunk"
+            body = "Describe your problem/question as clearly as possible.\n" + \
+                   "Don’t forget to present yourself and why you would like to use Offpunk!\n"\
+                    + "\n" + \
+                    "Another point: always use \"reply-all\" when replying to this list."
+            send_email(dest,subject=subject,body=body,toconfirm=True)
+        elif arg == "!":
             print("! is an alias for 'shell'")
         elif arg == "?":
             print("? is an alias for 'help'")
