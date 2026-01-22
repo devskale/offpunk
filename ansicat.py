@@ -80,7 +80,7 @@ if shutil.which("chafa"):
     # check for m < 1.10
     try:
         output = run("chafa --version")
-        chafa_major, chafa_minor, _ = output.split("\n")[0].split(" ")[-1].split(".")
+        chafa_major, chafa_minor, rest = output.split("\n")[0].split(" ")[-1].split(".")
         if int(chafa_major) >= 1 and int(chafa_minor) >= 10:
             _HAS_CHAFA = True
             _RENDER_IMAGE = True
