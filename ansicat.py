@@ -57,8 +57,8 @@ except ModuleNotFoundError:
 
 _DO_HTML = _HAS_SOUP  # and _HAS_READABILITY
 if _DO_HTML and not _HAS_READABILITY:
-    print("To improve your web experience (less cruft in webpages),")
-    print("please install python3-readability or readability-lxml")
+    print(_("To improve your web experience (less cruft in webpages),"))
+    print(_("please install python3-readability or readability-lxml"))
 
 try:
     import feedparser
@@ -97,7 +97,7 @@ if shutil.which("timg"):
         _HAS_TIMG = True
         _RENDER_IMAGE = True
 if not _RENDER_IMAGE:
-    print("To render images inline, you need either chafa >= 1.10 or timg > 1.3.2")
+    print(_("To render images inline, you need either chafa >= 1.10 or timg > 1.3.2"))
 
 # return ANSI text that can be show by less
 def inline_image(img_file, width):
@@ -475,7 +475,7 @@ class AbstractRenderer:
     def get_link(self, nb):
         links = self.get_links()
         if nb not in range(1, len(links)+1):
-            print("%s is not a valid link for %s" % (nb, self.url))
+            print(_("%s is not a valid link for %s") % (nb, self.url))
             return 0
         else:
             return links[nb - 1]
@@ -857,7 +857,7 @@ class GopherRenderer(AbstractRenderer):
                 body, width=width, mode=mode, startlinks=startlinks
             )
         except Exception as err:
-            print("Error rendering Gopher ", err)
+            print(_("Error rendering Gopher "), err)
             r = self.representation(width, theme=self.theme,options=self.options)
             r.add_block(body)
             render = r.get_final()
@@ -1167,7 +1167,7 @@ class HtmlRenderer(AbstractRenderer):
     def is_valid(self):
         if not _DO_HTML:
             print(
-                "HTML document detected. Please install python-bs4 and python-readability."
+                _("HTML document detected. Please install python-bs4 and python-readability.")
             )
         return _DO_HTML and self.validity
 
@@ -1228,7 +1228,7 @@ class HtmlRenderer(AbstractRenderer):
             width = term_width()
         if not _DO_HTML:
             print(
-                "HTML document detected. Please install python-bs4 and python-readability."
+                _("HTML document detected. Please install python-bs4 and python-readability.")
             )
             return
         # This method recursively parse the HTML
@@ -1627,9 +1627,9 @@ class XkcdRenderer(HtmlRenderer):
             if img_path and netcache.is_cache_valid(img_url):
                 terminal_image(img_path)
             elif not _DO_HTML:
-                self.printgemtext("\n> Please install python-bs4 to parse HTML")
+                self.printgemtext(_("\n> Please install python-bs4 to parse HTML"))
             else:
-                self.printgemtext("\n> missing picture, please reload\n")
+                self.printgemtext(_("\n> missing picture, please reload\n"))
             self.printgemtext(alttext)
             return True
 
@@ -1732,7 +1732,7 @@ def get_mime(path, url=None):
         mime, encoding = mimetypes.guess_type(path, strict=False)
     # gmi Mimetype is not recognized yet
     if not mime and not shutil.which("file"):
-        print('Cannot guess the mime type of the file. Please install "file".')
+        print(_('Cannot guess the mime type of the file. Please install "file".'))
     if mime.startswith("text") and mime not in _FORMAT_RENDERERS:
         if mime2 and mime2 in _FORMAT_RENDERERS:
             mime = mime2
@@ -1843,7 +1843,7 @@ def render(input, path=None, format="auto", mime=None, url=None, mode=None, link
         r.options["linkmode"] = linkmode
         r.display(directdisplay=True, mode=mode)
     else:
-        print("Could not render %s" % input)
+        print(_("Could not render %s") % input)
 
 
 def main():

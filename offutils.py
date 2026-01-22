@@ -144,7 +144,7 @@ def xdg(folder="cache"):
             upgrade_cert(_CONFIG_DIR, _DATA_DIR)
         return _DATA_DIR
     else:
-        print("No XDG folder for %s. Check your code." % folder)
+        print(_("No XDG folder for %s. Check your code.") % folder)
         return None
 
 
@@ -157,7 +157,7 @@ def init_config(rcfile=None,skip_go=False,interactive=True,verbose=True):
         rcfile = os.path.join(xdg("config"), "offpunkrc")
     if os.path.exists(rcfile):
         if verbose:
-            print("Using config %s" % rcfile)
+            print(_("Using config %s") % rcfile)
         with open(rcfile,"r") as fp:
             for line in fp:
                 line = line.strip()
@@ -170,7 +170,7 @@ def init_config(rcfile=None,skip_go=False,interactive=True,verbose=True):
                 elif interactive:
                     if skip_go and is_go:
                         if verbose:
-                            print("Skipping startup command \"%s\" due to provided URL"%line)
+                            print(_("Skipping startup command \"%s\" due to provided URL")%line)
                         continue
                     else:
                         cmds.append(line)
@@ -314,10 +314,11 @@ def is_local(url):
 # If toconfirm=True, the user is asked to confirm that he want to send an email
 def send_email(dest,subject=None,body=None,toconfirm=True):
     if "@" not in dest:
-        print("%s is not a valid email address"%dest)
+        print(_("%s is not a valid email address")%dest)
         return
     if toconfirm:
-        resp = input("Send an email to %s Y/N? " % dest)
+        #TRANSLATORS please keep the 'Y/N' as is
+        resp = input(_("Send an email to %s Y/N? ") % dest)
         confirmed = resp.strip().lower() in ("y", "yes")
     else:
         confirmed = True
@@ -334,8 +335,8 @@ def send_email(dest,subject=None,body=None,toconfirm=True):
                 param += "body=%s"%body
             run("xdg-open mailto:%s", parameter=param, direct_output=True)
         else:
-            print("Cannot find a mail client to send mail to %s" % inpath)
-            print("Please install xdg-open (usually from xdg-util package)")
+            print(_("Cannot find a mail client to send mail to %s") % inpath)
+            print(_("Please install xdg-open (usually from xdg-util package)"))
 
 # This method return the image URL or invent it if it’s a base64 inline image
 # It returns [url,image_data] where image_data is None for normal image

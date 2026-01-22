@@ -122,7 +122,7 @@ def is_cache_valid(url, validity=0):
         # If path is too long, we always return True to avoid
         # fetching it.
         if len(cache) > 259:
-            print("We return False because path is too long")
+            print(_("We return False because path is too long"))
             return False
         if os.path.exists(cache) and not os.path.isdir(cache):
             if validity > 0:
@@ -307,13 +307,13 @@ def set_error(url, err):
         if os.path.isdir(cache_dir):
             with open(cache, "w") as c:
                 c.write(str(datetime.datetime.now()) + "\n")
-                c.write("ERROR while caching %s\n\n" % url)
+                c.write(_("ERROR while caching %s\n\n") % url)
                 c.write("*****\n\n")
                 c.write(str(type(err)) + " = " + str(err))
                 # cache.write("\n" + str(err.with_traceback(None)))
                 c.write("\n*****\n\n")
-                c.write("If you believe this error was temporary, type " "reload" ".\n")
-                c.write("The resource will be tentatively fetched during next sync.\n")
+                c.write(_("If you believe this error was temporary, type " "reload" ".\n"))
+                c.write(_("The resource will be tentatively fetched during next sync.\n"))
                 c.close()
     return cache
 
@@ -347,11 +347,11 @@ def _fetch_http(
         return None
 
     def too_large_error(url, length, max_size):
-        err = "Size of %s is %s Mo\n" % (url, length)
-        err += "Offpunk only download automatically content under %s Mo\n" % (
+        err = _("Size of %s is %s Mo\n") % (url, length)
+        err += _("Offpunk only download automatically content under %s Mo\n") % (
             max_size / 1000000
         )
-        err += "To retrieve this content anyway, type 'reload'."
+        err += _("To retrieve this content anyway, type 'reload'.")
         return set_error(url, err)
 
     if accept_bad_ssl_certificates:
@@ -391,7 +391,7 @@ def _fetch_http(
                 if current > downloaded:
                     downloaded = current
                     print(
-                        "  -> Receiving stream: %s%% of allowed data" % downloaded,
+                        _("  -> Receiving stream: %s%% of allowed data") % downloaded,
                         end="\r",
                     )
                 # print("size: %s (%s\% of maxlenght)"%(size,size/max_size))
@@ -548,11 +548,11 @@ def _validate_cert(address, host, cert, accept_bad_ssl=False, automatic_choice=N
         if accept_bad_ssl:
             if c.not_valid_before >= now:
                 raise CertificateError(
-                    "Certificate not valid until: {}!".format(c.not_valid_before)
+                    _("Certificate not valid until: {}!").format(c.not_valid_before)
                 )
             elif c.not_valid_after <= now:
                 raise CertificateError(
-                    "Certificate expired as of: {})!".format(c.not_valid_after)
+                    _("Certificate expired as of: {})!").format(c.not_valid_after)
                 )
 
         # Check certificate hostnames
@@ -581,7 +581,7 @@ def _validate_cert(address, host, cert, accept_bad_ssl=False, automatic_choice=N
         else:
             # If we didn't break out, none of the names were valid
             raise CertificateError(
-                "Hostname does not match certificate common name or any alternative names."
+                _("Hostname does not match certificate common name or any alternative names.")
             )
 
     sha = hashlib.sha256()
@@ -637,37 +637,38 @@ def _validate_cert(address, host, cert, accept_bad_ssl=False, automatic_choice=N
             print(previous_ttl)
 
         print("****************************************")
-        print("[SECURITY WARNING] Unrecognised certificate!")
+        print(_("[SECURITY WARNING] Unrecognised certificate!"))
         print(
-            "The certificate presented for {} ({}) has never been seen before.".format(
+            _("The certificate presented for {} ({}) has never been seen before.").format(
                 host, address
             )
         )
-        print("This MIGHT be a Man-in-the-Middle attack.")
+        print(_("This MIGHT be a Man-in-the-Middle attack."))
         print(
-            "A different certificate has previously been seen {} times.".format(
+            _("A different certificate has previously been seen {} times.").format(
                 max_count
             )
         )
         if _HAS_CRYPTOGRAPHY:
             if previous_ttl < datetime.timedelta():
-                print("That certificate has expired, which reduces suspicion somewhat.")
+                print(_("That certificate has expired, which reduces suspicion somewhat."))
             else:
-                print("That certificate is still valid for: {}".format(previous_ttl))
+                print(_("That certificate is still valid for: {}").format(previous_ttl))
         print("****************************************")
-        print("Attempt to verify the new certificate fingerprint out-of-band:")
+        print(_("Attempt to verify the new certificate fingerprint out-of-band:"))
         print(fingerprint)
         if automatic_choice:
             choice = automatic_choice
         else:
-            choice = input("Accept this new certificate? Y/N ").strip().lower()
+            #TRANSLATORS: keep "Y/N" because the answer has to be one of those
+            choice = input(_("Accept this new certificate? Y/N ")).strip().lower()
         if choice in ("y", "yes"):
             with open(os.path.join(sitedir, fingerprint), "w") as fp:
                 fp.write("1")
             with open(os.path.join(certcache, fingerprint + ".crt"), "wb") as fp:
                 fp.write(cert)
         else:
-            raise Exception("TOFU Failure!")
+            raise Exception(_("TOFU Failure!"))
 
     # 3. If no directory or no cert found in it, we cache it
     if not most_frequent_cert:
@@ -764,26 +765,27 @@ def create_certificate(name: str, days: int, hostname: str):
 def ask_certs(url: str):
     certs = get_certs(url)
     if len(certs) == 0:
-        print("There are no certificates available for this site.")
-        create_cert = input("Do you want to create one? (y/n) ")
+        print(_("There are no certificates available for this site."))
+        #TRANSLATORS: keep the "y/n"
+        create_cert = input(_("Do you want to create one? (y/n) "))
         if create_cert == "y":
-            name = input("Name for this certificate: ")
-            days = input("Validity in days: ")
+            name = input(_("Name for this certificate: "))
+            days = input(_("Validity in days: "))
             if name != "" and days.isdigit():
                 site = urllib.parse.urlparse(url)
                 create_certificate(name, int(days), site.hostname)
                 new_url = "gemini://" + name +"@"+ url.split("://")[1]
                 return(new_url)
             else:
-                print("The name or validity you typed are invalid")
+                print(_("The name or validity you typed are invalid"))
                 return(url)
         else:
             return(url)
     if len(certs) == 1:
-        print("The one available certificate for this site is:")
+        print(_("The one available certificate for this site is:"))
     elif len(certs) > 1:
         print(
-                "The", len(certs), "available certificates for this site are:"
+                _("The", len(certs), "available certificates for this site are:")
         )
     if len(certs) > 0:
         counter = 0
@@ -792,7 +794,7 @@ def ask_certs(url: str):
             stri += "[%s] %s \n" % (counter + 1, cert)
             counter += 1
         stri += "\n"
-        stri += "which certificate do you want to use? > "
+        stri += _("which certificate do you want to use? > ")
         ans = input(stri)
         if ans.isdigit() and 0 < int(ans) <= len(certs):
             identity = certs[int(ans) -1]
@@ -877,7 +879,7 @@ def _fetch_gemini(
         if certkey:
             context.load_cert_chain(certkey["cert"], certkey["key"])
         else:
-            print("This identity doesn't exist for this site (or is disabled).")
+            print(_("This identity doesn't exist for this site (or is disabled)."))
     # Impose minimum TLS version
     # In 3.7 and above, this is easy...
     if sys.version_info.minor >= 7:
@@ -942,13 +944,13 @@ def _fetch_gemini(
     header = f.readline(1027)
     header = urllib.parse.unquote(header.decode("UTF-8"))
     if not header or header[-1] != "\n":
-        raise RuntimeError("Received invalid header from server!")
+        raise RuntimeError(_("Received invalid header from server!"))
     header = header.strip()
     # Validate header
     status, meta = header.split(maxsplit=1)
     if len(meta) > 1024 or len(status) != 2 or not status.isnumeric():
         f.close()
-        raise RuntimeError("Received invalid header from server!")
+        raise RuntimeError(_("Received invalid header from server!"))
     # Update redirect loop/maze escaping state
     if not status.startswith("3"):
         previous_redirectors = set()
@@ -973,12 +975,12 @@ def _fetch_gemini(
     elif status.startswith("3"):
         newurl = urllib.parse.urljoin(url, meta)
         if newurl == url:
-            raise RuntimeError("URL redirects to itself!")
+            raise RuntimeError(_("URL redirects to itself!"))
         elif newurl in previous_redirectors:
-            raise RuntimeError("Caught in redirect loop!")
+            raise RuntimeError(_("Caught in redirect loop!"))
         elif len(previous_redirectors) == _MAX_REDIRECTS:
             raise RuntimeError(
-                "Refusing to follow more than %d consecutive redirects!"
+                _("Refusing to follow more than %d consecutive redirects!")
                 % _MAX_REDIRECTS
             )
         # TODO: redirections handling should be refactored
@@ -1009,15 +1011,15 @@ def _fetch_gemini(
     # Client cert
     elif status.startswith("6"):
         if interactive:
-            print("You need to provide a client-certificate to access this page.")
+            print(_("You need to provide a client-certificate to access this page."))
             url_with_identity = ask_certs(url)
             if (url_with_identity != url):
                 return fetch(url_with_identity)
-        error = "You need to provide a client-certificate to access this page.\r\nType \"certs\" to create or re-use one"
+        error = _("You need to provide a client-certificate to access this page.\r\nType \"certs\" to create or re-use one")
         raise RuntimeError(error)
     # Invalid status
     elif not status.startswith("2"):
-        raise RuntimeError("Server returned undefined status code %s!" % status)
+        raise RuntimeError(_("Server returned undefined status code %s!") % status)
     # If we're here, this must be a success and there's a response body
     assert status.startswith("2")
     mime = meta
@@ -1041,8 +1043,8 @@ def _fetch_gemini(
             body = fbody.decode(encoding)
         except UnicodeError:
             raise RuntimeError(
-                "Could not decode response body using %s\
-                                encoding declared in header!"
+                _("Could not decode response body using %s\
+                                encoding declared in header!")
                 % encoding
             )
     else:
@@ -1082,7 +1084,7 @@ def fetch(
             scheme = url.split("://")[0]
             if scheme not in standard_ports:
                 if print_error:
-                    print("%s is not a supported protocol" % scheme)
+                    print(_("%s is not a supported protocol") % scheme)
                 path = None
             elif scheme in ("http", "https"):
                 if _DO_HTTP:
@@ -1090,7 +1092,7 @@ def fetch(
                         cookiejar = get_cookiejar(newurl)
                     path = _fetch_http(newurl, cookiejar=cookiejar, **kwargs)
                 else:
-                    print("HTTP requires python-requests")
+                    print(_("HTTP requires python-requests"))
             elif scheme == "gopher":
                 path = _fetch_gopher(newurl, **kwargs)
             elif scheme == "finger":
@@ -1109,39 +1111,39 @@ def fetch(
             # we fail silently when sync_only
             if isinstance(err, socket.gaierror):
                 if print_error:
-                    print("ERROR: DNS error!")
+                    print(_("ERROR: DNS error!"))
             elif isinstance(err, ConnectionRefusedError):
                 if print_error:
-                    print("ERROR1: Connection refused!")
+                    print(_("ERROR1: Connection refused!"))
             elif isinstance(err, ConnectionResetError):
                 if print_error:
-                    print("ERROR2: Connection reset!")
+                    print(_("ERROR2: Connection reset!"))
             elif isinstance(err, (TimeoutError, socket.timeout)):
                 if print_error:
-                    print("""ERROR3: Connection timed out!
-    Slow internet connection?  Use 'set timeout' to be more patient.""")
+                    print(_("""ERROR3: Connection timed out!
+    Slow internet connection?  Use 'set timeout' to be more patient."""))
             elif isinstance(err, FileExistsError):
                 if print_error:
-                    print("""ERROR5: Trying to create a directory which already exists
-                        in the cache : """)
+                    print(_("""ERROR5: Trying to create a directory which already exists
+                        in the cache : """))
                 print(err)
             elif _DO_HTTP and isinstance(err, requests.exceptions.SSLError):
                 if print_error:
-                    print("""ERROR6: Bad SSL certificate:\n""")
+                    print(_("""ERROR6: Bad SSL certificate:\n"""))
                     print(err)
                     print(
-                        """\n If you know what you are doing, you can try to accept bad certificates with the following command:\n"""
+                        _("""\n If you know what you are doing, you can try to accept bad certificates with the following command:\n""")
                     )
                     print("""set accept_bad_ssl_certificates True""")
             elif _DO_HTTP and isinstance(err, requests.exceptions.ConnectionError):
                 if print_error:
-                    print("""ERROR7: Cannot connect to URL:\n""")
+                    print(_("""ERROR7: Cannot connect to URL:\n"""))
                     print(str(err))
             else:
                 if print_error:
                     import traceback
 
-                    print("ERROR4: " + str(type(err)) + " : " + str(err))
+                    print(_("ERROR4: ") + str(type(err)) + " : " + str(err))
                     # print("\n" + str(err.with_traceback(None)))
                     print(traceback.format_exc())
             return cache, newurl
@@ -1158,7 +1160,7 @@ def fetch(
                         and not is_cache_valid(image)
                     ):
                         width = offutils.term_width() - 1
-                        toprint = "Downloading %s" % image
+                        toprint = _("Downloading %s") % image
                         toprint = toprint[:width]
                         toprint += " " * (width - len(toprint))
                         print(toprint, end="\r")
@@ -1179,50 +1181,50 @@ def fetch(
 
 
 def main():
-    descri = "Netcache is a command-line tool to retrieve, cache and access networked content.\n\
+    descri = _("Netcache is a command-line tool to retrieve, cache and access networked content.\n\
             By default, netcache will returns a cached version of a given URL, downloading it \
             only if a cache version doesn't exist. A validity duration, in seconds, can also \
-            be given so netcache downloads the content only if the existing cache is older than the validity."
+            be given so netcache downloads the content only if the existing cache is older than the validity.")
     # Parse arguments
     parser = argparse.ArgumentParser(prog="netcache", description=descri)
     parser.add_argument(
         "--path",
         action="store_true",
-        help="return path to the cache instead of the content of the cache",
+        help=_("return path to the cache instead of the content of the cache"),
     )
     parser.add_argument(
         "--ids",
         action="store_true",
-        help="return a list of id's for the gemini-site instead of the content of the cache",
+        help=_("return a list of id's for the gemini-site instead of the content of the cache"),
     )
     parser.add_argument(
         "--offline",
         action="store_true",
-        help="Do not attempt to download, return cached version or error",
+        help=_("Do not attempt to download, return cached version or error"),
     )
     parser.add_argument(
         "--max-size",
         type=int,
-        help="Cancel download of items above that size (value in Mb).",
+        help=_("Cancel download of items above that size (value in Mb)."),
     )
     parser.add_argument(
         "--timeout",
         type=int,
-        help="Time to wait before cancelling connection (in second).",
+        help=_("Time to wait before cancelling connection (in second)."),
     )
     parser.add_argument(
         "--cache-validity",
         type=int,
         default=0,
-        help="maximum age, in second, of the cached version before \
-                                redownloading a new version",
+        help=_("maximum age, in second, of the cached version before \
+                                redownloading a new version"),
     )
     # No argument: write help
     parser.add_argument(
         "url",
         metavar="URL",
         nargs="*",
-        help="download URL and returns the content or the path to a cached version",
+        help=_("download URL and returns the content or the path to a cached version"),
     )
     # --validity : returns the date of the cached version, Null if no version
     # --force-download : download and replace cache, even if valid
