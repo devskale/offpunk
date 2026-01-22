@@ -62,7 +62,7 @@ def clipboard_copy(to_copy):
         run("wl-copy", input=to_copy, direct_output=True)
         copied = True
     if not copied:
-        print("Install xsel/xclip (X11) or wl-clipboard (Wayland) to use copy")
+        print(_("Install xsel/xclip (X11) or wl-clipboard (Wayland) to use copy"))
 
 
 # This method returns an array with all the values in all system clipboards
@@ -91,7 +91,7 @@ def clipboard_paste():
             pass
     if not pasted:
         print(
-            "Install xsel/xclip (X11) or wl-clipboard (Wayland) to get URLs from your clipboard"
+            _("Install xsel/xclip (X11) or wl-clipboard (Wayland) to get URLs from your clipboard")
         )
     return list(clipboards)
 
@@ -145,7 +145,7 @@ _MIME_HANDLERS = {}
 def needs_gi(inner):
     def outer(self, *args, **kwargs):
         if not self.current_url:
-            print("You need to 'go' somewhere, first")
+            print(_("You need to 'go' somewhere, first"))
             return None
         else:
             return inner(self, *args, **kwargs)
@@ -330,7 +330,7 @@ class GeminiClient(cmd.Cmd):
             mode = newmode
         # we don’t handle the name anymore !
         if name:
-            print("We don’t handle name of URL: %s" % name)
+            print(_("We don’t handle name of URL: %s") % name)
         # Obey permanent redirects
         if url in self.permanent_redirects:
             self._go_to_url(
@@ -357,10 +357,10 @@ class GeminiClient(cmd.Cmd):
             if match:
                 if self.redirects[key] == "blocked":
                     text = ""
-                    text += "Blocked URL: "+url + "\n"
-                    text += "This website has been blocked with the following rule:\n"
+                    text += _("Blocked URL: ")+url + "\n"
+                    text += _("This website has been blocked with the following rule:\n")
                     text += key + "\n"
-                    text += "Use the following redirect command to unblock it:\n"
+                    text += _("Use the following redirect command to unblock it:\n")
                     text += "redirect %s NONE" %key
                     if handle and not self.sync_only:
                         print(text)
@@ -405,9 +405,9 @@ class GeminiClient(cmd.Cmd):
                     self.get_list("to_fetch")
                     r = self.list_add_line("to_fetch", url=modedurl, verbose=False)
                     if r:
-                        print("%s not available, marked for syncing" % url)
+                        print(_("%s not available, marked for syncing") % url)
                     else:
-                        print("%s already marked for syncing" % url)
+                        print(_("%s already marked for syncing") % url)
             else:
                 self.page_index = 0
                 # Update state (external files are not added to history)
@@ -470,11 +470,11 @@ class GeminiClient(cmd.Cmd):
         try:
             n = int(line.strip())
         except ValueError:
-            if verbose: print("What?")
+            if verbose: print(_("What?"))
             return False
         # if we have no url, there's nothing to do
         if self.current_url is None:
-            if verbose: print("No links to index")
+            if verbose: print(_("No links to index"))
             return False
         else:
             r = self.get_renderer()
@@ -482,7 +482,7 @@ class GeminiClient(cmd.Cmd):
                 url = r.get_link(n)
                 self._go_to_url(url)
             else:
-                print("No page with links")
+                print(_("No page with links"))
                 return False
 
     # Settings
@@ -490,34 +490,34 @@ class GeminiClient(cmd.Cmd):
         """Display and manage the list of redirected URLs. This features is mostly useful to use privacy-friendly frontends for popular websites."""
         if len(line.split()) == 1:
             if line in self.redirects:
-                print("%s is redirected to %s" % (line, self.redirects[line]))
+                print(_("%s is redirected to %s") % (line, self.redirects[line]))
             else:
-                print("Please add a destination to redirect %s" % line)
+                print(_("Please add a destination to redirect %s") % line)
         elif len(line.split()) >= 2:
             orig, dest = line.split(" ", 1)
             if dest.lower() == "none":
                 if orig in self.redirects:
                     self.redirects.pop(orig)
-                    print("Redirection for %s has been removed" % orig)
+                    print(_("Redirection for %s has been removed") % orig)
                 else:
-                    print("%s was not redirected. Nothing has changed." % orig)
+                    print(_("%s was not redirected. Nothing has changed.") % orig)
             elif dest.lower() == "block":
                 self.redirects[orig] = "blocked"
-                print("%s will now be blocked" % orig)
+                print(_("%s will now be blocked") % orig)
             else:
                 self.redirects[orig] = dest
-                print("%s will now be redirected to %s" % (orig, dest))
+                print(_("%s will now be redirected to %s") % (orig, dest))
         else:
-            toprint = "Current redirections:\n"
+            toprint = _("Current redirections:\n")
             toprint += "--------------------\n"
             for r in self.redirects:
                 toprint += "%s\t->\t%s\n" % (r, self.redirects[r])
-            toprint += '\nTo add new, use "redirect origine.com destination.org"'
-            toprint += '\nTo remove a redirect, use "redirect origine.com NONE"'
+            toprint += _('\nTo add new, use "redirect origine.com destination.org"')
+            toprint += _('\nTo remove a redirect, use "redirect origine.com NONE"')
             toprint += (
-                '\nTo completely block a website, use "redirect origine.com BLOCK"'
+                _('\nTo completely block a website, use "redirect origine.com BLOCK"')
             )
-            toprint += '\nTo block also subdomains, prefix with *: "redirect *origine.com BLOCK"'
+            toprint += _('\nTo block also subdomains, prefix with *: "redirect *origine.com BLOCK"')
             print(toprint)
 
     def do_set(self, line):
@@ -532,36 +532,37 @@ class GeminiClient(cmd.Cmd):
             if option in self.options:
                 print("%s   %s" % (option, self.options[option]))
             else:
-                print("Unrecognised option %s" % option)
+                print(_("Unrecognised option %s") % option)
         else:
             # Set value of one specific setting
             option, value = line.split(" ", 1)
             if option not in self.options:
-                print("Unrecognised option %s" % option)
+                print(_("Unrecognised option %s") % option)
                 return
             # Validate / convert values
             elif option == "tls_mode":
                 if value.lower() not in ("ca", "tofu"):
-                    print("TLS mode must be `ca` or `tofu`!")
+                    print(_("TLS mode must be `ca` or `tofu`!"))
                     return
             elif option == "accept_bad_ssl_certificates":
                 if value.lower() == "false":
-                    print("Only high security certificates are now accepted")
+                    print(_("Only high security certificates are now accepted"))
                 elif value.lower() == "true":
-                    print("Low security SSL certificates are now accepted")
+                    print(_("Low security SSL certificates are now accepted"))
                 else:
-                    print("accept_bad_ssl_certificates should be True or False")
+                    #TRANSLATORS keep accept_bad_ssl_certificates, True, and False
+                    print(_("accept_bad_ssl_certificates should be True or False"))
                     return
             elif option == "width":
                 if value.isnumeric():
                     value = int(value)
-                    print("changing width to ", value)
+                    print(_("changing width to "), value)
                     term_width(new_width=value)
                 else:
-                    print("%s is not a valid width (integer required)" % value)
+                    print(_("%s is not a valid width (integer required)") % value)
             elif option == "linkmode":
                 if value.lower() not in ("none", "end"):
-                    print("Avaliable linkmode are `none` and `end`.")
+                    print(_("Avaliable linkmode are `none` and `end`."))
                     return
             elif value.isnumeric():
                 value = int(value)
@@ -603,8 +604,8 @@ class GeminiClient(cmd.Cmd):
         else:
             element = words[0]
             if element not in offthemes.default.keys():
-                print("%s is not a valid theme element" % element)
-                print("Valid theme elements are: ")
+                print(_("%s is not a valid theme element") % element)
+                print(_("Valid theme elements are: "))
                 valid = []
                 for k in offthemes.default:
                     valid.append(k)
@@ -616,13 +617,13 @@ class GeminiClient(cmd.Cmd):
                         value = self.theme[element]
                     else:
                         value = offthemes.default[element]
-                    print("%s is set to %s" % (element, str(value)))
+                    print(_("%s is set to %s") % (element, str(value)))
                 else:
                     # Now we parse the colors
                     for w in words[1:]:
                         if w not in offthemes.colors.keys():
-                            print("%s is not a valid color" % w)
-                            print("Valid colors are one of: ")
+                            print(_("%s is not a valid color") % w)
+                            print(_("Valid colors are one of: "))
                             valid = []
                             for k in offthemes.colors:
                                 valid.append(k)
@@ -659,7 +660,7 @@ class GeminiClient(cmd.Cmd):
             if h:
                 print("%s   %s" % (mime, h))
             else:
-                print("No handler set for MIME type %s" % mime)
+                print(_("No handler set for MIME type %s") % mime)
         else:
             mime, handler = line.split(" ", 1)
             self.opencache.set_handler(mime, handler)
@@ -685,37 +686,37 @@ class GeminiClient(cmd.Cmd):
         elif len(line.split()) == 1:
             alias = line.strip()
             if alias in commands:
-                print("%s is a command and cannot be aliased"%alias)
+                print(_("%s is a command and cannot be aliased")%alias)
             elif alias in _ABBREVS:
-                print("%s is currently aliased to \"%s\"" %(alias,_ABBREVS[alias]))
+                print(_("%s is currently aliased to \"%s\"") %(alias,_ABBREVS[alias]))
             else:
-                print("there’s no alias for \"%s\""%alias)
+                print(_("there’s no alias for \"%s\"")%alias)
         else:
             alias, cmd = line.split(None,1)
             if alias in commands:
-                print("%s is a command and cannot be aliased"%alias)
+                print(_("%s is a command and cannot be aliased")%alias)
             else:
                 _ABBREVS[alias] = cmd
-                print("%s has been aliased to \"%s\""%(alias,cmd))
+                print(_("%s has been aliased to \"%s\"")%(alias,cmd))
         
 
     def do_offline(self, *args):
         """Use Offpunk offline by only accessing cached content"""
         if self.offline_only:
-            print("Offline and undisturbed.")
+            print(_("Offline and undisturbed."))
         else:
             self.offline_only = True
             self.set_prompt("OFF")
-            print("Offpunk is now offline and will only access cached content")
+            print(_("Offpunk is now offline and will only access cached content"))
 
     def do_online(self, *args):
         """Use Offpunk online with a direct connection"""
         if self.offline_only:
             self.offline_only = False
             self.set_prompt("ON")
-            print("Offpunk is online and will access the network")
+            print(_("Offpunk is online and will access the network"))
         else:
-            print("Already online. Try offline.")
+            print(_("Already online. Try offline."))
 
     def do_copy(self, arg):
         """Copy the content of the last visited page as gemtext/html in the clipboard.
@@ -754,7 +755,7 @@ class GeminiClient(cmd.Cmd):
             else:
                 clipboard_copy(open(netcache.get_cache_path(self.current_url), "rb"))
         else:
-            print("No content to copy, visit a page first")
+            print(_("No content to copy, visit a page first"))
 
     #Share current page by email
     def do_share(self, arg):
@@ -770,7 +771,7 @@ class GeminiClient(cmd.Cmd):
             if args :
                 if args[0] == "text":
                     args.pop(0)
-                    print("TODO: sharing text is not yet implemented")
+                    print(_("TODO: sharing text is not yet implemented"))
                     return
                 elif args[0] == "url":
                     args.pop(0)
@@ -779,14 +780,14 @@ class GeminiClient(cmd.Cmd):
             # we will not consider the url argument (which is the default)
             # if other argument, we will see if it is an URL
             if is_local(self.current_url):
-                print("The URL %s cannot be shared because it is local only"%self.current_url)
+                print(_("The URL %s cannot be shared because it is local only")%self.current_url)
             elif not dest:
-                dest = input("Enter the email of the recipient: ")
+                dest = input(_("Enter the email of the recipient: "))
             subject=self.get_renderer().get_page_title()
             body=self.current_url
             send_email(dest,subject=subject,body=body,toconfirm=False)
         else:
-            print("Nothing to share, visit a page first")
+            print(_("Nothing to share, visit a page first"))
     # Stuff for getting around
 
     def do_cookies(self, arg):
@@ -806,42 +807,43 @@ class GeminiClient(cmd.Cmd):
             if len(al) == 2:
                 url = al[1]
             elif len(al) > 2:
-                print("Too many arguments to list.")
+                print(_("Too many arguments to list."))
                 return
             if not url:
-                print("URL required (or visit a page).")
+                print(_("URL required (or visit a page)."))
                 return
             cj = netcache.get_cookiejar(url)
             if not cj:
-                print("Cookies not enabled for url")
+                print(_("Cookies not enabled for url"))
                 return
-            print("Cookies for url:")
+            print(_("Cookies for url:"))
             for c in cj:
-                print("%s %s expires:%s %s=%s" % (c.domain, c.path,
+                #TRANSLATORS domain, path, expiration time, name, value
+                print(_("%s %s expires:%s %s=%s") % (c.domain, c.path,
                     time.ctime(c.expires), c.name, c.value))
             return
         elif mode == "import":
             if len(al) < 2:
-                print("File parameter required for import.")
+                print(_("File parameter required for import."))
                 return
             if len(al) == 3:
                 url = al[2]
             elif len(al) > 3:
-                print("Too many arguments to import")
+                print(_("Too many arguments to import"))
                 return
             if not url:
-                print("URL required (or visit a page).")
+                print(_("URL required (or visit a page)."))
                 return
             cj = netcache.get_cookiejar(url, create=True)
             try:
                 cj.load(os.path.expanduser(al[1]))
                 cj.save()
             except FileNotFoundError:
-                print("File not found")
+                print(_("File not found"))
                 return
-            print("Imported.")
+            print(_("Imported."))
             return
-        print("Huh?")
+        print(_("Huh?"))
         return
 
     def do_go(self, line):
@@ -854,19 +856,19 @@ class GeminiClient(cmd.Cmd):
                 if "://" in u and looks_like_url(u) and u not in urls:
                     urls.append(u)
             if len(urls) > 1:
-                stri = "URLs in your clipboard\n"
+                stri = _("URLs in your clipboard\n")
                 counter = 0
                 for u in urls:
                     counter += 1
                     stri += "[%s] %s\n" % (counter, u)
-                stri += "Where do you want to go today ?> "
+                stri += _("Where do you want to go today ?> ")
                 ans = input(stri)
                 if ans.isdigit() and 0 < int(ans) <= len(urls):
                     self.do_go(urls[int(ans) - 1])
             elif len(urls) == 1:
                 self.do_go(urls[0])
             else:
-                print("Go where? (hint: simply copy an URL in your clipboard)")
+                print(_("Go where? (hint: simply copy an URL in your clipboard)"))
 
         # First, check for possible marks
         elif line in self.marks:
@@ -885,7 +887,7 @@ class GeminiClient(cmd.Cmd):
         ):
             self._go_to_url(self.options["default_protocol"] + "://" + line)
         else:
-            print("%s is not a valid URL to go" % line)
+            print(_("%s is not a valid URL to go") % line)
 
     @needs_gi
     def do_reload(self, *args):
@@ -894,9 +896,9 @@ class GeminiClient(cmd.Cmd):
             self.get_list("to_fetch")
             r = self.list_add_line("to_fetch", url=self.current_url, verbose=False)
             if r:
-                print("%s marked for syncing" % self.current_url)
+                print(_("%s marked for syncing") % self.current_url)
             else:
-                print("%s already marked for syncing" % self.current_url)
+                print(_("%s already marked for syncing") % self.current_url)
             self.opencache.clean_url(self.current_url)
         else:
             self.opencache.clean_url(self.current_url)
@@ -910,7 +912,7 @@ class GeminiClient(cmd.Cmd):
         if args[0].isnumeric():
             level = int(args[0])
         elif args[0] != "":
-            print("Up only take integer as arguments")
+            print(_("Up only take integer as arguments"))
         # TODO : implement up, this code is copy/pasted from GeminiItem
         url = unmode_url(self.current_url)[0]
         parsed = urllib.parse.urlparse(url)
@@ -982,7 +984,7 @@ class GeminiClient(cmd.Cmd):
         if not line:
             # Fly to next waypoint on tour
             if len(self.list_get_links("tour")) < 1:
-                print("End of tour.")
+                print(_("End of tour."))
             else:
                 url = self.list_go_to_line("1", "tour")
                 if url:
@@ -1002,7 +1004,7 @@ class GeminiClient(cmd.Cmd):
         elif line in self.list_lists():
             list_path = self.list_path(line)
             if not list_path:
-                print("List %s does not exist. Cannot add it to tour" % (list))
+                print(_("List %s does not exist. Cannot add it to tour") % (list))
             else:
                 url = "list:///%s" % line
                 for l in self.get_renderer(url).get_links():
@@ -1029,11 +1031,11 @@ class GeminiClient(cmd.Cmd):
 
                     else:
                         # Syntax error
-                        print("Invalid use of range syntax %s, skipping" % index)
+                        print(_("Invalid use of range syntax %s, skipping") % index)
                 except ValueError:
-                    print("Non-numeric index %s, skipping." % index)
+                    print(_("Non-numeric index %s, skipping.") % index)
                 except IndexError:
-                    print("Invalid index %d, skipping." % n)
+                    print(_("Invalid index %d, skipping.") % n)
 
     @needs_gi
     def do_certs(self, line) -> None:
@@ -1076,7 +1078,7 @@ class GeminiClient(cmd.Cmd):
         elif line.isalpha() and len(line) == 1:
             self.marks[line] = self.current_url
         else:
-            print("Invalid mark, must be one letter")
+            print(_("Invalid mark, must be one letter"))
 
     @needs_gi
     def do_info(self, line):
@@ -1099,20 +1101,20 @@ class GeminiClient(cmd.Cmd):
             if self.list_has_url(url, l):
                 lists.append(l)
         if len(lists) > 0:
-            out += "Page appeard in following lists :\n"
+            out += _("Page appeard in following lists :\n")
             for l in lists:
                 if not self.list_is_system(l):
-                    status = "normal list"
+                    status = _("normal list")
                     if self.list_is_subscribed(l):
-                        status = "subscription"
+                        status = _("subscription")
                     elif self.list_is_frozen(l):
-                        status = "frozen list"
+                        status = _("frozen list")
                     out += " • %s\t(%s)\n" % (l, status)
             for l in lists:
                 if self.list_is_system(l):
                     out += " • %s\n" % l
         else:
-            out += "Page is not save in any list"
+            out += _("Page is not save in any list")
         print(out)
 
     def do_version(self, line):
@@ -1126,47 +1128,47 @@ class GeminiClient(cmd.Cmd):
 
         output = "Offpunk " + __version__ + "\n"
         output += "===========\n"
-        output += "System: " + sys.platform + "\n"
-        output += "Python: " + sys.version + "\n"
-        output += "\nHighly recommended:\n"
+        output += _("System: ") + sys.platform + "\n"
+        output += _("Python: ") + sys.version + "\n"
+        output += _("\nHighly recommended:\n")
         output += " - xdg-open            : " + has(_HAS_XDGOPEN)
-        output += "\nWeb browsing:\n"
+        output += _("\nWeb browsing:\n")
         output += " - python-requests     : " + has(netcache._DO_HTTP)
         output += " - python-feedparser   : " + has(ansicat._DO_FEED)
         output += " - python-bs4          : " + has(ansicat._HAS_SOUP)
         output += " - python-readability  : " + has(ansicat._HAS_READABILITY)
         output += " - timg 1.3.2+         : " + has(ansicat._HAS_TIMG)
         output += " - chafa 1.10+         : " + has(ansicat._HAS_CHAFA)
-        output += "\nNice to have:\n"
+        output += _("\nNice to have:\n")
         output += " - python-setproctitle             : " + has(_HAS_SETPROCTITLE)
         output += " - python-cryptography             : " + has(netcache._HAS_CRYPTOGRAPHY)
         clip_support = shutil.which("xsel") or shutil.which("xclip")
         output += " - X11 clipboard (xsel or xclip)   : " + has(clip_support)
         output += " - Wayland clipboard (wl-clipboard): " + has(shutil.which("wl-copy"))
 
-        output += "\nFeatures :\n"
-        output += " - Render images (chafa or timg)              : " + has(
+        output += _("\nFeatures :\n")
+        output += _(" - Render images (chafa or timg)              : ") + has(
                 ansicat._RENDER_IMAGE
             )
-        output += " - Render HTML (bs4, readability)             : " + has(
+        output += _(" - Render HTML (bs4, readability)             : ") + has(
             ansicat._DO_HTML
         )
-        output += " - Render Atom/RSS feeds (feedparser)         : " + has(
+        output += _(" - Render Atom/RSS feeds (feedparser)         : ") + has(
             ansicat._DO_FEED
         )
-        output += " - Connect to http/https (requests)           : " + has(
+        output += _(" - Connect to http/https (requests)           : ") + has(
             netcache._DO_HTTP
         )
-        output += " - Detect text encoding (python-chardet)      : " + has(
+        output += _(" - Detect text encoding (python-chardet)      : ") + has(
             netcache._HAS_CHARDET
         )
-        output += " - restore last position (less 572+)          : " + has(
+        output += _(" - restore last position (less 572+)          : ") + has(
             opnk._LESS_RESTORE_POSITION
         )
         output += "\n"
-        output += "Config directory    : " + xdg("config") + "\n"
-        output += "User Data directory : " + xdg("data") + "\n"
-        output += "Cache directoy      : " + xdg("cache")
+        output += _("Config directory    : ") + xdg("config") + "\n"
+        output += _("User Data directory : ") + xdg("data") + "\n"
+        output += _("Cache directoy      : ") + xdg("cache")
 
         print(output)
 
@@ -1218,12 +1220,12 @@ class GeminiClient(cmd.Cmd):
         if len(words) > 0 and words[0].isalnum():
             self._go_to_url("https://xkcd.com/%s"%words[0])
         else:
-            print("Please enter the number of the XKCD comic you want to see")
+            print(_("Please enter the number of the XKCD comic you want to see"))
 
     def do_gus(self, line):
         """Submit a search query to the geminispace.info search engine."""
         if not line:
-            print("What?")
+            print(_("What?"))
             return
         search = line.replace(" ", "%20")
         self._go_to_url("gemini://geminispace.info/search?%s" % search)
@@ -1267,17 +1269,17 @@ class GeminiClient(cmd.Cmd):
         # No feed found
         if len(subs) == 1:
             if "rss" in subs[0][1] or "atom" in subs[0][1]:
-                print("Current page is already a feed")
+                print(_("Current page is already a feed"))
             else:
-                print("No feed found on current page")
+                print(_("No feed found on current page"))
         # Multiple feeds found
         elif len(subs) > 2:
-            stri = "Available feeds :\n"
+            stri = _("Available feeds :\n")
             counter = 0
             for s in subs:
                 counter += 1
                 stri += "[%s] %s [%s]\n" % (counter, s[0], s[1])
-            stri += "Which view do you want to see ? >"
+            stri += _("Which view do you want to see ? >")
             ans = input(stri)
             if ans.isdigit() and 0 < int(ans) <= len(subs):
                 self.do_go(subs[int(ans) - 1][0])
@@ -1300,7 +1302,8 @@ Use "view XX" where XX is a number to view information about link XX.
             elif args[0] in ["normal", "readable"]:
                 self._go_to_url(self.current_url, mode="readable")
             elif args[0] == "feed":
-                print("view feed is deprecated. Use the command feed directly")
+                #TRANSLATORS keep "view feed" and "feed" in english, those are literal commands
+                print(_("view feed is deprecated. Use the command feed directly"))
                 self.do_feed()
             elif args[0] == "switch":
                 _, mode = unmode_url(self.current_url)
@@ -1309,7 +1312,7 @@ Use "view XX" where XX is a number to view information about link XX.
             elif args[0].isdigit():
                 link_url = self.get_renderer().get_link(int(args[0]))
                 if link_url:
-                    print("Link %s is: %s" % (args[0], link_url))
+                    print(_("Link %s is: %s") % (args[0], link_url))
                     if netcache.is_cache_valid(link_url):
                         last_modified = netcache.cache_last_modified(link_url)
                         link_renderer = self.get_renderer(link_url)
@@ -1317,14 +1320,15 @@ Use "view XX" where XX is a number to view information about link XX.
                             link_title = link_renderer.get_page_title()
                             print(link_title)
                         else:
-                            print("Empty cached version")
-                        print("Last cached on %s" % time.ctime(last_modified))
+                            print(_("Empty cached version"))
+                        print(_("Last cached on %s") % time.ctime(last_modified))
                     else:
-                        print("No cached version for this link")
+                        print(_("No cached version for this link"))
 
             else:
                 print(
-                    "Valid argument for view are : normal, full, switch, source or a number"
+                    #TRANSLATORS keep "normal, full, switch, source" in english
+                    _("Valid arguments for view are : normal, full, switch, source or a number")
                 )
         else:
             self._go_to_url(self.current_url)
@@ -1351,9 +1355,9 @@ Use "view XX" where XX is a number to view information about link XX.
                     u = self.get_renderer().get_link(n)
                     url_list.append(u)
                 except ValueError:
-                    print("Non-numeric index %s, skipping." % a)
+                    print(_("Non-numeric index %s, skipping.") % a)
                 except IndexError:
-                    print("Invalid index %d, skipping." % n)
+                    print(_("Invalid index %d, skipping.") % n)
 
         else:
             # if no argument, we use current url
@@ -1399,7 +1403,7 @@ Use "view XX" where XX is a number to view information about link XX.
             # Save current item, if there is one, to a file whose name is
             # inferred from the gemini path
             if not netcache.is_cache_valid(self.current_url):
-                print("You cannot save if not cached!")
+                print(_("You cannot save if not cached!"))
                 return
             else:
                 index = None
@@ -1422,11 +1426,11 @@ Use "view XX" where XX is a number to view information about link XX.
             try:
                 index = int(index)
             except ValueError:
-                print("First argument is not a valid item index!")
+                print(_("First argument is not a valid item index!"))
                 return
             filename = os.path.expanduser(filename)
         else:
-            print("You must provide an index, a filename, or both.")
+            print(_("You must provide an index, a filename, or both."))
             return
         # Next, fetch the item to save, if it's not the current one.
         if index:
@@ -1435,7 +1439,7 @@ Use "view XX" where XX is a number to view information about link XX.
                 url = self.get_renderer().get_link(index)
                 self._go_to_url(url, update_hist=False, handle=False)
             except IndexError:
-                print("Index too high!")
+                print(_("Index too high!"))
                 self.current_url = last_url
                 return
         else:
@@ -1446,16 +1450,16 @@ Use "view XX" where XX is a number to view information about link XX.
             filename = os.path.basename(netcache.get_cache_path(self.current_url))
         # Check for filename collisions and actually do the save if safe
         if os.path.exists(filename):
-            print("File %s already exists!" % filename)
+            print(_("File %s already exists!") % filename)
         else:
             # Don't use _get_active_tmpfile() here, because we want to save the
             # "source code" of menus, not the rendered view - this way Offpunk
             # can navigate to it later.
             path = netcache.get_cache_path(url)
             if os.path.isdir(path):
-                print("Can’t save %s because it’s a folder, not a file" % path)
+                print(_("Can’t save %s because it’s a folder, not a file") % path)
             else:
-                print("Saved to %s" % filename)
+                print(_("Saved to %s") % filename)
                 shutil.copyfile(path, filename)
 
         # Restore gi if necessary
@@ -1522,9 +1526,9 @@ Use "view XX" where XX is a number to view information about link XX.
                 shutil.move(old_file_nogmi, targetgmi)
             else:
                 if list == "subscribed":
-                    title = "Subscriptions #subscribed (new links in those pages will be added to tour)"
+                    title = _("Subscriptions #subscribed (new links in those pages will be added to tour)")
                 elif list == "to_fetch":
-                    title = "Links requested and to be fetched during the next --sync"
+                    title = _("Links requested and to be fetched during the next --sync")
                 else:
                     title = None
                 self.list_create(list, title=title, quite=True)
@@ -1539,11 +1543,11 @@ Use "view XX" where XX is a number to view information about link XX.
         To unsubscribe, remove the page from the "subscribed" list."""
         subs = self.get_renderer().get_subscribe_links()
         if len(subs) > 1:
-            stri = "Multiple feeds have been found :\n"
+            stri = _("Multiple feeds have been found :\n")
         elif "rss" in subs[0][1] or "atom" in subs[0][1]:
-            stri = "This page is already a feed:\n"
+            stri = _("This page is already a feed:\n")
         else:
-            stri = "No feed detected. You can still watch the page :\n"
+            stri = _("No feed detected. You can still watch the page :\n")
         counter = 0
         for l in subs:
             link = l[0]
@@ -1554,10 +1558,10 @@ Use "view XX" where XX is a number to view information about link XX.
                         already.append(li)
             stri += "[%s] %s [%s]\n" % (counter + 1, link, l[1])
             if len(already) > 0:
-                stri += "\t -> (already subscribed through lists %s)\n" % (str(already))
+                stri += _("\t -> (already subscribed through lists %s)\n") % (str(already))
             counter += 1
         stri += "\n"
-        stri += "Which feed do you want to subscribe ? > "
+        stri += _("Which feed do you want to subscribe ? > ")
         ans = input(stri)
         if ans.isdigit() and 0 < int(ans) <= len(subs):
             sublink = subs[int(ans) - 1][0]
@@ -1566,11 +1570,11 @@ Use "view XX" where XX is a number to view information about link XX.
         if sublink:
             added = self.list_add_line("subscribed", url=sublink, verbose=False)
             if added:
-                print("Subscribed to %s" % sublink)
+                print(_("Subscribed to %s") % sublink)
             else:
-                print("You are already subscribed to %s" % sublink)
+                print(_("You are already subscribed to %s") % sublink)
         else:
-            print("No subscription registered")
+            print(_("No subscription registered"))
 
     def do_bookmarks(self, line):
         """Show or access the bookmarks menu.
@@ -1579,7 +1583,7 @@ Use "view XX" where XX is a number to view information about link XX.
         Bookmarks are stored using the 'add' command."""
         args = line.strip()
         if len(args.split()) > 1 or (args and not args.isnumeric()):
-            print("bookmarks command takes a single integer argument!")
+            print(_("bookmarks command takes a single integer argument!"))
         elif args:
             self.list_go_to_line(args, "bookmarks")
         else:
@@ -1594,13 +1598,13 @@ Use "view XX" where XX is a number to view information about link XX.
             if li not in ["archives", "history"]:
                 deleted = self.list_rm_url(url, li)
                 if deleted:
-                    print("Removed from %s" % li)
+                    print(_("Removed from %s") % li)
         self.list_add_top("archives", limit=self.options["archives_size"])
         r = self.get_renderer()
         title = r.get_page_title()
-        print("Archiving: %s" % title)
+        print(_("Archiving: %s") % title)
         print(
-            "\x1b[2;34mCurrent maximum size of archives : %s\x1b[0m"
+            _("\x1b[2;34mCurrent maximum size of archives : %s\x1b[0m")
             % self.options["archives_size"]
         )
 
@@ -1623,9 +1627,9 @@ Use "view XX" where XX is a number to view information about link XX.
             list_path = self.list_path(list)
         if not list_path:
             print(
-                "List %s does not exist. Create it with "
+                _("List %s does not exist. Create it with "
                 "list create %s"
-                "" % (list, list)
+                "") % (list, list)
             )
             return False
         else:
@@ -1635,31 +1639,33 @@ Use "view XX" where XX is a number to view information about link XX.
             # first we check if url already exists in the file
             if self.list_has_url(url, list, exact_mode=True):
                 if verbose:
-                    print("%s already in %s." % (url, list))
+                    print(_("%s already in %s.") % (url, list))
                 return False
             # If the URL already exists but without a mode, we update the mode
             # FIXME: this doesn’t take into account the case where you want to remove the mode
             elif url != unmoded_url and self.list_has_url(unmoded_url, list):
                 self.list_update_url_mode(unmoded_url, list, mode)
                 if verbose:
-                    print("%s has updated mode in %s to %s" % (url, list, mode))
+                    print(_("%s has updated mode in %s to %s") % (url, list, mode))
             else:
                 with open(list_path, "a") as l_file:
                     l_file.write(self.to_map_line(url))
                     l_file.close()
                 if verbose:
-                    print("%s added to %s" % (url, list))
+                    #TRANSLATORS parameters are url, list
+                    print(_("%s added to %s") % (url, list))
                 return True
 
     @needs_gi
     def list_add_top(self, list, limit=0, truncate_lines=0):
         stri = self.to_map_line().strip("\n")
         if list == "archives":
-            stri += ", archived on "
+            stri += _(", archived on ")
         elif list == "history":
-            stri += ", visited on "
+            stri += _(", visited on ")
         else:
-            stri += ", added to %s on " % list
+            #TRANSLATORS parameter is a "list" name
+            stri += _(", added to %s on ") % list
         stri += time.ctime() + "\n"
         list_path = self.get_list(list)
         with open(list_path, "r") as l_file:
@@ -1754,12 +1760,13 @@ Use "view XX" where XX is a number to view information about link XX.
         list_path = self.list_path(list)
         if not list_path:
             print(
-                "List %s does not exist. Create it with "
+                _("List %s does not exist. Create it with "
                 "list create %s"
-                "" % (list, list)
+                "") % (list, list)
             )
         elif not line.isnumeric():
-            print("go_to_line requires a number as parameter")
+            #TRANSLATORS keep 'go_to_line' as is
+            print(_("go_to_line requires a number as parameter"))
         else:
             r = self.get_renderer("list:///%s" % list)
             url = r.get_link(int(line))
@@ -1772,9 +1779,9 @@ Use "view XX" where XX is a number to view information about link XX.
         list_path = self.list_path(list)
         if not list_path:
             print(
-                "List %s does not exist. Create it with "
+                _("List %s does not exist. Create it with "
                 "list create %s"
-                "" % (list, list)
+                "") % (list, list)
             )
         else:
             url = "list:///%s" % list
@@ -1794,7 +1801,7 @@ Use "view XX" where XX is a number to view information about link XX.
     def list_create(self, list, title=None, quite=False):
         list_path = self.list_path(list)
         if list in ["create", "edit", "delete", "help"]:
-            print("%s is not allowed as a name for a list" % list)
+            print(_("%s is not allowed as a name for a list") % list)
         elif not list_path:
             listdir = os.path.join(xdg("data"), "lists")
             os.makedirs(listdir, exist_ok=True)
@@ -1806,23 +1813,23 @@ Use "view XX" where XX is a number to view information about link XX.
                     lfile.write("# %s\n" % list)
                 lfile.close()
             if not quite:
-                print("list created. Display with `list %s`" % list)
+                print(_("list created. Display with `list %s`") % list)
         else:
-            print("list %s already exists" % list)
+            print(_("list %s already exists") % list)
 
     def do_move(self, arg):
         """move LIST will add the current page to the list LIST.
         With a major twist: current page will be removed from all other lists.
         If current page was not in a list, this command is similar to `add LIST`."""
         if not arg:
-            print("LIST argument is required as the target for your move")
+            print(_("LIST argument is required as the target for your move"))
         elif arg[0] == "archives":
             self.do_archive()
         else:
             args = arg.split()
             list_path = self.list_path(args[0])
             if not list_path:
-                print("%s is not a list, aborting the move" % args[0])
+                print(_("%s is not a list, aborting the move") % args[0])
             else:
                 lists = self.list_lists()
                 for l in lists:
@@ -1830,7 +1837,7 @@ Use "view XX" where XX is a number to view information about link XX.
                         url = unmode_url(self.current_url)[0]
                         isremoved = self.list_rm_url(url, l)
                         if isremoved:
-                            print("Removed from %s" % l)
+                            print(_("Removed from %s") % l)
                 self.list_add_line(args[0])
 
     def list_lists(self):
@@ -1881,9 +1888,9 @@ Use "view XX" where XX is a number to view information about link XX.
         first_line = first_line.replace("#subscribed", "").replace("#frozen", "")
         if action:
             first_line += " " + action
-            print("List %s has been marked as %s" % (list, action))
+            print(_("List %s has been marked as %s") % (list, action))
         else:
-            print("List %s is now a normal list" % list)
+            print(_("List %s is now a normal list") % list)
         first_line += "\n"
         lines.insert(0, first_line)
         with open(path, "w") as f:
@@ -1924,7 +1931,7 @@ Use "view XX" where XX is a number to view information about link XX.
                 lurl = "list:///"
                 self._go_to_url(lurl)
             else:
-                print("No lists yet. Use `list create`")
+                print(_("No lists yet. Use `list create`"))
         else:
             args = arg.split()
             if args[0] == "create":
@@ -1935,7 +1942,7 @@ Use "view XX" where XX is a number to view information about link XX.
                     self.list_create(args[1].lower())
                 else:
                     print(
-                        "A name is required to create a new list. Use `list create NAME`"
+                        _("A name is required to create a new list. Use `list create NAME`")
                     )
             elif args[0] == "edit":
                 editor = None
@@ -1956,48 +1963,49 @@ Use "view XX" where XX is a number to view information about link XX.
                             run(cmd, parameter=path, direct_output=True)
                         except Exception as err:
                             print(err)
-                            print('Please set a valid editor with "set editor"')
+                            print(_('Please set a valid editor with "set editor"'))
                     else:
-                        print("A valid list name is required to edit a list")
+                        print(_("A valid list name is required to edit a list"))
                 else:
-                    print("No valid editor has been found.")
+                    print(_("No valid editor has been found."))
                     print(
-                        "You can use the following command to set your favourite editor:"
+                        _("You can use the following command to set your favourite editor:")
                     )
-                    print("set editor EDITOR")
-                    print("or use the $VISUAL or $EDITOR environment variables.")
+                    #TRANSLATORS keep 'set editor', it's a command
+                    print(_("set editor EDITOR"))
+                    print(_("or use the $VISUAL or $EDITOR environment variables."))
             elif args[0] == "delete":
                 if len(args) > 1:
                     if self.list_is_system(args[1]):
-                        print("%s is a system list which cannot be deleted" % args[1])
+                        print(_("%s is a system list which cannot be deleted") % args[1])
                     elif args[1] in self.list_lists():
                         size = len(self.list_get_links(args[1]))
-                        stri = "Are you sure you want to delete %s ?\n" % args[1]
+                        stri = _("Are you sure you want to delete %s ?\n") % args[1]
                         confirm = "YES"
                         if size > 0:
-                            stri += "! %s items in the list will be lost !\n" % size
+                            stri += _("! %s items in the list will be lost !\n") % size
                             confirm = "YES DELETE %s" % size
                         else:
                             stri += (
-                                "The list is empty, it should be safe to delete it.\n"
+                                _("The list is empty, it should be safe to delete it.\n")
                             )
                         stri += (
-                            'Type "%s" (in capital, without quotes) to confirm :'
+                            _('Type "%s" (in capital, without quotes) to confirm :')
                             % confirm
                         )
                         answer = input(stri)
                         if answer == confirm:
                             path = os.path.join(listdir, args[1] + ".gmi")
                             os.remove(path)
-                            print("* * * %s has been deleted" % args[1])
+                            print(_("* * * %s has been deleted") % args[1])
                     else:
-                        print("A valid list name is required to be deleted")
+                        print(_("A valid list name is required to be deleted"))
                 else:
-                    print("A valid list name is required to be deleted")
+                    print(_("A valid list name is required to be deleted"))
             elif args[0] in ["subscribe", "freeze", "normal"]:
                 if len(args) > 1:
                     if self.list_is_system(args[1]):
-                        print("You cannot modify %s which is a system list" % args[1])
+                        print(_("You cannot modify %s which is a system list") % args[1])
                     elif args[1] in self.list_lists():
                         if args[0] == "subscribe":
                             action = "#subscribed"
@@ -2007,7 +2015,7 @@ Use "view XX" where XX is a number to view information about link XX.
                             action = None
                         self.list_modify(args[1], action=action)
                 else:
-                    print("A valid list name is required after %s" % args[0])
+                    print(_("A valid list name is required after %s") % args[0])
             elif args[0] == "help":
                 self.onecmd("help list")
             elif len(args) == 1:
@@ -2018,7 +2026,7 @@ Use "view XX" where XX is a number to view information about link XX.
     def do_help(self, arg):
         """ALARM! Recursion detected! ALARM! Prepare to eject!"""
         if arg == "help":
-            print("Need help from a fellow human? Simply send an email to the offpunk-users list.")
+            print(_("Need help from a fellow human? Simply send an email to the offpunk-users list."))
             dest = "~lioploum/offpunk-users@lists.sr.ht"
             subject = "Getting started with Offpunk"
             body = "Describe your problem/question as clearly as possible.\n" + \
@@ -2027,14 +2035,14 @@ Use "view XX" where XX is a number to view information about link XX.
                     "Another point: always use \"reply-all\" when replying to this list."
             send_email(dest,subject=subject,body=body,toconfirm=True)
         elif arg == "!":
-            print("! is an alias for 'shell'")
+            print(_("! is an alias for 'shell'"))
         elif arg == "?":
-            print("? is an alias for 'help'")
+            print(_("? is an alias for 'help'"))
         elif arg in _ABBREVS:
             full_cmd = _ABBREVS[arg]
-            print("%s is an alias for '%s'" % (arg, full_cmd))
-            print("See the list of aliases with 'abbrevs'")
-            print("'help %s':" % full_cmd)
+            print(_("%s is an alias for '%s'") % (arg, full_cmd))
+            print(_("See the list of aliases with 'abbrevs'"))
+            print(_("'help %s':") % full_cmd)
             cmd.Cmd.do_help(self, full_cmd)
         else:
             cmd.Cmd.do_help(self, arg)
@@ -2055,12 +2063,12 @@ Use "view XX" where XX is a number to view information about link XX.
 
         Argument : duration of cache validity (in seconds)."""
         if self.offline_only:
-            print("Sync can only be achieved online. Change status with `online`.")
+            print(_("Sync can only be achieved online. Change status with `online`."))
             return
         args = line.split()
         if len(args) > 0:
             if not args[0].isdigit():
-                print("sync argument should be the cache validity expressed in seconds")
+                print(_("sync argument should be the cache validity expressed in seconds"))
                 return
             else:
                 validity = int(args[0])
@@ -2078,7 +2086,7 @@ Use "view XX" where XX is a number to view information about link XX.
         # - savetotour : if True, newly cached items are added to tour
         def add_to_tour(url):
             if url and netcache.is_cache_valid(url):
-                toprint = "  -> adding to tour: %s" % url
+                toprint = _("  -> adding to tour: %s") % url
                 width = term_width() - 1
                 toprint = toprint[:width]
                 toprint += " " * (width - len(toprint))
@@ -2104,7 +2112,7 @@ Use "view XX" where XX is a number to view information about link XX.
                     endline = None
                 # Did we already had a cache (even an old one) ?
                 isnew = not netcache.is_cache_valid(url)
-                toprint = "%s [%s/%s] Fetch " % (strin, count[0], count[1]) + url
+                toprint = _("%s [%s/%s] Fetch ") % (strin, count[0], count[1]) + url
                 width = term_width() - 1
                 toprint = toprint[:width]
                 toprint += " " * (width - len(toprint))
@@ -2157,7 +2165,7 @@ Use "view XX" where XX is a number to view information about link XX.
             links = self.list_get_links(list)
             end = len(links)
             counter = 0
-            print(" * * * %s to fetch in %s * * *" % (end, list))
+            print(_(" * * * %s to fetch in %s * * *") % (end, list))
             for l in links:
                 counter += 1
                 # If cache for a link is newer than the list
@@ -2211,14 +2219,14 @@ Use "view XX" where XX is a number to view information about link XX.
             fetch_list(l, validity=0, depth=depth)
         # tour should be the last one as item my be added to it by others
         fetch_list("tour", validity=refresh_time, depth=depth)
-        print("End of sync")
+        print(_("End of sync"))
         self.sync_only = False
 
     # The end!
     def do_quit(self, *args):
         """Exit Offpunk."""
         self.opencache.cleanup()
-        print("You can close your screen!")
+        print(_("You can close your screen!"))
         sys.exit()
 
     do_exit = do_quit
@@ -2229,66 +2237,66 @@ def main():
     # Parse args
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--bookmarks", action="store_true", help="start with your list of bookmarks"
+        "--bookmarks", action="store_true", help=_("start with your list of bookmarks")
     )
     parser.add_argument(
         "--command",
         metavar="COMMAND",
         nargs="*",
-        help="Launch this command after startup",
+        help=_("Launch this command after startup"),
     )
     parser.add_argument(
         "--config-file",
         metavar="FILE",
-        help="use this particular config file instead of default",
+        help=_("use this particular config file instead of default"),
     )
     parser.add_argument(
         "--sync",
         action="store_true",
-        help="run non-interactively to build cache by exploring lists passed \
-                                as argument. Without argument, all lists are fetched.",
+        help=_("run non-interactively to build cache by exploring lists passed \
+                                as argument. Without argument, all lists are fetched."),
     )
     parser.add_argument(
         "--assume-yes",
         action="store_true",
-        help="assume-yes when asked questions about certificates/redirections during sync (lower security)",
+        help=_("assume-yes when asked questions about certificates/redirections during sync (lower security)"),
     )
     parser.add_argument(
         "--disable-http",
         action="store_true",
-        help="do not try to get http(s) links (but already cached will be displayed)",
+        help=_("do not try to get http(s) links (but already cached will be displayed)"),
     )
     parser.add_argument(
         "--fetch-later",
         action="store_true",
-        help="run non-interactively with an URL as argument to fetch it later",
+        help=_("run non-interactively with an URL as argument to fetch it later"),
     )
     parser.add_argument(
         "--depth",
-        help="depth of the cache to build. Default is 1. More is crazy. Use at your own risks!",
+        help=_("depth of the cache to build. Default is 1. More is crazy. Use at your own risks!"),
     )
     parser.add_argument(
         "--images-mode",
-        help="the mode to use to choose which images to download in a HTML page.\
-                             one of (None, readable, full). Warning: full will slowdown your sync.",
+        help=_("the mode to use to choose which images to download in a HTML page.\
+                             one of (None, readable, full). Warning: full will slowdown your sync."),
     )
     parser.add_argument(
         "--cache-validity",
-        help="duration for which a cache is valid before sync (seconds)",
+        help=_("duration for which a cache is valid before sync (seconds)"),
     )
     parser.add_argument(
-        "--version", action="store_true", help="display version information and quit"
+        "--version", action="store_true", help=_("display version information and quit")
     )
     parser.add_argument(
         "--features",
         action="store_true",
-        help="display available features and dependancies then quit",
+        help=_("display available features and dependancies then quit"),
     )
     parser.add_argument(
         "url",
         metavar="URL",
         nargs="*",
-        help="Arguments should be URL to be fetched or, if --sync is used, lists",
+        help=_("Arguments should be URL to be fetched or, if --sync is used, lists"),
     )
     args = parser.parse_args()
 
@@ -2302,7 +2310,7 @@ def main():
     else:
         for f in [xdg("config"), xdg("data")]:
             if not os.path.exists(f):
-                print("Creating config directory {}".format(f))
+                print(_("Creating config directory {}").format(f))
                 os.makedirs(f)
 
     # Instantiate client
@@ -2334,9 +2342,9 @@ def main():
                     else:
                         gc.list_add_line("to_fetch", u)
                 else:
-                    print("%s is not a valid URL to fetch" % u)
+                    print(_("%s is not a valid URL to fetch") % u)
         else:
-            print("--fetch-later requires an URL (or a list of URLS) as argument")
+            print(_("--fetch-later requires an URL (or a list of URLS) as argument"))
     elif args.sync:
         if args.assume_yes:
             gc.onecmd("set accept_bad_ssl_certificates True")
@@ -2364,8 +2372,9 @@ def main():
     else:
         # We are in the normal mode. First process config file
         torun_queue += init_config(rcfile=args.config_file,interactive=True)
-        print("Welcome to Offpunk!")
-        print("Type `help` to get the list of available command.")
+        print(_("Welcome to Offpunk!"))
+        #TRANSLATORS keep 'help', it's a literal command
+        print(_("Type `help` to get the list of available command."))
         for line in torun_queue:
             gc.onecmd(line)
         if args.command:

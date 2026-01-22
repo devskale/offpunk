@@ -992,16 +992,16 @@ class FolderRenderer(GemtextRenderer):
                     else:
                         my_lists.append(l)
             if len(my_lists) > 0:
-                body += "\n## Bookmarks Lists (updated during sync)\n"
+                body += _("\n## Bookmarks Lists (updated during sync)\n")
                 body += write_list(my_lists)
             if len(subscriptions) > 0:
-                body += "\n## Subscriptions (new links in those are added to tour)\n"
+                body += _("\n## Subscriptions (new links in those are added to tour)\n")
                 body += write_list(subscriptions)
             if len(frozen) > 0:
-                body += "\n## Frozen (fetched but never updated)\n"
+                body += _("\n## Frozen (fetched but never updated)\n")
                 body += write_list(frozen)
             if len(system_lists) > 0:
-                body += "\n## System Lists\n"
+                body += _("\n## System Lists\n")
                 body += write_list(system_lists)
             return [[body, None]]
 
@@ -1847,7 +1847,7 @@ def render(input, path=None, format="auto", mime=None, url=None, mode=None, link
 
 
 def main():
-    descri = (
+    descri = _(
         "ansicat is a terminal rendering tool that will render multiple formats (HTML, \
             Gemtext, RSS, Gophermap, Image) into ANSI text and colors.\n\
             When used on a file, ansicat will try to autodetect the format. When used with \
@@ -1869,19 +1869,19 @@ def main():
             "text",
             "plaintext",
         ],
-        help="Renderer to use. Available: auto, gemtext, html, feed, gopher, image, folder, plaintext",
+        help=_("Renderer to use. Available: auto, gemtext, html, feed, gopher, image, folder, plaintext"),
     )
-    parser.add_argument("--mime", help="Mime of the content to parse")
+    parser.add_argument("--mime", help=_("Mime of the content to parse"))
     ## The argument needs to be a path to a file. If none, then stdin is used which allows
     ## to pipe text directly into ansirenderer
     parser.add_argument(
-        "--url", metavar="URL", nargs="*", help="Original URL of the content"
+        "--url", metavar="URL", nargs="*", help=_("Original URL of the content")
     )
     parser.add_argument(
         "--mode",
         metavar="MODE",
-        help="Which mode should be used to render: normal (default), full or source.\
-                                With HTML, the normal mode try to extract the article.",
+        help=_("Which mode should be used to render: normal (default), full or source.\
+                                With HTML, the normal mode try to extract the article."),
     )
     parser.add_argument(
         "--linkmode",
@@ -1889,7 +1889,7 @@ def main():
             "none",
             "end",
         ],
-        help="Which mode should be used to render links: none (default) or end",
+        help=_("Which mode should be used to render links: none (default) or end"),
     )
     parser.add_argument(
         "content",
@@ -1897,7 +1897,7 @@ def main():
         nargs="*",
         type=argparse.FileType("r"),
         default=sys.stdin,
-        help="Path to the text to render (default to stdin)",
+        help=_("Path to the text to render (default to stdin)"),
     )
     args = parser.parse_args()
     # Detect if we are running interactively or in a pipe
@@ -1920,11 +1920,11 @@ def main():
                     linkmode=args.linkmode,
                 )
         else:
-            print("Ansicat needs at least one file as an argument")
+            print(_("Ansicat needs at least one file as an argument"))
     else:
         # we are in stdin
         if not args.format and not args.mime:
-            print("Format or mime should be specified when running with stdin")
+            print(_("Format or mime should be specified when running with stdin"))
         else:
             render(
                 args.content.read(),
