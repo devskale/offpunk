@@ -10,6 +10,7 @@ import shutil
 import sys
 import tempfile
 import time
+import gettext
 
 import ansicat
 import netcache
@@ -24,7 +25,12 @@ from offutils import (
         init_config,
         send_email,
         _HAS_XDGOPEN,
+        _LOCALE_DIR,
         )
+
+gettext.bindtextdomain('offpunk', _LOCALE_DIR)
+gettext.textdomain('offpunk')
+_ = gettext.gettext
 
 less_version = 0
 if not shutil.which("less"):
