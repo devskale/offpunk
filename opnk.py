@@ -34,10 +34,10 @@ _ = gettext.gettext
 
 less_version = 0
 if not shutil.which("less"):
-    print('Please install the pager "less" to run Offpunk.')
-    print("If you wish to use another pager, send me an email !")
+    print(_('Please install the pager "less" to run Offpunk.'))
+    print(_("If you wish to use another pager, send me an email !"))
     print(
-        '(I’m really curious to hear about people not having "less" on their system.)'
+        _('(I’m really curious to hear about people not having "less" on their system.)')
     )
     sys.exit()
 output = run("less --version")
@@ -133,8 +133,9 @@ class opencache:
             if _HAS_XDGOPEN:
                 cmd_str = "xdg-open %s"
             else:
-                cmd_str = 'echo "Can’t find how to open "%s'
-                print("Please install xdg-open (usually from xdg-util package)")
+                #TRANSLATORS: keep echo and %s, translate the text between ""
+                cmd_str = _('echo "Can’t find how to open "%s')
+                print(_("Please install xdg-open (usually from xdg-util package)"))
         return cmd_str
 
     # Return the handler for a specific mimetype.
@@ -230,7 +231,7 @@ class opencache:
         elif os.path.exists(inpath):
             cachepath = inpath
         else:
-            print("%s does not exist" % inpath)
+            print(_("%s does not exist") % inpath)
             return False, inpath
         renderer = self.get_renderer(inpath, mode=mode, theme=theme, **kwargs)
         if link and link.isdigit():
@@ -303,13 +304,14 @@ class opencache:
                 return False, inpath
             else:
                 cmd_str = self._get_handler_cmd(mimetype,file_extension=extension)
-            change_cmd = "\"handler %s MY_PREFERED_APP %%s\""%mimetype
+            #TRANSLATORS translate only "MY_PREFERED_APP"
+            change_cmd = _("\"handler %s MY_PREFERED_APP %%s\"")%mimetype
             try:
                 #we don’t write the info if directly opening to avoid 
                 #being verbose in opnk
                 if not direct_open_unsupported:
-                    print("External open of type %s with \"%s\""%(mimetype,cmd_str))
-                    print("You can change the default handler with %s"%change_cmd)
+                    print(_("External open of type %s with \"%s\"")%(mimetype,cmd_str))
+                    print(_("You can change the default handler with %s")%change_cmd)
                 run(
                     cmd_str,
                     parameter=netcache.get_cache_path(inpath),
@@ -317,11 +319,11 @@ class opencache:
                 )
                 return True, inpath
             except FileNotFoundError:
-                print("Handler program %s not found!" % shlex.split(cmd_str)[0])
-                print("You can use the ! command to specify another handler program\
-                        or pipeline.")
+                print(_("Handler program %s not found!") % shlex.split(cmd_str)[0])
+                print(_("You can use the ! command to specify another handler program\
+                        or pipeline."))
 
-                print("You can change the default handler with %s"%change_cmd)
+                print(_("You can change the default handler with %s")%change_cmd)
             return False, inpath
 
     # We remove the renderers from the cache and we also delete temp files
@@ -356,16 +358,16 @@ class opencache:
 
 
 def main():
-    descri = "opnk is an universal open command tool that will try to display any file \
+    descri = _("opnk is an universal open command tool that will try to display any file \
              in the pager less after rendering its content with ansicat. If that fails, \
              opnk will fallback to opening the file with xdg-open. If given an URL as input \
-             instead of a path, opnk will rely on netcache to get the networked content."
+             instead of a path, opnk will rely on netcache to get the networked content.")
     parser = argparse.ArgumentParser(prog="opnk", description=descri)
     parser.add_argument(
         "--mode",
         metavar="MODE",
-        help="Which mode should be used to render: normal (default), full or source.\
-                                With HTML, the normal mode try to extract the article.",
+        help=_("Which mode should be used to render: normal (default), full or source.\
+                                With HTML, the normal mode try to extract the article."),
     )
     parser.add_argument(
         "--linkmode",
@@ -373,21 +375,21 @@ def main():
             "none",
             "end",
         ],
-        help="Which mode should be used to render links: none (default) or end",
+        help=_("Which mode should be used to render links: none (default) or end"),
     )
     parser.add_argument(
         "content",
         metavar="INPUT",
         nargs="*",
         default=sys.stdin,
-        help="Path to the file or URL to open",
+        help=_("Path to the file or URL to open"),
     )
     parser.add_argument(
         "--cache-validity",
         type=int,
         default=0,
-        help="maximum age, in second, of the cached version before \
-                                redownloading a new version",
+        help=_("maximum age, in second, of the cached version before \
+                                redownloading a new version"),
     )
     args = parser.parse_args()
     cache = opencache()
