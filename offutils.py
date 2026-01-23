@@ -253,10 +253,12 @@ def unmode_url(url):
 # expect if the url contains /user/ or ~username/
 #in that case, it considers it as a muli-user servers
 # it returns the root URL 
-# except if "return_name" is set, then it return a name for that root
+# except if "return_value=name" then it return a name for that root
 # which is hostname by default or username if applicable
 # if absolute is set, it doesn’t care about users
-def find_root(url,absolute=False,return_name=False):
+# if return_value="list", then a list of all the steps until the root is returned,
+# Starting from URL at position 0 to root at position -1
+def find_root(url,absolute=False,return_value=""):
     parsed = urllib.parse.urlparse(url)
     #by default, root is the true root
     name = parsed.netloc
@@ -268,16 +270,37 @@ def find_root(url,absolute=False,return_name=False):
         if len(subpath) > 2 and subpath[1] in ["user","users"]:
             name = subpath[2]
             path = path.join(subpath[:3])
+            subpath = subpath[2:]
         # handling http://server/~janedoe/ case
         elif len(subpath) > 1 and subpath[1].startswith("~"):
             name = subpath[1].lstrip("~")
             path = path.join(subpath[:2])
-    if return_name:
+            subpath = subpath[1:]
+    if return_value == "name":
         return name
+    elif return_value == "list":
+        toreturn = [url]
+        # we gradually reduce subpath to build the toreturn list
+        while len(subpath) > 0:
+            subpath.pop(-1) 
+            newpath = "/".join(subpath) + "/"
+            newurl = urllib.parse.urlunparse((parsed.scheme, \
+                        parsed.netloc, newpath, "","",""))
+            toreturn.append(newurl)
+        return toreturn
     else:
         root = urllib.parse.urlunparse((parsed.scheme, parsed.netloc, path, "","",""))
         return root
-
+# TODO: handling gopher code! The following was part of the old "up" function
+#        if parsed.scheme == "gopher":
+#            if path[:2] in ("/0","/1"):
+#                #we should ensure that we are not at the root
+#                if len(path) > 3:
+#                    path = "/1" + path[2:]
+#                else:
+#                    path = "/"
+#            else:
+#                path = "/1" + path
 
 # In terms of arguments, this can take an input file/string to be passed to
 # stdin, a parameter to do (well-escaped) "%" replacement on the command, a

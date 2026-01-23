@@ -516,7 +516,7 @@ class AbstractRenderer:
             splitpath = self.url.split("/")
             filename = splitpath[-1]
             return filename
-        return find_root(self.url,return_name=True)
+        return find_root(self.url,return_value="name")
 
     # This function return a list of URL which should be downloaded
     # before displaying the page (images in HTML pages, typically)

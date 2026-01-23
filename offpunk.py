@@ -938,39 +938,25 @@ class GeminiClient(cmd.Cmd):
     @needs_gi
     def do_up(self, *args):
         """Go up one directory in the path.
-        Take an integer as argument to go up multiple times."""
+        Take an integer as argument to go up multiple times.
+        Use "/" as argument to go to root."""
         level = 1
         if args[0].isnumeric():
             level = int(args[0])
+        elif args[0] == "/":
+            #yep, this is a naughty hack to go to root
+            level = 1000
         elif args[0] != "":
             print(_("Up only take integer as arguments"))
-        # TODO : implement up, this code is copy/pasted from GeminiItem
         url = unmode_url(self.current_url)[0]
-        parsed = urllib.parse.urlparse(url)
-        path = parsed.path.rstrip("/")
-        count = 0
-        while count < level:
-            pathbits = list(os.path.split(path))
-            # Don't try to go higher than root or in config
-            if is_local(url) or len(pathbits) == 1:
-                break
-            # Get rid of bottom component
-            if len(pathbits) > 1:
-                pathbits.pop()
-            path = os.path.join(*pathbits)
-            count += 1
-        if parsed.scheme == "gopher":
-            if path[:2] in ("/0","/1"):
-                #we should ensure that we are not at the root
-                if len(path) > 3:
-                    path = "/1" + path[2:]
-                else:
-                    path = "/"
-            else:
-                path = "/1" + path
-        newurl = urllib.parse.urlunparse(
-            (parsed.scheme, parsed.netloc, path, "", "", "")
-        )
+        # UP code using the new find_root
+        urllist = find_root(url,return_value="list")
+        if len(urllist) > level:
+            newurl = urllist[level]
+        else:
+            newurl = urllist[-1]
+        print(newurl)
+        # new up code ends up here
         self._go_to_url(newurl)
 
     def do_back(self, *args):
