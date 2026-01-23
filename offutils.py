@@ -312,8 +312,9 @@ def is_local(url):
 
 # open XDG mail client to compose an email to dest.
 # If toconfirm=True, the user is asked to confirm that he want to send an email
-def send_email(dest,subject=None,body=None,toconfirm=True):
-    if "@" not in dest:
+# If allowemptydest, then the mail client will be used to choose the destination
+def send_email(dest,subject=None,body=None,toconfirm=True,allowemptydest=True):
+    if not allowemptydest and "@" not in dest:
         print(_("%s is not a valid email address")%dest)
         return
     if toconfirm:

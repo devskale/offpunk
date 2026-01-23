@@ -758,15 +758,37 @@ class GeminiClient(cmd.Cmd):
             print(_("No content to copy, visit a page first"))
 
     #Share current page by email
-    def do_share(self, arg):
+    def do_share(self, arg, reply=False):
         """Send current page by email to someone else.
         Use with "url" as first argument to send only the address.
         Use with "text" as first argument to send the full content. TODO
         Without argument, "url" is assumed.
-        Next argument is the email adress of the recipient. If not, it will be asked.
+        Next arguments are the email adresses of the recipients.
+        If no destination, you will need to fill it in your mail client.
         """
         if self.current_url:
-            dest = None
+            r = self.get_renderer()
+            # The reply intelligence where we try to find a email address
+            if reply:
+                potential_replies = []
+                for l in r.get_links():
+                    if l.startswith("mailto:"):
+                        #parse mailto link to remove mailto:
+                        l = l.removeprefix("mailto:").split("?")[0]
+                        potential_replies.append(l)
+                #print("replying to %s"%potential_replies)
+                if len(potential_replies) > 0:
+                    dest = potential_replies[0]
+                else:
+                    dest = ""
+                subject = "RE: "+ r.get_page_title()
+                body = "In reply to " + self.current_url
+
+            else:
+                #default share case
+                dest = ""
+                subject= r.get_page_title()
+                body=self.current_url
             args = arg.split()
             if args :
                 if args[0] == "text":
@@ -776,19 +798,23 @@ class GeminiClient(cmd.Cmd):
                 elif args[0] == "url":
                     args.pop(0)
                 if len(args) > 0:
-                    dest = args[0]
+                    for a in args:
+                        # we only takes arguments with @ as email adresses
+                        if "@" in a:
+                            dest += "," + a
             # we will not consider the url argument (which is the default)
             # if other argument, we will see if it is an URL
             if is_local(self.current_url):
                 print(_("The URL %s cannot be shared because it is local only")%self.current_url)
-            elif not dest:
-                dest = input(_("Enter the email of the recipient: "))
-            subject=self.get_renderer().get_page_title()
-            body=self.current_url
+                return
             send_email(dest,subject=subject,body=body,toconfirm=False)
         else:
             print(_("Nothing to share, visit a page first"))
-    # Stuff for getting around
+    #Reply to a page by finding a mailto link in the page
+    def do_reply(self, arg):
+        """Reply by email to a page by trying to find a good email for the author"""
+        self.do_share(arg, reply=True)
+
 
     def do_cookies(self, arg):
         """Manipulate cookies:

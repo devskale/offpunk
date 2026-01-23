@@ -12,6 +12,7 @@ Imortant changes:
 Features:
 - new "websearch" command which default to wiby.me
 - new "share" command to send a page by email
+- new "reply" command to send an email to the author of the page
 - "cookies" command and http cookies are now supported in netcache (by Urja)
 - "set default_cmd" now allows to configure what happen on empty lines
 - "view switch" changes between readable/full view (by Andrew Fowlie)
