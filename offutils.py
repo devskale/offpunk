@@ -264,26 +264,35 @@ def find_root(url,absolute=False,return_value=""):
     name = parsed.netloc
     path = "/"
     subpath = parsed.path.split("/")
+    dismissed = ""
     if not absolute:
         #As subpath starts with "/", subpathsplit("/")[0] is always ""
         # handling http://server/users/janedoe/ case
         if len(subpath) > 2 and subpath[1] in ["user","users"]:
+            dismissed = "/" + subpath[1] + "/"
             name = subpath[2]
-            path = path.join(subpath[:3])
+            path = path.join(subpath[:3]) + "/"
             subpath = subpath[2:]
+            # we will thus dism
         # handling http://server/~janedoe/ case
         elif len(subpath) > 1 and subpath[1].startswith("~"):
             name = subpath[1].lstrip("~")
-            path = path.join(subpath[:2])
+            path = path.join(subpath[:2]) + "/"
             subpath = subpath[1:]
     if return_value == "name":
         return name
     elif return_value == "list":
-        toreturn = [url]
         # we gradually reduce subpath to build the toreturn list
-        while len(subpath) > 0:
+        # we put url in the place 0: "up 0" is keeping same url
+        toreturn = [url]
+        # we loop while:
+        # there’s something in the subpath elements
+        # we didn’t catch the root path
+        newpath =  dismissed + "/".join(subpath)
+        while len(subpath) > 0 and len(newpath) >= len(path):
             subpath.pop(-1) 
-            newpath = "/".join(subpath) + "/"
+            newpath =  dismissed + "/".join(subpath)
+            if not newpath.endswith("/"): newpath += "/"
             newurl = urllib.parse.urlunparse((parsed.scheme, \
                         parsed.netloc, newpath, "","",""))
             toreturn.append(newurl)

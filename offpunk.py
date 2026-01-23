@@ -980,7 +980,7 @@ class GeminiClient(cmd.Cmd):
             print(_("Up only take integer as arguments"))
         url = unmode_url(self.current_url)[0]
         # UP code using the new find_root
-        urllist = find_root(url,return_value="list")
+        urllist = find_root(url,absolute=True,return_value="list")
         if len(urllist) > level:
             newurl = urllist[level]
         else:
