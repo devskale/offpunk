@@ -776,9 +776,39 @@ class GeminiClient(cmd.Cmd):
                     if l.startswith("mailto:"):
                         #parse mailto link to remove mailto:
                         l = l.removeprefix("mailto:").split("?")[0]
-                        potential_replies.append(l)
+                        if l not in potential_replies:
+                            potential_replies.append(l)
+                # if we have no reply address, we investigate parents page
+                parents = find_root(self.current_url, return_value = "list")
+                while len(potential_replies) == 0 and len(parents) > 0 :
+                    parurl = parents.pop(0)
+                    par_rend = self.get_renderer(parurl)
+                    if par_rend:
+                        for l in par_rend.get_links():
+                            if l.startswith("mailto:"):
+                                #parse mailto link to remove mailto:
+                                l = l.removeprefix("mailto:").split("?")[0]
+                                if l not in potential_replies:
+                                    potential_replies.append(l)
                 #print("replying to %s"%potential_replies)
-                if len(potential_replies) > 0:
+                if len(potential_replies) > 1:
+                    stri = "Multiple emails addresse were found:\n"
+                    counter = 1
+                    for mail in potential_replies:
+                        stri += "[%s] %s\n" %(counter,mail)
+                        counter += 1
+                    stri += "[0] None of the above\n"
+                    stri += "---------------------\n"
+                    stri += "Which email will you use to reply? > "
+                    ans = input(stri)
+                    if ans.isdigit() and len(potential_replies) >= int(ans):
+                        if int(ans) == 0:
+                            dest = ""
+                        else :
+                            dest = potential_replies[int(ans)-1]
+                    else:
+                        dest = ""
+                elif len(potential_replies) == 1:
                     dest = potential_replies[0]
                 else:
                     dest = ""
@@ -810,9 +840,9 @@ class GeminiClient(cmd.Cmd):
                 return
             send_email(dest,subject=subject,body=body,toconfirm=False)
             #quick debug
-            #print("Send mail to %s"%dest)
-            #print("Subject is %s"%subject)
-            #print("Body is %s"%body)
+           # print("Send mail to %s"%dest)
+           # print("Subject is %s"%subject)
+           # print("Body is %s"%body)
         else:
             print(_("Nothing to share, visit a page first"))
     #Reply to a page by finding a mailto link in the page
