@@ -34,6 +34,7 @@ from offutils import (
     send_email,
     _HAS_XDGOPEN,
     _LOCALE_DIR,
+    find_root,
 )
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
@@ -782,13 +783,13 @@ class GeminiClient(cmd.Cmd):
                 else:
                     dest = ""
                 subject = "RE: "+ r.get_page_title()
-                body = "In reply to " + self.current_url
+                body = "In reply to " + unmode_url(self.current_url)[0]
 
             else:
                 #default share case
                 dest = ""
                 subject= r.get_page_title()
-                body=self.current_url
+                body = unmode_url(self.current_url)[0]
             args = arg.split()
             if args :
                 if args[0] == "text":
@@ -808,6 +809,10 @@ class GeminiClient(cmd.Cmd):
                 print(_("The URL %s cannot be shared because it is local only")%self.current_url)
                 return
             send_email(dest,subject=subject,body=body,toconfirm=False)
+            #quick debug
+            #print("Send mail to %s"%dest)
+            #print("Subject is %s"%subject)
+            #print("Body is %s"%body)
         else:
             print(_("Nothing to share, visit a page first"))
     #Reply to a page by finding a mailto link in the page
@@ -988,11 +993,13 @@ class GeminiClient(cmd.Cmd):
 
     @needs_gi
     def do_root(self, *args):
-        """Go to root selector of the server hosting current item."""
-        parse = urllib.parse.urlparse(self.current_url)
-        self._go_to_url(
-            urllib.parse.urlunparse((parse.scheme, parse.netloc, "/", "", "", ""))
-        )
+        """Go to the root of current capsule/gemlog/page
+        If arg is "/", the go to the real root of the server"""
+        absolute = False
+        if len(args) > 0 and args[0] == "/":
+            absolute = True
+        root = find_root(self.current_url,absolute=absolute)
+        self._go_to_url(root)
 
     def do_tour(self, line):
         """Add index items as waypoints on a tour, which is basically a FIFO

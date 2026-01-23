@@ -249,6 +249,35 @@ def unmode_url(url):
     else:
         return [None,None]
 
+#This function gives the root of an URL 
+# expect if the url contains /user/ or ~username/
+#in that case, it considers it as a muli-user servers
+# it returns the root URL 
+# except if "return_name" is set, then it return a name for that root
+# which is hostname by default or username if applicable
+# if absolute is set, it doesn’t care about users
+def find_root(url,absolute=False,return_name=False):
+    parsed = urllib.parse.urlparse(url)
+    #by default, root is the true root
+    name = parsed.netloc
+    path = "/"
+    subpath = parsed.path.split("/")
+    if not absolute:
+        #As subpath starts with "/", subpathsplit("/")[0] is always ""
+        # handling http://server/users/janedoe/ case
+        if len(subpath) > 2 and subpath[1] in ["user","users"]:
+            name = subpath[2]
+            path = path.join(subpath[:3])
+        # handling http://server/~janedoe/ case
+        elif len(subpath) > 1 and subpath[1].startswith("~"):
+            name = subpath[1].lstrip("~")
+            path = path.join(subpath[:2])
+    if return_name:
+        return name
+    else:
+        root = urllib.parse.urlunparse((parsed.scheme, parsed.netloc, path, "","",""))
+        return root
+
 
 # In terms of arguments, this can take an input file/string to be passed to
 # stdin, a parameter to do (well-escaped) "%" replacement on the command, a
