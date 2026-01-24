@@ -853,9 +853,9 @@ class GeminiClient(cmd.Cmd):
 
     def do_cookies(self, arg):
         """Manipulate cookies:
-        "cookies import <file> [url]" - import cookies from file to be use=d with url
+        "cookies import <file> [url]" - import cookies from file to be used with [url]
         "cookies list [url]" - list existing cookies for current url
-        default is list for current domain.
+        default is listing cookies for current domain.
         
         To get a cookie as a txt file,use the cookie-txt extension for Firefox. 
         """
