@@ -1357,7 +1357,7 @@ Use "view XX" where XX is a number to view information about link XX.
                 print(_("view feed is deprecated. Use the command feed directly"))
                 self.do_feed()
             elif args[0] == "switch":
-                _, mode = unmode_url(self.current_url)
+                mode = unmode_url(self.current_url)[1]
                 new_mode = "readable" if mode is not None and mode not in ["normal", "readable"] else "full"
                 self._go_to_url(self.current_url, mode=new_mode)
             elif args[0].isdigit():
