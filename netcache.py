@@ -785,7 +785,7 @@ def ask_certs(url: str):
         print(_("The one available certificate for this site is:"))
     elif len(certs) > 1:
         print(
-                _("The", len(certs), "available certificates for this site are:")
+                _("The {} available certificates for this site are:").format(len(certs))
         )
     if len(certs) > 0:
         counter = 0
