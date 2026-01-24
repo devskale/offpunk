@@ -16,7 +16,7 @@ import gettext
 import netcache
 import offthemes
 import unmerdify
-from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg, _LOCALE_DIR
+from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg, _LOCALE_DIR, find_root
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
 gettext.textdomain('offpunk')
@@ -516,21 +516,7 @@ class AbstractRenderer:
             splitpath = self.url.split("/")
             filename = splitpath[-1]
             return filename
-        path = self.url
-        parsed = urllib.parse.urlparse(self.url)
-        red_title = parsed.hostname
-        if "user" in path:
-            i = 0
-            splitted = path.split("/")
-            while i < (len(splitted) - 1):
-                if splitted[i].startswith("user"):
-                    red_title = splitted[i + 1]
-                i += 1
-        if "~" in path:
-            for pp in path.split("/"):
-                if pp.startswith("~"):
-                    red_title = pp[1:]
-        return red_title
+        return find_root(self.url,return_value="name")
 
     # This function return a list of URL which should be downloaded
     # before displaying the page (images in HTML pages, typically)

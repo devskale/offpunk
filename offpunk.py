@@ -34,6 +34,7 @@ from offutils import (
     send_email,
     _HAS_XDGOPEN,
     _LOCALE_DIR,
+    find_root,
 )
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
@@ -758,15 +759,67 @@ class GeminiClient(cmd.Cmd):
             print(_("No content to copy, visit a page first"))
 
     #Share current page by email
-    def do_share(self, arg):
+    def do_share(self, arg, reply=False):
         """Send current page by email to someone else.
         Use with "url" as first argument to send only the address.
         Use with "text" as first argument to send the full content. TODO
         Without argument, "url" is assumed.
-        Next argument is the email adress of the recipient. If not, it will be asked.
+        Next arguments are the email adresses of the recipients.
+        If no destination, you will need to fill it in your mail client.
         """
         if self.current_url:
-            dest = None
+            r = self.get_renderer()
+            # The reply intelligence where we try to find a email address
+            if reply:
+                potential_replies = []
+                for l in r.get_links():
+                    if l.startswith("mailto:"):
+                        #parse mailto link to remove mailto:
+                        l = l.removeprefix("mailto:").split("?")[0]
+                        if l not in potential_replies:
+                            potential_replies.append(l)
+                # if we have no reply address, we investigate parents page
+                parents = find_root(self.current_url, return_value = "list")
+                while len(potential_replies) == 0 and len(parents) > 0 :
+                    parurl = parents.pop(0)
+                    par_rend = self.get_renderer(parurl)
+                    if par_rend:
+                        for l in par_rend.get_links():
+                            if l.startswith("mailto:"):
+                                #parse mailto link to remove mailto:
+                                l = l.removeprefix("mailto:").split("?")[0]
+                                if l not in potential_replies:
+                                    potential_replies.append(l)
+                #print("replying to %s"%potential_replies)
+                if len(potential_replies) > 1:
+                    stri = "Multiple emails addresse were found:\n"
+                    counter = 1
+                    for mail in potential_replies:
+                        stri += "[%s] %s\n" %(counter,mail)
+                        counter += 1
+                    stri += "[0] None of the above\n"
+                    stri += "---------------------\n"
+                    stri += "Which email will you use to reply? > "
+                    ans = input(stri)
+                    if ans.isdigit() and len(potential_replies) >= int(ans):
+                        if int(ans) == 0:
+                            dest = ""
+                        else :
+                            dest = potential_replies[int(ans)-1]
+                    else:
+                        dest = ""
+                elif len(potential_replies) == 1:
+                    dest = potential_replies[0]
+                else:
+                    dest = ""
+                subject = "RE: "+ r.get_page_title()
+                body = "In reply to " + unmode_url(self.current_url)[0]
+
+            else:
+                #default share case
+                dest = ""
+                subject= r.get_page_title()
+                body = unmode_url(self.current_url)[0]
             args = arg.split()
             if args :
                 if args[0] == "text":
@@ -776,19 +829,27 @@ class GeminiClient(cmd.Cmd):
                 elif args[0] == "url":
                     args.pop(0)
                 if len(args) > 0:
-                    dest = args[0]
+                    for a in args:
+                        # we only takes arguments with @ as email adresses
+                        if "@" in a:
+                            dest += "," + a
             # we will not consider the url argument (which is the default)
             # if other argument, we will see if it is an URL
             if is_local(self.current_url):
                 print(_("The URL %s cannot be shared because it is local only")%self.current_url)
-            elif not dest:
-                dest = input(_("Enter the email of the recipient: "))
-            subject=self.get_renderer().get_page_title()
-            body=self.current_url
+                return
             send_email(dest,subject=subject,body=body,toconfirm=False)
+            #quick debug
+           # print("Send mail to %s"%dest)
+           # print("Subject is %s"%subject)
+           # print("Body is %s"%body)
         else:
             print(_("Nothing to share, visit a page first"))
-    # Stuff for getting around
+    #Reply to a page by finding a mailto link in the page
+    def do_reply(self, arg):
+        """Reply by email to a page by trying to find a good email for the author"""
+        self.do_share(arg, reply=True)
+
 
     def do_cookies(self, arg):
         """Manipulate cookies:
@@ -907,39 +968,25 @@ class GeminiClient(cmd.Cmd):
     @needs_gi
     def do_up(self, *args):
         """Go up one directory in the path.
-        Take an integer as argument to go up multiple times."""
+        Take an integer as argument to go up multiple times.
+        Use "/" as argument to go to root."""
         level = 1
         if args[0].isnumeric():
             level = int(args[0])
+        elif args[0] == "/":
+            #yep, this is a naughty hack to go to root
+            level = 1000
         elif args[0] != "":
             print(_("Up only take integer as arguments"))
-        # TODO : implement up, this code is copy/pasted from GeminiItem
         url = unmode_url(self.current_url)[0]
-        parsed = urllib.parse.urlparse(url)
-        path = parsed.path.rstrip("/")
-        count = 0
-        while count < level:
-            pathbits = list(os.path.split(path))
-            # Don't try to go higher than root or in config
-            if is_local(url) or len(pathbits) == 1:
-                break
-            # Get rid of bottom component
-            if len(pathbits) > 1:
-                pathbits.pop()
-            path = os.path.join(*pathbits)
-            count += 1
-        if parsed.scheme == "gopher":
-            if path[:2] in ("/0","/1"):
-                #we should ensure that we are not at the root
-                if len(path) > 3:
-                    path = "/1" + path[2:]
-                else:
-                    path = "/"
-            else:
-                path = "/1" + path
-        newurl = urllib.parse.urlunparse(
-            (parsed.scheme, parsed.netloc, path, "", "", "")
-        )
+        # UP code using the new find_root
+        urllist = find_root(url,absolute=True,return_value="list")
+        if len(urllist) > level:
+            newurl = urllist[level]
+        else:
+            newurl = urllist[-1]
+        print(newurl)
+        # new up code ends up here
         self._go_to_url(newurl)
 
     def do_back(self, *args):
@@ -962,11 +1009,13 @@ class GeminiClient(cmd.Cmd):
 
     @needs_gi
     def do_root(self, *args):
-        """Go to root selector of the server hosting current item."""
-        parse = urllib.parse.urlparse(self.current_url)
-        self._go_to_url(
-            urllib.parse.urlunparse((parse.scheme, parse.netloc, "/", "", "", ""))
-        )
+        """Go to the root of current capsule/gemlog/page
+        If arg is "/", the go to the real root of the server"""
+        absolute = False
+        if len(args) > 0 and args[0] == "/":
+            absolute = True
+        root = find_root(self.current_url,absolute=absolute)
+        self._go_to_url(root)
 
     def do_tour(self, line):
         """Add index items as waypoints on a tour, which is basically a FIFO

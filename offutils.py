@@ -249,6 +249,67 @@ def unmode_url(url):
     else:
         return [None,None]
 
+#This function gives the root of an URL 
+# expect if the url contains /user/ or ~username/
+#in that case, it considers it as a muli-user servers
+# it returns the root URL 
+# except if "return_value=name" then it return a name for that root
+# which is hostname by default or username if applicable
+# if absolute is set, it doesn’t care about users
+# if return_value="list", then a list of all the steps until the root is returned,
+# Starting from URL at position 0 to root at position -1
+def find_root(url,absolute=False,return_value=""):
+    parsed = urllib.parse.urlparse(url)
+    #by default, root is the true root
+    name = parsed.netloc
+    path = "/"
+    subpath = parsed.path.split("/")
+    dismissed = ""
+    if not absolute:
+        #As subpath starts with "/", subpathsplit("/")[0] is always ""
+        # handling http://server/users/janedoe/ case
+        if len(subpath) > 2 and subpath[1] in ["user","users"]:
+            dismissed = "/" + subpath[1] + "/"
+            name = subpath[2]
+            path = path.join(subpath[:3]) + "/"
+            subpath = subpath[2:]
+            # we will thus dism
+        # handling http://server/~janedoe/ case
+        elif len(subpath) > 1 and subpath[1].startswith("~"):
+            name = subpath[1].lstrip("~")
+            path = path.join(subpath[:2]) + "/"
+            subpath = subpath[1:]
+    if return_value == "name":
+        return name
+    elif return_value == "list":
+        # we gradually reduce subpath to build the toreturn list
+        # we put url in the place 0: "up 0" is keeping same url
+        toreturn = [url]
+        # we loop while:
+        # there’s something in the subpath elements
+        # we didn’t catch the root path
+        newpath =  dismissed + "/".join(subpath)
+        while len(subpath) > 0 and len(newpath) >= len(path):
+            subpath.pop(-1) 
+            newpath =  dismissed + "/".join(subpath)
+            if not newpath.endswith("/"): newpath += "/"
+            newurl = urllib.parse.urlunparse((parsed.scheme, \
+                        parsed.netloc, newpath, "","",""))
+            toreturn.append(newurl)
+        return toreturn
+    else:
+        root = urllib.parse.urlunparse((parsed.scheme, parsed.netloc, path, "","",""))
+        return root
+# TODO: handling gopher code! The following was part of the old "up" function
+#        if parsed.scheme == "gopher":
+#            if path[:2] in ("/0","/1"):
+#                #we should ensure that we are not at the root
+#                if len(path) > 3:
+#                    path = "/1" + path[2:]
+#                else:
+#                    path = "/"
+#            else:
+#                path = "/1" + path
 
 # In terms of arguments, this can take an input file/string to be passed to
 # stdin, a parameter to do (well-escaped) "%" replacement on the command, a
@@ -312,8 +373,9 @@ def is_local(url):
 
 # open XDG mail client to compose an email to dest.
 # If toconfirm=True, the user is asked to confirm that he want to send an email
-def send_email(dest,subject=None,body=None,toconfirm=True):
-    if "@" not in dest:
+# If allowemptydest, then the mail client will be used to choose the destination
+def send_email(dest,subject=None,body=None,toconfirm=True,allowemptydest=True):
+    if not allowemptydest and "@" not in dest:
         print(_("%s is not a valid email address")%dest)
         return
     if toconfirm:

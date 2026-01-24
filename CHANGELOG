@@ -9,9 +9,11 @@ Unmerdify alpha support (by Vincent Jousse):
 Imortant changes:
 - Default image size now 100 instead of 40 (can be restored with "set images_size 40")
 - Links to available feeds are now displayed at the bottom of HTML pages
+- "root" has been modified to go to the root of the capsule/userspace "root /" for real root
 Features:
 - new "websearch" command which default to wiby.me
 - new "share" command to send a page by email
+- new "reply" command to send an email to the author of the page
 - "cookies" command and http cookies are now supported in netcache (by Urja)
 - "set default_cmd" now allows to configure what happen on empty lines
 - "view switch" changes between readable/full view (by Andrew Fowlie)
