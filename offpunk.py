@@ -771,6 +771,10 @@ class GeminiClient(cmd.Cmd):
             r = self.get_renderer()
             # The reply intelligence where we try to find a email address
             if reply:
+                #replydir = os.path.join(xdg("data"),"reply")
+                replydir = netcache.get_cache_path(self.current_url,\
+                           include_protocol=False, xdgfolder="data",subfolder="reply")
+                #print(replydir)
                 potential_replies = []
                 for l in r.get_links():
                     if l.startswith("mailto:"):
@@ -782,6 +786,9 @@ class GeminiClient(cmd.Cmd):
                 parents = find_root(self.current_url, return_value = "list")
                 while len(potential_replies) == 0 and len(parents) > 0 :
                     parurl = parents.pop(0)
+                    replydir = netcache.get_cache_path(parurl,xdgfolder="data",\
+                                include_protocol=False,subfolder="reply")
+                    #print(replydir)
                     par_rend = self.get_renderer(parurl)
                     if par_rend:
                         for l in par_rend.get_links():
