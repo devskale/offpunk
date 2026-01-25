@@ -847,7 +847,8 @@ class GeminiClient(cmd.Cmd):
                 if dest and dest not in saved_replies:
                     rootname = find_root(self.current_url,return_value="name")
                     rooturl = find_root(self.current_url)
-                    stri = _("Do you want to save this email as a contact for") + "\n"
+                    stri = _("Email address:") + " \t\x1b[1;32m" + dest + "\x1b[0m\n"
+                    stri += _("Do you want to save this email as a contact for") + "\n"
                     stri += "[1] " + _("Current page only") + "\n"
                     stri += "[2] " + _("The whole %s space")%rootname + " - " + rooturl + "\n"
                     stri += "[0] " + _("Don’t save this email") + "\n"
