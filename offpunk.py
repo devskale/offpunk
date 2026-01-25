@@ -770,19 +770,40 @@ class GeminiClient(cmd.Cmd):
         if self.current_url:
             r = self.get_renderer()
             # The reply intelligence where we try to find a email address
-            if reply:
-                #replydir = os.path.join(xdg("data"),"reply")
-                replydir = netcache.get_cache_path(self.current_url,\
-                           include_protocol=False, xdgfolder="data",subfolder="reply")
-                #print(replydir)
+            # Reply is not allowed for local URL (at least for now)
+            if reply and not is_local(self.current_url):
                 potential_replies = []
-                for l in r.get_links():
-                    if l.startswith("mailto:"):
-                        #parse mailto link to remove mailto:
-                        l = l.removeprefix("mailto:").split("?")[0]
-                        if l not in potential_replies:
-                            potential_replies.append(l)
+                saved_replies = []
+                # First we look if we have a mail recorder for that URL
+                # emails are recorded according to URL in XDG_DATA/offpunk/reply
+                # We don’t care about the protocol because it is assumed that 
+                # a given URL will always have the same contact, even on different
+                # protocols
+                parents = find_root(self.current_url, return_value = "list")
+                while len(potential_replies) == 0 and len(parents) > 0 :
+                    parurl = parents.pop(0)
+                    replyfile = netcache.get_cache_path(parurl,\
+                                include_protocol=False, xdgfolder="data",subfolder="reply")
+                    if os.path.exists(replyfile):
+                        with open(replyfile) as f:
+                            for li in f.readlines():
+                                #just a rough check that we have an email address
+                                l = li.strip()
+                                if "@" in l: 
+                                    potential_replies.append(l)
+                                    saved_replies.append(l)
+                            f.close()
+                #No mail recorded? Let’s look at the current page
+                #We check for any mailto: link
+                if len(potential_replies) == 0:
+                    for l in r.get_links():
+                        if l.startswith("mailto:"):
+                            #parse mailto link to remove mailto:
+                            l = l.removeprefix("mailto:").split("?")[0]
+                            if l not in potential_replies:
+                                potential_replies.append(l)
                 # if we have no reply address, we investigate parents page
+                # Until we are at the root of users capsule/website/hole
                 parents = find_root(self.current_url, return_value = "list")
                 while len(potential_replies) == 0 and len(parents) > 0 :
                     parurl = parents.pop(0)
@@ -799,14 +820,14 @@ class GeminiClient(cmd.Cmd):
                                     potential_replies.append(l)
                 #print("replying to %s"%potential_replies)
                 if len(potential_replies) > 1:
-                    stri = "Multiple emails addresse were found:\n"
+                    stri = _("Multiple emails addresse were found:") + "\n"
                     counter = 1
                     for mail in potential_replies:
                         stri += "[%s] %s\n" %(counter,mail)
                         counter += 1
-                    stri += "[0] None of the above\n"
+                    stri += "[0] "+ _("None of the above") + "\n"
                     stri += "---------------------\n"
-                    stri += "Which email will you use to reply? > "
+                    stri += _("Which email will you use to reply?") +" > "
                     ans = input(stri)
                     if ans.isdigit() and len(potential_replies) >= int(ans):
                         if int(ans) == 0:
@@ -818,10 +839,43 @@ class GeminiClient(cmd.Cmd):
                 elif len(potential_replies) == 1:
                     dest = potential_replies[0]
                 else:
-                    dest = ""
-                subject = "RE: "+ r.get_page_title()
-                body = "In reply to " + unmode_url(self.current_url)[0]
+                    stri = _("Enter the contact email for this page?") + "\n"
+                    stri += "> "
+                    ans = input(stri)
+                    dest = ans.strip()
+                # Now, let’s save the email (if it is not already the case)
+                if dest and dest not in saved_replies:
+                    rootname = find_root(self.current_url,return_value="name")
+                    rooturl = find_root(self.current_url)
+                    stri = _("Do you want to save this email as a contact for") + "\n"
+                    stri += "[1] " + _("Current page only") + "\n"
+                    stri += "[2] " + _("The whole %s space")%rootname + " - " + rooturl + "\n"
+                    stri += "[0] " + _("Don’t save this email") + "\n"
+                    stri += "---------------------\n"
+                    stri += _("Your choice?") + " > "
+                    ans = input(stri)
+                    if ans.strip() == "1":
+                        tosaveurl = self.current_url
+                    elif ans.strip() == "2":
+                        tosaveurl = rooturl
+                    else:
+                        tosaveurl = None
+                    if tosaveurl:
+                        savefile = netcache.get_cache_path(tosaveurl,\
+                                include_protocol=False, xdgfolder="data",subfolder="reply")
+                        # first, let’s creat all the folders needed
+                        savefolder = os.path.dirname(savefile)
+                        os.makedirs(savefolder, exist_ok=True)
+                        # Then we write the email
+                        with open(savefile,"w") as f:
+                            f.write(dest)
+                            f.close()
 
+                subject = "RE: "+ r.get_page_title()
+                body = _("In reply to ") + unmode_url(self.current_url)[0]
+
+            # The reply intelligence is now finished. Let’s see the 
+            # default "share" case were users has to give the recipient
             else:
                 #default share case
                 dest = ""
@@ -843,7 +897,7 @@ class GeminiClient(cmd.Cmd):
             # we will not consider the url argument (which is the default)
             # if other argument, we will see if it is an URL
             if is_local(self.current_url):
-                print(_("The URL %s cannot be shared because it is local only")%self.current_url)
+                print(_("The URL %s cannot be shared/replied-to because it is local only")%self.current_url)
                 return
             send_email(dest,subject=subject,body=body,toconfirm=False)
             #quick debug

@@ -289,13 +289,14 @@ def find_root(url,absolute=False,return_value=""):
         # there’s something in the subpath elements
         # we didn’t catch the root path
         newpath =  dismissed + "/".join(subpath)
-        while len(subpath) > 0 and len(newpath) >= len(path):
+        while len(subpath) > 0 and len(newpath) > len(path):
             subpath.pop(-1) 
             newpath =  dismissed + "/".join(subpath)
             if not newpath.endswith("/"): newpath += "/"
             newurl = urllib.parse.urlunparse((parsed.scheme, \
                         parsed.netloc, newpath, "","",""))
-            toreturn.append(newurl)
+            if newurl not in toreturn:
+                toreturn.append(newurl)
         return toreturn
     else:
         root = urllib.parse.urlunparse((parsed.scheme, parsed.netloc, path, "","",""))
