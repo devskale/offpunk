@@ -853,9 +853,9 @@ class GeminiClient(cmd.Cmd):
 
     def do_cookies(self, arg):
         """Manipulate cookies:
-        "cookies import <file> [url]" - import cookies from file to be use=d with url
+        "cookies import <file> [url]" - import cookies from file to be used with [url]
         "cookies list [url]" - list existing cookies for current url
-        default is list for current domain.
+        default is listing cookies for current domain.
         
         To get a cookie as a txt file,use the cookie-txt extension for Firefox. 
         """
@@ -969,13 +969,16 @@ class GeminiClient(cmd.Cmd):
     def do_up(self, *args):
         """Go up one directory in the path.
         Take an integer as argument to go up multiple times.
-        Use "/" as argument to go to root."""
+        Use "~" to go to the user root"
+        Use "/" to go to the server root."""
         level = 1
         if args[0].isnumeric():
             level = int(args[0])
         elif args[0] == "/":
             #yep, this is a naughty hack to go to root
             level = 1000
+        elif args[0] == "~":
+            self.do_root()
         elif args[0] != "":
             print(_("Up only take integer as arguments"))
         url = unmode_url(self.current_url)[0]
@@ -985,7 +988,6 @@ class GeminiClient(cmd.Cmd):
             newurl = urllist[level]
         else:
             newurl = urllist[-1]
-        print(newurl)
         # new up code ends up here
         self._go_to_url(newurl)
 
@@ -1355,7 +1357,7 @@ Use "view XX" where XX is a number to view information about link XX.
                 print(_("view feed is deprecated. Use the command feed directly"))
                 self.do_feed()
             elif args[0] == "switch":
-                _, mode = unmode_url(self.current_url)
+                mode = unmode_url(self.current_url)[1]
                 new_mode = "readable" if mode is not None and mode not in ["normal", "readable"] else "full"
                 self._go_to_url(self.current_url, mode=new_mode)
             elif args[0].isdigit():
