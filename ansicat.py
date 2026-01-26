@@ -1129,6 +1129,19 @@ class ImageRenderer(AbstractRenderer):
         # Now centering the image
         lines = ansi_img.splitlines()
         new_img = ""
+        # What if the picture is smaller than requested width?
+        # We try to measure it with the number of "m" in the longest line.
+        # Yes, this is a naughty ANSI hack
+        longestline = 0
+        for l in lines:
+            linelength = len(l.split("m"))
+            #print("DEBUG: linelength "+str(linelength))
+            if linelength > longestline: longestline = linelength
+        #print("DEBUG: longestline: "+str(longestline))
+        newspaces = (width - longestline) //2
+        if newspaces > spaces:
+            spaces = newspaces
+        #print("DEBUG: spaces: "+str(spaces))
         for l in lines:
             new_img += spaces * " " + l + "\n"
         return new_img, []
