@@ -139,11 +139,14 @@ def is_cache_valid(url, validity=0):
         # There’s not even a cache!
         return False
 
-
-def get_cache_path(url, add_index=True):
+# get_cache_path gives a local path unique to each URL
+def get_cache_path(url, add_index=True, include_protocol=True, xdgfolder="cache",subfolder=""):
     # Sometimes, cache_path became a folder! (which happens for index.html/index.gmi)
     # In that case, we need to reconstruct it
     # if add_index=False, we don’t add that "index.gmi" at the ends of the cache_path
+    # include protocol will include the part before :// in the path
+    # xdgfolder is the XDG folder to be used
+    # subfolder is the optional folder inside XDG/offpunk/
     # First, we parse the URL
     if not url:
         return None
@@ -213,7 +216,11 @@ def get_cache_path(url, add_index=True):
     if local:
         cache_path = path
     elif scheme and host:
-        cache_path = os.path.expanduser(xdg("cache") + scheme + "/" + host + path)
+        # shemepath should not starts with / but finish with /
+        schemepath = ""
+        if include_protocol: schemepath = scheme + "/"
+        if subfolder: schemepath += subfolder + "/"
+        cache_path = os.path.expanduser(xdg(xdgfolder) + schemepath + host + path)
         # There’s an OS limitation of 260 characters per path.
         # We will thus cut the path enough to add the index afterward
         cache_path = cache_path[:249]
