@@ -871,10 +871,8 @@ class GeminiClient(cmd.Cmd):
                         with open(savefile,"w") as f:
                             f.write(dest)
                             f.close()
-
                 subject = "RE: "+ r.get_page_title()
                 body = _("In reply to ") + unmode_url(self.current_url)[0]
-
             # The reply intelligence is now finished. Let’s see the 
             # default "share" case were users has to give the recipient
             else:
