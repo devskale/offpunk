@@ -115,7 +115,8 @@ def inline_image(img_file, width):
         if "image" not in mime:
             return ansi_img
     if _HAS_CHAFA:
-        inlines.append("chafa --bg white -t 1 -s %s -f symbols --animate=off")
+        # -O 0 remove optimisation and allows every line to be the same length
+        inlines.append("chafa -O 0 --bg white -t 1 -s %s -f symbols --animate=off")
     if _HAS_TIMG:
         inlines.append("timg --frames=1 -p q -g %sx1000")
     image_success = False
@@ -1130,16 +1131,18 @@ class ImageRenderer(AbstractRenderer):
         lines = ansi_img.splitlines()
         new_img = ""
         # What if the picture is smaller than requested width?
-        # We try to measure it with the number of "m" in the longest line.
+        # We try to measure it with the number of "m" or " " in the longest line.
+        # when not optimized, there are always 2 m per symbols
         # Yes, this is a naughty ANSI hack
         longestline = 0
         for l in lines:
-            linelength = len(l.split("m"))
+            linelength = l.count("[0m")
             #print("DEBUG: linelength "+str(linelength))
             if linelength > longestline: longestline = linelength
         #print("DEBUG: longestline: "+str(longestline))
-        newspaces = (width - longestline) //2
-        if newspaces > spaces:
+        newspaces = (width - longestline) //2 + 1
+        #print("DEBUG: newspaces: "+str(newspaces))
+        if newspaces > spaces and longestline < width:
             spaces = newspaces
         #print("DEBUG: spaces: "+str(spaces))
         for l in lines:
