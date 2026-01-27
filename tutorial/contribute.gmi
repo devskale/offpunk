@@ -2,6 +2,10 @@
 
 If you are familiar with Python and Git, contributing to Offpunk is probably a lot easier than it appears.
 
+And if you are not a programmer, but still want to help, you can always help with offpunk's translation. Keep reading this page to get an idea of how to clone the repo, and how to send a patch. And then read the translation howto:
+
+=> ./translation.gmi Learn how to help with translations
+
 ## Joining the project
 
 The project is currently hosted on Sourcehut.
