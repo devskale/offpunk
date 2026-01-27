@@ -805,13 +805,22 @@ class GeminiClient(cmd.Cmd):
 
     #Reply to a page by finding a mailto link in the page
     def do_reply(self, arg):
-        """Reply by email to a page by trying to find a good email for the author"""
+        """Reply by email to a page by trying to find a good email for the author.
+        If an email is provided as an argument, it will be used.
+        arguments:
+        - "save" : allows to detect and save email without actually sending an email.
+        - "save new@email" : save a new reply email to replace an existing one
+        """
+        args = arg.split(" ")
         if self.current_url:
             r = self.get_renderer()
             # The reply intelligence where we try to find a email address
             # Reply is not allowed for local URL (at least for now)
             if not is_local(self.current_url):
                 potential_replies = []
+                # Add email adresses from arguments
+                for a in args:
+                    if "@" in a: potential_replies.append(a)
                 saved_replies = []
                 # First we look if we have a mail recorder for that URL
                 # emails are recorded according to URL in XDG_DATA/offpunk/reply
@@ -883,6 +892,7 @@ class GeminiClient(cmd.Cmd):
                     ans = input(stri)
                     dest = ans.strip()
                 # Now, let’s save the email (if it is not already the case)
+                tosaveurl = None
                 if dest and dest not in saved_replies:
                     rootname = find_root(self.current_url,return_value="name")
                     rooturl = find_root(self.current_url)
@@ -898,8 +908,6 @@ class GeminiClient(cmd.Cmd):
                         tosaveurl = self.current_url
                     elif ans.strip() == "2":
                         tosaveurl = rooturl
-                    else:
-                        tosaveurl = None
                     if tosaveurl:
                         savefile = netcache.get_cache_path(tosaveurl,\
                                 include_protocol=False, xdgfolder="data",subfolder="reply")
@@ -910,9 +918,14 @@ class GeminiClient(cmd.Cmd):
                         with open(savefile,"w") as f:
                             f.write(dest)
                             f.close()
-                subject = "RE: "+ r.get_page_title()
-                body = _("In reply to ") + unmode_url(self.current_url)[0]
-                send_email(dest,subject=subject,body=body,toconfirm=False)
+                if "save" in args:
+                    if tosaveurl and dest:
+                        print(_("Email %s has been recorded as contact for %s")%(dest,tosaveurl))
+                    else: print(_("Nothing to save"))
+                else:
+                    subject = "RE: "+ r.get_page_title()
+                    body = _("In reply to ") + unmode_url(self.current_url)[0]
+                    send_email(dest,subject=subject,body=body,toconfirm=False)
             else:
                 print(_("We cannot reply to %s because it is local only")%self.current_url)
         else:
