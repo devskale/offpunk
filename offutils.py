@@ -265,6 +265,10 @@ def find_root(url,absolute=False,return_value=""):
     path = "/"
     subpath = parsed.path.split("/")
     dismissed = ""
+    if parsed.scheme == 'gopher':
+        # remove the type, add "1" (root is always gonna be "folder") later
+        subpath.remove(subpath[1])
+        # now "subpath" has the same number of elements as gemini and http
     if not absolute:
         #As subpath starts with "/", subpathsplit("/")[0] is always ""
         # handling http://server/users/janedoe/ case
@@ -276,6 +280,7 @@ def find_root(url,absolute=False,return_value=""):
             # we will thus dism
         # handling http://server/~janedoe/ case
         elif len(subpath) > 1 and subpath[1].startswith("~"):
+            dismissed = "/"
             name = subpath[1].lstrip("~")
             path = path.join(subpath[:2]) + "/"
             subpath = subpath[1:]
@@ -289,9 +294,13 @@ def find_root(url,absolute=False,return_value=""):
         # there’s something in the subpath elements
         # we didn’t catch the root path
         newpath =  dismissed + "/".join(subpath)
+        if parsed.scheme == 'gopher':
+            newpath =  "/1" + newpath
         while len(subpath) > 0 and len(newpath) > len(path):
             subpath.pop(-1) 
             newpath =  dismissed + "/".join(subpath)
+            if parsed.scheme == 'gopher':
+                newpath =  "/1" + newpath
             if not newpath.endswith("/"): newpath += "/"
             newurl = urllib.parse.urlunparse((parsed.scheme, \
                         parsed.netloc, newpath, "","",""))
@@ -299,18 +308,11 @@ def find_root(url,absolute=False,return_value=""):
                 toreturn.append(newurl)
         return toreturn
     else:
+        if parsed.scheme == 'gopher':
+            # root is always going to be directory
+            path = '/1'+path
         root = urllib.parse.urlunparse((parsed.scheme, parsed.netloc, path, "","",""))
         return root
-# TODO: handling gopher code! The following was part of the old "up" function
-#        if parsed.scheme == "gopher":
-#            if path[:2] in ("/0","/1"):
-#                #we should ensure that we are not at the root
-#                if len(path) > 3:
-#                    path = "/1" + path[2:]
-#                else:
-#                    path = "/"
-#            else:
-#                path = "/1" + path
 
 # In terms of arguments, this can take an input file/string to be passed to
 # stdin, a parameter to do (well-escaped) "%" replacement on the command, a
