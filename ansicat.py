@@ -1614,14 +1614,17 @@ class XkcdRenderer(HtmlRenderer):
     def has_direct_display(self):
         return _RENDER_IMAGE
 
-    #Custom renderer should return false when they can’t handle a specific content
-    #This allow fallback to normal html renderer
-    def is_valid(self):
+    def get_xkcd_number(self):
         path = urllib.parse.urlparse(self.url).path
         #We strip the leading "/" to avoid empty elements in splitted
         splitted = path.strip("/").split("/")
         # Custom renderer only works for pure comics which have alphanumeric paths 
-        return splitted[0].isalnum()
+        return splitted[0]
+
+    #Custom renderer should return false when they can’t handle a specific content
+    #This allow fallback to normal html renderer
+    def is_valid(self):
+        return self.get_xkcd_number().isalnum()
 
     def get_images(self, mode="readable"):
         img_url,img_path,alttext,title = self.xkcd_extract()
@@ -1654,13 +1657,14 @@ class XkcdRenderer(HtmlRenderer):
         return None,None,None,None
 
     def display(self, mode=None, directdisplay=False):
+        info = "  (XKCD #%s)"%self.get_xkcd_number()
         wtitle = self.get_formatted_title()
         if not directdisplay:
             body = wtitle + "\n" + self.get_body(mode=mode)
             return body
         else:
             print(self._window_title(wtitle))
-            self.printgemtext("# "+self.get_title())
+            self.printgemtext("# "+self.get_title() + info)
             img_url,img_path,alttext,title = self.xkcd_extract()
             #now displaying
             if img_path and netcache.is_cache_valid(img_url):
