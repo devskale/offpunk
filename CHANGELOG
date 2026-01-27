@@ -10,6 +10,7 @@ Imortant changes:
 - Default image size now 100 instead of 40 (can be restored with "set images_size 40")
 - Links to available feeds are now displayed at the bottom of HTML pages
 - "root" has been modified to go to the root of the capsule/userspace "root /" for real root
+- Images are now displayed in Gemini. This can be disabled with "set gemini_images false"
 Features:
 - new "websearch" command which default to wiby.me
 - new "share" command to send a page by email

@@ -202,6 +202,7 @@ class GeminiClient(cmd.Cmd):
             "prompt_on": "ON",
             "prompt_off": "OFF",
             "prompt_close": "> ",
+            "gemini_images": True,
         }
         self.set_prompt("ON")
         self.redirects = offblocklist.redirects
@@ -383,6 +384,7 @@ class GeminiClient(cmd.Cmd):
         else:
             params["images_mode"] = self.options["images_mode"]
         params["images_size"] = self.options["images_size"]
+        params["gemini_images"] = self.options["gemini_images"]
         # avaliable linkmode are "none" and "end".
         params["linkmode"] = self.options["linkmode"]
         if force_refresh:
@@ -578,7 +580,7 @@ class GeminiClient(cmd.Cmd):
                     pass
             self.options[option] = value
             #We clean the cache for some options that affect rendering
-            if option in ["preformat_wrap","width", "linkmode"]:
+            if option in ["preformat_wrap","width", "linkmode","gemini_images"]:
                 self.opencache.cleanup()
 
     def do_theme(self, line):
