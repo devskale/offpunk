@@ -391,11 +391,11 @@ def send_email(dest,subject=None,body=None,toconfirm=True,allowemptydest=True):
             if subject or body:
                 param += "?"
             if subject:
-                param += "subject=%s"%subject
+                param += "subject=%s"%urllib.parse.quote(subject)
                 if body:
                     param += "&"
             if body:
-                param += "body=%s"%body
+                param += "body=%s"%urllib.parse.quote(body)
             run("xdg-open mailto:%s", parameter=param, direct_output=True)
         else:
             print(_("Cannot find a mail client to send mail to %s") % inpath)
