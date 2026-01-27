@@ -138,9 +138,6 @@ _ABBREVS = {# {{{
     "abbrevs": "alias",
 }# }}}
 
-_MIME_HANDLERS = {}
-
-
 # GeminiClient Decorators
 # decorator to be sure that self.current_url exists
 def needs_gi(inner):

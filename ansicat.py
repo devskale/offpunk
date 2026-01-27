@@ -1654,6 +1654,8 @@ _FORMAT_RENDERERS = {
     "text/empty": EmptyRenderer,
     "message/news": GemtextRenderer,
     "message/rfc822": GemtextRenderer,
+    "application/pgp-keys": PlaintextRenderer,
+    "application/pgp-signature": PlaintextRenderer,
 }
 
 _CUSTOM_RENDERERS = {
