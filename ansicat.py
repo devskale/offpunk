@@ -1045,7 +1045,7 @@ class FeedRenderer(GemtextRenderer):
         if not parsed:
             return False
         elif parsed.bozo:
-            # print("bozo "+str(parsed.bozo_exception))
+            #print("bozo "+str(parsed.bozo_exception))
             return False
         else:
             # If the second element is <rss, no doubt
