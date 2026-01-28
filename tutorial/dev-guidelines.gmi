@@ -8,9 +8,11 @@
 * Each page should always be presented the same. There will never be any CSS or design support in Offpunk.
 * Offpunk is a reading tool. It doesn’t run any app. There will never be any kind of JS support. If information cannot be extracted without JS on a given page, this page should be considered as broken and it is not Offpunk’s fault. 
 * Offpunk is an open tool. It will only implement free and open protocols. No proprietary protocols.
+* Offpunk is a CLI tool. Every interaction is done by typing a visible command, not by using a shortcut or a mouse.
 
 ## Contributors Culture
 
+* Offpunk’s people welcome differences and are respectful of themselves and each others, including outside of the community platforms.
 * It’s OK to be wrong. It is OK to make a mistake. Be gentle on yourself.
 * A mistake should be acknowledged and corrected as quick as possible.
 * Nobody should be blamed for honest mistakes.
@@ -19,9 +21,16 @@
 * Developers are assumed to work offline, development should be done asynchronously by email.
 * Each commit should probably comes with an CHANGELOG entry
 
+## Accessibility
+
+* Accessibility is critical. Any changes that improve accessibility is high priority.
+* Any patch that impedes accessibility in any way should be refused.
+* Feedbacks from users with special-needs or disabilities are highly welcome. We consider those differences as richness. Improving Offpunk for those users improve it for everyone.
+* Accessibilty should not be confused with implementing every potential workflow. Offpunk is not an universal solution for everyone. Users must have the motivation to adapt to Offpunk’s philosophy and to learn to use it.
+
 ## Code structure
 
-* Offpunk should run directly as a Python script without any installation, environment settings or anything else. This is non-negotiable core value.
+* Offpunk should run directly as a Python script without any installation, environment settings or anything else. This is non-negotiable core value. python ./offpunk.py
 * Code should be in as few files as possible in one single folder.
 * Code should be split in separate files only if it makes sense to use some part of the code as an independent tool.
 * Everything is a file. The only database is user’s hard disk. No complex datastructure but plain text files.

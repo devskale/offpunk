@@ -138,9 +138,6 @@ _ABBREVS = {# {{{
     "abbrevs": "alias",
 }# }}}
 
-_MIME_HANDLERS = {}
-
-
 # GeminiClient Decorators
 # decorator to be sure that self.current_url exists
 def needs_gi(inner):
@@ -205,6 +202,7 @@ class GeminiClient(cmd.Cmd):
             "prompt_on": "ON",
             "prompt_off": "OFF",
             "prompt_close": "> ",
+            "gemini_images": True,
         }
         self.set_prompt("ON")
         self.redirects = offblocklist.redirects
@@ -386,6 +384,7 @@ class GeminiClient(cmd.Cmd):
         else:
             params["images_mode"] = self.options["images_mode"]
         params["images_size"] = self.options["images_size"]
+        params["gemini_images"] = self.options["gemini_images"]
         # avaliable linkmode are "none" and "end".
         params["linkmode"] = self.options["linkmode"]
         if force_refresh:
@@ -581,7 +580,7 @@ class GeminiClient(cmd.Cmd):
                     pass
             self.options[option] = value
             #We clean the cache for some options that affect rendering
-            if option in ["preformat_wrap","width", "linkmode"]:
+            if option in ["preformat_wrap","width", "linkmode","gemini_images"]:
                 self.opencache.cleanup()
 
     def do_theme(self, line):
@@ -759,7 +758,7 @@ class GeminiClient(cmd.Cmd):
             print(_("No content to copy, visit a page first"))
 
     #Share current page by email
-    def do_share(self, arg, reply=False):
+    def do_share(self, arg):
         """Send current page by email to someone else.
         Use with "url" as first argument to send only the address.
         Use with "text" as first argument to send the full content. TODO
@@ -767,12 +766,60 @@ class GeminiClient(cmd.Cmd):
         Next arguments are the email adresses of the recipients.
         If no destination, you will need to fill it in your mail client.
         """
+        # default "share" case were users has to give the recipient
+        if self.current_url:
+            # we will not consider the url argument (which is the default)
+            # if other argument, we will see if it is an URL
+            if is_local(self.current_url):
+                print(_("We cannot share %s because it is local only")%self.current_url)
+                return
+            else:
+                r = self.get_renderer()
+                #default share case
+                dest = ""
+                subject= r.get_page_title()
+                body = unmode_url(self.current_url)[0]
+            args = arg.split()
+            if args :
+                if args[0] == "text":
+                    args.pop(0)
+                    print(_("TODO: sharing text is not yet implemented"))
+                    return
+                # we will not consider the url argument (which is the default)
+                # if other argument, we will see if it is an URL
+                elif args[0] == "url":
+                    args.pop(0)
+                if len(args) > 0:
+                    for a in args:
+                        # we only takes arguments with @ as email adresses
+                        if "@" in a:
+                            dest += "," + a
+            send_email(dest,subject=subject,body=body,toconfirm=False)
+            #quick debug
+           # print("Send mail to %s"%dest)
+           # print("Subject is %s"%subject)
+           # print("Body is %s"%body)
+        else:
+            print(_("Nothing to share, visit a page first"))
+
+    #Reply to a page by finding a mailto link in the page
+    def do_reply(self, arg):
+        """Reply by email to a page by trying to find a good email for the author.
+        If an email is provided as an argument, it will be used.
+        arguments:
+        - "save" : allows to detect and save email without actually sending an email.
+        - "save new@email" : save a new reply email to replace an existing one
+        """
+        args = arg.split(" ")
         if self.current_url:
             r = self.get_renderer()
             # The reply intelligence where we try to find a email address
             # Reply is not allowed for local URL (at least for now)
-            if reply and not is_local(self.current_url):
+            if not is_local(self.current_url):
                 potential_replies = []
+                # Add email adresses from arguments
+                for a in args:
+                    if "@" in a: potential_replies.append(a)
                 saved_replies = []
                 # First we look if we have a mail recorder for that URL
                 # emails are recorded according to URL in XDG_DATA/offpunk/reply
@@ -844,6 +891,7 @@ class GeminiClient(cmd.Cmd):
                     ans = input(stri)
                     dest = ans.strip()
                 # Now, let’s save the email (if it is not already the case)
+                tosaveurl = None
                 if dest and dest not in saved_replies:
                     rootname = find_root(self.current_url,return_value="name")
                     rooturl = find_root(self.current_url)
@@ -859,8 +907,6 @@ class GeminiClient(cmd.Cmd):
                         tosaveurl = self.current_url
                     elif ans.strip() == "2":
                         tosaveurl = rooturl
-                    else:
-                        tosaveurl = None
                     if tosaveurl:
                         savefile = netcache.get_cache_path(tosaveurl,\
                                 include_protocol=False, xdgfolder="data",subfolder="reply")
@@ -871,44 +917,18 @@ class GeminiClient(cmd.Cmd):
                         with open(savefile,"w") as f:
                             f.write(dest)
                             f.close()
-                subject = "RE: "+ r.get_page_title()
-                body = _("In reply to ") + unmode_url(self.current_url)[0]
-            # The reply intelligence is now finished. Let’s see the 
-            # default "share" case were users has to give the recipient
+                if "save" in args:
+                    if tosaveurl and dest:
+                        print(_("Email %s has been recorded as contact for %s")%(dest,tosaveurl))
+                    else: print(_("Nothing to save"))
+                else:
+                    subject = "RE: "+ r.get_page_title()
+                    body = _("In reply to ") + unmode_url(self.current_url)[0]
+                    send_email(dest,subject=subject,body=body,toconfirm=False)
             else:
-                #default share case
-                dest = ""
-                subject= r.get_page_title()
-                body = unmode_url(self.current_url)[0]
-            args = arg.split()
-            if args :
-                if args[0] == "text":
-                    args.pop(0)
-                    print(_("TODO: sharing text is not yet implemented"))
-                    return
-                elif args[0] == "url":
-                    args.pop(0)
-                if len(args) > 0:
-                    for a in args:
-                        # we only takes arguments with @ as email adresses
-                        if "@" in a:
-                            dest += "," + a
-            # we will not consider the url argument (which is the default)
-            # if other argument, we will see if it is an URL
-            if is_local(self.current_url):
-                print(_("The URL %s cannot be shared/replied-to because it is local only")%self.current_url)
-                return
-            send_email(dest,subject=subject,body=body,toconfirm=False)
-            #quick debug
-           # print("Send mail to %s"%dest)
-           # print("Subject is %s"%subject)
-           # print("Body is %s"%body)
+                print(_("We cannot reply to %s because it is local only")%self.current_url)
         else:
             print(_("Nothing to share, visit a page first"))
-    #Reply to a page by finding a mailto link in the page
-    def do_reply(self, arg):
-        """Reply by email to a page by trying to find a good email for the author"""
-        self.do_share(arg, reply=True)
 
 
     def do_cookies(self, arg):

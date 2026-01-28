@@ -742,6 +742,8 @@ class GemtextRenderer(AbstractRenderer):
                     links.append(strippedline)
                     splitted = strippedline.split(maxsplit=1)
                     url = splitted[0]
+                    # We join with current root in case it is relative
+                    abs_url = urllib.parse.urljoin(self.url, url )
                     name = None
                     if len(splitted) > 1:
                         name = splitted[1]
@@ -750,7 +752,42 @@ class GemtextRenderer(AbstractRenderer):
                     # 600 seconds after this page, we consider it as a new_link
                     current_modif = netcache.cache_last_modified(self.url)
                     link_modif = netcache.cache_last_modified(url)
+                    # Let’s see first if this is a picture
+                    image_displayed = False
                     if (
+                        _RENDER_IMAGE
+                        and not self.url.startswith("list://")
+                        # check if images are enabled in Gemini!
+                        and "gemini_images" in self.options.keys()
+                        and self.options["gemini_images"]
+                        # Check that it looks like an image
+                       # and link_modif  # There’s a valid cache for link target 
+                        and url[-4:].lower() in [".jpg",".png",".gif","jpeg"] 
+                        and netcache.is_cache_valid(abs_url)
+                    ):
+                        ansi_img = ""
+                        try:
+                            # 4 followings line are there to translate the URL into cache path
+                            img = netcache.get_cache_path(abs_url)
+                            renderer = ImageRenderer(img, abs_url)
+                            # Image width is set in the option to 40 by default
+                            # it cannot be bigger than the width of the text
+                            if "images_size" in self.options.keys() and width and \
+                                                width > self.options["images_size"] :
+                                size = self.options["images_size"]
+                            else:
+                                size = width
+                            ansi_img += renderer.get_body(width=size, mode="inline")
+                            image_displayed = True
+                        except Exception as err:
+                            # we sometimes encounter really bad formatted files or URL
+                            # we fall back to normal links in that case
+                            image_displayed = False
+                        r.add_block(ansi_img)
+                        r.open_theme("image_link")
+                        r.center_line()
+                        theme = "image_link"
+                    elif (
                         current_modif
                         and link_modif
                         and current_modif - link_modif < 600
@@ -1577,14 +1614,17 @@ class XkcdRenderer(HtmlRenderer):
     def has_direct_display(self):
         return _RENDER_IMAGE
 
-    #Custom renderer should return false when they can’t handle a specific content
-    #This allow fallback to normal html renderer
-    def is_valid(self):
+    def get_xkcd_number(self):
         path = urllib.parse.urlparse(self.url).path
         #We strip the leading "/" to avoid empty elements in splitted
         splitted = path.strip("/").split("/")
         # Custom renderer only works for pure comics which have alphanumeric paths 
-        return splitted[0].isalnum()
+        return splitted[0]
+
+    #Custom renderer should return false when they can’t handle a specific content
+    #This allow fallback to normal html renderer
+    def is_valid(self):
+        return self.get_xkcd_number().isalnum()
 
     def get_images(self, mode="readable"):
         img_url,img_path,alttext,title = self.xkcd_extract()
@@ -1617,13 +1657,14 @@ class XkcdRenderer(HtmlRenderer):
         return None,None,None,None
 
     def display(self, mode=None, directdisplay=False):
+        info = "  (XKCD #%s)"%self.get_xkcd_number()
         wtitle = self.get_formatted_title()
         if not directdisplay:
             body = wtitle + "\n" + self.get_body(mode=mode)
             return body
         else:
             print(self._window_title(wtitle))
-            self.printgemtext("# "+self.get_title())
+            self.printgemtext("# "+self.get_title() + info)
             img_url,img_path,alttext,title = self.xkcd_extract()
             #now displaying
             if img_path and netcache.is_cache_valid(img_url):
@@ -1654,6 +1695,8 @@ _FORMAT_RENDERERS = {
     "text/empty": EmptyRenderer,
     "message/news": GemtextRenderer,
     "message/rfc822": GemtextRenderer,
+    "application/pgp-keys": PlaintextRenderer,
+    "application/pgp-signature": PlaintextRenderer,
 }
 
 _CUSTOM_RENDERERS = {
