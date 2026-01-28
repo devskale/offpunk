@@ -11,6 +11,7 @@ Imortant changes:
 - Links to available feeds are now displayed at the bottom of HTML pages
 - "root" has been modified to go to the root of the capsule/userspace "root /" for real root
 - Images are now displayed in Gemini. This can be disabled with "set gemini_images false"
+- "ls" command is deprecated
 Features:
 - new "websearch" command which default to wiby.me
 - new "share" command to send a page by email
@@ -20,6 +21,7 @@ Features:
 - "view switch" changes between readable/full view (by Andrew Fowlie)
 - customize prompt with "set prompt_on" and "set prompt_off" (by Andrew Fowlie)
 - "help help" now sends an email to the offpunk-users mailing-list
+- "links" command now display all links
 Others:
 - In "lists", only consider files ending with .gmi (bug #46 by woffs)
 - support for new links color in gopher (by JMCS)

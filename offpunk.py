@@ -197,7 +197,7 @@ class GeminiClient(cmd.Cmd):
             # avaliable linkmode are "none" and "end".
             "linkmode": "none",
             #command that will be used on empty line,
-            "default_cmd": "links",
+            "default_cmd": "links 10",
             # user prompt in on and offline mode
             "prompt_on": "ON",
             "prompt_off": "OFF",
@@ -1304,12 +1304,6 @@ class GeminiClient(cmd.Cmd):
         print(output)
 
     # Stuff that modifies the lookup table
-    def do_ls(self, line):
-        """List contents of current index.
-        Use 'ls -l' to see URLs."""
-        self._show_lookup(show_url="-l" in line)
-        self.page_index = 0
-
     def do_search(self, line):
         """Search on Gemini using the engine configured (by default kennedy.gemi.dev)
         You can configure it using "set search URL".
@@ -1371,12 +1365,33 @@ class GeminiClient(cmd.Cmd):
         self._go_to_url(self.current_url, update_hist=False, grep=searchterm)
 
     def do_links(self, line):
-        """Page through index ten lines at a time."""
+        """Display all the links for the current page.
+           If argument N is provided, then page through N links at a time.
+           "links 10" show you the first 10 links, then 11 to 20, etc.
+           if N = 0, then all the links are displayed
+        """
+        args = line.split()
+        increment = 0
+        if len(args) > 0 and args[0].isdigit():
+            increment = int(args[0])
+        elif len(args) == 0:
+            # without argument, we reset the page index
+            self.page_index = 0
         i = self.page_index
         if not self.get_renderer() or i > len(self.get_renderer().get_links()):
             return
-        self._show_lookup(offset=i, end=i + 10)
-        self.page_index += 10
+        if increment: 
+            self._show_lookup(offset=i, end=i + increment)
+            self.page_index += increment
+        else:
+            self._show_lookup()
+
+    def do_ls(self, line):
+        """DEPRECATED: List contents of current index.
+        """
+        print("ls is deprecated. Use links instead")
+        self.do_links(line)
+
 
     def emptyline(self):
         """Default action when line is empty"""
