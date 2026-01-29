@@ -15,6 +15,7 @@ import gettext
 import ansicat
 import netcache
 import offutils
+import offblocklist
 from offutils import (
         GREPCMD, 
         is_local, 
@@ -206,8 +207,9 @@ class opencache:
         else:
             return None
 
-    def opnk(self, inpath, mode="readable", terminal=True, grep=None, theme=None, link=None,\
-                        direct_open_unsupported=False, **kwargs):
+    def opnk(self, inpath, mode="readable", terminal=True, grep=None, theme=None, \
+                link=None, redirects=offblocklist.redirects, \
+                direct_open_unsupported=False, **kwargs):
         # Return True if inpath opened in Terminal
         # False otherwise
         # also returns the url in case it has been modified
@@ -220,12 +222,12 @@ class opencache:
         if not offutils.is_local(inpath):
             if mode:
                 kwargs["images_mode"] = mode
-            cachepath, inpath = netcache.fetch(inpath, **kwargs)
+            cachepath, inpath = netcache.fetch(inpath, redirects=redirects,**kwargs)
             if not cachepath:
                 return False, inpath
         # folowing line is for :// which are locals (file,list)
         elif "://" in inpath:
-            cachepath, inpath = netcache.fetch(inpath, **kwargs)
+            cachepath, inpath = netcache.fetch(inpath, redirects=redirects,**kwargs)
         elif inpath.startswith("mailto:"):
             cachepath = inpath
         elif os.path.exists(inpath):

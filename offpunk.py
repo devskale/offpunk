@@ -164,7 +164,6 @@ class GeminiClient(cmd.Cmd):
         self.hist_index = 0
         self.marks = {}
         self.page_index = 0
-        self.permanent_redirects = {}
         # Sync-only mode is restricted by design
         self.offline_only = False
         self.sync_only = sync_only
@@ -330,43 +329,11 @@ class GeminiClient(cmd.Cmd):
         # we don’t handle the name anymore !
         if name:
             print(_("We don’t handle name of URL: %s") % name)
-        # Obey permanent redirects
-        if url in self.permanent_redirects:
-            self._go_to_url(
-                self.permanent_redirects[url],
-                update_hist=update_hist,
-                force_refresh=force_refresh,
-                handle=handle,
-                name=name,
-                mode=mode,
-                limit_size=limit_size,
-                grep=grep,
-            )
-            return
         # Code to translate URLs to better frontends (think twitter.com -> nitter)
         parsed = urllib.parse.urlparse(url)
         netloc = parsed.netloc
         if netloc.startswith("www."):
             netloc = netloc[4:]
-        # we block/redirect even subdomains
-        for key in self.redirects.keys():
-            match = key == netloc
-            if key.startswith("*"):
-                match = netloc.endswith(key[1:])
-            if match:
-                if self.redirects[key] == "blocked":
-                    text = ""
-                    text += _("Blocked URL: ")+url + "\n"
-                    text += _("This website has been blocked with the following rule:\n")
-                    text += key + "\n"
-                    text += _("Use the following redirect command to unblock it:\n")
-                    text += "redirect %s NONE" %key
-                    if handle and not self.sync_only:
-                        print(text)
-                    return
-                else:
-                    parsed = parsed._replace(netloc=self.redirects[key])
-                    url = urllib.parse.urlunparse(parsed)
         params = {}
         params["timeout"] = self.options["short_timeout"]
         if limit_size:
@@ -396,7 +363,8 @@ class GeminiClient(cmd.Cmd):
         # Use cache or mark as to_fetch if resource is not cached
         if handle and not self.sync_only:
             displayed, url = self.opencache.opnk(
-                url, mode=mode, grep=grep, theme=self.theme, **params
+                url, mode=mode, grep=grep, theme=self.theme, 
+                redirects=self.redirects,**params
             )
             modedurl = mode_url(url, mode)
             if not displayed:
@@ -417,7 +385,7 @@ class GeminiClient(cmd.Cmd):
         else:
             # we are asked not to handle or in sync_only mode
             if self.support_http or parsed.scheme not in ["http", "https"]:
-                netcache.fetch(url, **params)
+                netcache.fetch(url, redirects=self.redirects,**params)
 
     @needs_gi
     def _show_lookup(self, offset=0, end=None, show_url=False):
@@ -1513,7 +1481,7 @@ Use "view XX" where XX is a number to view information about link XX.
             if urlmode:
                 run("xdg-open %s", parameter=u, direct_output=True)
             else:
-                self.opencache.opnk(u, terminal=False)
+                self.opencache.opnk(u, redirects=self.redirects,terminal=False)
 
     def do_shell(self, line):
         """Send the content of the current page to the shell and pipe it.

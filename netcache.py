@@ -19,6 +19,7 @@ import gettext
 import ansicat
 import offutils
 from offutils import xdg, _LOCALE_DIR
+import offblocklist
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
 gettext.textdomain('offpunk')
@@ -1055,7 +1056,9 @@ def _fetch_gemini(
     cache = write_body(url, body, mime)
     return cache, url
 
-
+#fetch returns two things:
+#cachepath: the path to the cached ressource
+#newurl: the real URL of that cached ressource
 def fetch(
     url,
     offline=False,
@@ -1063,12 +1066,43 @@ def fetch(
     images_mode="readable",
     validity=0,
     cookiejar=None,
+    redirects={},
+    #blocked is empty by default to allow blocking rules having been removed
+    blocked={},
     **kwargs,
 ):
     url = normalize_url(url)
     newurl = url
     path = None
     print_error = "print_error" in kwargs.keys() and kwargs["print_error"]
+    #Step 0: we apply redirect and/or block
+    #Let’s add the blocked list into the redirects
+    #This will not overwrite existing rule for that domain
+    for b in blocked:
+        if b not in redirects.keys(): redirects[b] = "blocked"
+    parsed =urllib.parse.urlparse(url)
+    netloc = parsed.netloc
+    for key in redirects.keys():
+        match = key == netloc
+        #We also match subdomains
+        if key.startswith("*"):
+            match = netloc.endswith(key[1:])
+        if match:
+            if redirects[key] == "blocked":
+                text = ""
+                text += _("Blocked URL: ")+url + "\n"
+                text += _("This website has been blocked with the following rule:\n")
+                text += key + "\n"
+                text += _("Use the following redirect command to unblock it:\n")
+                text += "redirect %s NONE" %key
+                if print_error:
+                    print(text)
+                cache = set_error(newurl, text)
+                return cache, newurl
+            else:
+                parsed = parsed._replace(netloc=redirects[key])
+                url = urllib.parse.urlunparse(parsed)
+                newurl = url
     # First, we look if we have a valid cache, even if offline
     # If we are offline, any cache is better than nothing
     if is_cache_valid(url, validity=validity) or (
@@ -1176,6 +1210,7 @@ def fetch(
                             images_mode=None,
                             validity=0,
                             cookiejar=cookiejar,
+                            redirects=redirects,
                             **kwargs,
                         )
     if download_image_first and cookiejar is not None:
@@ -1245,6 +1280,8 @@ def main():
                 max_size=args.max_size,
                 timeout=args.timeout,
                 validity=args.cache_validity,
+                redirects=offblocklist.redirects,
+                blocked=offblocklist.blocked,
             )
         if args.path:
             print(path)
