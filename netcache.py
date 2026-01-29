@@ -18,7 +18,7 @@ import gettext
 
 import ansicat
 import offutils
-from offutils import xdg, _LOCALE_DIR
+from offutils import xdg, _LOCALE_DIR, get_url_redirected
 import offblocklist
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
@@ -1080,29 +1080,23 @@ def fetch(
     #This will not overwrite existing rule for that domain
     for b in blocked:
         if b not in redirects.keys(): redirects[b] = "blocked"
-    parsed =urllib.parse.urlparse(url)
-    netloc = parsed.netloc
-    for key in redirects.keys():
-        match = key == netloc
-        #We also match subdomains
-        if key.startswith("*"):
-            match = netloc.endswith(key[1:])
-        if match:
-            if redirects[key] == "blocked":
-                text = ""
-                text += _("Blocked URL: ")+url + "\n"
-                text += _("This website has been blocked with the following rule:\n")
-                text += key + "\n"
-                text += _("Use the following redirect command to unblock it:\n")
-                text += "redirect %s NONE" %key
-                if print_error:
-                    print(text)
-                cache = set_error(newurl, text)
-                return cache, newurl
-            else:
-                parsed = parsed._replace(netloc=redirects[key])
-                url = urllib.parse.urlunparse(parsed)
-                newurl = url
+    redirection, key = get_url_redirected(url,redirects,returnkey=True)
+    if redirection and redirection.lower() == "blocked":
+        text = ""
+        text += _("Blocked URL: ")+url + "\n"
+        text += _("This website has been blocked with the following rule:\n")
+        text += key + "\n"
+        text += _("Use the following redirect command to unblock it:\n")
+        text += "redirect %s NONE" %key
+        if print_error:
+            print(text)
+        cache = set_error(newurl, text)
+        return cache, newurl
+    elif redirection:
+        parsed = urllib.parse.urlparse(url)
+        parsed = parsed._replace(netloc=redirection)
+        url = urllib.parse.urlunparse(parsed)
+        newurl = url
     # First, we look if we have a valid cache, even if offline
     # If we are offline, any cache is better than nothing
     if is_cache_valid(url, validity=validity) or (
@@ -1186,7 +1180,7 @@ def fetch(
             return cache, newurl
         # We download images contained in the document (from full mode)
         if not offline and download_image_first and images_mode:
-            renderer = ansicat.renderer_from_file(path, newurl,**kwargs)
+            renderer = ansicat.renderer_from_file(path, newurl,redirectlist=redirects,**kwargs)
             if renderer:
                 for image in renderer.get_images(mode=images_mode):
                     # Image should exist, should be an url (not a data image)

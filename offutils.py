@@ -432,3 +432,39 @@ def looks_like_base64(src, baseurl):
         imgurl = urllib.parse.urljoin(baseurl, imgname)
     return imgurl, imgdata
 
+#if returnkey=True, we return [redirection, matching pattern]
+def get_url_redirected(url,redirectlist,returnkey=False):
+    parsed =urllib.parse.urlparse(url)
+    netloc = parsed.netloc
+    if netloc.startswith("www."):
+        netloc = netloc[4:]
+    matching_key = None
+    match = False
+    keys = list(redirectlist.keys())
+    while not match and len(keys) > 0:
+        key = keys.pop(0)
+        match = key == netloc
+        #We also match subdomains
+        if key.startswith("*"):
+            match = netloc.endswith(key[1:])
+        if match:
+            matching_key = key
+    if matching_key:
+        value = redirectlist[matching_key]
+    else:
+        value = None
+    if returnkey:
+        return [value,matching_key]
+    else:
+        return value
+
+# Return None if not blocked, else return the blocking rule
+def get_url_blocking_rule(url,redirectlist):
+    redir,key = get_url_redirected(url,redirectlist,returnkey=True)
+    if redir and redir.lower() == "blocked":
+        return key 
+    else:
+        return None
+def is_url_blocked(url,redirectlist):
+    if get_url_blocking_rule(url,redirectlist): return True
+    else: return False
