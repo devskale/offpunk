@@ -16,7 +16,7 @@ import gettext
 import netcache
 import offthemes
 import unmerdify
-from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg, _LOCALE_DIR, find_root
+from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg, _LOCALE_DIR, find_root 
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
 gettext.textdomain('offpunk')
@@ -146,6 +146,37 @@ def terminal_image(img_file):
         except Exception as err:
             print(err)
 
+# This function returns a MIME based on the gopher selector
+# List available here:
+# gopher://spike.nagatha.fr/0/phlog/2025/2025-11-11-07-07-ChatGPT-tells-me-about-Gopher-selectors.txt 
+def get_gopher_mime(url):
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme != "gopher":
+        mime = mimetypes.guess_type(path)[0]
+    elif len(parsed.path) >= 2:
+        itemtype = parsed.path[1]
+        path = parsed.path[2:]
+    else:
+        itemtype = "1"
+        path = ""
+    if itemtype == "0":
+        if path.endswith(".xml"):
+            mime = "application/xml"
+        else:
+            mime = "text/gemini"
+    elif itemtype == "1":
+        mime = "text/gopher"
+    elif itemtype == "h":
+        mime = "text/html"
+    elif itemtype in ("g", "I", "d","p"):
+        mime = mimetypes.guess_type(path)[0]
+    elif itemtype in ("9", "s", ";"):
+        mime = "binary"
+    elif itemtype in ("r","X"):
+        mime = "application/rss+xml"
+    else:
+        mime = "text/gopher"
+    return mime
 
 # First, we define the different content->text renderers, outside of the rest
 # (They could later be factorized in other files or replaced)
@@ -1045,7 +1076,7 @@ class FeedRenderer(GemtextRenderer):
         if not parsed:
             return False
         elif parsed.bozo:
-            # print("bozo "+str(parsed.bozo_exception))
+            #print("bozo "+str(parsed.bozo_exception))
             return False
         else:
             # If the second element is <rss, no doubt
@@ -1713,29 +1744,7 @@ def get_mime(path, url=None):
         return "text/empty"
     elif url and url.startswith("gopher://"):
         # special case for gopher
-        # code copy/pasted from netcache
-        parsed = urllib.parse.urlparse(url)
-        if len(parsed.path) >= 2:
-            itemtype = parsed.path[1]
-            path = parsed.path[2:]
-        else:
-            itemtype = "1"
-            path = ""
-        if itemtype == "0":
-            if path.endswith(".xml"):
-                mime = "application/xml"
-            else:
-                mime = "text/gemini"
-        elif itemtype == "1":
-            mime = "text/gopher"
-        elif itemtype == "h":
-            mime = "text/html"
-        elif itemtype in ("g", "I"):
-            mime = mimetypes.guess_type(path)[0]
-        elif itemtype in ("9", "s", ";"):
-            mime = "binary"
-        else:
-            mime = "text/gopher"
+        mime = get_gopher_mime(url)
     elif path.startswith("mailto:"):
         mime = "mailto"
     elif os.path.isdir(path):

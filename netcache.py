@@ -188,21 +188,17 @@ def get_cache_path(url, add_index=True, include_protocol=True, xdgfolder="cache"
         # special gopher selector case
         if scheme == "gopher":
             if len(parsed.path) >= 2:
-                itemtype = parsed.path[1]
-                path = parsed.path[2:]
+                # we remove the selector
+                splitted = parsed.path.split("/")
+                # the first split if empty
+                if len(splitted[0]) == 0: splitted.pop(0)
+                #now we see if the element is a selector on not
+                if len(splitted[0]) == 1:
+                    path = parsed.path[2:]
+                else: 
+                    path = parsed.path
             else:
-                itemtype = "1"
                 path = ""
-            if itemtype == "0":
-                mime = "text/gemini"
-            elif itemtype == "1":
-                mime = "text/gopher"
-            elif itemtype == "h":
-                mime = "text/html"
-            elif itemtype in ("9", "g", "I", "s", ";"):
-                mime = "binary"
-            else:
-                mime = "text/gopher"
         else:
             path = parsed.path
         if parsed.query:

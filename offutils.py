@@ -425,3 +425,4 @@ def looks_like_base64(src, baseurl):
     else:
         imgurl = urllib.parse.urljoin(baseurl, imgname)
     return imgurl, imgdata
+
