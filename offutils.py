@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import urllib.parse
 import gettext
+import sys
 
 import cert_migration
 import netcache
@@ -20,7 +21,12 @@ import netcache_migration
 
 # We can later add some logic to decide this based on OS family/version if needed?
 # With "None", the defaults should make this work in debian and RedHat based systems at least
-_LOCALE_DIR = None
+# "None" would default to sys.base_prefix + "/share/locale/"
+# (i.e., "/usr/share/locale")
+# sys.base_prefix is always "/usr"
+# sys.prefix however, is either "/usr" or the path to the virtualenv we're in
+# this next line makes i18n work if offpunk is installed with pipx for example:
+_LOCALE_DIR = sys.prefix + "/share/locale/"
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
 gettext.textdomain('offpunk')
