@@ -21,7 +21,7 @@ import ansicat
 import netcache
 import offblocklist
 import offthemes
-import opnk
+import openk
 from offutils import (
     is_local,
     looks_like_url,
@@ -158,7 +158,7 @@ class GeminiClient(cmd.Cmd):
         # The certificate cache and TOFU database contain "browser history"
         # type sensitivie information.
         os.umask(0o077)
-        self.opencache = opnk.opencache()
+        self.opencache = openk.opencache()
         self.theme = offthemes.default
         self.current_url = None
         self.hist_index = 0
@@ -362,7 +362,7 @@ class GeminiClient(cmd.Cmd):
         params["force_large_download"] = force_large_download
         # Use cache or mark as to_fetch if resource is not cached
         if handle and not self.sync_only:
-            displayed, url = self.opencache.opnk(
+            displayed, url = self.opencache.openk(
                 url, mode=mode, grep=grep, theme=self.theme,**params
             )
             modedurl = mode_url(url, mode)
@@ -1261,7 +1261,7 @@ class GeminiClient(cmd.Cmd):
             netcache._HAS_CHARDET
         )
         output += _(" - restore last position (less 572+)          : ") + has(
-            opnk._LESS_RESTORE_POSITION
+            openk._LESS_RESTORE_POSITION
         )
         output += "\n"
         output += _("Config directory    : ") + xdg("config") + "\n"
@@ -1480,7 +1480,7 @@ Use "view XX" where XX is a number to view information about link XX.
             if urlmode:
                 run("xdg-open %s", parameter=u, direct_output=True)
             else:
-                self.opencache.opnk(u, terminal=False)
+                self.opencache.openk(u, terminal=False)
 
     def do_shell(self, line):
         """Send the content of the current page to the shell and pipe it.

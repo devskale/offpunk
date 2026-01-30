@@ -5,7 +5,7 @@ import gettext
 import random
 
 import netcache
-import opnk
+import openk
 from offutils import _LOCALE_DIR
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
@@ -19,7 +19,7 @@ def get_latest(name="xkcd",offline=False):
     #validity is 12h = 43200 seconds
     if offline: validity = 0
     else: validity = 43200
-    cache = opnk.opencache()
+    cache = openk.opencache()
     netcache.fetch(rss,validity=validity,offline=offline)
     r = cache.get_renderer(rss)
     if not r:
@@ -41,7 +41,7 @@ def main():
             "--offline", action="store_true", help=_("Only access cached comics")
             )
     args = parser.parse_args()
-    cache = opnk.opencache()
+    cache = openk.opencache()
     url = "https://xkcd.com/"
     u = None
     for n in args.number:
@@ -70,7 +70,7 @@ def main():
         #By default, we get the latest
         u = get_latest(offline=args.offline)
     if u:
-        cache.opnk(u)
+        cache.openk(u)
     else:
         print("No cached XKCD comics were found. Please run xkcd online to build the cache")
 

@@ -85,7 +85,7 @@ Nice to have (packagers should may make those optional):
 - Non-interactive cache-building with configurable depth through the --sync command. The cache can easily be used by other software.
 - `netcache`, a standalone CLI tool to retrieve the cached version of a network ressource.
 - `ansicat`, a standalone CLI tool to render HTML/Gemtext/image in a terminal.
-- `opnk`, a standalone CLI tool to open any kind of ressources (local or network) and display it in your terminal or, if not possible, fallback to `xdg-open`.
+- `openk`, a standalone CLI tool to open any kind of ressources (local or network) and display it in your terminal or, if not possible, fallback to `xdg-open`.
 
 ## RC files
 

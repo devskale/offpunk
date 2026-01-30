@@ -172,7 +172,7 @@ The archives are limited to 200 (this is configurable). For me, it means between
 
 Inside my terminal, I now open files with:
 
-> opnk
+> openk
 
 
 => /index.gmi Back to the tutorial

@@ -46,5 +46,5 @@ Here are some contributed users workflows that could inspire you
 Offpunk contains three tools that you can use independantly in your project.
 - netcache
 - ansicat
-- opnk
+- openk
 
