@@ -1464,7 +1464,11 @@ class HtmlRenderer(AbstractRenderer):
                             imgtext = "[IMG LINK %s]"
                     links.append(link + " " + text)
                     link_id = str(len(links) + startlinks)
-                    r.open_theme("link")
+                    if is_url_blocked(link,self.redirects):
+                        linktheme = "blocked_link"
+                    else:
+                        linktheme = "link"
+                    r.open_theme(linktheme)
                     for child in element.children:
                         if child.name != "img":
                             recursive_render(child, preformatted=preformatted)
@@ -1473,7 +1477,7 @@ class HtmlRenderer(AbstractRenderer):
                         r.add_text(imgtext % link_id)
                     else:
                         r.add_text(" [%s]" % link_id)
-                    r.close_theme("link")
+                    r.close_theme(linktheme)
                 else:
                     # No real link found
                     for child in element.children:
