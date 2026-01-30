@@ -15,6 +15,7 @@ import gettext
 import ansicat
 import netcache
 import offutils
+import offblocklist
 from offutils import (
         GREPCMD, 
         is_local, 
@@ -111,6 +112,7 @@ class opencache:
         self.mime_handlers = {}
         self.last_mode = {}
         self.last_width = term_width(absolute=True)
+        self.redirects = offblocklist.redirects
 
     def _get_handler_cmd(self, mimetype,file_extension=None):
         # Now look for a handler for this mimetype
@@ -192,7 +194,7 @@ class opencache:
                     usecache = False
             if not usecache:
                 renderer = ansicat.renderer_from_file(path, url=inpath, theme=theme,\
-                                                      **kwargs)
+                                                      redirectlist=self.redirects,**kwargs)
                 if renderer:
                     self.rendererdic[inpath] = renderer
                     self.renderer_time[inpath] = int(time.time())
@@ -206,8 +208,8 @@ class opencache:
         else:
             return None
 
-    def opnk(self, inpath, mode="readable", terminal=True, grep=None, theme=None, link=None,\
-                        direct_open_unsupported=False, **kwargs):
+    def opnk(self, inpath, mode="readable", terminal=True, grep=None, theme=None, \
+                link=None, direct_open_unsupported=False, **kwargs):
         # Return True if inpath opened in Terminal
         # False otherwise
         # also returns the url in case it has been modified
@@ -220,12 +222,12 @@ class opencache:
         if not offutils.is_local(inpath):
             if mode:
                 kwargs["images_mode"] = mode
-            cachepath, inpath = netcache.fetch(inpath, **kwargs)
+            cachepath, inpath = netcache.fetch(inpath, redirects=self.redirects,**kwargs)
             if not cachepath:
                 return False, inpath
         # folowing line is for :// which are locals (file,list)
         elif "://" in inpath:
-            cachepath, inpath = netcache.fetch(inpath, **kwargs)
+            cachepath, inpath = netcache.fetch(inpath, redirects=self.redirects,**kwargs)
         elif inpath.startswith("mailto:"):
             cachepath = inpath
         elif os.path.exists(inpath):

@@ -22,6 +22,7 @@ Features:
 - customize prompt with "set prompt_on" and "set prompt_off" (by Andrew Fowlie)
 - "help help" now sends an email to the offpunk-users mailing-list
 - "links" command now display all links
+- new "blocked_link" object in theme. By default, blocked link are in red.
 Others:
 - In "lists", only consider files ending with .gmi (bug #46 by woffs)
 - support for new links color in gopher (by JMCS)
@@ -33,6 +34,7 @@ Others:
 - Ansicat: HTML Render img with data-src if src doesn’t link to a valid image
 - Opnk: fix a crash when trying to cache-clean uncached url (such as images)
 - added mime-type "application/pgp-keys" as to be opened by TextRenderer
+- "redirect" has been refactored to acts on the netcache level
 
 ## 2.8 - November 13th 2025
 - New option "images_size" to use with "set" (idea by aelius)

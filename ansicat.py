@@ -16,7 +16,7 @@ import gettext
 import netcache
 import offthemes
 import unmerdify
-from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg, _LOCALE_DIR, find_root 
+from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg, _LOCALE_DIR, find_root, is_url_blocked
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
 gettext.textdomain('offpunk')
@@ -181,7 +181,7 @@ def get_gopher_mime(url):
 # First, we define the different content->text renderers, outside of the rest
 # (They could later be factorized in other files or replaced)
 class AbstractRenderer:
-    def __init__(self, content, url, center=True,**kwargs):
+    def __init__(self, content, url, center=True,redirects={},**kwargs):
         self.url = url
         #base url is used to construct relative urls (see <base> in html)
         self.base = None
@@ -201,6 +201,8 @@ class AbstractRenderer:
         self.mime = None
         # The library used to clean the HTML
         self.cleanlib = "No cleaning required"
+        #url redirections
+        self.redirects = redirects
 
     def display(self, mode=None, directdisplay=False):
         wtitle = self.get_formatted_title()
@@ -235,6 +237,9 @@ class AbstractRenderer:
 
     def get_theme(self):
         return self.theme
+
+    def set_redirects(self, redirects):
+        self.redirects = redirects
 
     # This class hold an internal representation of the HTML text
     class representation:
@@ -818,6 +823,11 @@ class GemtextRenderer(AbstractRenderer):
                         r.open_theme("image_link")
                         r.center_line()
                         theme = "image_link"
+                    #theme for blocked URL
+                    elif is_url_blocked(url,self.redirects) \
+                         and r.open_theme("blocked_link"):
+                        theme = "blocked_link"
+                    #theme for recently updated URL
                     elif (
                         current_modif
                         and link_modif
@@ -1800,7 +1810,7 @@ def get_mime(path, url=None):
     return mime
 
 
-def renderer_from_file(path, url=None, theme=None,**kwargs):
+def renderer_from_file(path, url=None, theme=None, redirectlist={}, **kwargs):
     if not path:
         return None
     mime = get_mime(path, url=url)
@@ -1813,14 +1823,14 @@ def renderer_from_file(path, url=None, theme=None,**kwargs):
                 f.close()
         else:
             content = path
-        toreturn = set_renderer(content, url, mime, theme=theme\
-                                ,**kwargs)
+        toreturn = set_renderer(content, url, mime, theme=theme, \
+                                redirectlist=redirectlist,**kwargs)
     else:
         toreturn = None
     return toreturn
 
 
-def set_renderer(content, url, mime, theme=None,**kwargs):
+def set_renderer(content, url, mime, theme=None, redirectlist={}, **kwargs):
     renderer = None
     if mime == "Local Folder":
         renderer = FolderRenderer("", url, datadir=xdg("data"))
@@ -1863,8 +1873,11 @@ def set_renderer(content, url, mime, theme=None,**kwargs):
     if not renderer:
         renderer = FakeRenderer("",url,**kwargs)
         renderer.set_mime(mime)
-    if renderer and theme:
-        renderer.set_theme(theme)
+    if renderer:
+        if theme:
+            renderer.set_theme(theme)
+        if redirectlist:
+            renderer.set_redirects(redirectlist)
     return renderer
 
 

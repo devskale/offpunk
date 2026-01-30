@@ -164,7 +164,6 @@ class GeminiClient(cmd.Cmd):
         self.hist_index = 0
         self.marks = {}
         self.page_index = 0
-        self.permanent_redirects = {}
         # Sync-only mode is restricted by design
         self.offline_only = False
         self.sync_only = sync_only
@@ -205,9 +204,9 @@ class GeminiClient(cmd.Cmd):
             "gemini_images": True,
         }
         self.set_prompt("ON")
-        self.redirects = offblocklist.redirects
+        self.opencache.redirects = offblocklist.redirects
         for i in offblocklist.blocked:
-            self.redirects[i] = "blocked"
+            self.opencache.redirects[i] = "blocked"
         term_width(new_width=self.options["width"])
         self.log = {
             "start_time": time.time(),
@@ -330,43 +329,11 @@ class GeminiClient(cmd.Cmd):
         # we don’t handle the name anymore !
         if name:
             print(_("We don’t handle name of URL: %s") % name)
-        # Obey permanent redirects
-        if url in self.permanent_redirects:
-            self._go_to_url(
-                self.permanent_redirects[url],
-                update_hist=update_hist,
-                force_refresh=force_refresh,
-                handle=handle,
-                name=name,
-                mode=mode,
-                limit_size=limit_size,
-                grep=grep,
-            )
-            return
         # Code to translate URLs to better frontends (think twitter.com -> nitter)
         parsed = urllib.parse.urlparse(url)
         netloc = parsed.netloc
         if netloc.startswith("www."):
             netloc = netloc[4:]
-        # we block/redirect even subdomains
-        for key in self.redirects.keys():
-            match = key == netloc
-            if key.startswith("*"):
-                match = netloc.endswith(key[1:])
-            if match:
-                if self.redirects[key] == "blocked":
-                    text = ""
-                    text += _("Blocked URL: ")+url + "\n"
-                    text += _("This website has been blocked with the following rule:\n")
-                    text += key + "\n"
-                    text += _("Use the following redirect command to unblock it:\n")
-                    text += "redirect %s NONE" %key
-                    if handle and not self.sync_only:
-                        print(text)
-                    return
-                else:
-                    parsed = parsed._replace(netloc=self.redirects[key])
-                    url = urllib.parse.urlunparse(parsed)
         params = {}
         params["timeout"] = self.options["short_timeout"]
         if limit_size:
@@ -396,7 +363,7 @@ class GeminiClient(cmd.Cmd):
         # Use cache or mark as to_fetch if resource is not cached
         if handle and not self.sync_only:
             displayed, url = self.opencache.opnk(
-                url, mode=mode, grep=grep, theme=self.theme, **params
+                url, mode=mode, grep=grep, theme=self.theme,**params
             )
             modedurl = mode_url(url, mode)
             if not displayed:
@@ -417,7 +384,7 @@ class GeminiClient(cmd.Cmd):
         else:
             # we are asked not to handle or in sync_only mode
             if self.support_http or parsed.scheme not in ["http", "https"]:
-                netcache.fetch(url, **params)
+                netcache.fetch(url, redirects=self.opencache.redirects,**params)
 
     @needs_gi
     def _show_lookup(self, offset=0, end=None, show_url=False):
@@ -489,29 +456,29 @@ class GeminiClient(cmd.Cmd):
     def do_redirect(self, line):
         """Display and manage the list of redirected URLs. This features is mostly useful to use privacy-friendly frontends for popular websites."""
         if len(line.split()) == 1:
-            if line in self.redirects:
-                print(_("%s is redirected to %s") % (line, self.redirects[line]))
+            if line in self.opencache.redirects:
+                print(_("%s is redirected to %s") % (line, self.opencache.redirects[line]))
             else:
                 print(_("Please add a destination to redirect %s") % line)
         elif len(line.split()) >= 2:
             orig, dest = line.split(" ", 1)
             if dest.lower() == "none":
-                if orig in self.redirects:
-                    self.redirects.pop(orig)
+                if orig in self.opencache.redirects:
+                    self.opencache.redirects.pop(orig)
                     print(_("Redirection for %s has been removed") % orig)
                 else:
                     print(_("%s was not redirected. Nothing has changed.") % orig)
             elif dest.lower() == "block":
-                self.redirects[orig] = "blocked"
+                self.opencache.redirects[orig] = "blocked"
                 print(_("%s will now be blocked") % orig)
             else:
-                self.redirects[orig] = dest
+                self.opencache.redirects[orig] = dest
                 print(_("%s will now be redirected to %s") % (orig, dest))
         else:
             toprint = _("Current redirections:\n")
             toprint += "--------------------\n"
-            for r in self.redirects:
-                toprint += "%s\t->\t%s\n" % (r, self.redirects[r])
+            for r in self.opencache.redirects:
+                toprint += "%s\t->\t%s\n" % (r, self.opencache.redirects[r])
             toprint += _('\nTo add new, use "redirect origine.com destination.org"')
             toprint += _('\nTo remove a redirect, use "redirect origine.com NONE"')
             toprint += (
