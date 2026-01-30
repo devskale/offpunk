@@ -45,7 +45,7 @@ Source = "https://git.sr.ht/~lioploum/offpunk"
 offpunk = "offpunk:main"
 netcache = "netcache:main"
 ansicat = "ansicat:main"
-openk = "opnk:main"
+openk = "openk:main"
 unmerdify = "unmerdify:main"
 xkcd = "xkcd:main"
 
