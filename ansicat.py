@@ -529,7 +529,7 @@ class AbstractRenderer:
             title += " (%s)" % self.get_url_title()
         return title
 
-    def get_formatted_title(self):
+    def get_formatted_title(self,linksnbr=True):
         title = self.get_url_title()
         nbr = len(self.get_links())
         if is_local(self.url):
@@ -539,7 +539,8 @@ class AbstractRenderer:
             str_last = "last accessed on %s" % time.ctime(
                 netcache.cache_last_modified(self.url)
             )
-            title += " (%s links)" % nbr
+            if linksnbr:
+                title += " (%s links)" % nbr
         return self._window_title(title, info=str_last)
 
     # this function is about creating a title derived from the URL
@@ -1699,7 +1700,7 @@ class XkcdRenderer(HtmlRenderer):
 
     def display(self, mode=None, directdisplay=False):
         info = "  (XKCD #%s)"%self.get_xkcd_number()
-        wtitle = self.get_formatted_title()
+        wtitle = self.get_formatted_title(linksnbr=False)
         if not directdisplay:
             body = wtitle + "\n" + self.get_body(mode=mode)
             return body
