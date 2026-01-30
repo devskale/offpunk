@@ -1184,16 +1184,19 @@ class GeminiClient(cmd.Cmd):
         renderer = self.get_renderer()
         url = unmode_url(self.current_url)[0]
         out = renderer.get_page_title() + "\n\n"
-        out += "URL      :   " + url + "\n"
-        out += "Mime     :   " + renderer.get_mime() + "\n"
-        out += "Cache    :   " + netcache.get_cache_path(url) + "\n"
+        #TRANSLATORS: this string and "Mime", "Cache", "Renderer" are formatted to align.
+        #if you can obtain the same effect in your language, try to do it ;)
+        #they are displayed with the "info" command
+        out += _("URL      :   ") + url + "\n"
+        out += _("Mime     :   ") + renderer.get_mime() + "\n"
+        out += _("Cache    :   ") + netcache.get_cache_path(url) + "\n"
         if self.get_renderer():
             rend = str(self.get_renderer().__class__)
             rend = rend.lstrip("<class '__main__.").rstrip("'>")
         else:
             rend = "None"
-        out += "Renderer :   " + rend + "\n"
-        out += "Cleaned with : " + renderer.get_cleanlib() + "\n\n"
+        out += _("Renderer :   ") + rend + "\n"
+        out += _("Cleaned with : ") + renderer.get_cleanlib() + "\n\n"
         lists = []
         for l in self.list_lists():
             if self.list_has_url(url, l):
