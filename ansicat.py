@@ -1704,7 +1704,7 @@ class XkcdRenderer(HtmlRenderer):
             body = wtitle + "\n" + self.get_body(mode=mode)
             return body
         else:
-            print(self._window_title(wtitle))
+            print(wtitle)
             self.printgemtext("# "+self.get_title() + info)
             img_url,img_path,alttext,title = self.xkcd_extract()
             #now displaying
@@ -1713,7 +1713,7 @@ class XkcdRenderer(HtmlRenderer):
             elif not _DO_HTML:
                 self.printgemtext(_("\n> Please install python-bs4 to parse HTML"))
             else:
-                self.printgemtext(_("\n> missing picture, please reload\n"))
+                self.printgemtext(_("\n> Picture not in cache. Please reload this page.\n"))
             self.printgemtext(alttext)
             return True
 
