@@ -151,6 +151,9 @@ def needs_gi(inner):
     outer.__doc__ = inner.__doc__
     return outer
 
+#red warning to print
+REDERROR="\x1b[1;31m"+_("Error: ")+"\x1b[0m"
+
 class GeminiClient(cmd.Cmd):
     def __init__(self, completekey="tab", sync_only=False):
         super().__init__(completekey=completekey)
@@ -1102,7 +1105,7 @@ class GeminiClient(cmd.Cmd):
         elif line in self.list_lists():
             list_path = self.list_path(line)
             if not list_path:
-                print(_("List %s does not exist. Cannot add it to tour") % (list))
+                print(REDERROR+_("List %s does not exist. Cannot add it to tour") % (list))
             else:
                 url = "list:///%s" % line
                 for l in self.get_renderer(url).get_links():
@@ -1742,7 +1745,7 @@ Use "view XX" where XX is a number to view information about link XX.
             self.list_create(list, quite=True)
             list_path = self.list_path(list)
         if not list_path:
-            print(
+            print(REDERROR+
                 _("List %s does not exist. Create it with "
                 "list create %s"
                 "") % (list, list)
@@ -1894,7 +1897,7 @@ Use "view XX" where XX is a number to view information about link XX.
     def list_show(self, list):
         list_path = self.list_path(list)
         if not list_path:
-            print(
+            print(REDERROR+
                 _("List %s does not exist. Create it with "
                 "list create %s"
                 "") % (list, list)
