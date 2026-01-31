@@ -6,13 +6,15 @@ Unmerdify alpha support (by Vincent Jousse):
 - if "ftr_site_config" is set, unmerdify will be enabled in "ansicat"
 - ansicat will fallback to readability if unmerdify fails
 - "info" now explain how the content was cleaned
-Imortant changes:
+Important changes:
+- "opnk" is deprecated and replaced by "openk"
 - Default image size now 100 instead of 40 (can be restored with "set images_size 40")
 - Links to available feeds are now displayed at the bottom of HTML pages
 - "root" has been modified to go to the root of the capsule/userspace "root /" for real root
 - Images are now displayed in Gemini. This can be disabled with "set gemini_images false"
 - "ls" command is deprecated
 Features:
+- new "xkcd" command-line tool to directly access your XKCD comics
 - new "websearch" command which default to wiby.me
 - new "share" command to send a page by email
 - new "reply" command to send an email to the author of the page

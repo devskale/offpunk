@@ -29,7 +29,7 @@ Advanced users and developers may use the latest Git version.
 git clone https://git.sr.ht/~lioploum/offpunk
 ```
 
-Once cloned, no build is required. You can launch offpunk.py/opnk.py/ansicat.py/netcache.py directly.
+Once cloned, no build is required. You can launch offpunk.py/openk.py/ansicat.py/netcache.py directly.
 
 > python offpunk.py
 

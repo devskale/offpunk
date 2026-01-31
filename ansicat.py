@@ -529,7 +529,7 @@ class AbstractRenderer:
             title += " (%s)" % self.get_url_title()
         return title
 
-    def get_formatted_title(self):
+    def get_formatted_title(self,linksnbr=True):
         title = self.get_url_title()
         nbr = len(self.get_links())
         if is_local(self.url):
@@ -539,7 +539,8 @@ class AbstractRenderer:
             str_last = "last accessed on %s" % time.ctime(
                 netcache.cache_last_modified(self.url)
             )
-            title += " (%s links)" % nbr
+            if linksnbr:
+                title += " (%s links)" % nbr
         return self._window_title(title, info=str_last)
 
     # this function is about creating a title derived from the URL
@@ -1463,7 +1464,11 @@ class HtmlRenderer(AbstractRenderer):
                             imgtext = "[IMG LINK %s]"
                     links.append(link + " " + text)
                     link_id = str(len(links) + startlinks)
-                    r.open_theme("link")
+                    if is_url_blocked(link,self.redirects):
+                        linktheme = "blocked_link"
+                    else:
+                        linktheme = "link"
+                    r.open_theme(linktheme)
                     for child in element.children:
                         if child.name != "img":
                             recursive_render(child, preformatted=preformatted)
@@ -1472,7 +1477,7 @@ class HtmlRenderer(AbstractRenderer):
                         r.add_text(imgtext % link_id)
                     else:
                         r.add_text(" [%s]" % link_id)
-                    r.close_theme("link")
+                    r.close_theme(linktheme)
                 else:
                     # No real link found
                     for child in element.children:
@@ -1699,12 +1704,12 @@ class XkcdRenderer(HtmlRenderer):
 
     def display(self, mode=None, directdisplay=False):
         info = "  (XKCD #%s)"%self.get_xkcd_number()
-        wtitle = self.get_formatted_title()
+        wtitle = self.get_formatted_title(linksnbr=False)
         if not directdisplay:
             body = wtitle + "\n" + self.get_body(mode=mode)
             return body
         else:
-            print(self._window_title(wtitle))
+            print(wtitle)
             self.printgemtext("# "+self.get_title() + info)
             img_url,img_path,alttext,title = self.xkcd_extract()
             #now displaying
@@ -1713,7 +1718,7 @@ class XkcdRenderer(HtmlRenderer):
             elif not _DO_HTML:
                 self.printgemtext(_("\n> Please install python-bs4 to parse HTML"))
             else:
-                self.printgemtext(_("\n> missing picture, please reload\n"))
+                self.printgemtext(_("\n> Picture not in cache. Please reload this page.\n"))
             self.printgemtext(alttext)
             return True
 

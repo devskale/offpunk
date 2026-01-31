@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# opnk stand for "Open like a PuNK".
+# openk stand for "Open like a PuNK".
 # It will open any file or URL and display it nicely in less.
 # If not possible, it will fallback to xdg-open
 # URL are retrieved through netcache
@@ -208,7 +208,7 @@ class opencache:
         else:
             return None
 
-    def opnk(self, inpath, mode="readable", terminal=True, grep=None, theme=None, \
+    def openk(self, inpath, mode="readable", terminal=True, grep=None, theme=None, \
                 link=None, direct_open_unsupported=False, **kwargs):
         # Return True if inpath opened in Terminal
         # False otherwise
@@ -310,7 +310,7 @@ class opencache:
             change_cmd = _("\"handler %s MY_PREFERED_APP %%s\"")%mimetype
             try:
                 #we don’t write the info if directly opening to avoid 
-                #being verbose in opnk
+                #being verbose in openk
                 if not direct_open_unsupported:
                     print(_("External open of type %s with \"%s\"")%(mimetype,cmd_str))
                     print(_("You can change the default handler with %s")%change_cmd)
@@ -360,11 +360,11 @@ class opencache:
 
 
 def main():
-    descri = _("opnk is an universal open command tool that will try to display any file \
+    descri = _("openk is an universal open command tool that will try to display any file \
              in the pager less after rendering its content with ansicat. If that fails, \
-             opnk will fallback to opening the file with xdg-open. If given an URL as input \
-             instead of a path, opnk will rely on netcache to get the networked content.")
-    parser = argparse.ArgumentParser(prog="opnk", description=descri)
+             openk will fallback to opening the file with xdg-open. If given an URL as input \
+             instead of a path, openk will rely on netcache to get the networked content.")
+    parser = argparse.ArgumentParser(prog="openk", description=descri)
     parser.add_argument(
         "--mode",
         metavar="MODE",
@@ -406,11 +406,11 @@ def main():
     if len(args.content) == 2 and args.content[1].isdigit():
         url = args.content[0]
         link_id = args.content[1]
-        cache.opnk(url, mode=args.mode, validity=args.cache_validity, link=link_id,\
+        cache.openk(url, mode=args.mode, validity=args.cache_validity, link=link_id,\
                     direct_open_unsupported=True, linkmode=args.linkmode)
     else:
         for f in args.content:
-            cache.opnk(f, mode=args.mode, validity=args.cache_validity,\
+            cache.openk(f, mode=args.mode, validity=args.cache_validity,\
                         direct_open_unsupported=True, linkmode=args.linkmode)
 
 if __name__ == "__main__":

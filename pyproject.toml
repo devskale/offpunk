@@ -45,7 +45,7 @@ Source = "https://git.sr.ht/~lioploum/offpunk"
 offpunk = "offpunk:main"
 netcache = "netcache:main"
 ansicat = "ansicat:main"
-opnk = "opnk:main"
+openk = "openk:main"
 unmerdify = "unmerdify:main"
 xkcd = "xkcd:main"
 
@@ -65,7 +65,7 @@ path = "hatch_build.py"
 only-include = [
   "ansicat.py", "netcache_migration.py", "netcache.py",
   "offblocklist.py", "offpunk.py", "offthemes.py",
-  "offutils.py", "opnk.py", "cert_migration.py", "unmerdify.py",
+  "offutils.py", "openk.py", "cert_migration.py", "unmerdify.py",
   "xkcd.py", "share",
 ]
 artifacts = [ "share/locale/*/LC_MESSAGES/*mo", ]

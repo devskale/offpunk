@@ -20,7 +20,7 @@ Offpunk transparently browse http/https/gemini/gopher/spartan/finger links. In y
 
 ## Unix philosophy
 
-Offpunk is made of 4 components that can be used separatly: netcache, ansicat, opnk and offpunk. While being written in python, dependencies are kept minimal and, when possible, optional.
+Offpunk is made of 4 components that can be used separatly: netcache, ansicat, openk and offpunk. While being written in python, dependencies are kept minimal and, when possible, optional.
 
 => /screenshots/resist.png RESIST!
 
