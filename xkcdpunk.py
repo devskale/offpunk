@@ -23,14 +23,14 @@ def get_latest(name="xkcd",offline=False):
     netcache.fetch(rss,validity=validity,offline=offline)
     r = cache.get_renderer(rss)
     if not r:
-        print("xkcd needs to be run at least once online to fetch the rss feed")
+        print("xkcdpunk needs to be run at least once online to fetch the rss feed")
         return None
     else:
         link = r.get_link(latest_link)
         return link
 
 def main():
-    descri = _("xkcd is a tool to display a given XKCD comic in your terminal")
+    descri = _("xkcdpunk is a tool to display a given XKCD comic in your terminal")
     parser = argparse.ArgumentParser(prog="xkcd", description=descri)
     parser.add_argument(
             "number",
@@ -72,7 +72,7 @@ def main():
     if u:
         cache.openk(u)
     else:
-        print("No cached XKCD comics were found. Please run xkcd online to build the cache")
+        print("No cached XKCD comics were found. Please run xkcdpunk online to build the cache")
 
 
 if __name__ == "__main__":

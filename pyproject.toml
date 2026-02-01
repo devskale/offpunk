@@ -47,7 +47,7 @@ netcache = "netcache:main"
 ansicat = "ansicat:main"
 openk = "openk:main"
 unmerdify = "unmerdify:main"
-xkcd = "xkcd:main"
+xkcdpunk = "xkcdpunk:main"
 
 [dependency-groups]
 test = [
@@ -66,7 +66,7 @@ only-include = [
   "ansicat.py", "netcache_migration.py", "netcache.py",
   "offblocklist.py", "offpunk.py", "offthemes.py",
   "offutils.py", "openk.py", "cert_migration.py", "unmerdify.py",
-  "xkcd.py", "share",
+  "xkcdpunk.py", "share",
 ]
 artifacts = [ "share/locale/*/LC_MESSAGES/*mo", ]
 

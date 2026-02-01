@@ -151,6 +151,9 @@ def needs_gi(inner):
     outer.__doc__ = inner.__doc__
     return outer
 
+#red warning to print
+REDERROR="\x1b[1;31m"+_("Error: ")+"\x1b[0m"
+
 class GeminiClient(cmd.Cmd):
     def __init__(self, completekey="tab", sync_only=False):
         super().__init__(completekey=completekey)
@@ -1102,7 +1105,7 @@ class GeminiClient(cmd.Cmd):
         elif line in self.list_lists():
             list_path = self.list_path(line)
             if not list_path:
-                print(_("List %s does not exist. Cannot add it to tour") % (list))
+                print(REDERROR+_("List %s does not exist. Cannot add it to tour") % (list))
             else:
                 url = "list:///%s" % line
                 for l in self.get_renderer(url).get_links():
@@ -1184,16 +1187,19 @@ class GeminiClient(cmd.Cmd):
         renderer = self.get_renderer()
         url = unmode_url(self.current_url)[0]
         out = renderer.get_page_title() + "\n\n"
-        out += "URL      :   " + url + "\n"
-        out += "Mime     :   " + renderer.get_mime() + "\n"
-        out += "Cache    :   " + netcache.get_cache_path(url) + "\n"
+        #TRANSLATORS: this string and "Mime", "Cache", "Renderer" are formatted to align.
+        #if you can obtain the same effect in your language, try to do it ;)
+        #they are displayed with the "info" command
+        out += _("URL      :   ") + url + "\n"
+        out += _("Mime     :   ") + renderer.get_mime() + "\n"
+        out += _("Cache    :   ") + netcache.get_cache_path(url) + "\n"
         if self.get_renderer():
             rend = str(self.get_renderer().__class__)
             rend = rend.lstrip("<class '__main__.").rstrip("'>")
         else:
             rend = "None"
-        out += "Renderer :   " + rend + "\n"
-        out += "Cleaned with : " + renderer.get_cleanlib() + "\n\n"
+        out += _("Renderer :   ") + rend + "\n"
+        out += _("Cleaned with : ") + renderer.get_cleanlib() + "\n\n"
         lists = []
         for l in self.list_lists():
             if self.list_has_url(url, l):
@@ -1739,7 +1745,7 @@ Use "view XX" where XX is a number to view information about link XX.
             self.list_create(list, quite=True)
             list_path = self.list_path(list)
         if not list_path:
-            print(
+            print(REDERROR+
                 _("List %s does not exist. Create it with "
                 "list create %s"
                 "") % (list, list)
@@ -1891,7 +1897,7 @@ Use "view XX" where XX is a number to view information about link XX.
     def list_show(self, list):
         list_path = self.list_path(list)
         if not list_path:
-            print(
+            print(REDERROR+
                 _("List %s does not exist. Create it with "
                 "list create %s"
                 "") % (list, list)

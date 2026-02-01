@@ -200,7 +200,7 @@ class AbstractRenderer:
         # self.mime should be used only in renderer with multiple mime
         self.mime = None
         # The library used to clean the HTML
-        self.cleanlib = "No cleaning required"
+        self.cleanlib = _("No cleaning required")
         #url redirections
         self.redirects = redirects
 
