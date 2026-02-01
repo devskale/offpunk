@@ -2162,9 +2162,12 @@ Use "view XX" where XX is a number to view information about link XX.
             print(_("%s is an alias for '%s'") % (arg, full_cmd))
             print(_("See the list of aliases with 'abbrevs'"))
             print(_("'help %s':") % full_cmd)
-            cmd.Cmd.do_help(self, full_cmd)
+            self.do_help(full_cmd)
         else:
-            cmd.Cmd.do_help(self, arg)
+            try:
+                print(_(getattr(self, 'do_' + arg).__doc__))
+            except AttributeError:
+                cmd.Cmd.do_help(self, arg)
 
     def do_tutorial(self, arg):
         """Access the offpunk.net tutorial (online)"""
