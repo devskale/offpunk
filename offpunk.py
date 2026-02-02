@@ -477,6 +477,8 @@ class GeminiClient(cmd.Cmd):
             else:
                 self.opencache.redirects[orig] = dest
                 print(_("%s will now be redirected to %s") % (orig, dest))
+            #refreshing the cache for coloured redirects
+            self.opencache.cleanup()
         else:
             toprint = _("Current redirections:\n")
             toprint += "--------------------\n"
