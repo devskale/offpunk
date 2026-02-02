@@ -573,8 +573,8 @@ class GeminiClient(cmd.Cmd):
         theme can also be used with "preset" to load an existing theme.
 
         "theme preset"  : show available themes
-        "theme preset PRESET_NAME" : swith to a given preset
-        """
+        "theme preset PRESET_NAME" : swith to a given preset"""
+
         words = line.split()
         le = len(words)
         if le == 0:
@@ -723,8 +723,8 @@ class GeminiClient(cmd.Cmd):
         Use with "raw" to copy ANSI content as seen in your terminal (with colour codes).
         Use with "cache" to copy the path of the cached content.
         Use with "title" to copy the title of the page.
-        Use with "link" to copy a link in the gemtext format to that page with the title.
-        """
+        Use with "link" to copy a link in the gemtext format to that page with the title."""
+
         if self.current_url:
             args = arg.split()
             if args and args[0] == "url":
@@ -763,8 +763,8 @@ class GeminiClient(cmd.Cmd):
         Use with "text" as first argument to send the full content. TODO
         Without argument, "url" is assumed.
         Next arguments are the email adresses of the recipients.
-        If no destination, you will need to fill it in your mail client.
-        """
+        If no destination, you will need to fill it in your mail client."""
+
         # default "share" case were users has to give the recipient
         if self.current_url:
             # we will not consider the url argument (which is the default)
@@ -807,8 +807,7 @@ class GeminiClient(cmd.Cmd):
         If an email is provided as an argument, it will be used.
         arguments:
         - "save" : allows to detect and save email without actually sending an email.
-        - "save new@email" : save a new reply email to replace an existing one
-        """
+        - "save new@email" : save a new reply email to replace an existing one"""
         args = arg.split(" ")
         if self.current_url:
             r = self.get_renderer()
@@ -936,8 +935,7 @@ class GeminiClient(cmd.Cmd):
         "cookies list [url]" - list existing cookies for current url
         default is listing cookies for current domain.
         
-        To get a cookie as a txt file,use the cookie-txt extension for Firefox. 
-        """
+        To get a cookie as a txt file,use the cookie-txt extension for Firefox."""
         al = arg.split()
         if len(al) == 0:
             al = ["list"]
@@ -1171,8 +1169,7 @@ class GeminiClient(cmd.Cmd):
     def do_certs(self, line) -> None:
         """Manage your client certificates (identities) for a site.
         `certs` will display all valid certificates for the current site
-        `certs new <name> <days-valid> <url[optional]>` will create a new certificate, if no url is specified, the current open site will be used.
-        """
+        `certs new <name> <days-valid> <url[optional]>` will create a new certificate, if no url is specified, the current open site will be used."""
         line = line.strip()
         if not line:
             url_with_identity = netcache.ask_certs(self.current_url)
@@ -1370,8 +1367,7 @@ class GeminiClient(cmd.Cmd):
         """Display all the links for the current page.
            If argument N is provided, then page through N links at a time.
            "links 10" show you the first 10 links, then 11 to 20, etc.
-           if N = 0, then all the links are displayed
-        """
+           if N = 0, then all the links are displayed"""
         args = line.split()
         increment = 0
         if len(args) > 0 and args[0].isdigit():
@@ -1389,8 +1385,7 @@ class GeminiClient(cmd.Cmd):
             self._show_lookup()
 
     def do_ls(self, line):
-        """DEPRECATED: List contents of current index.
-        """
+        """DEPRECATED: List contents of current index."""
         print("ls is deprecated. Use links instead")
         self.do_links(line)
 
@@ -1524,8 +1519,7 @@ Use "view XX" where XX is a number to view information about link XX.
         current page:
         > shell grep STRING|wc -l
         '!' is an useful shortcut.
-        > !grep STRING|wc -l
-        """
+        > !grep STRING|wc -l"""
         # input is used if we wand to send something else than current page
         # to the shell
         tmp = None
@@ -1618,8 +1612,7 @@ Use "view XX" where XX is a number to view information about link XX.
     def do_url(self, args):
         """Print the url of the current page.
         Use "url XX" where XX is a number to print the url of link XX.
-        "url" can also be piped to the shell, using the pipe "|"
-        """
+        "url" can also be piped to the shell, using the pipe "|"."""
         splitted = args.split("|",maxsplit=1)
         url = None
         final_url = None
@@ -1642,8 +1635,7 @@ Use "view XX" where XX is a number to view information about link XX.
         """Add the current URL to the list specified as argument.
         If no argument given, URL is added to Bookmarks.
         You can pass a link number as the second argument to add the link.
-        "add $LIST XX" will add link number XX to $LIST
-        """
+        "add $LIST XX" will add link number XX to $LIST"""
         args = line.split()
         if len(args) < 1:
             list = "bookmarks"
@@ -2068,9 +2060,8 @@ Use "view XX" where XX is a number to view information about link XX.
         - list archives  : contains last 200 archived URLs
         - history        : contains last 200 visisted URLs
         - to_fetch       : contains URLs that will be fetch during the next sync
-        - tour           : contains the next URLs to visit during a tour (see "help tour")
+        - tour           : contains the next URLs to visit during a tour (see "help tour")"""
 
-        """
         listdir = os.path.join(xdg("data"), "lists")
         os.makedirs(listdir, exist_ok=True)
         if not arg:

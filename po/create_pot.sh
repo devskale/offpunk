@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-./extract.py > ../docstrings.py
+
+./extract_docstrings.py > ../docstrings.py
+
 
 cd ..
 xgettext --add-comments=TRANSLATORS *py -o po/messages.pot
