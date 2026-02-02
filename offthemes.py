@@ -51,7 +51,7 @@ yellow = {
                 "window_title" :    ["red","bold"],
                 "window_subtitle" : ["red","faint"],
                 "title" :           ["yellow","bold","underline"],
-                "subtitle" :        ["yellow","underline"],
+                "subtitle" :        ["yellow","bold"],
                 "subsubtitle" :     ["yellow","faint","underline"], #fallback to subtitle if none
                 "link"  :           ["yellow"],
                 "new_link":         ["bold"],

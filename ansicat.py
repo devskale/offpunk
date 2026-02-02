@@ -1632,7 +1632,7 @@ class HtmlRenderer(AbstractRenderer):
             r.newparagraph()
             r.open_theme("subtitle")
             r.add_text("Available feeds: ")
-            r.close_theme("link")
+            r.close_theme("subtitle")
             r.newparagraph()
         for s in sublinks[1:]:
             title = str(s[2])
