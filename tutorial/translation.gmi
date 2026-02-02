@@ -13,12 +13,16 @@ As a pre-requirement, make sure you have gettext installed in your system. We re
 
 ## Quick TL;DR
 
-If you are interested in the details and reasons for all the commands, keep reading. Here's a quick summary of the steps you need to contribute a translation for offpunk:
+If you are interested in the details and reasons for all the commands, keep reading. Here's a quick summary of the steps you need to contribute a translation for offpunk. 
+
+Have in mind that, since offpunk uses python docstrings to provide user help, we need to do a couple extra steps compared to a typical application using gettext. Mostly, we need to extract all the docstrings we are going to show the user, and write them to a temporary file so the "xgettext" command can find them.
+
+In order to make it easier for translators, there's a script in offpunk's repository ("po/create_pot.sh") that would scan the source files and create a "po template" file automatically. Just run these commands:
 
 ```
 cd <repository root>
-xgettext --add-comments=TRANSLATORS *py -o po/messages.pot
 cd po/
+./create_pot.sh # this will generate a "messages.pot" file
 msginit -i messages.pot -o XX.po # XX should be your language code
 #it will ask you details like your email
 poedit XX.po 
@@ -33,18 +37,28 @@ Keep reading now for details :)
 
 In the gettext system, all translations start with this file. It's by default called messages.pot
 
-To create it, this was the command used (from the root folder of the offpunk source code):
+To create it, this is the command used (from the root folder of the offpunk source code):
 
 ```
 $ xgettext --add-comments=TRANSLATORS *py -o po/messages.pot
 ```
 
+but, because we use docstrings for offpunk's internal help system, there's a previous step: we have a small python script (extract_docstrings.py) to we use to extract all the necessary extra messages and write them to a temporary file. This is all done automatically for you if you use the "create_pot.sh" script.
+
+We encourage you to look at those scripts if you are interested.
+
 xgettext will "extract" all the translatable strings from all the python files (*py), and use po/messages.pot as the output file (-o)
-The "--add-comments=TRANSLATORS" part of the command tells xgettext to copy the comments that the devs left for translators. These comments will give valuable tips to translators. See the next file for more detail:
+The "--add-comments=TRANSLATORS" part of the command tells xgettext to copy the comments that the devs left for translators. These comments will give valuable tips to translators. See the next page for more detail:
 
-https://www.gnu.org/software/gettext/manual/html_node/Translator-advice.html
+=> https://www.gnu.org/software/gettext/manual/html_node/Translator-advice.html Advice for translators (gnu.org)
 
-in the future, if new "translatable" strings are added (or the strings are modified), this same command can be run again.
+in the future, if new "translatable" strings are added (or the strings are modified), this same command can be run again. In fact, if you are going to work in a translation at a given time, generating a fresh messages.pot is always a good idea. Remember you can do this simply by running:
+
+```
+./create_pot.sh
+```
+
+from the po/ folder.
 
 
 ## Creating a translation for a new language
@@ -59,7 +73,7 @@ $ locale
 
 Then, follow the steps above to create the "po template" file (messages.pot)
 
-Ideally, your system would be configured to use your native language, and ideally that's the "target" language you'll translate offpunk into (but this is not strictly necessary) . Enter the i18n folder:
+Ideally, your system would be configured to use your native language, and ideally that's the "target" language you'll translate offpunk into (but this is not strictly necessary) . Enter the po/ folder:
 
 ```
 $ cd po
@@ -129,7 +143,7 @@ $ LANG=de ./offpunk.py
 
 ## Keeping your translation up-to-date
 
-Every now and then, new messages will make their way into offpunk. New features are added, some messages change... In those cases, you can incorporate the new messages that appear in messages.pot (typically the devs will update the pot when they introduce new strings) to your language's po file by running:
+Every now and then, new messages will make their way into offpunk. New features are added, some messages change... In those cases, you can incorporate the new messages that appear in messages.pot (that you can generate with the 'create_pot.sh script) to your language's po file by running:
 
 ```
 $ msgmerge -U XX.po messages.pot 
@@ -163,7 +177,7 @@ print(_("Open"))
 ```
 
 Take a look at this link if you are interested in the topic:
-https://www.gnu.org/software/gettext/manual/html_node/Translator-advice.html
+=> https://www.gnu.org/software/gettext/manual/html_node/Translator-advice.html Translator advice
 
 
 
