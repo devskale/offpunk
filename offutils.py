@@ -271,7 +271,7 @@ def find_root(url,absolute=False,return_value=""):
     path = "/"
     subpath = parsed.path.split("/")
     dismissed = ""
-    if parsed.scheme == 'gopher':
+    if parsed.scheme == 'gopher' and len(subpath) >= 2:
         # remove the type, add "1" (root is always gonna be "folder") later
         subpath.remove(subpath[1])
         # now "subpath" has the same number of elements as gemini and http
