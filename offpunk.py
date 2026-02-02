@@ -561,12 +561,19 @@ class GeminiClient(cmd.Cmd):
         "theme ELEMENT COLOR"
 
         ELEMENT is one of: window_title, window_subtitle, title,
-        subtitle,subsubtitle,link,oneline_link,new_link,image_link,preformatted,blockquote.
+        subtitle,subsubtitle,link,oneline_link,new_link,image_link,preformatted,blockquote,\
+                blocked_link.
 
         COLOR is one or many (separated by space) of: bold, faint, italic, underline, black,
         red, green, yellow, blue, purple, cyan, white.
 
-        Each color can alternatively be prefaced with "bright_"."""
+        Each color can alternatively be prefaced with "bright_".
+
+        theme can also be used with "preset" to load an existing theme.
+
+        "theme preset"  : show available themes
+        "theme preset PRESET_NAME" : swith to a given preset
+        """
         words = line.split()
         le = len(words)
         if le == 0:
@@ -575,7 +582,26 @@ class GeminiClient(cmd.Cmd):
                 print("%s set to %s" % (e, t[e]))
         else:
             element = words[0]
-            if element not in offthemes.default.keys():
+            if element == "preset":
+                if le == 1:
+                    print(_("Available preset themes are: ")) 
+                    print(" - default")
+                    for k in offthemes.themes.keys():
+                        print(" - %s"%k)
+                elif words[1] == "default":
+                    for key in offthemes.default:
+                        self.theme[key] = offthemes.default[key]
+                        self.opencache.cleanup()
+                elif words[1] in offthemes.themes.keys():
+                    #every preset is applied assuming default
+                    #so we must apply default first!
+                    for theme in [offthemes.default,offthemes.themes[words[1]]]:
+                        for key in theme:
+                            self.theme[key] = theme[key]
+                    self.opencache.cleanup()
+                else:
+                    print(_("%s is not a valid preset theme")%words[1])
+            elif element not in offthemes.default.keys():
                 print(_("%s is not a valid theme element") % element)
                 print(_("Valid theme elements are: "))
                 valid = []
