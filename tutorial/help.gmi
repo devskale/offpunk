@@ -18,6 +18,10 @@ As it may be intimidating, you can get help from a fellow human by sending an em
 
 => mailto:~lioploum/offpunk-users@lists.sr.ht Send an email the offpunk-users list
 
+This can be done from within Offpunk by asking for help twice!
+
+> help help
+
 Try to write a clear subject, present yourself and your usecase. The list is very open to every kind of discussions.
 
 IMPORTANT: when replying to a message on the list, be sure to use the "reply all". If you forget, only the original sender will receive your message.
