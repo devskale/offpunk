@@ -38,6 +38,7 @@ Others:
 - Opnk: fix a crash when trying to cache-clean uncached url (such as images)
 - added mime-type "application/pgp-keys" as to be opened by TextRenderer
 - "redirect" has been refactored to acts on the netcache level
+- ansicat: in HTML, the <a> link to a picture is only displayed if different from the picture itself
 
 ## 2.8 - November 13th 2025
 - New option "images_size" to use with "set" (idea by aelius)

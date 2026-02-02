@@ -1457,14 +1457,29 @@ class HtmlRenderer(AbstractRenderer):
                     link = urlify(link)
                     text = ""
                     imgtext = ""
+                    #normal link, not image
+                    normal_link = True
+                    #display link to the picture?
+                    display_this_picture = False
                     # we display images first in a link
                     for child in element.children:
                         if child.name == "img":
                             recursive_render(child)
+                            display_this_picture = True
+                            normal_link = False
                             #print( "%s same as previous link %s ?"%(link,str(links[-1])))
-                            imgtext = "[IMG LINK %s]"
-                    links.append(link + " " + text)
-                    link_id = str(len(links) + startlinks)
+                    # we check if the link is the same as the image itself
+                    # if so, it is the last link in the links list
+                    abs_url = urllib.parse.urljoin(self.get_base_url(),link)
+                    if not normal_link and len(links) > 0:
+                        last_link = links[-1].split()
+                        if len(last_link) > 0:
+                            display_this_picture = abs_url != last_link[0]
+                    if display_this_picture:
+                        imgtext = "[IMG LINK %s]"
+                    if display_this_picture or normal_link:
+                        links.append(link + " " + text)
+                        link_id = str(len(links) + startlinks)
                     if is_url_blocked(link,self.redirects):
                         linktheme = "blocked_link"
                     else:
@@ -1473,10 +1488,10 @@ class HtmlRenderer(AbstractRenderer):
                     for child in element.children:
                         if child.name != "img":
                             recursive_render(child, preformatted=preformatted)
-                    if imgtext != "":
+                    if display_this_picture:
                         r.center_line()
                         r.add_text(imgtext % link_id)
-                    else:
+                    elif normal_link:
                         r.add_text(" [%s]" % link_id)
                     r.close_theme(linktheme)
                 else:
