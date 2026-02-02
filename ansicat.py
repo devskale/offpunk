@@ -16,7 +16,7 @@ import gettext
 import netcache
 import offthemes
 import unmerdify
-from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg, _LOCALE_DIR, find_root, is_url_blocked
+from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg, _LOCALE_DIR, find_root, is_url_blocked, urlify
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
 gettext.textdomain('offpunk')
@@ -964,7 +964,7 @@ class GopherRenderer(AbstractRenderer):
                             url = path[4:]
                         else:
                             url = "gopher://%s%s/%s%s" % (host, port, itemtype, path)
-                        url = url.replace(" ", "%20")
+                        url = urlify(url)
                         linkline = url + " " + name
                         links.append(linkline)
                         number = len(links) + startlinks
@@ -1454,13 +1454,14 @@ class HtmlRenderer(AbstractRenderer):
                 # support for images nested in links
                 if link:
                     # First, we transform any space that can be found in that link
-                    link = link.replace(" ","%20")
+                    link = urlify(link)
                     text = ""
                     imgtext = ""
                     # we display images first in a link
                     for child in element.children:
                         if child.name == "img":
                             recursive_render(child)
+                            #print( "%s same as previous link %s ?"%(link,str(links[-1])))
                             imgtext = "[IMG LINK %s]"
                     links.append(link + " " + text)
                     link_id = str(len(links) + startlinks)
@@ -1503,7 +1504,7 @@ class HtmlRenderer(AbstractRenderer):
                         abs_url, data = looks_like_base64(src,self.get_base_url())
                     if abs_url:
                         ansi_img = render_image(src, width=width, mode=mode)
-                        abs_url = abs_url.replace(" ","%20")
+                        abs_url = urlify(abs_url)
                         links.append(abs_url + " " + text)
                         self.images[mode].append(abs_url)
                         link_id = " [%s]" % (len(links) + startlinks)
@@ -1542,7 +1543,6 @@ class HtmlRenderer(AbstractRenderer):
                         r.open_theme("image_link")
                         r.center_line()
                         if vid_url and src:
-                            vid_url = vid_url.replace(" ","%20")
                             links.append(vid_url + " " + text)
                             link_id = " [%s]" % (len(links) + startlinks)
                             r.add_text(text + link_id)
@@ -1552,7 +1552,6 @@ class HtmlRenderer(AbstractRenderer):
                         r.newline()
                 elif src:
                     vid_url, d = looks_like_base64(src, self.get_base_url())
-                    vid_url = vid_url.replace(" ","%20")
                     links.append(vid_url + " " + text)
                     link_id = " [%s]" % (len(links) + startlinks)
                     r.open_theme("image_link")

@@ -409,6 +409,15 @@ def send_email(dest,subject=None,body=None,toconfirm=True,allowemptydest=True):
             print(_("Cannot find a mail client to send mail to %s") % inpath)
             print(_("Please install xdg-open (usually from xdg-util package)"))
 
+# Take an URL in UTF-8 and replace all the characters by the proper % chars
+# like " " becomes "%20"
+def urlify(url):
+    parsed = urllib.parse.urlparse(url)
+    #we only quote the path part
+    newpath = urllib.parse.quote(parsed.path)
+    newparsed = parsed._replace(path=newpath)
+    return urllib.parse.urlunparse(newparsed)
+
 # This method return the image URL or invent it if it’s a base64 inline image
 # It returns [url,image_data] where image_data is None for normal image
 def looks_like_base64(src, baseurl):
@@ -430,6 +439,7 @@ def looks_like_base64(src, baseurl):
             imgurl = None
     else:
         imgurl = urllib.parse.urljoin(baseurl, imgname)
+        imgurl = urlify(imgurl)
     return imgurl, imgdata
 
 #if returnkey=True, we return [redirection, matching pattern]

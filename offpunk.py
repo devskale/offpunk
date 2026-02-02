@@ -35,6 +35,7 @@ from offutils import (
     _HAS_XDGOPEN,
     _LOCALE_DIR,
     find_root,
+    urlify,
 )
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
@@ -1353,7 +1354,7 @@ class GeminiClient(cmd.Cmd):
         if not line:
             print(_("What?"))
             return
-        search = line.replace(" ", "%20")
+        search = urllib.parse.quote(line)
         self._go_to_url("gemini://geminispace.info/search?%s" % search)
 
     def do_history(self, *args):
