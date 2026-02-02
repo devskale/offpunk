@@ -53,11 +53,11 @@ yellow = {
                 "title" :           ["yellow","bold","underline"],
                 "subtitle" :        ["yellow","bold"],
                 "subsubtitle" :     ["yellow","faint","underline"], #fallback to subtitle if none
-                "link"  :           ["yellow"],
+                "link"  :           ["yellow","faint"],
                 "new_link":         ["bold"],
                 "blocked_link":     ["red","faint"],
                 "oneline_link":     ["white"],     #for gopher/gemini. fallback to link if none
-                "image_link" :      ["yellow"],
+                "image_link" :      ["yellow","italic","faint"],
                 "preformatted":     ["faint"],
                 "blockquote" :      ["italic"],
                 "prompt_on" :       ["green","bold"],
