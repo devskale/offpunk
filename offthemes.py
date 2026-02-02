@@ -64,5 +64,23 @@ yellow = {
                 "prompt_off" :      ["red","bold"],
         }
 
-themes = {"offpunk1":offpunk1,"yellow":yellow}
+
+cyan =   {
+                "window_title" :    ["blue","bold"],
+                "window_subtitle" : ["blue","faint"],
+                "title" :           ["cyan","bold","underline"],
+                "subtitle" :        ["cyan","bold"],
+                "subsubtitle" :     ["cyan","faint","underline"], #fallback to subtitle if none
+                "link"  :           ["cyan",],
+                "new_link":         ["bold"],
+                "blocked_link":     ["red","faint"],
+                "oneline_link":     ["white"],     #for gopher/gemini. fallback to link if none
+                "image_link" :      ["blue","italic","faint"],
+                "preformatted":     ["faint"],
+                "blockquote" :      ["italic"],
+                "prompt_on" :       ["green","bold"],
+                "prompt_off" :      ["blue","bold"],
+        }
+
+themes = {"offpunk1":offpunk1,"yellow":yellow, "cyan":cyan}
 default = offpunk1
