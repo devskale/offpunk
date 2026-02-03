@@ -1,7 +1,9 @@
 # Offpunk History
 
 ## 3.0-beta2 - Unreleased
+Changes since 3.0-beta1
 - BUGFIX: In "openk", self.last_width was badly reinitialized after cleanup()
+- CRASHFIX: in "ansicat", build_body_and_links was crashing with empty links
 
 ## 3.0-beta1 - February 2nd 2026
 This is a beta release before 3.0. Its goal is to find bugs, allow for a 

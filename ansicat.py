@@ -592,15 +592,18 @@ class AbstractRenderer:
                 self.rendered_text[mode] += results[0] + "\n"
                 # we should absolutize all URLs here
                 for l in results[1]:
-                    ll = l.split()[0]
-                    try:
-                        abs_l = urllib.parse.urljoin(self.url, ll)
-                        self.links[mode].append(abs_l)
-                    except Exception:
-                        print(
-                            "Urljoin Error: Could not make an URL out of %s and %s"
-                            % (self.url, ll)
-                        )
+                    ll = l.split()
+                    if len(ll) > 0:
+                        try:
+                            abs_l = urllib.parse.urljoin(self.url, ll[0])
+                        except Exception:
+                            print(_(
+                                "Urljoin Error: Could not make an URL out of %s and %s"
+                                % (self.url, ll)
+                                ))
+                    else:
+                        abs_l = self.url
+                    self.links[mode].append(abs_l)
                 #for l in self.get_subscribe_links()[1:]:
                 #    self.links[mode].append(l[0])
 
