@@ -403,7 +403,7 @@ def main():
             cache.set_handler(splitted[1],splitted[2])
     # if the second argument is an integer, we associate it with the previous url
     # to use as a link_id
-    if len(args.content) == 2 and args.content[1].isdigit():
+    if (type(args.content) == list) and len(args.content) == 2 and args.content[1].isdigit():
         url = args.content[0]
         link_id = args.content[1]
         cache.openk(url, mode=args.mode, validity=args.cache_validity, link=link_id,\
