@@ -957,7 +957,7 @@ class GopherRenderer(AbstractRenderer):
                     # If line starts with TAB, there’s no name.
                     # We thus hide this line
                     if name:
-                        itemtype = name[0]
+                        itemtype = name[0].strip("/")
                         name = name[1:]
                         if port == "70":
                             port = ""
@@ -966,6 +966,8 @@ class GopherRenderer(AbstractRenderer):
                         if itemtype == "h" and path.startswith("URL:"):
                             url = path[4:]
                         else:
+                            if not path.startswith("/") and itemtype:
+                                path = "/" + path
                             url = "gopher://%s%s/%s%s" % (host, port, itemtype, path)
                         url = urlify(url)
                         linkline = url + " " + name
