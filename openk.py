@@ -181,7 +181,6 @@ class opencache:
             if usecache and self.last_width != width:
                 self.cleanup()
                 usecache = False
-                self.last_width = width
             if usecache:
                 if inpath in self.renderer_time.keys():
                     last_downloaded = netcache.cache_last_modified(inpath)
@@ -334,7 +333,8 @@ class opencache:
             os.remove(self.temp_files.popitem()[1])
         while len(self.less_histfile) > 0:
             os.remove(self.less_histfile.popitem()[1])
-        self.last_width = None
+        #After cleanup, we set the current size of the terminal
+        self.last_width = term_width(absolute=True)
         self.rendererdic = {}
         self.renderer_time = {}
         self.last_mode = {}
