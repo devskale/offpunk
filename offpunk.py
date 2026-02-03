@@ -4,7 +4,7 @@
 Offline-First Gemini/Web/Gopher/RSS reader and browser
 """
 
-__version__ = "2.8"
+__version__ = "3.0-beta1"
 
 # Initial imports and conditional imports {{{
 import argparse
@@ -35,6 +35,7 @@ from offutils import (
     _HAS_XDGOPEN,
     _LOCALE_DIR,
     find_root,
+    urlify,
 )
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
@@ -477,6 +478,8 @@ class GeminiClient(cmd.Cmd):
             else:
                 self.opencache.redirects[orig] = dest
                 print(_("%s will now be redirected to %s") % (orig, dest))
+            #refreshing the cache for coloured redirects
+            self.opencache.cleanup()
         else:
             toprint = _("Current redirections:\n")
             toprint += "--------------------\n"
@@ -559,12 +562,19 @@ class GeminiClient(cmd.Cmd):
         "theme ELEMENT COLOR"
 
         ELEMENT is one of: window_title, window_subtitle, title,
-        subtitle,subsubtitle,link,oneline_link,new_link,image_link,preformatted,blockquote.
+        subtitle,subsubtitle,link,oneline_link,new_link,image_link,preformatted,blockquote,\
+                blocked_link.
 
         COLOR is one or many (separated by space) of: bold, faint, italic, underline, black,
         red, green, yellow, blue, purple, cyan, white.
 
-        Each color can alternatively be prefaced with "bright_"."""
+        Each color can alternatively be prefaced with "bright_".
+
+        theme can also be used with "preset" to load an existing theme.
+
+        "theme preset"  : show available themes
+        "theme preset PRESET_NAME" : swith to a given preset"""
+
         words = line.split()
         le = len(words)
         if le == 0:
@@ -573,7 +583,26 @@ class GeminiClient(cmd.Cmd):
                 print("%s set to %s" % (e, t[e]))
         else:
             element = words[0]
-            if element not in offthemes.default.keys():
+            if element == "preset":
+                if le == 1:
+                    print(_("Available preset themes are: ")) 
+                    print(" - default")
+                    for k in offthemes.themes.keys():
+                        print(" - %s"%k)
+                elif words[1] == "default":
+                    for key in offthemes.default:
+                        self.theme[key] = offthemes.default[key]
+                        self.opencache.cleanup()
+                elif words[1] in offthemes.themes.keys():
+                    #every preset is applied assuming default
+                    #so we must apply default first!
+                    for theme in [offthemes.default,offthemes.themes[words[1]]]:
+                        for key in theme:
+                            self.theme[key] = theme[key]
+                    self.opencache.cleanup()
+                else:
+                    print(_("%s is not a valid preset theme")%words[1])
+            elif element not in offthemes.default.keys():
                 print(_("%s is not a valid theme element") % element)
                 print(_("Valid theme elements are: "))
                 valid = []
@@ -694,8 +723,8 @@ class GeminiClient(cmd.Cmd):
         Use with "raw" to copy ANSI content as seen in your terminal (with colour codes).
         Use with "cache" to copy the path of the cached content.
         Use with "title" to copy the title of the page.
-        Use with "link" to copy a link in the gemtext format to that page with the title.
-        """
+        Use with "link" to copy a link in the gemtext format to that page with the title."""
+
         if self.current_url:
             args = arg.split()
             if args and args[0] == "url":
@@ -734,8 +763,8 @@ class GeminiClient(cmd.Cmd):
         Use with "text" as first argument to send the full content. TODO
         Without argument, "url" is assumed.
         Next arguments are the email adresses of the recipients.
-        If no destination, you will need to fill it in your mail client.
-        """
+        If no destination, you will need to fill it in your mail client."""
+
         # default "share" case were users has to give the recipient
         if self.current_url:
             # we will not consider the url argument (which is the default)
@@ -778,8 +807,7 @@ class GeminiClient(cmd.Cmd):
         If an email is provided as an argument, it will be used.
         arguments:
         - "save" : allows to detect and save email without actually sending an email.
-        - "save new@email" : save a new reply email to replace an existing one
-        """
+        - "save new@email" : save a new reply email to replace an existing one"""
         args = arg.split(" ")
         if self.current_url:
             r = self.get_renderer()
@@ -907,8 +935,7 @@ class GeminiClient(cmd.Cmd):
         "cookies list [url]" - list existing cookies for current url
         default is listing cookies for current domain.
         
-        To get a cookie as a txt file,use the cookie-txt extension for Firefox. 
-        """
+        To get a cookie as a txt file,use the cookie-txt extension for Firefox."""
         al = arg.split()
         if len(al) == 0:
             al = ["list"]
@@ -1142,8 +1169,7 @@ class GeminiClient(cmd.Cmd):
     def do_certs(self, line) -> None:
         """Manage your client certificates (identities) for a site.
         `certs` will display all valid certificates for the current site
-        `certs new <name> <days-valid> <url[optional]>` will create a new certificate, if no url is specified, the current open site will be used.
-        """
+        `certs new <name> <days-valid> <url[optional]>` will create a new certificate, if no url is specified, the current open site will be used."""
         line = line.strip()
         if not line:
             url_with_identity = netcache.ask_certs(self.current_url)
@@ -1325,7 +1351,7 @@ class GeminiClient(cmd.Cmd):
         if not line:
             print(_("What?"))
             return
-        search = line.replace(" ", "%20")
+        search = urllib.parse.quote(line)
         self._go_to_url("gemini://geminispace.info/search?%s" % search)
 
     def do_history(self, *args):
@@ -1341,8 +1367,7 @@ class GeminiClient(cmd.Cmd):
         """Display all the links for the current page.
            If argument N is provided, then page through N links at a time.
            "links 10" show you the first 10 links, then 11 to 20, etc.
-           if N = 0, then all the links are displayed
-        """
+           if N = 0, then all the links are displayed"""
         args = line.split()
         increment = 0
         if len(args) > 0 and args[0].isdigit():
@@ -1360,8 +1385,7 @@ class GeminiClient(cmd.Cmd):
             self._show_lookup()
 
     def do_ls(self, line):
-        """DEPRECATED: List contents of current index.
-        """
+        """DEPRECATED: List contents of current index."""
         print("ls is deprecated. Use links instead")
         self.do_links(line)
 
@@ -1495,8 +1519,7 @@ Use "view XX" where XX is a number to view information about link XX.
         current page:
         > shell grep STRING|wc -l
         '!' is an useful shortcut.
-        > !grep STRING|wc -l
-        """
+        > !grep STRING|wc -l"""
         # input is used if we wand to send something else than current page
         # to the shell
         tmp = None
@@ -1589,8 +1612,7 @@ Use "view XX" where XX is a number to view information about link XX.
     def do_url(self, args):
         """Print the url of the current page.
         Use "url XX" where XX is a number to print the url of link XX.
-        "url" can also be piped to the shell, using the pipe "|"
-        """
+        "url" can also be piped to the shell, using the pipe "|"."""
         splitted = args.split("|",maxsplit=1)
         url = None
         final_url = None
@@ -1613,8 +1635,7 @@ Use "view XX" where XX is a number to view information about link XX.
         """Add the current URL to the list specified as argument.
         If no argument given, URL is added to Bookmarks.
         You can pass a link number as the second argument to add the link.
-        "add $LIST XX" will add link number XX to $LIST
-        """
+        "add $LIST XX" will add link number XX to $LIST"""
         args = line.split()
         if len(args) < 1:
             list = "bookmarks"
@@ -2039,9 +2060,8 @@ Use "view XX" where XX is a number to view information about link XX.
         - list archives  : contains last 200 archived URLs
         - history        : contains last 200 visisted URLs
         - to_fetch       : contains URLs that will be fetch during the next sync
-        - tour           : contains the next URLs to visit during a tour (see "help tour")
+        - tour           : contains the next URLs to visit during a tour (see "help tour")"""
 
-        """
         listdir = os.path.join(xdg("data"), "lists")
         os.makedirs(listdir, exist_ok=True)
         if not arg:

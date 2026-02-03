@@ -47,4 +47,57 @@ offpunk1 = {
                 "prompt_off" :      ["green"],
              }  
 
+yellow = {
+                "window_title" :    ["red","bold"],
+                "window_subtitle" : ["red","faint"],
+                "title" :           ["yellow","bold","underline"],
+                "subtitle" :        ["yellow","bold"],
+                "subsubtitle" :     ["yellow","faint","underline"], #fallback to subtitle if none
+                "link"  :           ["yellow","faint"],
+                "new_link":         ["bold"],
+                "blocked_link":     ["red","faint"],
+                "oneline_link":     ["white"],     #for gopher/gemini. fallback to link if none
+                "image_link" :      ["yellow","italic","faint"],
+                "preformatted":     ["faint"],
+                "blockquote" :      ["italic"],
+                "prompt_on" :       ["green","bold"],
+                "prompt_off" :      ["red","bold"],
+        }
+
+
+cyan =   {
+                "window_title" :    ["blue","bold"],
+                "window_subtitle" : ["blue","faint"],
+                "title" :           ["cyan","bold","underline"],
+                "subtitle" :        ["cyan","bold"],
+                "subsubtitle" :     ["cyan","faint","underline"], #fallback to subtitle if none
+                "link"  :           ["cyan",],
+                "new_link":         ["bold"],
+                "blocked_link":     ["red","faint"],
+                "oneline_link":     ["white"],     #for gopher/gemini. fallback to link if none
+                "image_link" :      ["blue","italic","faint"],
+                "preformatted":     ["faint"],
+                "blockquote" :      ["italic"],
+                "prompt_on" :       ["green","bold"],
+                "prompt_off" :      ["blue","bold"],
+        }
+
+bw =   {
+                "window_title" :    ["background_white", "black","bold"],
+                "window_subtitle" : ["background_white", "black","faint"],
+                "title" :           ["bold","underline"],
+                "subtitle" :        ["bold"],
+                "subsubtitle" :     ["faint","underline"], #fallback to subtitle if none
+                "link"  :           ["bold",],
+                "new_link":         ["bold"],
+                "blocked_link":     ["faint"],
+                "oneline_link":     [],     #for gopher/gemini. fallback to link if none
+                "image_link" :      ["italic","faint"],
+                "preformatted":     ["faint"],
+                "blockquote" :      ["italic"],
+                "prompt_on" :       ["bold"],
+                "prompt_off" :      ["faint"],
+        }
+
+themes = {"offpunk1":offpunk1,"yellow":yellow, "cyan":cyan, "bw": bw}
 default = offpunk1
