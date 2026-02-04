@@ -413,8 +413,10 @@ def send_email(dest,subject=None,body=None,toconfirm=True,allowemptydest=True):
 # like " " becomes "%20"
 def urlify(url):
     parsed = urllib.parse.urlparse(url)
+    #we need to unquote it first, in case it’s already quoted
+    newpath = urllib.parse.unquote(parsed.path)
     #we only quote the path part
-    newpath = urllib.parse.quote(parsed.path)
+    newpath = urllib.parse.quote(newpath)
     newparsed = parsed._replace(path=newpath)
     return urllib.parse.urlunparse(newparsed)
 
