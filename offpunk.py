@@ -136,6 +136,7 @@ _ABBREVS = {# {{{
     "wen": "wikipedia en",
     "wfr": "wikipedia fr",
     "wes": "wikipedia es",
+    "yy": "copy url",   # That’s an Easter Egg for Vimium users ;-)
     "abbrevs": "alias",
 }# }}}
 
