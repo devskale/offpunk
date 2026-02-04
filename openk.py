@@ -181,7 +181,6 @@ class opencache:
             if usecache and self.last_width != width:
                 self.cleanup()
                 usecache = False
-                self.last_width = width
             if usecache:
                 if inpath in self.renderer_time.keys():
                     last_downloaded = netcache.cache_last_modified(inpath)
@@ -334,7 +333,8 @@ class opencache:
             os.remove(self.temp_files.popitem()[1])
         while len(self.less_histfile) > 0:
             os.remove(self.less_histfile.popitem()[1])
-        self.last_width = None
+        #After cleanup, we set the current size of the terminal
+        self.last_width = term_width(absolute=True)
         self.rendererdic = {}
         self.renderer_time = {}
         self.last_mode = {}
@@ -403,7 +403,7 @@ def main():
             cache.set_handler(splitted[1],splitted[2])
     # if the second argument is an integer, we associate it with the previous url
     # to use as a link_id
-    if len(args.content) == 2 and args.content[1].isdigit():
+    if (type(args.content) == list) and len(args.content) == 2 and args.content[1].isdigit():
         url = args.content[0]
         link_id = args.content[1]
         cache.openk(url, mode=args.mode, validity=args.cache_validity, link=link_id,\
