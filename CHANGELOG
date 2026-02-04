@@ -7,6 +7,7 @@ Changes since 3.0-beta1
 - BUGFIX: in "ansicat:gopher", a "/" was often removed between selector and path
 - CRASHFIX: "openk" was crashing when used in a shell pipe
 - "theme" now accept "none" as a color to remove part of the theme you don’t want
+- BUGFIX: do not urlify mailto, gopher and local urls
 
 ## 3.0-beta1 - February 2nd 2026
 This is a beta release before 3.0. Its goal is to find bugs, allow for a 
