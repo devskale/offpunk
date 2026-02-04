@@ -1485,11 +1485,12 @@ class HtmlRenderer(AbstractRenderer):
                     if display_this_picture or normal_link:
                         links.append(link + " " + text)
                         link_id = str(len(links) + startlinks)
-                    if is_url_blocked(link,self.redirects):
+                    if is_url_blocked(link,self.redirects) \
+                        and r.open_theme("blocked_link"):
                         linktheme = "blocked_link"
                     else:
                         linktheme = "link"
-                    r.open_theme(linktheme)
+                        r.open_theme(linktheme)
                     for child in element.children:
                         if child.name != "img":
                             recursive_render(child, preformatted=preformatted)
