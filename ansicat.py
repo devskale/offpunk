@@ -969,7 +969,6 @@ class GopherRenderer(AbstractRenderer):
                             if not path.startswith("/") and itemtype:
                                 path = "/" + path
                             url = "gopher://%s%s/%s%s" % (host, port, itemtype, path)
-                        url = urlify(url)
                         linkline = url + " " + name
                         links.append(linkline)
                         number = len(links) + startlinks
