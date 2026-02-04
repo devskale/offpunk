@@ -966,8 +966,11 @@ class GopherRenderer(AbstractRenderer):
                         if itemtype == "h" and path.startswith("URL:"):
                             url = path[4:]
                         else:
-                            if not path.startswith("/") and itemtype:
-                                path = "/" + path
+                            # some gophermap lines include a selector without a leading "/"
+                            # gopher://some.domain/1phlog/ is valid
+                            # this is perfectly valid, and offpunk shouldn't modify the selectors
+                            # if not path.startswith("/") and itemtype:
+                            #     path = "/" + path
                             url = "gopher://%s%s/%s%s" % (host, port, itemtype, path)
                         linkline = url + " " + name
                         links.append(linkline)

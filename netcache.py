@@ -413,13 +413,19 @@ def _fetch_http(
     return cache
 
 
-def _fetch_gopher(url, timeout=DEFAULT_TIMEOUT, **kwargs):
+def _fetch_gopher(url, timeout=DEFAULT_TIMEOUT, interactive=True, **kwargs):
     parsed = urllib.parse.urlparse(url)
     host = parsed.hostname
     port = parsed.port or 70
     if len(parsed.path) >= 2:
         itemtype = parsed.path[1]
-        selector = parsed.path[2:]
+        # this is unreliable on "selectors" that contain "?" for example
+        # (which is perfectly valid)
+        # (urlparse took things after the ? as parsed.query)
+        # we should just get the full selector as is and use it
+        # selector = parsed.path[2:]
+        # so, we get everything after hostname:port, minus the 'itemtype' ([:1])
+        selector = url.split(parsed.netloc, 1)[1][2:]
     else:
         itemtype = "1"
         selector = ""
@@ -433,9 +439,12 @@ def _fetch_gopher(url, timeout=DEFAULT_TIMEOUT, **kwargs):
             break
         except OSError as e:
             err = e
-    if parsed.query:
-        request = selector + "\t" + parsed.query
-    elif itemtype == "7":
+    # gophermap lines can't have a query included.
+    # if there is something in parsed.query, it's because an error
+    # or a rogue "?" character in the selector
+    # if parsed.query:
+    #     request = selector + "\t" + parsed.query
+    if itemtype == "7":
         if interactive:
             user_input = input("> ")
             request = selector + "\t" + user_input
