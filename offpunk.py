@@ -35,7 +35,6 @@ from offutils import (
     _HAS_XDGOPEN,
     _LOCALE_DIR,
     find_root,
-    urlify,
 )
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
