@@ -1274,6 +1274,7 @@ class GeminiClient(cmd.Cmd):
         output += "===========\n"
         output += _("System: ") + sys.platform + "\n"
         output += _("Python: ") + sys.version + "\n"
+        output += _("Language: ") + os.getenv('LANG') + "\n"
         output += _("\nHighly recommended:\n")
         output += " - xdg-open            : " + has(_HAS_XDGOPEN)
         output += _("\nWeb browsing:\n")
