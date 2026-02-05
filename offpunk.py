@@ -1845,23 +1845,31 @@ Use "view XX" where XX is a number to view information about link XX.
             stri += _(", added to %s on ") % list
         stri += time.ctime() + "\n"
         list_path = self.get_list(list)
+        # We read the whole list
         with open(list_path, "r") as l_file:
             lines = l_file.readlines()
             l_file.close()
+        # Now, we write it back, 
         with open(list_path, "w") as l_file:
             l_file.write("#%s\n" % list)
             l_file.write(stri)
             counter = 0
+            previous_line = stri
             # Truncating is useful in case we open a new branch
             # after a few back in history
             to_truncate = truncate_lines
             for l in lines:
-                if not l.startswith("#"):
-                    if to_truncate > 0:
-                        to_truncate -= 1
-                    elif limit == 0 or counter < limit:
-                        l_file.write(l)
-                        counter += 1
+                # Removing duplicate lines of the same URL
+                # when there are in a row
+                if not l.startswith("#") and len(l.split(" ")) >= 2:
+                    similar = previous_line.split(" ")[1] == l.split(" ")[1]
+                    if not similar : 
+                        if to_truncate > 0:
+                            to_truncate -= 1
+                        elif limit == 0 or counter < limit:
+                            previous_line = l
+                            l_file.write(l)
+                            counter += 1
             l_file.close()
 
     # remove an url from a list.
