@@ -966,10 +966,12 @@ class GopherRenderer(AbstractRenderer):
                         if itemtype == "h" and path.startswith("URL:"):
                             url = path[4:]
                         else:
-                            if not path.startswith("/") and itemtype:
-                                path = "/" + path
+                            # some gophermap lines include a selector without a leading "/"
+                            # gopher://some.domain/1phlog/ is valid
+                            # this is perfectly valid, and offpunk shouldn't modify the selectors
+                            # if not path.startswith("/") and itemtype:
+                            #     path = "/" + path
                             url = "gopher://%s%s/%s%s" % (host, port, itemtype, path)
-                        url = urlify(url)
                         linkline = url + " " + name
                         links.append(linkline)
                         number = len(links) + startlinks
@@ -1485,11 +1487,12 @@ class HtmlRenderer(AbstractRenderer):
                     if display_this_picture or normal_link:
                         links.append(link + " " + text)
                         link_id = str(len(links) + startlinks)
-                    if is_url_blocked(link,self.redirects):
+                    if is_url_blocked(link,self.redirects) \
+                        and r.open_theme("blocked_link"):
                         linktheme = "blocked_link"
                     else:
                         linktheme = "link"
-                    r.open_theme(linktheme)
+                        r.open_theme(linktheme)
                     for child in element.children:
                         if child.name != "img":
                             recursive_render(child, preformatted=preformatted)

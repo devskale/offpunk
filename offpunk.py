@@ -136,6 +136,7 @@ _ABBREVS = {# {{{
     "wen": "wikipedia en",
     "wfr": "wikipedia fr",
     "wes": "wikipedia es",
+    "yy": "copy url",   # That’s an Easter Egg for Vimium users ;-)
     "abbrevs": "alias",
 }# }}}
 
@@ -569,6 +570,7 @@ class GeminiClient(cmd.Cmd):
         red, green, yellow, blue, purple, cyan, white.
 
         Each color can alternatively be prefaced with "bright_".
+        If color is "none", then that part of the theme is removed.
 
         theme can also be used with "preset" to load an existing theme.
 
@@ -617,6 +619,14 @@ class GeminiClient(cmd.Cmd):
                     else:
                         value = offthemes.default[element]
                     print(_("%s is set to %s") % (element, str(value)))
+                elif le == 2 and words[1].lower() in ["none"]:
+                    if element in self.theme.keys():
+                        value = self.theme[element]
+                        self.theme.pop(element)
+                        print(_("%s reset (it was set to %s)"%(element,value)))
+                        self.opencache.cleanup()
+                    else:
+                        print(_("%s is not set. Nothing to do"%element))
                 else:
                     # Now we parse the colors
                     for w in words[1:]:

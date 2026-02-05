@@ -413,10 +413,16 @@ def send_email(dest,subject=None,body=None,toconfirm=True,allowemptydest=True):
 # like " " becomes "%20"
 def urlify(url):
     parsed = urllib.parse.urlparse(url)
-    #we only quote the path part
-    newpath = urllib.parse.quote(parsed.path)
-    newparsed = parsed._replace(path=newpath)
-    return urllib.parse.urlunparse(newparsed)
+    #do not urlify local, mailto and gopher links
+    if parsed.scheme in ["", "mailto", "gopher"]:
+        return url
+    else:
+        #we need to unquote it first, in case it’s already quoted
+        newpath = urllib.parse.unquote(parsed.path)
+        #we only quote the path part
+        newpath = urllib.parse.quote(newpath)
+        newparsed = parsed._replace(path=newpath)
+        return urllib.parse.urlunparse(newparsed)
 
 # This method return the image URL or invent it if it’s a base64 inline image
 # It returns [url,image_data] where image_data is None for normal image

@@ -104,7 +104,14 @@ Also, mistakes happen. We all do mistakes. Your duty is inform the list as soon 
 
 While you were working on a patch, other patches may modify the codebase. Your patch may not apply cleanly and maintainers may request a rebase of your patch.
 
-TODO
+```
+git pull
+git rebase
+```
+
+You may need to solve conflicts in order to conclude the rebase. You may find the following article helpful:
+
+=> https://www.brethorsting.com/blog/2026/01/git-rebase-for-the-terrified/ Git Rebase for the Terrified (www.brethorsting.com)
 
 ## After your patch was accepted
 
