@@ -1310,6 +1310,7 @@ class GeminiClient(cmd.Cmd):
             openk._LESS_RESTORE_POSITION
         )
         output += "\n"
+        output += _("ftr_site_config     : ") + str(self.options["ftr_site_config"]) + "\n"
         output += _("Config directory    : ") + xdg("config") + "\n"
         output += _("User Data directory : ") + xdg("data") + "\n"
         output += _("Cache directoy      : ") + xdg("cache")
