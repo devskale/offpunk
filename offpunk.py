@@ -1257,19 +1257,24 @@ class GeminiClient(cmd.Cmd):
             out += _("Page is not save in any list")
         print(out)
 
-    def do_version(self, line):
+    def do_version(self, line,print_color=True):
         """Display version and system information."""
-
-        def has(value):
+        def has(value,color=print_color):
+            toprint = "\t"
             if value:
-                return "\t\x1b[1;32mInstalled\x1b[0m\n"
+                if color: toprint += "\x1b[1;32m"
+                toprint += "Installed"
             else:
-                return "\t\x1b[1;31mNot Installed\x1b[0m\n"
+                if color: toprint += "\x1b[1;31m"
+                toprint += "Not Installed"
+            if color: toprint += "\x1b[0m"
+            return toprint  + "\n"
 
         output = "Offpunk " + __version__ + "\n"
         output += "===========\n"
         output += _("System: ") + sys.platform + "\n"
         output += _("Python: ") + sys.version + "\n"
+        output += _("Language: ") + os.getenv('LANG') + "\n"
         output += _("\nHighly recommended:\n")
         output += " - xdg-open            : " + has(_HAS_XDGOPEN)
         output += _("\nWeb browsing:\n")
@@ -1310,7 +1315,29 @@ class GeminiClient(cmd.Cmd):
         output += _("User Data directory : ") + xdg("data") + "\n"
         output += _("Cache directoy      : ") + xdg("cache")
 
-        print(output)
+        if print_color:
+            print(output)
+        else:
+            return output
+
+    def do_bugreport(self,line):
+        """Send a mail to the offpunk-devel list with technical informations
+        about your offpunk version. You will be prompted to write an email
+        describing how to reproduce the bug."""
+        report = self.do_version(line, print_color=False)
+        firstline = report.split("\n")[0].removeprefix("Offpunk ")
+        print(_("Found a bug in Offpunk? You can report it by email to the developers."))
+        dest = "~lioploum/offpunk-devel@lists.sr.ht"
+        body = _("Please describe your problem as clearly as possible:") + "\n\n"
+        body += _("Include all the steps to reproduce the problem, including the URLs you are currently visiting.") + "\n\n"
+        body += _("Another point: always use \"reply-all\" when replying to this list.")
+        body += report
+        title = input(_("Describe the bug in one line: "))
+        if title.strip() != "":
+            subject = "[BUG REPORT %s]"%firstline + " " + title
+            send_email(dest,subject=subject,body=body,toconfirm=True)
+        else:
+            print(_("No description of the bug, report cancelled"))
 
     # Stuff that modifies the lookup table
     def do_search(self, line):
@@ -1818,23 +1845,31 @@ Use "view XX" where XX is a number to view information about link XX.
             stri += _(", added to %s on ") % list
         stri += time.ctime() + "\n"
         list_path = self.get_list(list)
+        # We read the whole list
         with open(list_path, "r") as l_file:
             lines = l_file.readlines()
             l_file.close()
+        # Now, we write it back, 
         with open(list_path, "w") as l_file:
             l_file.write("#%s\n" % list)
             l_file.write(stri)
             counter = 0
+            previous_line = stri
             # Truncating is useful in case we open a new branch
             # after a few back in history
             to_truncate = truncate_lines
             for l in lines:
-                if not l.startswith("#"):
-                    if to_truncate > 0:
-                        to_truncate -= 1
-                    elif limit == 0 or counter < limit:
-                        l_file.write(l)
-                        counter += 1
+                # Removing duplicate lines of the same URL
+                # when there are in a row
+                if not l.startswith("#") and len(l.split(" ")) >= 2:
+                    similar = previous_line.split(" ")[1] == l.split(" ")[1]
+                    if not similar : 
+                        if to_truncate > 0:
+                            to_truncate -= 1
+                        elif limit == 0 or counter < limit:
+                            previous_line = l
+                            l_file.write(l)
+                            counter += 1
             l_file.close()
 
     # remove an url from a list.
@@ -2178,10 +2213,10 @@ Use "view XX" where XX is a number to view information about link XX.
             print(_("Need help from a fellow human? Simply send an email to the offpunk-users list."))
             dest = "~lioploum/offpunk-users@lists.sr.ht"
             subject = "Getting started with Offpunk"
-            body = "Describe your problem/question as clearly as possible.\n" + \
-                   "Don’t forget to present yourself and why you would like to use Offpunk!\n"\
-                    + "\n" + \
-                    "Another point: always use \"reply-all\" when replying to this list."
+            body = _("Describe your problem/question as clearly as possible.") +"\n" + \
+             _("Don’t forget to present yourself and why you would like to use Offpunk!") + \
+               "\n\n" + \
+             _("Another point: always use \"reply-all\" when replying to this list.")
             send_email(dest,subject=subject,body=body,toconfirm=True)
         elif arg == "!":
             print(_("! is an alias for 'shell'"))

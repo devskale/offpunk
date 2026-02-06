@@ -414,4 +414,7 @@ def main():
                         direct_open_unsupported=True, linkmode=args.linkmode)
 
 if __name__ == "__main__":
+    if "opnk" in sys.argv[0]:
+        print("WARNING: opnk.py has been deprecated in favour of openk.py")
+        print("*******  Replace all your opnk calls by \"openk\"")
     main()
