@@ -1364,6 +1364,8 @@ class GeminiClient(cmd.Cmd):
         Exemple : "wikipedia en Gemini protocol"
         But you can also use abbreviations to go faster:
         "wen Gemini protocol". (your abbreviation might be missing, report the bug)
+        while it's not added, "w" is still an option you can use:
+        "w en Gemini protocol" will work as a shortcut as well
         The interface used can be modified with the command:
         "set wikipedia URL" where URL should contains two "%s", the first
         one used for the language, the second for the search string."""
