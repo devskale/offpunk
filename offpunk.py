@@ -1866,7 +1866,9 @@ Use "view XX" where XX is a number to view information about link XX.
                 # Removing duplicate lines of the same URL
                 # when there are in a row
                 if not l.startswith("#") and len(l.split(" ")) >= 2:
-                    similar = previous_line.split(" ")[1] == l.split(" ")[1]
+                    previousurl = unmode_url(previous_line.split(" ")[1])[0]
+                    currenturl = unmode_url(l.split(" ")[1])[0]
+                    similar = previousurl == currenturl 
                     if not similar : 
                         if to_truncate > 0:
                             to_truncate -= 1
