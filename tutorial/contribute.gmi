@@ -100,13 +100,35 @@ There’s no pressure. We all do this for fun. We simply need to communicate cle
 
 Also, mistakes happen. We all do mistakes. Your duty is inform the list as soon as you realize you did a mistake. We’ve all sent wrong emails or patches. That’s not a problem. But it may become a problem if people start working on reviewing code that was sent by mistake.
 
-## Rebasing your patch
+## Rebasing your patches into one
 
-While you were working on a patch, other patches may modify the codebase. Your patch may not apply cleanly and maintainers may request a rebase of your patch.
+If your work takes longer than expected, you will probably makes multiple commits and other commits may happen on TRUNK. We recomment that you work in a local branch. You must give it a name.
 
 ```
+git branch my_super_feature
+git checkout my_super_feature_branch
+```
+
+You can easily switch between "master" (the official branck) and your own branch through "git checkout".
+
+When you are ready to submit, first make sure that "master" is up to date
+
+```
+git checkout master
 git pull
-git rebase
+```
+
+Then you will merge your branch into that clean master. We recommend using "git-squash" which will automatically combines everything into one single commit. "git-squash" is often not installed by default, it is part of the "git-extras" package, available on most distributions. It is of course possible to do more traditional "git-merge" or "git-rebase".
+
+```
+git squash my_super_feature_branch
+```
+
+By default, those changes are not committed. It’s time to write a very informative commit message because that’s the one that wille be used in your email
+
+```
+git commit
+git send-email HEAD^
 ```
 
 You may need to solve conflicts in order to conclude the rebase. You may find the following article helpful:

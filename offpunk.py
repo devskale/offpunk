@@ -4,7 +4,7 @@
 Offline-First Gemini/Web/Gopher/RSS reader and browser
 """
 
-__version__ = "3.0-beta1"
+__version__ = "3.0-beta2"
 
 # Initial imports and conditional imports {{{
 import argparse
@@ -35,7 +35,6 @@ from offutils import (
     _HAS_XDGOPEN,
     _LOCALE_DIR,
     find_root,
-    urlify,
 )
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
@@ -1311,6 +1310,7 @@ class GeminiClient(cmd.Cmd):
             openk._LESS_RESTORE_POSITION
         )
         output += "\n"
+        output += _("ftr_site_config     : ") + str(self.options["ftr_site_config"]) + "\n"
         output += _("Config directory    : ") + xdg("config") + "\n"
         output += _("User Data directory : ") + xdg("data") + "\n"
         output += _("Cache directoy      : ") + xdg("cache")

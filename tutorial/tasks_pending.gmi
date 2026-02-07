@@ -35,8 +35,6 @@ Those tasks are hard and requires touching the code everywhere.
 
 bug #34: redirections are not kept while offline
 https://todo.sr.ht/~lioploum/offpunk/34
-bug #41:  Redirects should be handled in netcache, not offpunk 
-https://todo.sr.ht/~lioploum/offpunk/41
 
 ## Refactoring of errors is needed
 
