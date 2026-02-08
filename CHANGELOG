@@ -5,6 +5,7 @@
 - added "wgl" and "wde" shortcuts to wikipedia GL & DE (JMCS)
 - TRANSLATION: updated GL and ES (JMCS)
 - BUGFIX: successive visits of the same URL are not added to history even in different modes
+- TRANSLATION: NL_be (by Bert Livens)
 
 ## 3.0-beta2 - February 6th 2026
 Changes since 3.0-beta1
