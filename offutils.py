@@ -6,14 +6,14 @@
 # run : run a shell command and get the results with some security
 # term_width : get or set the width to display on the terminal
 
+import gettext
 import io
 import os
 import shlex
 import shutil
 import subprocess
-import urllib.parse
-import gettext
 import sys
+import urllib.parse
 
 import netcache
 
@@ -323,8 +323,9 @@ def find_root(url,absolute=False,return_value=""):
 # In terms of arguments, this can take an input file/string to be passed to
 # stdin, a parameter to do (well-escaped) "%" replacement on the command, a
 # flag requesting that the output go directly to the stdout, and a list of
-# additional environment variables to set.
-def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
+# additional environment variables to set.  An additional optional argument can
+# be used to supress output to stderr.
+def run(cmd, *, input=None, parameter=None, direct_output=False, env={}, no_err=False):
     if parameter:
         cmd = cmd % shlex.quote(parameter)
     e = os.environ
@@ -336,6 +337,8 @@ def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
         if input:
             input = input.encode()
         stdin = None
+
+    stderr = subprocess.DEVNULL if no_err else subprocess.STDOUT
     if not direct_output:
         # subprocess.check_output() wouldn't allow us to pass stdin.
         result = subprocess.run(
@@ -346,11 +349,11 @@ def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
             shell=True,
             stdin=stdin,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=stderr,
         )
         return result.stdout.decode()
     else:
-        subprocess.run(cmd, env=e, input=input, shell=True, stdin=stdin)
+        subprocess.run(cmd, env=e, input=input, shell=True, stdin=stdin, stderr=stderr)
 
 
 global TERM_WIDTH

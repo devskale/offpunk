@@ -16,6 +16,7 @@ import sys
 import time
 import urllib.parse
 import gettext
+from subprocess import CalledProcessError
 
 import ansicat
 import netcache
@@ -52,45 +53,51 @@ except ModuleNotFoundError:
 
 # This method copy a string to the system clipboard
 def clipboard_copy(to_copy):
-    copied = False
-    if shutil.which("xsel"):
-        run("xsel -b -i", input=to_copy, direct_output=True)
-        copied = True
-    if shutil.which("xclip"):
-        run("xclip -selection clipboard", input=to_copy, direct_output=True)
-        copied = True
-    if shutil.which("wl-copy"):
-        run("wl-copy", input=to_copy, direct_output=True)
-        copied = True
-    if not copied:
-        print(_("Install xsel/xclip (X11) or wl-clipboard (Wayland) to use copy"))
+    successes = []
+    programs = [
+         ["tmux", "tmux load-buffer -"], 
+         ["xsel", "xsel -b -i"],
+         ["xclip", "xclip -selection clipboard"],
+         ["wl-copy", "wl-copy"],
+         ["pbcopy", "pbcopy"],
+   ]
 
+    for program in programs:
+        if shutil.which(program[0]):
+            try:
+                run(program[1], input=to_copy, direct_output=True, no_err=True)
+                successes += [program[0]]
+            except CalledProcessError:
+                pass
+
+    if not any(successes):
+        print(_("Install xsel/xclip (X11) or wl-clipboard (Wayland) to use copy"))
 
 # This method returns an array with all the values in all system clipboards
 def clipboard_paste():
     # We use a set to avoid duplicates
     clipboards = set()
     commands = set()
-    pasted = False
-    if shutil.which("xsel"):
-        pasted = True
-        for selec in ["-p", "-s", "-b"]:
-            commands.add("xsel " + selec)
-    if shutil.which("xclip"):
-        pasted = True
-        for selec in ["clipboard", "primary", "secondary"]:
-            commands.add("xsel " + selec)
-    if shutil.which("wl-paste"):
-        pasted = True
-        for selec in ["", "-p"]:
-            commands.add("wl-paste " + selec)
-    for command in commands:
-        try:
-            clipboards.add(run(command))
-        except Exception:
-            # print("Skipping clipboard %s because %s"%(selec,err))
-            pass
-    if not pasted:
+    programs = [
+         ["tmux", ["save-buffer -"]], 
+         ["xsel", ["-p", "-s", "-b"]],
+         ["xclip", ["-o -selection clipboard", "-o -selection primary", "-o -selection secondary"]],
+         ["wl-paste", ["", "-p"]],
+         ["pbpaste", [""]]
+    ]
+    successes = []
+
+    for program in programs:
+        if shutil.which(program[0]):
+            for selec in program[1]:
+                try:
+                    command = f"{program[0]} {selec}"
+                    result = run(command, no_err=True)
+                    clipboards.update(result.split('\n'))
+                    successes += [program[0]]
+                except CalledProcessError:
+                    pass
+    if not any(successes):
         print(
             _("Install xsel/xclip (X11) or wl-clipboard (Wayland) to get URLs from your clipboard")
         )
