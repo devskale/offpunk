@@ -135,6 +135,8 @@ _ABBREVS = {# {{{
     "wen": "wikipedia en",
     "wfr": "wikipedia fr",
     "wes": "wikipedia es",
+    "wgl": "wikipedia gl",
+    "wde": "wikipedia de",
     "yy": "copy url",   # That’s an Easter Egg for Vimium users ;-)
     "abbrevs": "alias",
 }# }}}
@@ -1362,6 +1364,8 @@ class GeminiClient(cmd.Cmd):
         Exemple : "wikipedia en Gemini protocol"
         But you can also use abbreviations to go faster:
         "wen Gemini protocol". (your abbreviation might be missing, report the bug)
+        while it's not added, "w" is still an option you can use:
+        "w en Gemini protocol" will work as a shortcut as well
         The interface used can be modified with the command:
         "set wikipedia URL" where URL should contains two "%s", the first
         one used for the language, the second for the search string."""
@@ -1862,7 +1866,9 @@ Use "view XX" where XX is a number to view information about link XX.
                 # Removing duplicate lines of the same URL
                 # when there are in a row
                 if not l.startswith("#") and len(l.split(" ")) >= 2:
-                    similar = previous_line.split(" ")[1] == l.split(" ")[1]
+                    previousurl = unmode_url(previous_line.split(" ")[1])[0]
+                    currenturl = unmode_url(l.split(" ")[1])[0]
+                    similar = previousurl == currenturl 
                     if not similar : 
                         if to_truncate > 0:
                             to_truncate -= 1
