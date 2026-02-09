@@ -15,9 +15,7 @@ import urllib.parse
 import gettext
 import sys
 
-import cert_migration
 import netcache
-import netcache_migration
 
 # We can later add some logic to decide this based on OS family/version if needed?
 # With "None", the defaults should make this work in debian and RedHat based systems at least
@@ -71,6 +69,7 @@ def upgrade_cache(cache_folder):
     # Now, let’s upgrade the cache if needed
     while current_version < CACHE_VERSION:
         current_version += 1
+        import netcache_migration
         upgrade_func = getattr(netcache_migration, "upgrade_to_" + str(current_version))
         upgrade_func(cache_folder)
         with open(version_path, "w") as f:
@@ -103,6 +102,7 @@ def upgrade_cert(config_folder: str, data_folder: str) -> None:
     # Now, let’s upgrade the certificate storage if needed
     while current_version < CERT_VERSION:
         current_version += 1
+        import cert_migration
         upgrade_func = getattr(cert_migration, "upgrade_to_" + str(current_version))
         upgrade_func(data_folder, config_folder)
         with open(version_path, "w") as f:

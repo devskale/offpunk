@@ -2,7 +2,6 @@
 import argparse
 import base64
 import fnmatch
-import html
 import mimetypes
 import os
 import shutil
@@ -15,57 +14,73 @@ import gettext
 
 import netcache
 import offthemes
-import unmerdify
 from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg, _LOCALE_DIR, find_root, is_url_blocked, urlify
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
 gettext.textdomain('offpunk')
 _ = gettext.gettext
 
-try:
-    from readability import Document
+def load_READABILITY():
+    global Document
+    try:
+        from readability import Document
+        _HAS_READABILITY = True
+    except ModuleNotFoundError:
+        _HAS_READABILITY = False
+    return _HAS_READABILITY
 
-    _HAS_READABILITY = True
-except ModuleNotFoundError:
-    _HAS_READABILITY = False
+def load_HTML():
+    try:
+        # if bs4 version >= 4.11, we need to silent some xml warnings
+        global BeautifulSoup
+        global Comment
+        global html
+        import bs4
+        from bs4 import BeautifulSoup, Comment
+        import html
 
-try:
-    # if bs4 version >= 4.11, we need to silent some xml warnings
-    import bs4
-    from bs4 import BeautifulSoup, Comment
+        version = bs4.__version__.split(".")
+        recent = False
+        if int(version[0]) > 4:
+            recent = True
+        elif int(version[0]) == 4:
+            recent = int(version[1]) >= 11
+        if recent:
+            # As this is only for silencing some warnings, we fail
+            # silently. We don’t really care
+            try:
+                import warnings
 
-    version = bs4.__version__.split(".")
-    recent = False
-    if int(version[0]) > 4:
-        recent = True
-    elif int(version[0]) == 4:
-        recent = int(version[1]) >= 11
-    if recent:
-        # As this is only for silencing some warnings, we fail
-        # silently. We don’t really care
-        try:
-            import warnings
+                from bs4 import XMLParsedAsHTMLWarning
 
-            from bs4 import XMLParsedAsHTMLWarning
+                warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
+            except Exception:
+                pass
+        _HAS_SOUP = True
+    except ModuleNotFoundError:
+        _HAS_SOUP = False
+    return _HAS_SOUP
 
-            warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
-        except Exception:
-            pass
-    _HAS_SOUP = True
-except ModuleNotFoundError:
-    _HAS_SOUP = False
+def load_UNMERDIFY(options):
+    if "ftr_site_config" in options.keys() and options["ftr_site_config"]:
+        global unmerdify
+        import unmerdify
+        return True
+    else:
+        return False
 
-_DO_HTML = _HAS_SOUP  # and _HAS_READABILITY
-if _DO_HTML and not _HAS_READABILITY:
-    print(_("To improve your web experience (less cruft in webpages),"))
-    print(_("please install python3-readability or readability-lxml"))
+#if _DO_HTML and not _HAS_READABILITY:
+#    print(_("To improve your web experience (less cruft in webpages),"))
+#    print(_("please install python3-readability or readability-lxml"))
 
-try:
-    import feedparser
-
-    _DO_FEED = True
-except ModuleNotFoundError:
-    _DO_FEED = False
+def load_FEED():
+    try:
+        global feedparser
+        import feedparser
+        _DO_FEED = True
+    except ModuleNotFoundError:
+        _DO_FEED = False
+    return _DO_FEED
 
 _HAS_TIMG = False
 _HAS_CHAFA = False
@@ -1006,7 +1021,7 @@ class FolderRenderer(GemtextRenderer):
     # it was initialized with:
     # self.renderer = FolderRenderer("",self.get_cache_path(),datadir=xdg("data"))
     def __init__(self, content, url, center=True, datadir=None):
-        GemtextRenderer.__init__(self, content, url, center)
+        super().__init__(self, content, url, center)
         self.datadir = datadir
 
     def get_mime(self):
@@ -1084,7 +1099,7 @@ class FeedRenderer(GemtextRenderer):
         return "application/rss+xml"
 
     def is_valid(self):
-        if _DO_FEED:
+        if load_FEED():
             try:
                 parsed = feedparser.parse(self.body)
             except Exception:
@@ -1118,7 +1133,7 @@ class FeedRenderer(GemtextRenderer):
         self.title = "RSS/Atom feed"
         toreturn = []
         page = ""
-        if _DO_FEED:
+        if load_FEED():
             parsed = feedparser.parse(content)
         else:
             page += "Please install python-feedparser to handle RSS/Atom feeds\n"
@@ -1249,19 +1264,24 @@ class ImageRenderer(AbstractRenderer):
             return True
 
 class HtmlRenderer(AbstractRenderer):
+    def __init__(self, content, url, center=True,redirects={},**kwargs):
+        super().__init__(content, url, center=True,redirects={},**kwargs)
+        self.DO_HTML = load_HTML()
+        self.HAS_READABILITY = load_READABILITY()
+
     def get_mime(self):
         return "text/html"
 
     def is_valid(self):
-        if not _DO_HTML:
+        if not self.DO_HTML:
             print(
                 _("HTML document detected. Please install python-bs4 and python-readability.")
             )
-        return _DO_HTML and self.validity
+        return self.DO_HTML and self.validity
 
     def get_subscribe_links(self):
         subs = []
-        if _DO_HTML :
+        if self.DO_HTML :
             subs = [[self.url, self.get_mime(), self.get_title()]]
             soup = BeautifulSoup(self.body, "html.parser")
             links = soup.find_all("link", rel="alternate", recursive=True)
@@ -1277,8 +1297,8 @@ class HtmlRenderer(AbstractRenderer):
     def get_title(self):
         if self.title:
             return self.title
-        elif _DO_HTML and self.body:
-            if _HAS_READABILITY:
+        elif self.DO_HTML and self.body:
+            if self.HAS_READABILITY:
                 try:
                     readable = Document(self.body)
                     self.title = readable.short_title()
@@ -1296,7 +1316,7 @@ class HtmlRenderer(AbstractRenderer):
 
     def get_base_url(self):
         if not self.base :
-            if _DO_HTML and self.body:
+            if self.DO_HTML and self.body:
                 soup = BeautifulSoup(self.body, "html.parser")
                 if soup.base :
                     base = soup.base.get("href")
@@ -1314,7 +1334,7 @@ class HtmlRenderer(AbstractRenderer):
             mode = self.last_mode
         if not width:
             width = term_width()
-        if not _DO_HTML:
+        if not self.DO_HTML:
             print(
                 _("HTML document detected. Please install python-bs4 and python-readability.")
             )
@@ -1615,7 +1635,7 @@ class HtmlRenderer(AbstractRenderer):
             summary = body
             self.cleanlib += "Full as requested"
         # let’s try unmerdify
-        elif "ftr_site_config" in self.options.keys() and self.options["ftr_site_config"]:
+        elif load_UNMERDIFY(self.options):
             ftr = ftr_site_config=self.options["ftr_site_config"]
             # we want to unmerdify only if there’s a rule
             if unmerdify.is_unmerdifiable(self.url,ftr):
@@ -1630,7 +1650,7 @@ class HtmlRenderer(AbstractRenderer):
                     self.cleanlib += "Unmerdify"
         if not summary:
             # if no summary from unmerdify, we try readabilitty
-            if _HAS_READABILITY:
+            if self.HAS_READABILITY:
                 try:
                     readable = Document(body)
                     summary = readable.summary()
@@ -1707,7 +1727,7 @@ class XkcdRenderer(HtmlRenderer):
 
     #return [image_url,image_path, image_alt_text,image_title]
     def xkcd_extract(self):
-        if _DO_HTML :
+        if self.DO_HTML :
             soup = BeautifulSoup(self.body, "html.parser")
             comic_div = soup.find("div",{"id":"comic"})
             if comic_div:
@@ -1737,7 +1757,7 @@ class XkcdRenderer(HtmlRenderer):
             #now displaying
             if img_path and netcache.is_cache_valid(img_url):
                 terminal_image(img_path)
-            elif not _DO_HTML:
+            elif not self.DO_HTML:
                 self.printgemtext(_("\n> Please install python-bs4 to parse HTML"))
             else:
                 self.printgemtext(_("\n> Picture not in cache. Please reload this page.\n"))

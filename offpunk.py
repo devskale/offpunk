@@ -173,7 +173,6 @@ class GeminiClient(cmd.Cmd):
         # Sync-only mode is restricted by design
         self.offline_only = False
         self.sync_only = sync_only
-        self.support_http = netcache._DO_HTTP
         self.options = {
             "debug": False,
             "beta": False,
@@ -389,7 +388,7 @@ class GeminiClient(cmd.Cmd):
                     self._update_history(modedurl)
         else:
             # we are asked not to handle or in sync_only mode
-            if self.support_http or parsed.scheme not in ["http", "https"]:
+            if netcache.load_HTTP() or parsed.scheme not in ["http", "https"]:
                 netcache.fetch(url, redirects=self.opencache.redirects,**params)
 
     @needs_gi
@@ -1279,15 +1278,15 @@ class GeminiClient(cmd.Cmd):
         output += _("\nHighly recommended:\n")
         output += " - xdg-open            : " + has(_HAS_XDGOPEN)
         output += _("\nWeb browsing:\n")
-        output += " - python-requests     : " + has(netcache._DO_HTTP)
-        output += " - python-feedparser   : " + has(ansicat._DO_FEED)
-        output += " - python-bs4          : " + has(ansicat._HAS_SOUP)
-        output += " - python-readability  : " + has(ansicat._HAS_READABILITY)
+        output += " - python-requests     : " + has(netcache.load_HTTP())
+        output += " - python-feedparser   : " + has(ansicat.load_FEED())
+        output += " - python-bs4          : " + has(ansicat.load_HTML())
+        output += " - python-readability  : " + has(ansicat.load_READABILITY())
         output += " - timg 1.3.2+         : " + has(ansicat._HAS_TIMG)
         output += " - chafa 1.10+         : " + has(ansicat._HAS_CHAFA)
         output += _("\nNice to have:\n")
         output += " - python-setproctitle             : " + has(_HAS_SETPROCTITLE)
-        output += " - python-cryptography             : " + has(netcache._HAS_CRYPTOGRAPHY)
+        output += " - python-cryptography             : " + has(netcache.load_CRYPTOGRAPHY())
         clip_support = shutil.which("xsel") or shutil.which("xclip")
         output += " - X11 clipboard (xsel or xclip)   : " + has(clip_support)
         output += " - Wayland clipboard (wl-clipboard): " + has(shutil.which("wl-copy"))
@@ -1297,16 +1296,16 @@ class GeminiClient(cmd.Cmd):
                 ansicat._RENDER_IMAGE
             )
         output += _(" - Render HTML (bs4, readability)             : ") + has(
-            ansicat._DO_HTML
+            ansicat.load_HTML() and ansicat.load_READABILITY()
         )
         output += _(" - Render Atom/RSS feeds (feedparser)         : ") + has(
-            ansicat._DO_FEED
+            ansicat.load_FEED()
         )
         output += _(" - Connect to http/https (requests)           : ") + has(
-            netcache._DO_HTTP
+            netcache.load_HTTP()
         )
         output += _(" - Detect text encoding (python-chardet)      : ") + has(
-            netcache._HAS_CHARDET
+            netcache.load_CHARDET()
         )
         output += _(" - restore last position (less 572+)          : ") + has(
             openk._LESS_RESTORE_POSITION
