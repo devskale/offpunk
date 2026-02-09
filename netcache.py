@@ -218,7 +218,7 @@ def get_cache_path(url, add_index=True, include_protocol=True, xdgfolder="cache"
     if local:
         cache_path = path
     elif scheme and host:
-        # shemepath should not starts with / but finish with /
+        # schemepath should not start with / but finish with /
         schemepath = ""
         if include_protocol: schemepath = scheme + "/"
         if subfolder: schemepath += subfolder + "/"
@@ -260,7 +260,7 @@ def get_cache_path(url, add_index=True, include_protocol=True, xdgfolder="cache"
         #        OS only allows 260 characters.\n\n"%(len(cache_path)))
         #print(url)
         #return None
-        # path lenght is limited to 260 charaters. Let’s cut it and
+        # path length is limited to 260 characters. Let’s cut it and
         # hope that there’s no major conflict here. (that’s still better
         # than crashing, after all.
         cache_path = cache_path[:259]
@@ -283,7 +283,7 @@ def write_body(url, body, mime=None):
         # We remove it (happens when accessing URL/subfolder before
         # URL/subfolder/file.gmi.
         # This causes loss of data in the cache
-        # proper solution would be to save "sufolder" as "sufolder/index.gmi"
+        # proper solution would be to save "subfolder" as "subfolder/index.gmi"
         # If the subdirectory doesn’t exist, we recursively try to find one
         # until it exists to avoid a file blocking the creation of folders
         root_dir = cache_dir
@@ -1075,8 +1075,8 @@ def _fetch_gemini(
     return cache, url
 
 #fetch returns two things:
-#cachepath: the path to the cached ressource
-#newurl: the real URL of that cached ressource
+#cachepath: the path to the cached resource
+#newurl: the real URL of that cached resource
 def fetch(
     url,
     offline=False,

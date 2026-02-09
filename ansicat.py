@@ -226,7 +226,7 @@ class AbstractRenderer:
         else:
             body = wtitle + "\n" + self.get_body(mode=mode)
             if "linkmode" in self.options:
-                # Avaliable linkmode are "none" and "end".
+                # Available linkmode are "none" and "end".
                 if self.options["linkmode"] == "end":
                     links = self.get_links(mode=mode)
                     for i in range(len(links)):
@@ -304,7 +304,7 @@ class AbstractRenderer:
                 # we insert the color code at the saved positions
                 while len(self.last_line_colors) > 0:
                     pos, colors = self.last_line_colors.popitem()
-                    # popitem itterates LIFO.
+                    # popitem iterates LIFO.
                     # So we go, backward, to the pos (starting at the end of last_line)
                     nextline = self.last_line[pos:] + nextline
                     ansicol = "\x1b["
@@ -500,7 +500,7 @@ class AbstractRenderer:
             lines = self.final_text.splitlines()
             lines2 = []
             termspace = shutil.get_terminal_size()[0]
-            # Following code instert blanck spaces to center the content
+            # Following code insert blank spaces to center the content
             if self.center and termspace > term_width():
                 margin = int((termspace - term_width()) // 2)
             else:
@@ -561,7 +561,7 @@ class AbstractRenderer:
     # this function is about creating a title derived from the URL
     def get_url_title(self):
         # small intelligence to try to find a good name for a capsule
-        # we try to find eithe ~username or /users/username
+        # we try to find either ~username or /users/username
         # else we fallback to hostname
         if not self.url:
             return ""
@@ -648,7 +648,7 @@ class AbstractRenderer:
         return title_r.get_final()
 
     # An instance of AbstractRenderer should have a 
-    # self.render(body,width=,mode=,starlinks=0) method.
+    # self.render(body,width=,mode=,startlinks=0) method.
     # It returns a tuple (rendered_body,[list of links])
     # 3 modes are used : readable (by default), full and links_only (the fastest, when
     # rendered content is not used, only the links are needed)
@@ -766,15 +766,15 @@ class GemtextRenderer(AbstractRenderer):
 
         def format_link(url, index, name=None):
             if "://" in url:
-                protocol, adress = url.split("://", maxsplit=1)
+                protocol, address = url.split("://", maxsplit=1)
                 protocol = " %s" % protocol
             else:
-                adress = url
+                address = url
                 protocol = ""
             if "gemini" in protocol or "list" in protocol:
                 protocol = ""
             if not name:
-                name = adress
+                name = address
             line = "[%d%s] %s" % (index, protocol, name)
             return line
 
@@ -787,7 +787,7 @@ class GemtextRenderer(AbstractRenderer):
                 else:
                     r.close_theme("preformatted")
             elif preformatted:
-                # infinite line to not wrap preformated
+                # infinite line to not wrap preformatted
                 r.add_block(line + "\n", theme="preformatted")
             elif len(line.strip()) == 0:
                 r.newparagraph(force=True)
@@ -1344,8 +1344,8 @@ class HtmlRenderer(AbstractRenderer):
             width, title=self.get_title(), center=self.center, theme=self.theme
             ,options=self.options)
         links = []
-        # You know how bad html is when you realize that space sometimes meaningful, somtimes not.
-        # CR are not meaniningful. Except that, somethimes, they should be interpreted as spaces.
+        # You know how bad html is when you realize that space sometimes meaningful, sometimes not.
+        # CR are not meaningful. Except that, sometimes, they should be interpreted as spaces.
         # HTML is real crap. At least the one people are generating.
 
         def render_image(src, width=None, mode=None):
@@ -1649,7 +1649,7 @@ class HtmlRenderer(AbstractRenderer):
                 else:
                     self.cleanlib += "Unmerdify"
         if not summary:
-            # if no summary from unmerdify, we try readabilitty
+            # if no summary from unmerdify, we try readability
             if self.HAS_READABILITY:
                 try:
                     readable = Document(body)
@@ -1793,7 +1793,7 @@ _CUSTOM_RENDERERS = {
 
 
 def get_mime(path, url=None):
-    # Beware, this one is really a shaddy ad-hoc function
+    # Beware, this one is really a shady ad-hoc function
     if not path:
         return None
     # If the file is empty, simply returns it

@@ -2,9 +2,9 @@
 
 ## Minimalism
 
-* Offpunk is, first and foremost, a Gemini browser. Gemini shoult stay first-class. Gopher second, Web third.
-* Offpunk is intended firt and foremost for offline use. 
-* Offpunk goal is not to browse the web but to extract useful informations from web pages.
+* Offpunk is, first and foremost, a Gemini browser. Gemini should stay first-class. Gopher second, Web third.
+* Offpunk is intended first and foremost for offline use. 
+* Offpunk goal is not to browse the web but to extract useful information from web pages.
 * Each page should always be presented the same. There will never be any CSS or design support in Offpunk.
 * Offpunk is a reading tool. It doesn’t run any app. There will never be any kind of JS support. If information cannot be extracted without JS on a given page, this page should be considered as broken and it is not Offpunk’s fault. 
 * Offpunk is an open tool. It will only implement free and open protocols. No proprietary protocols.
@@ -25,30 +25,30 @@
 
 * Accessibility is critical. Any changes that improve accessibility is high priority.
 * Any patch that impedes accessibility in any way should be refused.
-* Feedbacks from users with special-needs or disabilities are highly welcome. We consider those differences as richness. Improving Offpunk for those users improve it for everyone.
-* Accessibilty should not be confused with implementing every potential workflow. Offpunk is not an universal solution for everyone. Users must have the motivation to adapt to Offpunk’s philosophy and to learn to use it.
+* Feedback from users with special-needs or disabilities are highly welcome. We consider those differences as richness. Improving Offpunk for those users improve it for everyone.
+* Accessibility should not be confused with implementing every potential workflow. Offpunk is not an universal solution for everyone. Users must have the motivation to adapt to Offpunk’s philosophy and to learn to use it.
 
 ## Code structure
 
 * Offpunk should run directly as a Python script without any installation, environment settings or anything else. This is non-negotiable core value. python ./offpunk.py
 * Code should be in as few files as possible in one single folder.
 * Code should be split in separate files only if it makes sense to use some part of the code as an independent tool.
-* Everything is a file. The only database is user’s hard disk. No complex datastructure but plain text files.
+* Everything is a file. The only database is user’s hard disk. No complex data structure but plain text files.
 
 ## Crash and errors
 
 * Offpunk should never crash. That’s final. Any crash should be corrected.
-* Corrolary: Offpunk code should not throw exceptions but handle all possible cases.
-* Corrolary 2: Any call to an external library should catch any potential exception.
+* Corollary: Offpunk code should not throw exceptions but handle all possible cases.
+* Corollary 2: Any call to an external library should catch any potential exception.
 
 ## Dependencies
 
 * Offpunk should depend on as few dependencies as possible. Any work toward removing a dependency is good work.
 * Dependencies should be optional. Code should run without that dependency.
-* For a depency to be considered, 4 conditions should be met:
+* For a decency to be considered, 4 conditions should be met:
 
 > 0. The dependency is 100% open and free software, as defined by the FSF.
-> 1. The dependency is well maintained with a stable and reliable API. There’s no need to track API changes accross versions.
+> 1. The dependency is well maintained with a stable and reliable API. There’s no need to track API changes across versions.
 > 2. The dependency is popular and widely packaged in most popular Linux distribution (if it is not in Debian, it is probably not popular enough). It is not uncommon to have it already installed.
 > 3. The feature offered by the dependency cannot be implemented directly in Offpunk in less than 1000LOC. The point is to avoid small dependencies for relatively trivial features.
 > 4. The dependency doesn’t depend itself on dependencies breaking the previous 3 rules.

@@ -22,4 +22,4 @@ or
 
 To externally open links 2 and 4 of the current page.
 
-=> /index.gmi Back to the turorial
+=> /index.gmi Back to the tutorial

@@ -10,7 +10,7 @@ Each morning, while water for my tea is boiling, I launch a full synchronisation
 
 > offpunk --sync --assume-yes --cache-validity 51840
 
-The "--assume-yes" insures I accept new SSL certificates. The cache validity is arbitrarly set around 15 hours which means that it will almost never do a full refresh twice a day but I will not miss a day if, for one reason, I was late yesterday but I’m really early this morning.
+The "--assume-yes" insures I accept new SSL certificates. The cache validity is arbitrarily set around 15 hours which means that it will almost never do a full refresh twice a day but I will not miss a day if, for one reason, I was late yesterday but I’m really early this morning.
 
 
 Once this is done, I can browse through all the news from my subscribed RSS through "tour":

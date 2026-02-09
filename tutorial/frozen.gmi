@@ -26,4 +26,4 @@ There’s one important point to keep in mind when using frozen list: pages in t
 Having a page in a frozen list is thus not a guarantee to freeze all its content. The content might be in another list. It might be refreshed manually with "reload".
 
 
-=> /index.gmi Back to the turorial
+=> /index.gmi Back to the tutorial

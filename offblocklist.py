@@ -8,7 +8,7 @@ redirects = {
 
 
 #following are blocked URLs. Visiting them with offpunk doesn’t make sense.
-#Blocking them will save a lot of bandwith
+#Blocking them will save a lot of bandwidth
 
 blocked = {
     "twitter.com",

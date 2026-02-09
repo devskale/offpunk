@@ -18,7 +18,7 @@ import sys
 import netcache
 
 # We can later add some logic to decide this based on OS family/version if needed?
-# With "None", the defaults should make this work in debian and RedHat based systems at least
+# With "None", the defaults should make this work in Debian and RedHat based systems at least
 # "None" would default to sys.base_prefix + "/share/locale/"
 # (i.e., "/usr/share/locale")
 # sys.base_prefix is always "/usr"
@@ -257,7 +257,7 @@ def unmode_url(url):
 
 #This function gives the root of an URL 
 # expect if the url contains /user/ or ~username/
-#in that case, it considers it as a muli-user servers
+#in that case, it considers it as a multi-user servers
 # it returns the root URL 
 # except if "return_value=name" then it return a name for that root
 # which is hostname by default or username if applicable

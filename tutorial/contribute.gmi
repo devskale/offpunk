@@ -62,7 +62,7 @@ If it’s the first time you send a git patch by email, your computer may requir
 
 => https://git-send-email.io/ Learn to use email with git! (git-send-email.io)
 
-If it is not sufficient, some informations could be found on the Linux kernel development documentation. In most cases, this is not needed.
+If it is not sufficient, some information could be found on the Linux kernel development documentation. In most cases, this is not needed.
 
 => https://docs.kernel.org/process/email-clients.html How to configure your mail client (kernel.org)
 
@@ -102,14 +102,14 @@ Also, mistakes happen. We all do mistakes. Your duty is inform the list as soon 
 
 ## Rebasing your patches into one
 
-If your work takes longer than expected, you will probably makes multiple commits and other commits may happen on TRUNK. We recomment that you work in a local branch. You must give it a name.
+If your work takes longer than expected, you will probably makes multiple commits and other commits may happen on TRUNK. We recommend that you work in a local branch. You must give it a name.
 
 ```
 git branch my_super_feature
 git checkout my_super_feature_branch
 ```
 
-You can easily switch between "master" (the official branck) and your own branch through "git checkout".
+You can easily switch between "master" (the official branch) and your own branch through "git checkout".
 
 When you are ready to submit, first make sure that "master" is up to date
 
@@ -124,7 +124,7 @@ Then you will merge your branch into that clean master. We recommend using "git-
 git squash my_super_feature_branch
 ```
 
-By default, those changes are not committed. It’s time to write a very informative commit message because that’s the one that wille be used in your email
+By default, those changes are not committed. It’s time to write a very informative commit message because that’s the one that will be used in your email
 
 ```
 git commit

@@ -1,14 +1,14 @@
 # Good first contributions
 
-If you want to contribute to offpunk, here are a list of tasks which can probably be done with a little work but do not require to touch the whole codebase.
+If you want to contribute to offpunk, here are a list of tasks which can probably be done with a little work but do not require to touch the whole code base.
 
 If you are interested, please announce yourself on the offpunk-devel mailing list.
 
-## Cache Triming  (Good first-contribution - medium level)
+## Cache Trimming  (Good first-contribution - medium level)
 
-We need work on a model that keep the cache within certain limit by removing older, inaccessed elements which are not linked to anything in lists.
+We need work on a model that keep the cache within certain limit by removing older, unaccessed elements which are not linked to anything in lists.
 
-This is a good first-contribution issue as the cache-triming script should be completely independant and interact little with existing code.
+This is a good first-contribution issue as the cache-trimming script should be completely independent and interact little with existing code.
 
 You need to like playing with file systems properties.
 
@@ -22,7 +22,7 @@ You need to like handling HTML/Ascii art/ANSI codes
 
 ## UTF-8 in URL:
 
-See info on the bugtracker:
+See info on the bug tracker:
 
 => https://todo.sr.ht/~lioploum/offpunk/42 bug #42: IDN handling 
 
@@ -44,9 +44,9 @@ bug #3: Error pages are stored in the cache
 https://todo.sr.ht/~lioploum/offpunk/3
 
 
-## Swicth from python-requests to curl
+## Switch from python-requests to curl
 
-Current netcache code is really slow using python-requests. It could be probably optimised greatly by using concurrent http requests and, maybe, switching to libcurl instead of requests (which would also give accesss to all protocols supported by libcurl)
+Current netcache code is really slow using python-requests. It could be probably optimised greatly by using concurrent http requests and, maybe, switching to libcurl instead of requests (which would also give access to all protocols supported by libcurl)
 
 
 
