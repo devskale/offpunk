@@ -6,6 +6,7 @@
 - BUGFIX: "info" was sometimes returning the wrong cleaning method
 - PACKAGING: use hatch-requirements-txt (by link2xt)
 - Lot of typos fixed (by Sebastian Rasmussen)
+- TRANSLATION: added SV (by Sebastian Rasmussen)
 
 ## 3.0 - February 9th 2026
 Changes since 2.8

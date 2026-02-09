@@ -1,0 +1,2270 @@
+# English translations for PACKAGE package.
+# Copyright (C) 2026 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Sebastian Rasmussen <sebras@gmail.com>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-09 15:08+0100\n"
+"PO-Revision-Date: 2026-02-09 23:45+0100\n"
+"Last-Translator: Sebastian Rasmussen <sebras@gmail.com>\n"
+"Language-Team: Swedish\n"
+"Language: sv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.4.2\n"
+
+#: offpunk.py:3
+msgid ""
+"\n"
+"Offline-First Gemini/Web/Gopher/RSS reader and browser\n"
+msgstr ""
+"\n"
+"Främst frånkopplad Gemini/Web/Gopher/RSS-läsare och -bläddrare\n"
+
+#: offpunk.py:324
+msgid ""
+"This method might be considered \"the heart of Offpunk\".\n"
+"Everything involved in fetching a gemini resource happens here:\n"
+"sending the request over the network, parsing the response,\n"
+"storing the response in a temporary file, choosing\n"
+"and calling a handler program, and updating the history.\n"
+"Nothing is returned."
+msgstr ""
+"Denna metod kan anses vara ”Offpunks hjärta”.\n"
+"Allting involverat i att hämta en gemini-resurs sker här:\n"
+"skickar begäran över nätverket, tolkar svaret\n"
+"sparar svaret i en temporärfil, väljer\n"
+"och anropar ett hanterarprogram, och uppdaterar historiken.\n"
+"Ingenting returneras."
+
+#: offpunk.py:463
+msgid ""
+"Display and manage the list of redirected URLs. This features is mostly "
+"useful to use privacy-friendly frontends for popular websites."
+msgstr ""
+"Visa och hantera listan av omdirigerade URL:er. Denna funktion är främst "
+"användbar för att använda populära webbsidor med integritetsvänliga "
+"framändor."
+
+#: offpunk.py:499
+msgid "View or set various options."
+msgstr "Visa eller sätt olika alternativ."
+
+#: offpunk.py:562
+msgid ""
+"Change the colors of your rendered text.\n"
+"\n"
+"\"theme ELEMENT COLOR\"\n"
+"\n"
+"ELEMENT is one of: window_title, window_subtitle, title,\n"
+"subtitle,subsubtitle,link,oneline_link,new_link,image_link,preformatted,"
+"blockquote,                blocked_link.\n"
+"\n"
+"COLOR is one or many (separated by space) of: bold, faint, italic, "
+"underline, black,\n"
+"red, green, yellow, blue, purple, cyan, white.\n"
+"\n"
+"Each color can alternatively be prefaced with \"bright_\".\n"
+"If color is \"none\", then that part of the theme is removed.\n"
+"\n"
+"theme can also be used with \"preset\" to load an existing theme.\n"
+"\n"
+"\"theme preset\"  : show available themes\n"
+"\"theme preset PRESET_NAME\" : swith to a given preset"
+msgstr ""
+"Via färgerna för din renderade text.\n"
+"\n"
+"”theme ELEMENT FÄRG”\n"
+"\n"
+"ELEMENT är endera av: window_title, window_subtitle, title,\n"
+"subtitle,subsubtitle,link,oneline_link,new_link,image_link,preformatted,"
+"blockquote,                blocked_link.\n"
+"\n"
+"FÄRG är en eller flera (separerad med blanksteg) av: bold, faint, italic, "
+"underline, black,\n"
+"red, green, yellow, blue, purple, cyan, white.\n"
+"\n"
+"Varje färg kan alternativt ha prefixet ”bright_”.\n"
+"Om frägen är ”none” kommer den delen av temat att tas bort.\n"
+"\n"
+"theme kan också användas med ”preset” för att läsa in ett existerande tema.\n"
+"\n"
+"\"theme preset\"  : visa tillgängliga teman\n"
+"\"theme preset FÖRINSTÄLLNINGSNAMN\" : växla till angiven förinställning"
+
+#: offpunk.py:651
+msgid ""
+"View or set handler commands for different MIME types.\n"
+"handler MIMETYPE : see handler for MIMETYPE\n"
+"handler MIMETYPE CMD : set handler for MIMETYPE to CMD\n"
+"in the CMD, %s will be replaced by the filename.\n"
+"if no %s, it will be added at the end.\n"
+"MIMETYPE can be the true mimetype or the file extension.\n"
+"\n"
+"Examples: \n"
+"    handler application/pdf zathura %s\n"
+"    handler .odt lowriter\n"
+"    handler docx lowriter"
+msgstr ""
+"Visa eller sätt hanterarkommandon för olika MIME-typer.\n"
+"handler MIMETYP : se hanterar för MIME-typ\n"
+"handler MIMETYP KOMMANDO : set hanterar för MIME-typ till KOMMANDO\n"
+"i KOMMMANDO kommer %s att ersättas med filnamnet.\n"
+"Om inget %s finns kommer det att läggas till på slutet.\n"
+"MIMETYP kan vara den sanna MIME-typen eller filändelsen.\n"
+"\n"
+"Exempel: \n"
+"    handler application/pdf zathura %s\n"
+"    handler .odt lowriter\n"
+"    handler docx lowriter"
+
+#: offpunk.py:679
+msgid ""
+"Create or modifiy an alias\n"
+"alias : show all existing aliases\n"
+"alias ALIAS : show the command linked to ALIAS\n"
+"alias ALIAS CMD : create or replace existing ALIAS to be linked to command "
+"CMD"
+msgstr ""
+"Skapa eller modifiera ett alias\n"
+"alias : visa alla existerande alias\n"
+"alias ALIAS : visa kommandot länkat till ALIAS\n"
+"alias ALIAS KOMMANDO : skapa eller ersätt existerande ALIAS som ska länkas "
+"till kommando KOMMANDO"
+
+#: offpunk.py:714
+msgid "Use Offpunk offline by only accessing cached content"
+msgstr ""
+"Använd Offpunk i frånkopplat läge genom att bara komma åt cachat innehåll"
+
+#: offpunk.py:723
+msgid "Use Offpunk online with a direct connection"
+msgstr "Använd Offpunk i uppkopplat läget med en direktanslutning"
+
+#: offpunk.py:732
+msgid ""
+"Copy the content of the last visited page as gemtext/html in the clipboard.\n"
+"Use with \"url\" as argument to only copy the adress.\n"
+"Use with \"raw\" to copy ANSI content as seen in your terminal (with colour "
+"codes).\n"
+"Use with \"cache\" to copy the path of the cached content.\n"
+"Use with \"title\" to copy the title of the page.\n"
+"Use with \"link\" to copy a link in the gemtext format to that page with the "
+"title."
+msgstr ""
+"Kopiera innehållet för den senast besökta sida som gemtext/html i urklipp.\n"
+"Använd ”url” som argument för att endast kopiera adressen.\n"
+"Använd ”raw” för att kopiera ANSI-innehållet som det såg ut i din terminal "
+"(med färgkoder).\n"
+"Använd ”cache” för att kopiera sökvägen till det cachade innehållet.\n"
+"Använd ”title” för att kopiera titeln på sidan.\n"
+"Använd ”link” för att kopiera en länk i gemtext-format till den sidan med "
+"titeln."
+
+#: offpunk.py:772
+msgid ""
+"Send current page by email to someone else.\n"
+"Use with \"url\" as first argument to send only the address.\n"
+"Use with \"text\" as first argument to send the full content. TODO\n"
+"Without argument, \"url\" is assumed.\n"
+"Next arguments are the email adresses of the recipients.\n"
+"If no destination, you will need to fill it in your mail client."
+msgstr ""
+"Skicka aktuell sida via e-post till någon annan.\n"
+"Använd ”url” som första argument för att endast skicka adressen.\n"
+"Använd ”text” som första argument för att skicka det fullständiga "
+"innehållet. ATT-GÖRA\n"
+"Utan argument antas ”url”.\n"
+"Därefter är argumenten e-postadresserna för mottagarna.\n"
+"Om ingen destination anges kommer du att behöva fylla i den i din e-"
+"postklient."
+
+#: offpunk.py:817
+msgid ""
+"Reply by email to a page by trying to find a good email for the author.\n"
+"If an email is provided as an argument, it will be used.\n"
+"arguments:\n"
+"- \"save\" : allows to detect and save email without actually sending an "
+"email.\n"
+"- \"save new@email\" : save a new reply email to replace an existing one"
+msgstr ""
+"Svara per e-post till en sida genom att försöka hitta en bra e-post till "
+"upphovsmannen.\n"
+"Om en e-postadress anges som argument, kommer den att användas.\n"
+"argument:\n"
+"- ”save” : tillåter identifiering och sparning av e-post utan att faktiskt "
+"skicka ett e-postmeddelande.\n"
+"- ”save ny@epost” : spara en ny e-postadress för svar, som ersätter en "
+"existerande"
+
+#: offpunk.py:944
+msgid ""
+"Manipulate cookies:\n"
+"\"cookies import <file> [url]\" - import cookies from file to be used with "
+"[url]\n"
+"\"cookies list [url]\" - list existing cookies for current url\n"
+"default is listing cookies for current domain.\n"
+"\n"
+"To get a cookie as a txt file,use the cookie-txt extension for Firefox."
+msgstr ""
+"Manipulera kakor:\n"
+"”cookies import <fil> [url]>\" - importera kakor från fil för att användas "
+"med [url]\n"
+"”cookies list [url]” - lista existerande kakor för aktuell url\n"
+"standard är att lista kakor för aktuell domän.\n"
+"\n"
+"För att få en kaka som en textfil, använd cookie-txt-tillägget i Firefox."
+
+#: offpunk.py:999
+msgid "Go to a gemini URL or marked item."
+msgstr "Gå till en gemini-URL eller markerat objekt."
+
+#: offpunk.py:1043
+msgid "Reload the current URL."
+msgstr "Ladda om aktuell URL."
+
+#: offpunk.py:1058
+msgid ""
+"Go up one directory in the path.\n"
+"Take an integer as argument to go up multiple times.\n"
+"Use \"~\" to go to the user root\"\n"
+"Use \"/\" to go to the server root."
+msgstr ""
+"Gå upp en katalog i sökvägen.\n"
+"Tar ett heltal som argument för att gå upp flera steg.\n"
+"Använd ”~” för att gå till användar-roten.\n"
+"Använd ”/” för att gå till server-roten."
+
+#: offpunk.py:1083
+msgid "Go back to the previous gemini item."
+msgstr "Gå tillbaka till föregående gemini-objekt."
+
+#: offpunk.py:1092
+msgid "Go forward to the next gemini item."
+msgstr "Gå framåt till nästa gemini-objekt."
+
+#: offpunk.py:1102
+msgid ""
+"Go to the root of current capsule/gemlog/page\n"
+"If arg is \"/\", the go to the real root of the server"
+msgstr ""
+"Gå till roten för aktuellt kapsel/gemlogn/sida\n"
+"Om argumentet är ”/”, gå till den riktiga roten för servern"
+
+#: offpunk.py:1111
+msgid ""
+"Add index items as waypoints on a tour, which is basically a FIFO\n"
+"queue of gemini items.\n"
+"\n"
+"`tour` or `t` alone brings you to the next item in your tour.\n"
+"Items can be added with `tour 1 2 3 4` or ranges like `tour 1-4`.\n"
+"All items in current menu can be added with `tour *`.\n"
+"All items in $LIST can be added with `tour $LIST`.\n"
+"Current item can be added back to the end of the tour with `tour .`.\n"
+"Current tour can be listed with `tour ls` and scrubbed with `tour clear`."
+msgstr ""
+"Lägg till indexobjekt som vägvisare på en tur, vilket i grund\n"
+"och botten är en kö av gemini-objekt.\n"
+"\n"
+"”tour” eller ett ensamt ”t” tar dig till nästa objekt i din tur.\n"
+"Objekt kan läggas till med ”tour 1 2 3 4” eller intervall i stil\n"
+"med ”tour 1-4”.\n"
+"Alla objekt i den aktuella menyn kan läggas till med ”tour *”.\n"
+"Alla objekt i $LISTA kan läggas till med ”tour $LISTA”.\n"
+"Aktuellt objekt kan läggas tillbaka på slutet av turen med ”tour .”.\n"
+"Aktuell tur kan listas med ”tour ls” och rensas med ”tour clear”."
+
+#: offpunk.py:1181
+msgid ""
+"Manage your client certificates (identities) for a site.\n"
+"`certs` will display all valid certificates for the current site\n"
+"`certs new <name> <days-valid> <url[optional]>` will create a new "
+"certificate, if no url is specified, the current open site will be used."
+msgstr ""
+"Hantera dina klient-certifikat (identiteter) för an plats.\n"
+"”certs” kommer att lista alla giltiga certifikat för den aktuella platsen\n"
+"”certs new <namn> <giltiga-daga> <url[valfritt]>” kommer att skapa en nytt "
+"certifikat, om ingen url är angiven kommer den nuvarande öppna platsen att "
+"användas."
+
+#: offpunk.py:1208
+msgid ""
+"Mark the current item with a single letter.  This letter can then\n"
+"be passed to the 'go' command to return to the current item later.\n"
+"Think of it like marks in vi: 'mark a'='ma' and 'go a'=''a'.\n"
+"Marks are temporary until shutdown (not saved to disk)."
+msgstr ""
+"Markera det aktuella objektet med en enkel bokstav. Denna bokstav kan sen\n"
+"skickas till ”go”-kommandot för att senare återgå till det aktuella "
+"objektet.\n"
+"Tänk på det som märken i vi: ”mark a”=”ma” och ”go a”=”'a”.\n"
+"Märken är temporära fram till avslut (de sparas inte på disk)."
+
+#: offpunk.py:1223
+msgid "Display information about current page."
+msgstr "Visa information om aktuell sida."
+
+#: offpunk.py:1262
+msgid "Display version and system information."
+msgstr "Visa version och system-information."
+
+#: offpunk.py:1326
+msgid ""
+"Send a mail to the offpunk-devel list with technical informations\n"
+"about your offpunk version. You will be prompted to write an email\n"
+"describing how to reproduce the bug."
+msgstr ""
+"Skicka ett e-postmeddelande till sändlistan offpunk-devel med tekniska "
+"information\n"
+"om din offpunk-version. Du kommer att tillfrågas om att skriva ett e-"
+"postmeddelande\n"
+"som beskriver hur du reproducerar programfelet."
+
+#: offpunk.py:1346
+msgid ""
+"Search on Gemini using the engine configured (by default kennedy.gemi.dev)\n"
+"You can configure it using \"set search URL\".\n"
+"URL should contains one \"%s\" that will be replaced by the search term."
+msgstr ""
+"Sök på Gemini med den konfigurerade motorn (som standard kennedy.gemi.dev)\n"
+"Du kan konfigurera den med ”set search URL”.\n"
+"URL bör innehålla ett ”%s” som ersätts med söktermen."
+
+#: offpunk.py:1354
+msgid ""
+"Search on the web using the engine configured (by default wiby.me)\n"
+"You can configure it using \"set websearch URL\".\n"
+"URL should contains one \"%s\" that will be replaced by the search term."
+msgstr ""
+"Sök på webben med den konfigurerade motorn (som standard wiby.me)\n"
+"Du kan konfigurera den med ”set websearch URL”.\n"
+"URL bör innehålla ett ”%s” som ersätts med söktermen."
+
+#: offpunk.py:1362
+msgid ""
+"Search on wikipedia using the configured Gemini interface.\n"
+"The first word should be the two letters code for the language.\n"
+"Exemple : \"wikipedia en Gemini protocol\"\n"
+"But you can also use abbreviations to go faster:\n"
+"\"wen Gemini protocol\". (your abbreviation might be missing, report the "
+"bug)\n"
+"while it's not added, \"w\" is still an option you can use:\n"
+"\"w en Gemini protocol\" will work as a shortcut as well\n"
+"The interface used can be modified with the command:\n"
+"\"set wikipedia URL\" where URL should contains two \"%s\", the first\n"
+"one used for the language, the second for the search string."
+msgstr ""
+"Sök på Wikipedia med det konfigurerade Gemini-gränssnittet.\n"
+"Det första ordet bör vara en två-bokstavskod för språket.\n"
+"Exempel : ”wikipedia en Gemini protocol”\n"
+"Man du kan också använda förkortningar för att det ska gå snabbare:\n"
+"”wen Gemini protocol”. (din förkorning kan saknas, rapportera i så fall "
+"felet)\n"
+"om den inte finns kan du fortfarande använda ”w”:\n"
+"”w en Gemini protocol” som snabbkommando istället\n"
+"Gränssnittet kan modifieras med kommandot:\n"
+"”set wikipedia URL” där URL bör innehålla två ”%s”, det första\n"
+"används för språket, det andra för söksträngen."
+
+#: offpunk.py:1383
+msgid "Open the specified XKCD comics (a number is required as parameter)"
+msgstr ""
+"Öppna den angivna XKCD-serieteckningen (ett nummer krävs som parameter)"
+
+#: offpunk.py:1391
+msgid "Submit a search query to the geminispace.info search engine."
+msgstr "Skicka en sökförfrågan till sökmotorn geminispace.info."
+
+#: offpunk.py:1399
+msgid "Display history."
+msgstr "Visa historik."
+
+#: offpunk.py:1404
+msgid "Find in current page by displaying only relevant lines (grep)."
+msgstr "Hitta aktuell sida genom att endast visa relevanta rader (grep)."
+
+#: offpunk.py:1408
+msgid ""
+"Display all the links for the current page.\n"
+"   If argument N is provided, then page through N links at a time.\n"
+"   \"links 10\" show you the first 10 links, then 11 to 20, etc.\n"
+"   if N = 0, then all the links are displayed"
+msgstr ""
+"Visa alla länkarna för den aktuella sidan.\n"
+"   Om argument N finns, bläddra då genom N länkar åt gången.\n"
+"   \"links 10\" visar dig de första 10 länkarna, sedan 11 till 20, o.s.v.\n"
+"   om N = 0, då visas alla länkarna"
+
+#: offpunk.py:1429
+msgid "DEPRECATED: List contents of current index."
+msgstr "FÖRÅLDRAT: Lista innehållet för aktuellt index."
+
+#: offpunk.py:1435
+msgid "Default action when line is empty"
+msgstr "Standardåtgärd när en rad är tom"
+
+#: offpunk.py:1451
+msgid "Display RSS or Atom feeds linked to the current page."
+msgstr "Visa RSS- eller Atom-flöden länkade till aktuell sida."
+
+#: offpunk.py:1476
+msgid ""
+"Run most recently visited item through \"less\" command, restoring previous "
+"position.\n"
+"Use \"view normal\" to see the default article view on html page.\n"
+"Use \"view full\" to see a complete html page instead of the article view.\n"
+"Use \"view swich\" to switch between normal and full\n"
+"Use \"view XX\" where XX is a number to view information about link XX.\n"
+"(full, feed, feeds have no effect on non-html content)."
+msgstr ""
+"Kör det senaste visade objektet genom kommandot ”less”, återställer "
+"föregående position.\n"
+"Använd ”view normal” för att se standard artikelvisning på html-sida.\n"
+"Använd ”view full” för att se en komplett html-sida istället för "
+"artikelvyn.\n"
+"Använd ”view switch” för att växla mellan normal och full\n"
+"Använd ”view XX” där XX är ett hetal för att visa information om länk XX.\n"
+"(full, feed, feeds har ingen effekt på icke-html-innehåll)."
+
+#: offpunk.py:1522
+msgid ""
+"Open current item with the configured handler or xdg-open.\n"
+"Use \"open url\" to open current URL in a browser.\n"
+"Use \"open 2 4\" to open links 2 and 4\n"
+"You can combine with \"open url 2 4\" to open URL of links\n"
+"see \"handler\" command to set your handler."
+msgstr ""
+"Öppna aktuellt objekt med konfigurationshanteraren eller xdg-open.\n"
+"Använd ”open url” för att öppna aktuell URL i en webbläsare.\n"
+"Använd ”open 2 4” för att öppna länkar 2 och 4\n"
+"Du kan kombinera med ”open url 2 4` för att öppna URL och länkar\n"
+"se kommandot ”handler” för att sätta din hanterare."
+
+#: offpunk.py:1557
+msgid ""
+"Send the content of the current page to the shell and pipe it.\n"
+"You are supposed to write what will come after the pipe. For example,\n"
+"if you want to count the number of lines containing STRING in the \n"
+"current page:\n"
+"> shell grep STRING|wc -l\n"
+"'!' is an useful shortcut.\n"
+"> !grep STRING|wc -l"
+msgstr ""
+"Skicka innehållet för den aktuella sida till skalet genom en rörledning.\n"
+"Du antas skriva vad som kommer efter rörledningstecknet. Till exempel,\n"
+"om du vill räkna antalet rader som innehåller STRÄNG på den aktuella\n"
+"sidan:\n"
+"> shell grep STRÄNG | wc -l\n"
+"”!” är en användbar genväg\n"
+"> !grep STRÄNG | wc -l"
+
+#: offpunk.py:1578
+msgid ""
+"Save an item to the filesystem.\n"
+"'save n filename' saves menu item n to the specified filename.\n"
+"'save filename' saves the last viewed item to the specified filename.\n"
+"'save n' saves menu item n to an automagic filename."
+msgstr ""
+"Spara ett objekt till filsystemet.\n"
+"”save n filnamn” sparar menyobjekt n under det angivna filnamnet.\n"
+"”save filnamn” sparar det senast visade objektet under det angivna "
+"filnamnet.\n"
+"”save n” sparar menyobjekt n till ett automatiskt filnamn."
+
+#: offpunk.py:1654
+msgid ""
+"Print the url of the current page.\n"
+"Use \"url XX\" where XX is a number to print the url of link XX.\n"
+"\"url\" can also be piped to the shell, using the pipe \"|\"."
+msgstr ""
+"Skriv ut URL:en för den aktuella sidan.\n"
+"Använd ”url XX” där XX är ett heltal för att skriva ut URL:en för länk XX.\n"
+"”url” kan också skickas via rörledning till skapet, använd "
+"rörledningstecknet ”|”."
+
+#: offpunk.py:1676
+msgid ""
+"Add the current URL to the list specified as argument.\n"
+"If no argument given, URL is added to Bookmarks.\n"
+"You can pass a link number as the second argument to add the link.\n"
+"\"add $LIST XX\" will add link number XX to $LIST"
+msgstr ""
+"Lägg till den aktuella URL:en till listan angiven som argument.\n"
+"Om inget argument anges kommer URL:en att läggas till bland Bookmarks.\n"
+"Du kan skicka med ett länknummer som andra argument för att lägga till "
+"länken.\n"
+"”add $LISTA XX” kommer att lägga till länk nummer XX till $LISTA"
+
+#: offpunk.py:1721
+msgid ""
+"Subscribe to current page by saving it in the \"subscribed\" list.\n"
+"If a new link is found in the page during a --sync, the new link is "
+"automatically\n"
+"fetched and added to your next tour.\n"
+"To unsubscribe, remove the page from the \"subscribed\" list."
+msgstr ""
+"Prenumerera på aktuell sida genom att spara den i listan ”subscribed”.\n"
+"Om en ny länk hittas på sidan under en --sync kommer den nya länken "
+"automatiskt\n"
+"att hämtas och läggas till i din nästa tur.\n"
+"För att säga upp prenumerationen, ta bort sidan från listan ”subscribed”."
+
+#: offpunk.py:1761
+msgid ""
+"Show or access the bookmarks menu.\n"
+"'bookmarks' shows all bookmarks.\n"
+"'bookmarks n' navigates immediately to item n in the bookmark menu.\n"
+"Bookmarks are stored using the 'add' command."
+msgstr ""
+"Visa eller få tillgång till bokmärkesmenyn.\n"
+"”bookmarks” visar alla bokmärken.\n"
+"”bookmarks n” navigerar omedelbart till objekt n i bokmärkesmenyn.\n"
+"Bokmärken sparas med ”add”-kommandot."
+
+#: offpunk.py:1775
+msgid ""
+"Archive current page by removing it from every list and adding it to\n"
+"archives, which is a special historical list limited in size. It is similar "
+"to `move archives`."
+msgstr ""
+"Arkivera aktuell sida genom att ta bort det från varje lista och lägga till "
+"det till\n"
+"arkiven, vilket är en speciell historiska lista som är begränsad i storlek. "
+"Det motsvarar ”move archives”."
+
+#: offpunk.py:2012
+msgid ""
+"move LIST will add the current page to the list LIST.\n"
+"With a major twist: current page will be removed from all other lists.\n"
+"If current page was not in a list, this command is similar to `add LIST`."
+msgstr ""
+"move LISTA kommer att lägga till den aktuella sidan till listan LISTA.\n"
+"Med en rejäl twist: den aktuella sidan kommer att tas bort från alla andra "
+"listor.\n"
+"Om den aktuella sidan inte fanns i någon lista, liknar detta kommando ”add "
+"LISTA”."
+
+#: offpunk.py:2093
+msgid ""
+"Manage list of bookmarked pages.\n"
+"- list : display available lists\n"
+"- list $LIST : display pages in $LIST\n"
+"- list create $NEWLIST : create a new list\n"
+"- list edit $LIST : edit the list\n"
+"- list subscribe $LIST : during sync, add new links found in listed pages to "
+"tour\n"
+"- list freeze $LIST : don’t update pages in list during sync if a cache "
+"already exists\n"
+"- list normal $LIST : update pages in list during sync but don’t add "
+"anything to tour\n"
+"- list delete $LIST : delete a list permanently (a confirmation is "
+"required)\n"
+"- list help : print this help\n"
+"See also :\n"
+"- add $LIST (to add current page to $LIST or, by default, to bookmarks)\n"
+"- move $LIST (to add current page to list while removing from all others)\n"
+"- archive (to remove current page from all lists while adding to archives)\n"
+"\n"
+"There’s no \"delete\" on purpose. The use of \"archive\" is recommended.\n"
+"\n"
+"The following lists cannot be removed or frozen but can be edited with "
+"\"list edit\"\n"
+"- list archives  : contains last 200 archived URLs\n"
+"- history        : contains last 200 visisted URLs\n"
+"- to_fetch       : contains URLs that will be fetch during the next sync\n"
+"- tour           : contains the next URLs to visit during a tour (see \"help "
+"tour\")"
+msgstr ""
+"Hantera lista över bokmärkta sidor.\n"
+"- list : visa tillgängliga listor\n"
+"- list $LISTA : visa sidor i $LISTA\n"
+"- list create $NYLISTA : skapa en ny lista\n"
+"- list edit $LISTA : redigera listan\n"
+"- list subscribe $LIST : vid synkning, lägg till nya länkar som hittas i "
+"listade sidor till turen\n"
+"- list freeze $LISTA : uppdatera inte sidor i listan under synkning om en "
+"cache redan existerar\n"
+"- list normal $LISTA : uppdatera sidor i listan vid synkning, men lägg inte "
+"till dem i turen\n"
+"- list delete $LISTA : ta bort en lista permanent (en bekräftelse krävs)\n"
+"- list help : skriv ut denna hjälp\n"
+"Se också:\n"
+"- add $LISTA (för att lägga till aktuell sida till $LISTA eller, som "
+"standard, till bokmärken)\n"
+"- move $LISTA (för att lägga till aktuell sida till listan, medan den tas "
+"bort från alla andra)\n"
+"- archive (för att ta bort aktuell sida från alla listor medan den läggs "
+"till i arkivet)\n"
+"\n"
+"Det finns avsiktligen ingen ”delete”. Användning av ”archive” "
+"rekommenderas.\n"
+"\n"
+"Följande listor kan inte tas bort eller frysas, men kan redigeras med ”list "
+"edit”\n"
+"- list archives  : innehåller de senaste 200 arkiverade URL:erna\n"
+"- history        : innehåller de senaste 200 besökta URL:erna\n"
+"- to_fetch       : innehåller URL:er som kommer att hämtas vid nästa "
+"synkning\n"
+"- tour           : innehåller de nästa URL:erna som kommer att besökas vid "
+"en tur (se ”help tour”)"
+
+#: offpunk.py:2217
+msgid "ALARM! Recursion detected! ALARM! Prepare to eject!"
+msgstr "ALARM! Rekursion identifierad! ALARM! Förbered utskjutning!"
+
+#: offpunk.py:2244
+msgid "Access the offpunk.net tutorial (online)"
+msgstr "Kom åt offpunk.net-introduktionen (uppkopplat)"
+
+#: offpunk.py:2248
+msgid ""
+"Synchronize all bookmarks lists and URLs from the to_fetch list.\n"
+"- New elements in pages in subscribed lists will be added to tour\n"
+"- Elements in list to_fetch will be retrieved and added to tour\n"
+"- Normal lists will be synchronized and updated\n"
+"- Frozen lists will be fetched only if not present.\n"
+"\n"
+"Before a sync, you can edit the list of URLs that will be fetched with the\n"
+"following command: \"list edit to_fetch\"\n"
+"\n"
+"Argument : duration of cache validity (in seconds)."
+msgstr ""
+"Synkronisera all bokmärkeslistor och URL:er från to_fetch-listan.\n"
+"- Nya element på sidor i prenumerationslistor kommer att läggas till i "
+"turen\n"
+"- Element i to_fetch-listan kommer att hämtas och läggas till i turen\n"
+"- Normala listor kommer att synkroniseras och uppdateras\n"
+"- Frusna listor kommer endast att hämtas om de inte redan finns.\n"
+"\n"
+"Innan en synkronisering kan du redigerar listan över URL:er som kommer att "
+"hämtas med\n"
+"följande kommando: ”list edit to_fetch”\n"
+"\n"
+"Argument : giltighetstid i cache (i sekunder)"
+
+#: offpunk.py:2420
+msgid "Exit Offpunk."
+msgstr "Avsluta Offpunk."
+
+#: ansicat.py:60
+msgid "To improve your web experience (less cruft in webpages),"
+msgstr "För att förbättra din webbupplevelse (mindre kraft på webbsidor),"
+
+#: ansicat.py:61
+msgid "please install python3-readability or readability-lxml"
+msgstr "installera python3-readbility eller readbility-lxml"
+
+#: ansicat.py:100
+msgid "To render images inline, you need either chafa >= 1.10 or timg > 1.3.2"
+msgstr ""
+"För att rendera bilder i texten behöver du antingen chafa >= 1.10 eller timg "
+"> 1.3.2"
+
+#: ansicat.py:203
+msgid "No cleaning required"
+msgstr "Ingen rensning krävs"
+
+#: ansicat.py:515
+#, python-format
+msgid "%s is not a valid link for %s"
+msgstr "%s är inte en giltig länk för %s"
+
+#: ansicat.py:601
+#, python-format
+msgid "Urljoin Error: Could not make an URL out of %s and %s"
+msgstr "UrlJoin-fel: Kunde inte skapa en URL från %s och %s"
+
+#: ansicat.py:929
+msgid "Error rendering Gopher "
+msgstr "Fel vid rendering av Gopher "
+
+#: ansicat.py:1068
+msgid ""
+"\n"
+"## Bookmarks Lists (updated during sync)\n"
+msgstr ""
+"\n"
+"## Bokmärkeslistor (uppdateras vid synkning)\n"
+
+#: ansicat.py:1071
+msgid ""
+"\n"
+"## Subscriptions (new links in those are added to tour)\n"
+msgstr ""
+"\n"
+"## Prenumerationer (nya länkar bland dessa läggs till i turen)\n"
+
+#: ansicat.py:1074
+msgid ""
+"\n"
+"## Frozen (fetched but never updated)\n"
+msgstr ""
+"\n"
+"## Frusna (hämtas med uppdateras ej)\n"
+
+#: ansicat.py:1077
+msgid ""
+"\n"
+"## System Lists\n"
+msgstr ""
+"\n"
+"## Systemlistor\n"
+
+#: ansicat.py:1258 ansicat.py:1319
+msgid ""
+"HTML document detected. Please install python-bs4 and python-readability."
+msgstr ""
+"HTML-dokument identifierat. Installera python-bs4 eller python-readability."
+
+#: ansicat.py:1741
+msgid ""
+"\n"
+"> Please install python-bs4 to parse HTML"
+msgstr ""
+"\n"
+"> Installera python-bs4 för att tolka HTML"
+
+#: ansicat.py:1743
+msgid ""
+"\n"
+"> Picture not in cache. Please reload this page.\n"
+msgstr ""
+"\n"
+"> Bild finns inte i cache. Ladda om denna sida.\n"
+
+#: ansicat.py:1826
+msgid "Cannot guess the mime type of the file. Please install \"file\"."
+msgstr "Kan inte gissa MIME-typ för filen. Installera ”file”."
+
+#: ansicat.py:1940
+#, python-format
+msgid "Could not render %s"
+msgstr "Kunde inte rendera %s"
+
+#: ansicat.py:1945
+msgid ""
+"ansicat is a terminal rendering tool that will render multiple formats "
+"(HTML,             Gemtext, RSS, Gophermap, Image) into ANSI text and "
+"colors.\n"
+"            When used on a file, ansicat will try to autodetect the format. "
+"When used with             standard input, the format must be manually "
+"specified.\n"
+"            If the content contains links, the original URL of the content "
+"can be specified             in order to correctly modify relatives links."
+msgstr ""
+"ansicat är ett terminalrenderingsverktyg som kommer att rendera flera "
+"format             (HTML, Gemtext, RSS, Gophermap, Image) till ANSI-text och "
+"fräger.\n"
+"            När det används på en fil kommer ansicat automatiskt att "
+"identifiera formatet.             När det används på standard in måste "
+"formatet anges manuellt.\n"
+"            Om innehållet innehåller länkar kan original URL:en för "
+"innehållet anges för             korrekt modifiera relativa länkar."
+
+#: ansicat.py:1966
+msgid ""
+"Renderer to use. Available: auto, gemtext, html, feed, gopher, image, "
+"folder, plaintext"
+msgstr ""
+"Renderare att använda. Tillgängliga: auto, gemtext, html, feed, gopher, "
+"image, folder, plaintext"
+
+#: ansicat.py:1968
+msgid "Mime of the content to parse"
+msgstr "MIME för innehåller att tolka"
+
+#: ansicat.py:1972
+msgid "Original URL of the content"
+msgstr "Original-URL för innehållet"
+
+#: ansicat.py:1977 openk.py:371 opnk.py:371
+msgid ""
+"Which mode should be used to render: normal (default), full or "
+"source.                                With HTML, the normal mode try to "
+"extract the article."
+msgstr ""
+"Vilket läge som ska användas vid rendering: normal (standard), "
+"full,                                 eller source. För HTML är normalläget "
+"att försöka att extrahera artikeln."
+
+#: ansicat.py:1986 openk.py:380 opnk.py:380
+msgid "Which mode should be used to render links: none (default) or end"
+msgstr ""
+"Vilket läge som ska användas för att rendera länkar: none (standard) eller "
+"end"
+
+#: ansicat.py:1994
+msgid "Path to the text to render (default to stdin)"
+msgstr "Sökvägen till texten att rendera (standardvärde är standard in)"
+
+#: ansicat.py:2017
+msgid "Ansicat needs at least one file as an argument"
+msgstr "Ansicat behöver åtminstone en fil som argument"
+
+#: ansicat.py:2021
+msgid "Format or mime should be specified when running with stdin"
+msgstr "Format eller MIME-typ bör anges då standard in används"
+
+#: netcache.py:126
+msgid "We return False because path is too long"
+msgstr "Vi returnerar False eftersom sökvägen är för lång"
+
+#: netcache.py:314
+#, python-format
+msgid ""
+"ERROR while caching %s\n"
+"\n"
+msgstr ""
+"FEL under cachning %s\n"
+"\n"
+
+#: netcache.py:319
+msgid "If you believe this error was temporary, type reload.\n"
+msgstr "Om du tror att detta fel var tillfälligt, skriv reload.\n"
+
+#: netcache.py:320
+msgid "The resource will be tentatively fetched during next sync.\n"
+msgstr "Resursen kommer att preliminärt hämtas under nästa synk.\n"
+
+#: netcache.py:354
+#, python-format
+msgid "Size of %s is %s Mo\n"
+msgstr "Storleken för %s är %s Mo\n"
+
+#: netcache.py:355
+#, python-format
+msgid "Offpunk only download automatically content under %s Mo\n"
+msgstr "Offpunk hämtar endast innehåll under %s Mo automatiskt\n"
+
+#: netcache.py:358
+msgid "To retrieve this content anyway, type 'reload'."
+msgstr "För att hämta detta innehåll ändå, skriv ”reload”."
+
+#: netcache.py:398
+#, python-format
+msgid "  -> Receiving stream: %s%% of allowed data"
+msgstr "  -> Hämtar ström: %s%% av tillåten data"
+
+#: netcache.py:564
+msgid "Certificate not valid until: {}!"
+msgstr "Certifikat är inte giltigt förrän: {}!"
+
+#: netcache.py:568
+msgid "Certificate expired as of: {})!"
+msgstr "Certifikat utgånget sedan: {}!"
+
+#: netcache.py:597
+msgid ""
+"Hostname does not match certificate common name or any alternative names."
+msgstr ""
+"Värdnamn matchar inte vanligt eller alternativt namn från certifikatet."
+
+#: netcache.py:653
+msgid "[SECURITY WARNING] Unrecognised certificate!"
+msgstr "[SÄKERHETSVARNING] Oidentifierat certifikat!"
+
+#: netcache.py:655
+msgid "The certificate presented for {} ({}) has never been seen before."
+msgstr "Certifikatet presenterat för {} ({}) har inte sett det förut."
+
+#: netcache.py:659
+msgid "This MIGHT be a Man-in-the-Middle attack."
+msgstr "Detta KAN vara en man-i-mitten-attack."
+
+#: netcache.py:661
+msgid "A different certificate has previously been seen {} times."
+msgstr "Ett annat certifikat har tidigare setts {} gånger."
+
+#: netcache.py:667
+msgid "That certificate has expired, which reduces suspicion somewhat."
+msgstr "Det certifikatet har gått ut, vilket reducerar misstankarna något."
+
+#: netcache.py:669
+msgid "That certificate is still valid for: {}"
+msgstr "Det certifikatet är fortfarande giltigt under: {}"
+
+#: netcache.py:671
+msgid "Attempt to verify the new certificate fingerprint out-of-band:"
+msgstr ""
+"Försöker att verifiera nya fingeravtryck för certifikat utan för "
+"kommunikationen:"
+
+#. TRANSLATORS: keep "Y/N" because the answer has to be one of those
+#: netcache.py:677
+msgid "Accept this new certificate? Y/N "
+msgstr "Acceptera detta nya certifikat? ja (Y)/nej (N) "
+
+#: netcache.py:684
+msgid "TOFU Failure!"
+msgstr "TOFU-fel!"
+
+#: netcache.py:781
+msgid "There are no certificates available for this site."
+msgstr "Det finns inga certifikat tillgängliga för denna plats."
+
+#. TRANSLATORS: keep the "y/n"
+#: netcache.py:783
+msgid "Do you want to create one? (y/n) "
+msgstr "Vill du skapa ett? (ja (y)/nej (n)) "
+
+#: netcache.py:785
+msgid "Name for this certificate: "
+msgstr "Namn för detta certifikat: "
+
+#: netcache.py:786
+msgid "Validity in days: "
+msgstr "Giltighet i dagar: "
+
+#: netcache.py:793
+msgid "The name or validity you typed are invalid"
+msgstr "Namnet eller giltighetstiden du skrev in är ogiltig"
+
+#: netcache.py:798
+msgid "The one available certificate for this site is:"
+msgstr "Det enda tillgängliga certifikatet för denna sida är:"
+
+#: netcache.py:801
+msgid "The {} available certificates for this site are:"
+msgstr "De {} tillgängliga certifikaten för denna sida är:"
+
+#: netcache.py:810
+msgid "which certificate do you want to use? > "
+msgstr "vilka certifikat vill du använda? > "
+
+#: netcache.py:895
+msgid "This identity doesn't exist for this site (or is disabled)."
+msgstr ""
+"Denna identitet existerar inte för denna webbplats (eller är inaktiverad)."
+
+#: netcache.py:960 netcache.py:966
+msgid "Received invalid header from server!"
+msgstr "Tog emot ogiltigt huvud från server!"
+
+#: netcache.py:991
+msgid "URL redirects to itself!"
+msgstr "URL-omdirerar till sig själv!"
+
+#: netcache.py:993
+msgid "Caught in redirect loop!"
+msgstr "Fångad i en omdirigerings-loop!"
+
+#: netcache.py:996
+#, python-format
+msgid "Refusing to follow more than %d consecutive redirects!"
+msgstr "Vägrar att följa mer än %d konsekutiva omdirigeringar!"
+
+#: netcache.py:1027
+msgid "You need to provide a client-certificate to access this page."
+msgstr ""
+"Du behöver bistå med ett klient-certifikat för att komma åt denna sida."
+
+#: netcache.py:1031
+msgid ""
+"You need to provide a client-certificate to access this page.\r\n"
+"Type \"certs\" to create or re-use one"
+msgstr ""
+"Du måste bistå med ett klient-certifikat för att komma åt denna sida.\r\n"
+"Skriv ”certs” för att skapa eller återanvända ett"
+
+#: netcache.py:1035
+#, python-format
+msgid "Server returned undefined status code %s!"
+msgstr "Server returnerade odefinierad statuskod %s!"
+
+#: netcache.py:1059
+#, python-format
+msgid ""
+"Could not decode response body using %s                                "
+"encoding declared in header!"
+msgstr ""
+"Kunde inte avkoda svarskropp med %s                                kodning "
+"deklarerad i huvudet!"
+
+#: netcache.py:1095
+msgid "Blocked URL: "
+msgstr "Blockerad URL: "
+
+#: netcache.py:1096
+msgid "This website has been blocked with the following rule:\n"
+msgstr "Denna webbsida har blockerats på grund av följande regel:\n"
+
+#: netcache.py:1098
+msgid "Use the following redirect command to unblock it:\n"
+msgstr "Använd följande omdirigeringskommando för att avblockera den:\n"
+
+#: netcache.py:1127
+#, python-format
+msgid "%s is not a supported protocol"
+msgstr "%s är inte ett protokoll som stöds"
+
+#: netcache.py:1135
+msgid "HTTP requires python-requests"
+msgstr "HTTP kräver python-requests"
+
+#: netcache.py:1154
+msgid "ERROR: DNS error!"
+msgstr "FEL: DNS-fel!"
+
+#: netcache.py:1157
+msgid "ERROR1: Connection refused!"
+msgstr "FEL1: Anslutning vägrad!"
+
+#: netcache.py:1160
+msgid "ERROR2: Connection reset!"
+msgstr "FEL2: Anslutning återställd!"
+
+#: netcache.py:1163
+msgid ""
+"ERROR3: Connection timed out!\n"
+"    Slow internet connection?  Use 'set timeout' to be more patient."
+msgstr ""
+"FEL3: Tidsgränsen för anslutning löpte ut!\n"
+"    Långsam internetanslutning? Använd ”set timeout” för att vara mer "
+"tålmodig."
+
+#: netcache.py:1167
+msgid ""
+"ERROR5: Trying to create a directory which already exists\n"
+"                        in the cache : "
+msgstr ""
+"FEL5: Försöker skapa en katalog som redan finns\n"
+"                        i cachen : "
+
+#: netcache.py:1172
+msgid "ERROR6: Bad SSL certificate:\n"
+msgstr "FEL6: Felaktigt SSL-certifikat\n"
+
+#: netcache.py:1175
+msgid ""
+"\n"
+" If you know what you are doing, you can try to accept bad certificates with "
+"the following command:\n"
+msgstr ""
+"\n"
+" Om du vet vad du gör kan du prova att acceptera felaktiga certifikat med "
+"följande kommando:\n"
+
+#: netcache.py:1180
+msgid "ERROR7: Cannot connect to URL:\n"
+msgstr "FEL7: Kan inte ansluta till URL:\n"
+
+#: netcache.py:1186
+msgid "ERROR4: "
+msgstr "FEL4: "
+
+#: netcache.py:1203
+#, python-format
+msgid "Downloading %s"
+msgstr "Hämtar %s"
+
+#: netcache.py:1225
+msgid ""
+"Netcache is a command-line tool to retrieve, cache and access networked "
+"content.\n"
+"            By default, netcache will returns a cached version of a given "
+"URL, downloading it             only if a cache version doesn't exist. A "
+"validity duration, in seconds, can also             be given so netcache "
+"downloads the content only if the existing cache is older than the validity."
+msgstr ""
+"Netcache är et kommandoradsverktyg för att hämta, cacha och kommer åt "
+"nätverksinnehåll.\n"
+"            Som standard kommer netcache att returner en version av en given "
+"URL, hämta den             endast om en cachad version inte existerar. En "
+"giltighetstid, i sekunder, kan också             anges så att netcache "
+"hämtar innehåller endast om den existerande cachen är äldre än "
+"giltighetstiden."
+
+#: netcache.py:1234
+msgid "return path to the cache instead of the content of the cache"
+msgstr "returnera sökvägen till cachen istället för cachens innehåll"
+
+#: netcache.py:1239
+msgid ""
+"return a list of id's for the gemini-site instead of the content of the cache"
+msgstr ""
+"returnera en lista med id:n för gemini-platsen istället för cachen innehåll"
+
+#: netcache.py:1244
+msgid "Do not attempt to download, return cached version or error"
+msgstr ""
+"Försök inte hämta, returnera den cachade versionen eller rapportera ett fel"
+
+#: netcache.py:1249
+msgid "Cancel download of items above that size (value in Mb)."
+msgstr "Avbryt hämtning av objekt som är större än (värde i Mbyte)."
+
+#: netcache.py:1254
+msgid "Time to wait before cancelling connection (in second)."
+msgstr "Tid att vänta innan anslutning avbryts (i sekunder)."
+
+#: netcache.py:1260 openk.py:393 opnk.py:393
+msgid ""
+"maximum age, in second, of the cached version "
+"before                                 redownloading a new version"
+msgstr ""
+"maxålder, i sekunder, för den cachade versionen "
+"innan                                 en ny version hämtas ner på  nytt"
+
+#: netcache.py:1268
+msgid "download URL and returns the content or the path to a cached version"
+msgstr "hämta URL och returnera innehållet eller sökvägen till cachad version"
+
+#: offpunk.py:66
+msgid "Install xsel/xclip (X11) or wl-clipboard (Wayland) to use copy"
+msgstr ""
+"Installera xcel/xclip (X11) eller wl-clipbloard (Wayland) för att kopiera"
+
+#: offpunk.py:95
+msgid ""
+"Install xsel/xclip (X11) or wl-clipboard (Wayland) to get URLs from your "
+"clipboard"
+msgstr ""
+"Installera xcel/xclip (X11) eller wl-clipbloard (Wayland) för att hämta URL:"
+"er från urklipp"
+
+#: offpunk.py:149
+msgid "You need to 'go' somewhere, first"
+msgstr "Du måste ”gå” någonstans först"
+
+#: offpunk.py:158
+msgid "Error: "
+msgstr "Fel: "
+
+#: offpunk.py:337
+#, python-format
+msgid "We don’t handle name of URL: %s"
+msgstr "Vi hanterar inte namn på URL: %s"
+
+#: offpunk.py:381
+#, python-format
+msgid "%s not available, marked for syncing"
+msgstr "%s inte tillgänglig, markerad för synkning"
+
+#: offpunk.py:383 offpunk.py:1050
+#, python-format
+msgid "%s already marked for syncing"
+msgstr "%s redan markerad för synkning"
+
+#: offpunk.py:446 offpunk.py:1393
+msgid "What?"
+msgstr "Va?"
+
+#: offpunk.py:450
+msgid "No links to index"
+msgstr "Inga länkar till index"
+
+#: offpunk.py:458
+msgid "No page with links"
+msgstr "Inga sidor med länkar"
+
+#: offpunk.py:466
+#, python-format
+msgid "%s is redirected to %s"
+msgstr "%s omdirigerar till %s"
+
+#: offpunk.py:468
+#, python-format
+msgid "Please add a destination to redirect %s"
+msgstr "Lägg till en destination till omdirigering %s"
+
+#: offpunk.py:474
+#, python-format
+msgid "Redirection for %s has been removed"
+msgstr "Omdirigering för %s har tagits bort"
+
+#: offpunk.py:476
+#, python-format
+msgid "%s was not redirected. Nothing has changed."
+msgstr "%s omdirigerades inte. Ingenting har ändrats."
+
+#: offpunk.py:479
+#, python-format
+msgid "%s will now be blocked"
+msgstr "%s kommer nu att vara blockerad"
+
+#: offpunk.py:482
+#, python-format
+msgid "%s will now be redirected to %s"
+msgstr "%s kommer nu att omdirigeras till %s"
+
+#: offpunk.py:486
+msgid "Current redirections:\n"
+msgstr "Aktuella omdirigeringar:\n"
+
+#: offpunk.py:490
+msgid ""
+"\n"
+"To add new, use \"redirect origine.com destination.org\""
+msgstr ""
+"\n"
+"För att lägga till en ny använd ”redirect origine.com destination.org”"
+
+#: offpunk.py:491
+msgid ""
+"\n"
+"To remove a redirect, use \"redirect origine.com NONE\""
+msgstr ""
+"\n"
+"För att ta bort en omdirigering, använd ”redirect origine.com NONE”"
+
+#: offpunk.py:493
+msgid ""
+"\n"
+"To completely block a website, use \"redirect origine.com BLOCK\""
+msgstr ""
+"\n"
+"För att helt blockera en webbsida, använd ”redirect origine.com BLOCK”"
+
+#: offpunk.py:495
+msgid ""
+"\n"
+"To block also subdomains, prefix with *: \"redirect *origine.com BLOCK\""
+msgstr ""
+"\n"
+"För att också blockera underdomäner, lägg till prefixet *: ”redirect "
+"*origine.com BLOCK”"
+
+#: offpunk.py:510 offpunk.py:515
+#, python-format
+msgid "Unrecognised option %s"
+msgstr "Okänd flagga %s"
+
+#: offpunk.py:520
+msgid "TLS mode must be `ca` or `tofu`!"
+msgstr "TLS-läge måste vara ”ca” eller ”tofu”!"
+
+#: offpunk.py:524
+msgid "Only high security certificates are now accepted"
+msgstr "Endast certifikat med hög säkerhet accepteras nu"
+
+#: offpunk.py:526
+msgid "Low security SSL certificates are now accepted"
+msgstr "SSL-certifikat med låg säkerhet accepteras nu"
+
+#. TRANSLATORS keep accept_bad_ssl_certificates, True, and False
+#: offpunk.py:529
+msgid "accept_bad_ssl_certificates should be True or False"
+msgstr "accept_bad_ssl_certificates bör vara True eller False"
+
+#: offpunk.py:534
+msgid "changing width to "
+msgstr "ändrar bredd till "
+
+#: offpunk.py:537
+#, python-format
+msgid "%s is not a valid width (integer required)"
+msgstr "%s är inte en giltig bredd (heltal krävs)"
+
+#: offpunk.py:540
+msgid "Avaliable linkmode are `none` and `end`."
+msgstr "Tillgängliga länklägen är ”none” och ”end”."
+
+#: offpunk.py:591
+msgid "Available preset themes are: "
+msgstr "Tillgängliga förinställda teman är: "
+
+#: offpunk.py:607
+#, python-format
+msgid "%s is not a valid preset theme"
+msgstr "%s är inte ett giltigt förinställt tema"
+
+#: offpunk.py:609
+#, python-format
+msgid "%s is not a valid theme element"
+msgstr "%s är inte ett giltig tema-element"
+
+#: offpunk.py:610
+msgid "Valid theme elements are: "
+msgstr "Giltiga tema-element är: "
+
+#: offpunk.py:622
+#, python-format
+msgid "%s is set to %s"
+msgstr "%s är satt till %s"
+
+#: offpunk.py:627
+#, python-format
+msgid "%s reset (it was set to %s)"
+msgstr "%s återställd (var satt till %s)"
+
+#: offpunk.py:630
+#, python-format
+msgid "%s is not set. Nothing to do"
+msgstr "%s är inte satt. Inget att göra"
+
+#: offpunk.py:635
+#, python-format
+msgid "%s is not a valid color"
+msgstr "%s är inte en giltig färg"
+
+#: offpunk.py:636
+msgid "Valid colors are one of: "
+msgstr "Giltiga färger är endera av: "
+
+#: offpunk.py:673
+#, python-format
+msgid "No handler set for MIME type %s"
+msgstr "Ingen hanterare satt för MIME-typ %s"
+
+#: offpunk.py:699 offpunk.py:707
+#, python-format
+msgid "%s is a command and cannot be aliased"
+msgstr "%s är ett kommando och kan inte göras till alias"
+
+#: offpunk.py:701
+#, python-format
+msgid "%s is currently aliased to \"%s\""
+msgstr "%s har för närvarande aliaset ”%s”"
+
+#: offpunk.py:703
+#, python-format
+msgid "there’s no alias for \"%s\""
+msgstr "det finns inget alias för ”%s”"
+
+#: offpunk.py:710
+#, python-format
+msgid "%s has been aliased to \"%s\""
+msgstr "%s has nu aliaset ”%s”"
+
+#: offpunk.py:716
+msgid "Offline and undisturbed."
+msgstr "Frånkopplad och ostörd."
+
+#: offpunk.py:720
+msgid "Offpunk is now offline and will only access cached content"
+msgstr "Offpunk är nu frånkopplat och kan endast komma åt cachat innehåll"
+
+#: offpunk.py:727
+msgid "Offpunk is online and will access the network"
+msgstr "Offpunk är uppkopplat och kommer att använda nätverket"
+
+#: offpunk.py:729
+msgid "Already online. Try offline."
+msgstr "Redan uppkopplad. Prova frånkopplat läge."
+
+#: offpunk.py:768
+msgid "No content to copy, visit a page first"
+msgstr "Inget innehåll att kopiera, besök en sida först"
+
+#: offpunk.py:784
+#, python-format
+msgid "We cannot share %s because it is local only"
+msgstr "Vi kan inte dela %s eftersom det endast är lokalt"
+
+#: offpunk.py:796
+msgid "TODO: sharing text is not yet implemented"
+msgstr "ATT-GÖRA: textdelning är inte implementerat ännu"
+
+#: offpunk.py:813 offpunk.py:940
+msgid "Nothing to share, visit a page first"
+msgstr "Ingenting att dela, besök en sida först"
+
+#: offpunk.py:879
+msgid "Multiple emails addresse were found:"
+msgstr "Flera e-postadresser hittades:"
+
+#: offpunk.py:884
+msgid "None of the above"
+msgstr "Ingen av ovanstående"
+
+#: offpunk.py:886
+msgid "Which email will you use to reply?"
+msgstr "Vilken e-postadress vill du använda för att svara?"
+
+#: offpunk.py:898
+msgid "Enter the contact email for this page?"
+msgstr "Skriv inte kontaktadressen för denna sida?"
+
+#: offpunk.py:907
+msgid "Email address:"
+msgstr "E-postadress:"
+
+#: offpunk.py:908
+msgid "Do you want to save this email as a contact for"
+msgstr "Vill du spara denna e-postadress som kontakt för"
+
+#: offpunk.py:909
+msgid "Current page only"
+msgstr "Enbart aktuell sida"
+
+#: offpunk.py:910
+#, python-format
+msgid "The whole %s space"
+msgstr "Hela %s-området"
+
+#: offpunk.py:911
+msgid "Don’t save this email"
+msgstr "Spara inte detta e-postmeddelande"
+
+#: offpunk.py:913
+msgid "Your choice?"
+msgstr "Ditt val?"
+
+#: offpunk.py:931
+#, python-format
+msgid "Email %s has been recorded as contact for %s"
+msgstr "E-postadress %s har sparats som kontakt för %s"
+
+#: offpunk.py:932
+msgid "Nothing to save"
+msgstr "Inget att spara"
+
+#: offpunk.py:935
+msgid "In reply to "
+msgstr "Som svar på "
+
+#: offpunk.py:938
+#, python-format
+msgid "We cannot reply to %s because it is local only"
+msgstr "Vi kan inte svara %s eftersom det endast är lokalt"
+
+#: offpunk.py:959
+msgid "Too many arguments to list."
+msgstr "För många alternativ för att lista dem."
+
+#: offpunk.py:962 offpunk.py:984
+msgid "URL required (or visit a page)."
+msgstr "URL krävs (eller en besökt sida)."
+
+#: offpunk.py:966
+msgid "Cookies not enabled for url"
+msgstr "Kakor inte aktiverade för url"
+
+#: offpunk.py:968
+msgid "Cookies for url:"
+msgstr "Kakor för url:"
+
+#. TRANSLATORS domain, path, expiration time, name, value
+#: offpunk.py:971
+#, python-format
+msgid "%s %s expires:%s %s=%s"
+msgstr "%s %s går ut:%s %s=%s"
+
+#: offpunk.py:976
+msgid "File parameter required for import."
+msgstr "Filparametrar krävs för import."
+
+#: offpunk.py:981
+msgid "Too many arguments to import"
+msgstr "För många alternativ för att importera"
+
+#: offpunk.py:991
+msgid "File not found"
+msgstr "Filen hittades inte"
+
+#: offpunk.py:993
+msgid "Imported."
+msgstr "Importerad."
+
+#: offpunk.py:995
+msgid "Huh?"
+msgstr "Va?"
+
+#: offpunk.py:1008
+msgid "URLs in your clipboard\n"
+msgstr "URL:er i urklipp\n"
+
+#: offpunk.py:1013
+msgid "Where do you want to go today ?> "
+msgstr "Vart vill du gå idag ?> "
+
+#: offpunk.py:1020
+msgid "Go where? (hint: simply copy an URL in your clipboard)"
+msgstr "Gå vart? (tips: kopiera en URL in i urklipp)"
+
+#: offpunk.py:1039
+#, python-format
+msgid "%s is not a valid URL to go"
+msgstr "%s är inte en giltig URL att gå till"
+
+#: offpunk.py:1048
+#, python-format
+msgid "%s marked for syncing"
+msgstr "%s markerad för synkning"
+
+#: offpunk.py:1071
+msgid "Up only take integer as arguments"
+msgstr "Up tar endast ett heltal som argument"
+
+#: offpunk.py:1126
+msgid "End of tour."
+msgstr "Slut på turen."
+
+#: offpunk.py:1146
+#, python-format
+msgid "List %s does not exist. Cannot add it to tour"
+msgstr "Listan %s existerar inte. Kan inte lägga till den till tur"
+
+#: offpunk.py:1173
+#, python-format
+msgid "Invalid use of range syntax %s, skipping"
+msgstr "Ogiltig användning av intervallsyntax %s, hoppar över"
+
+#: offpunk.py:1175 offpunk.py:1542
+#, python-format
+msgid "Non-numeric index %s, skipping."
+msgstr "Icke-numeriskt index %s, hoppar över."
+
+#: offpunk.py:1177 offpunk.py:1544
+#, python-format
+msgid "Invalid index %d, skipping."
+msgstr "Ogiltigt index %d, hoppar över."
+
+#: offpunk.py:1219
+msgid "Invalid mark, must be one letter"
+msgstr "Ogiltigt märke, måste vara en bokstav"
+
+#. TRANSLATORS: this string and "Mime", "Cache", "Renderer" are formatted to align.
+#. if you can obtain the same effect in your language, try to do it ;)
+#. they are displayed with the "info" command
+#: offpunk.py:1230
+msgid "URL      :   "
+msgstr "URL      :   "
+
+#: offpunk.py:1231
+msgid "Mime     :   "
+msgstr "Mime     :   "
+
+#: offpunk.py:1232
+msgid "Cache    :   "
+msgstr "Cache    :   "
+
+#: offpunk.py:1238
+msgid "Renderer :   "
+msgstr "Renderare :  "
+
+#: offpunk.py:1239
+msgid "Cleaned with : "
+msgstr "Rensad med :   "
+
+#: offpunk.py:1245
+msgid "Page appeard in following lists :\n"
+msgstr ""
+"Sida fanns i följande listor :\n"
+"\n"
+
+#: offpunk.py:1248
+msgid "normal list"
+msgstr "normal lista"
+
+#: offpunk.py:1250
+msgid "subscription"
+msgstr "prenumeration"
+
+#: offpunk.py:1252
+msgid "frozen list"
+msgstr "frusen lista"
+
+#: offpunk.py:1258
+msgid "Page is not save in any list"
+msgstr "Sida finns inte i någon lista"
+
+#: offpunk.py:1276
+msgid "System: "
+msgstr "System: "
+
+#: offpunk.py:1277
+msgid "Python: "
+msgstr "Python: "
+
+#: offpunk.py:1278
+msgid "Language: "
+msgstr "Språk: "
+
+#: offpunk.py:1279
+msgid ""
+"\n"
+"Highly recommended:\n"
+msgstr ""
+"\n"
+"Rekommenderas starkt:\n"
+
+#: offpunk.py:1281
+msgid ""
+"\n"
+"Web browsing:\n"
+msgstr ""
+"\n"
+"Webbsurfning:\n"
+
+#: offpunk.py:1288
+msgid ""
+"\n"
+"Nice to have:\n"
+msgstr ""
+"\n"
+"Bra att ha:\n"
+
+#: offpunk.py:1295
+msgid ""
+"\n"
+"Features :\n"
+msgstr ""
+"\n"
+"Funktioner :\n"
+
+#: offpunk.py:1296
+msgid " - Render images (chafa or timg)              : "
+msgstr " - Rendera bilder (chafa or timg)             : "
+
+#: offpunk.py:1299
+msgid " - Render HTML (bs4, readability)             : "
+msgstr " - Rendera HTML (bs4, readbility)            : "
+
+#: offpunk.py:1302
+msgid " - Render Atom/RSS feeds (feedparser)         : "
+msgstr " - Rendera Atom/RSS-flöden (feedparser)       : "
+
+#: offpunk.py:1305
+msgid " - Connect to http/https (requests)           : "
+msgstr " - Anslut till http/https (requests)          : "
+
+#: offpunk.py:1308
+msgid " - Detect text encoding (python-chardet)      : "
+msgstr " - Identifiera textkodning (python)chardet)   : "
+
+#: offpunk.py:1311
+msgid " - restore last position (less 572+)          : "
+msgstr " - återställ senaste position (less 572+)     : "
+
+#: offpunk.py:1315
+msgid "ftr_site_config     : "
+msgstr "ftr_site_config     : "
+
+#: offpunk.py:1316
+msgid "Config directory    : "
+msgstr "Konfigkatalog       : "
+
+#: offpunk.py:1317
+msgid "User Data directory : "
+msgstr "Mapp för användardata : "
+
+#: offpunk.py:1318
+msgid "Cache directoy      : "
+msgstr "Cache directoy      : "
+
+#: offpunk.py:1331
+msgid "Found a bug in Offpunk? You can report it by email to the developers."
+msgstr ""
+"Hittat ett programfel i Offpunk? du kan rapportera den via e-post till "
+"utvecklarna."
+
+#: offpunk.py:1333
+msgid "Please describe your problem as clearly as possible:"
+msgstr "Beskriv ditt problem så tydligt som möjligt:"
+
+#: offpunk.py:1334
+msgid ""
+"Include all the steps to reproduce the problem, including the URLs you are "
+"currently visiting."
+msgstr ""
+"Inkludera alla stegen för att reproducera problemet, inklusive URL:en du "
+"besöker för närvarande."
+
+#: offpunk.py:1335 offpunk.py:2225
+msgid "Another point: always use \"reply-all\" when replying to this list."
+msgstr ""
+"Ytterliga en sak: använd alltid ”svara till alla” när du svarar till denna "
+"listan."
+
+#: offpunk.py:1337
+msgid "Describe the bug in one line: "
+msgstr "Beskriv programfelet på en rad: "
+
+#: offpunk.py:1342
+msgid "No description of the bug, report cancelled"
+msgstr "Ingen beskrivning av programfelet, rapporten avbruten"
+
+#: offpunk.py:1388
+msgid "Please enter the number of the XKCD comic you want to see"
+msgstr "Skriv inte numret på XKCD-serieteckningen du vill se"
+
+#: offpunk.py:1456
+msgid "Current page is already a feed"
+msgstr "Aktuell sida är redan ett flöde"
+
+#: offpunk.py:1458
+msgid "No feed found on current page"
+msgstr "Inget flöde hittat på aktuell sida"
+
+#: offpunk.py:1461
+msgid "Available feeds :\n"
+msgstr "Tillgängliga flöden :\n"
+
+#: offpunk.py:1466
+msgid "Which view do you want to see ? >"
+msgstr "Vilken vy vill du se ? >"
+
+#. TRANSLATORS keep "view feed" and "feed" in english, those are literal commands
+#: offpunk.py:1490
+msgid "view feed is deprecated. Use the command feed directly"
+msgstr "view feed är föråldrat. Använd kommandot feed direkt"
+
+#: offpunk.py:1499
+#, python-format
+msgid "Link %s is: %s"
+msgstr "Länk %s ä: %s"
+
+#: offpunk.py:1507
+msgid "Empty cached version"
+msgstr "Töm ut cachad version"
+
+#: offpunk.py:1508
+#, python-format
+msgid "Last cached on %s"
+msgstr "Senast cachad %s"
+
+#: offpunk.py:1510
+msgid "No cached version for this link"
+msgstr "Ingen cachad version för denna länk"
+
+#. TRANSLATORS keep "normal, full, switch, source" in english
+#: offpunk.py:1515
+msgid "Valid arguments for view are : normal, full, switch, source or a number"
+msgstr ""
+"Giltiga argument för view är: normal, full, switch, source eller ett tal"
+
+#: offpunk.py:1589
+msgid "You cannot save if not cached!"
+msgstr "Du kan inte svara om den inte är cachad!"
+
+#: offpunk.py:1612
+msgid "First argument is not a valid item index!"
+msgstr "Första argumentet är inte ett giltigt objektindex!"
+
+#: offpunk.py:1616
+msgid "You must provide an index, a filename, or both."
+msgstr "Du måste ange ett index, ett filnamn, eller båda."
+
+#: offpunk.py:1625
+msgid "Index too high!"
+msgstr "Index för högt!"
+
+#: offpunk.py:1636
+#, python-format
+msgid "File %s already exists!"
+msgstr "Filen %s finns redan!"
+
+#: offpunk.py:1643
+#, python-format
+msgid "Can’t save %s because it’s a folder, not a file"
+msgstr "Kan inte spara %s eftersom det är en mapp, inte en fil"
+
+#: offpunk.py:1645
+#, python-format
+msgid "Saved to %s"
+msgstr "Sparad till %s"
+
+#: offpunk.py:1710
+msgid ""
+"Subscriptions #subscribed (new links in those pages will be added to tour)"
+msgstr ""
+"Prenumerationer #prenumererad (nya länkar i de sidorna kommer att läggas "
+"till i turen)"
+
+#: offpunk.py:1712
+msgid "Links requested and to be fetched during the next --sync"
+msgstr "Länka begärda och kommer att hämtas vid nästa --sync"
+
+#: offpunk.py:1727
+msgid "Multiple feeds have been found :\n"
+msgstr "Flera flöden har hittats :\n"
+
+#: offpunk.py:1729
+msgid "This page is already a feed:\n"
+msgstr "Sidan finns redan som ett flöde:\n"
+
+#: offpunk.py:1731
+msgid "No feed detected. You can still watch the page :\n"
+msgstr "Inget flöde identifierades. Du kan fortfarande titta på sidan :\n"
+
+#: offpunk.py:1742
+#, python-format
+msgid "\t -> (already subscribed through lists %s)\n"
+msgstr "\t -> (prenumererar redan via listorna %s)\n"
+
+#: offpunk.py:1745
+msgid "Which feed do you want to subscribe ? > "
+msgstr "Vilket flöde vill du prenumerera på ? > "
+
+#: offpunk.py:1754
+#, python-format
+msgid "Subscribed to %s"
+msgstr "Prenumerar på %s"
+
+#: offpunk.py:1756
+#, python-format
+msgid "You are already subscribed to %s"
+msgstr "Du prenumererar redan på %s"
+
+#: offpunk.py:1758
+msgid "No subscription registered"
+msgstr "Ingen prenumeration registrerad"
+
+#: offpunk.py:1767
+msgid "bookmarks command takes a single integer argument!"
+msgstr "bookmarks-kommandot tar ett enkelt heltals-argument!"
+
+#: offpunk.py:1782 offpunk.py:2031
+#, python-format
+msgid "Removed from %s"
+msgstr "Borttagen från %s"
+
+#: offpunk.py:1786
+#, python-format
+msgid "Archiving: %s"
+msgstr "Arkiverar: %s"
+
+#: offpunk.py:1788
+#, python-format
+msgid "[2;34mCurrent maximum size of archives : %s[0m"
+msgstr "[2;34mAktuell maxstorlek för arkiv : %s[0m"
+
+#: offpunk.py:1811 offpunk.py:1954 offpunk.py:1973
+#, python-format
+msgid "List %s does not exist. Create it with list create %s"
+msgstr "Listan %s finns int. Skapa den med list create %s"
+
+#: offpunk.py:1823
+#, python-format
+msgid "%s already in %s."
+msgstr "%s redan i %s."
+
+#: offpunk.py:1830
+#, python-format
+msgid "%s has updated mode in %s to %s"
+msgstr "%s har uppdaterat läge i %s till %s"
+
+#. TRANSLATORS parameters are url, list
+#: offpunk.py:1837
+#, python-format
+msgid "%s added to %s"
+msgstr "%s tillagd i %s"
+
+#: offpunk.py:1844
+msgid ", archived on "
+msgstr ", arkiverad "
+
+#: offpunk.py:1846
+msgid ", visited on "
+msgstr ", besökt "
+
+#. TRANSLATORS parameter is a "list" name
+#: offpunk.py:1849
+#, python-format
+msgid ", added to %s on "
+msgstr ", tillagd till %s "
+
+#. TRANSLATORS keep 'go_to_line' as is
+#: offpunk.py:1960
+msgid "go_to_line requires a number as parameter"
+msgstr "go_to_line kräver ett nummer som parameter"
+
+#: offpunk.py:1995
+#, python-format
+msgid "%s is not allowed as a name for a list"
+msgstr "%s är inte tillåt som ett namn på en lista"
+
+#: offpunk.py:2007
+#, python-format
+msgid "list created. Display with `list %s`"
+msgstr "lista skapad. Visa med ”list %s”"
+
+#: offpunk.py:2009
+#, python-format
+msgid "list %s already exists"
+msgstr "listan %s finns redan"
+
+#: offpunk.py:2016
+msgid "LIST argument is required as the target for your move"
+msgstr "LIST-argument krävs som målet för din förflyttning"
+
+#: offpunk.py:2023
+#, python-format
+msgid "%s is not a list, aborting the move"
+msgstr "%s är inte en lista, avbryter förflyttningen"
+
+#: offpunk.py:2082
+#, python-format
+msgid "List %s has been marked as %s"
+msgstr "Lista %s har markerats som %s"
+
+#: offpunk.py:2084
+#, python-format
+msgid "List %s is now a normal list"
+msgstr "Lista %s är nu en normal lista"
+
+#: offpunk.py:2124
+msgid "No lists yet. Use `list create`"
+msgstr "Inga listor än. Använd ”list create”"
+
+#: offpunk.py:2135
+msgid "A name is required to create a new list. Use `list create NAME`"
+msgstr "Ett namn krävs för att skapa en ny lista. Använd ”list create NAMN”"
+
+#: offpunk.py:2156
+msgid "Please set a valid editor with \"set editor\""
+msgstr "Sätt en giltig textredigerare med ”set editor”"
+
+#: offpunk.py:2158
+msgid "A valid list name is required to edit a list"
+msgstr "Ett giltigt listnamn krävs för att redigera en lista"
+
+#: offpunk.py:2160
+msgid "No valid editor has been found."
+msgstr "Ingen giltig textredigerare har hittats."
+
+#: offpunk.py:2162
+msgid "You can use the following command to set your favourite editor:"
+msgstr ""
+"Du kan använda följande kommando för att sätta sin favorit-textredigerare:"
+
+#. TRANSLATORS keep 'set editor', it's a command
+#: offpunk.py:2165
+msgid "set editor EDITOR"
+msgstr "set editor TEXTREDIGERARE"
+
+#: offpunk.py:2166
+msgid "or use the $VISUAL or $EDITOR environment variables."
+msgstr "eller använda miljövariablerna $VISUAL eller $EDITOR."
+
+#: offpunk.py:2170
+#, python-format
+msgid "%s is a system list which cannot be deleted"
+msgstr "%s är en systemlista som inte kan tas bort"
+
+#: offpunk.py:2173
+#, python-format
+msgid "Are you sure you want to delete %s ?\n"
+msgstr "Är du säker på att du vill ta bort %s ?\n"
+
+#: offpunk.py:2176
+#, python-format
+msgid "! %s items in the list will be lost !\n"
+msgstr "! %s objekt i listan kommer att gå förlorade!\n"
+
+#: offpunk.py:2180
+msgid "The list is empty, it should be safe to delete it.\n"
+msgstr "Listan är tom, det bör vara säkert att ta bort den.\n"
+
+#: offpunk.py:2183
+#, python-format
+msgid "Type \"%s\" (in capital, without quotes) to confirm :"
+msgstr "Skriv ”%s” (med versaler, utan citationstecken) för att bekräfta :"
+
+#: offpunk.py:2190
+#, python-format
+msgid "* * * %s has been deleted"
+msgstr "* * * %s har tagits bort"
+
+#: offpunk.py:2192 offpunk.py:2194
+msgid "A valid list name is required to be deleted"
+msgstr "Ett giltigt namn krävs för att ta bort"
+
+#: offpunk.py:2198
+#, python-format
+msgid "You cannot modify %s which is a system list"
+msgstr "Du kan inte modifiera %s, vilken är en systemlista"
+
+#: offpunk.py:2208
+#, python-format
+msgid "A valid list name is required after %s"
+msgstr "Ett giltigt listnamn krävs efter %s"
+
+#: offpunk.py:2219
+msgid ""
+"Need help from a fellow human? Simply send an email to the offpunk-users "
+"list."
+msgstr ""
+"Behöver du hjälp av en människa? Skicka ett e-postmeddelande till sändlistan "
+"offpunk-users."
+
+#: offpunk.py:2222
+msgid "Describe your problem/question as clearly as possible."
+msgstr "Beskriv ditt problem/din fråga så tydligt som möjligt."
+
+#: offpunk.py:2223
+msgid "Don’t forget to present yourself and why you would like to use Offpunk!"
+msgstr "Glöm inte att presentera dig själv och varför du vill använda Offpunk!"
+
+#: offpunk.py:2228
+msgid "! is an alias for 'shell'"
+msgstr "! är ett alias för ”shell”"
+
+#: offpunk.py:2230
+msgid "? is an alias for 'help'"
+msgstr "? är ett alias för ”help”"
+
+#: offpunk.py:2233
+#, python-format
+msgid "%s is an alias for '%s'"
+msgstr "%s är ett alias för ”%s”"
+
+#: offpunk.py:2234
+msgid "See the list of aliases with 'abbrevs'"
+msgstr "Se listan över alias med ”abbrevs”"
+
+#: offpunk.py:2235
+#, python-format
+msgid "'help %s':"
+msgstr "”help %s”:"
+
+#: offpunk.py:2259
+msgid "Sync can only be achieved online. Change status with `online`."
+msgstr "Synk kan endast göras i uppkopplat läget. Ändra status med ”online”."
+
+#: offpunk.py:2264
+msgid "sync argument should be the cache validity expressed in seconds"
+msgstr "synk-argumentet bör vara en giltighetstid i cachen uttryckt i sekunder"
+
+#: offpunk.py:2282
+#, python-format
+msgid "  -> adding to tour: %s"
+msgstr "  -> lägger till till tur: %s"
+
+#: offpunk.py:2308
+#, python-format
+msgid "%s [%s/%s] Fetch "
+msgstr "%s [%s/%s] Hämta "
+
+#: offpunk.py:2361
+#, python-format
+msgid " * * * %s to fetch in %s * * *"
+msgstr " * * * %s att hämta i %s * * *"
+
+#: offpunk.py:2415
+msgid "End of sync"
+msgstr "Slut på synkning"
+
+#: offpunk.py:2422
+msgid "You can close your screen!"
+msgstr "Du kan stänga din skärm!"
+
+#: offpunk.py:2433
+msgid "start with your list of bookmarks"
+msgstr "börja med din lista av bokmärken"
+
+#: offpunk.py:2439
+msgid "Launch this command after startup"
+msgstr "Starta detta kommando efter uppstart"
+
+#: offpunk.py:2444
+msgid "use this particular config file instead of default"
+msgstr "använda denna konfigurationsfil istället för standard"
+
+#: offpunk.py:2449
+msgid ""
+"run non-interactively to build cache by exploring lists "
+"passed                                 as argument. Without argument, all "
+"lists are fetched."
+msgstr ""
+"kör icke-interaktivt för att bygga cachen genom att "
+"utforska                                 listorna som anges som argument. "
+"Utan argument hämtas alla listor."
+
+#: offpunk.py:2455
+msgid ""
+"assume-yes when asked questions about certificates/redirections during sync "
+"(lower security)"
+msgstr ""
+"assume-yes när frågor ställs om certifikat/omdirigeringar vid synkronisering "
+"(lägre säkerhet)"
+
+#: offpunk.py:2460
+msgid "do not try to get http(s) links (but already cached will be displayed)"
+msgstr ""
+"försök inte hämta http(s)-länkar (men de som redan cachats kommer att visas)"
+
+#: offpunk.py:2465
+msgid "run non-interactively with an URL as argument to fetch it later"
+msgstr "kör icke-interaktivt med en URL som argument för att hämta den senare"
+
+#: offpunk.py:2469
+msgid ""
+"depth of the cache to build. Default is 1. More is crazy. Use at your own "
+"risks!"
+msgstr ""
+"djupet för den byggda cachen. Standard är 1. Att använda mer är galet. "
+"Använd mer på eget bevåg!"
+
+#: offpunk.py:2473
+msgid ""
+"the mode to use to choose which images to download in a HTML "
+"page.                             one of (None, readable, full). Warning: "
+"full will slowdown your sync."
+msgstr ""
+"läget att använda för att välja vilka bilder som ska hämtas för en HTML-"
+"sida                             ett av (None, readable, full). Varning: "
+"full kommer att göra din synkning långsammare."
+
+#: offpunk.py:2478
+msgid "duration for which a cache is valid before sync (seconds)"
+msgstr "tiden för vilken en cache är giltigt innan den synkas (sekunder)"
+
+#: offpunk.py:2481
+msgid "display version information and quit"
+msgstr "visa versionsinformation och avsluta"
+
+#: offpunk.py:2486
+msgid "display available features and dependancies then quit"
+msgstr "visa tillgängliga funktioner och beroende och avsluta"
+
+#: offpunk.py:2492
+msgid "Arguments should be URL to be fetched or, if --sync is used, lists"
+msgstr "Argument bör vara en URL att hämta, eller om --sync användas, listor"
+
+#: offpunk.py:2506
+msgid "Creating config directory {}"
+msgstr "Skapar konfigurationskatalog {}"
+
+#: offpunk.py:2538
+#, python-format
+msgid "%s is not a valid URL to fetch"
+msgstr "%s är en giltig URL att hämta"
+
+#: offpunk.py:2540
+msgid "--fetch-later requires an URL (or a list of URLS) as argument"
+msgstr "--fetch-later kräver en URL (eller en lista av URL:er) som argument"
+
+#: offpunk.py:2568
+msgid "Welcome to Offpunk!"
+msgstr "Välkommen till Offpunk!"
+
+#. TRANSLATORS keep 'help', it's a literal command
+#: offpunk.py:2570
+msgid "Type `help` to get the list of available command."
+msgstr "Skriv ”help” för att få en lista över tillgängliga kommandon."
+
+#: offutils.py:153
+#, python-format
+msgid "No XDG folder for %s. Check your code."
+msgstr "Ingen XDG-mapp för %s. Kontrollera din källkod."
+
+#: offutils.py:166
+#, python-format
+msgid "Using config %s"
+msgstr "Använder konfiguration %s"
+
+#: offutils.py:179
+#, python-format
+msgid "Skipping startup command \"%s\" due to provided URL"
+msgstr "Hoppa över uppstartskommando ”%s” på grund av angiven URL"
+
+#: offutils.py:388
+#, python-format
+msgid "%s is not a valid email address"
+msgstr "%s är inte en giltig e-postadress"
+
+#. TRANSLATORS please keep the 'Y/N' as is
+#: offutils.py:392
+#, python-format
+msgid "Send an email to %s Y/N? "
+msgstr "Skicka e-post till %s Y/N? "
+
+#: offutils.py:409
+#, python-format
+msgid "Cannot find a mail client to send mail to %s"
+msgstr "Kan inte hitta e-postklient för att skicka e-post till %s"
+
+#: offutils.py:410 openk.py:140 opnk.py:140
+msgid "Please install xdg-open (usually from xdg-util package)"
+msgstr "Installera xdg-open (vanligtvis paketet xdg-util)"
+
+#: openk.py:38 opnk.py:38
+msgid "Please install the pager \"less\" to run Offpunk."
+msgstr "Installera sidläsaren ”less” för att köra Offpunk."
+
+#: openk.py:39 opnk.py:39
+msgid "If you wish to use another pager, send me an email !"
+msgstr ""
+"Om du vill använda en annan sidläsare, skicka mig ett e-postmeddelande!"
+
+#: openk.py:41 opnk.py:41
+msgid ""
+"(I’m really curious to hear about people not having \"less\" on their "
+"system.)"
+msgstr ""
+"(Jag är verkligen nyfiken på att höra om folk som inte har ”less” på sitt "
+"system.)"
+
+#. TRANSLATORS: keep echo and %s, translate the text between ""
+#: openk.py:139 opnk.py:139
+#, python-format
+msgid "echo \"Can’t find how to open \"%s"
+msgstr "echo ”Kan inte hitta hur man öppnar ”%s"
+
+#: openk.py:235 opnk.py:235
+#, python-format
+msgid "%s does not exist"
+msgstr "%s existerar inte"
+
+#. TRANSLATORS translate only "MY_PREFERED_APP"
+#: openk.py:309 opnk.py:309
+#, python-format
+msgid "\"handler %s MY_PREFERED_APP %%s\""
+msgstr "”handler %s MITT_FÖREDRAGNA_PROGRAM %%s”"
+
+#: openk.py:314 opnk.py:314
+#, python-format
+msgid "External open of type %s with \"%s\""
+msgstr "Extern öppning av typ %s med ”%s”"
+
+#: openk.py:315 openk.py:327 opnk.py:315 opnk.py:327
+#, python-format
+msgid "You can change the default handler with %s"
+msgstr "Du kan ändra standardhanterare med %s"
+
+#: openk.py:323 opnk.py:323
+#, python-format
+msgid "Handler program %s not found!"
+msgstr "Hanterarprogram %s hittades inte!"
+
+#: openk.py:324 opnk.py:324
+msgid ""
+"You can use the ! command to specify another handler "
+"program                        or pipeline."
+msgstr ""
+"Du kan använda kommandot ! för att ange ett annat "
+"hanterar-                        program eller rörledning."
+
+#: openk.py:363 opnk.py:363
+msgid ""
+"openk is an universal open command tool that will try to display any "
+"file              in the pager less after rendering its content with "
+"ansicat. If that fails,              openk will fallback to opening the file "
+"with xdg-open. If given an URL as input              instead of a path, "
+"openk will rely on netcache to get the networked content."
+msgstr ""
+"openk är ett universalverktyg som försöker visa vilken fil som helst "
+"i              sidläsaren less efter att ha renderat dess innehåll med "
+"ansicat. Om det              misslyckas, kommer openk att falla tillbaka på "
+"att öppna filen med xdg-open. Om              en URL anges som indata "
+"istället för en sökväg kommer openk att förlita sig på             netcache "
+"för att komma åt nätverksmaterialet."
+
+#: openk.py:387 opnk.py:387
+msgid "Path to the file or URL to open"
+msgstr "Sökväg till filen eller URL:en som ska öppnas"
+
+#: xkcdpunk.py:33
+msgid "xkcdpunk is a tool to display a given XKCD comic in your terminal"
+msgstr ""
+"xkcdpunk är ett verktyg för att visa en angiven XKCD-serieteckning i din "
+"terminal"
+
+#: xkcdpunk.py:38
+msgid ""
+"XKCD comic number. Also accept value \"latest\" and \"random\". Default is "
+"\"latest\""
+msgstr ""
+"XKCD-serieteckning nummer. Accepterar också värdet ”latest” och ”random”. "
+"Standard är ”latest”."
+
+#: xkcdpunk.py:41
+msgid "Only access cached comics"
+msgstr "Använd bara cachade serier"
