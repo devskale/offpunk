@@ -3,6 +3,7 @@
 ## 3.1 - Unreleased
 - Cut startup time in half by lazy loading optional modules
 - Adding support for tmux clipboard and cleaning clipboard code (by Stephen)
+- BUGFIX: "info" was sometimes returning the wrong cleaning method
 - PACKAGING: use hatch-requirements-txt (by link2xt)
 - Lot of typos fixed (by Sebastian Rasmussen)
 
