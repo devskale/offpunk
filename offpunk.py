@@ -882,7 +882,7 @@ class GeminiClient(cmd.Cmd):
                                     potential_replies.append(l)
                 #print("replying to %s"%potential_replies)
                 if len(potential_replies) > 1:
-                    stri = _("Multiple emails addressee were found:") + "\n"
+                    stri = _("Multiple emails addresses were found:") + "\n"
                     counter = 1
                     for mail in potential_replies:
                         stri += "[%s] %s\n" %(counter,mail)
