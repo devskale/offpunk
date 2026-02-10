@@ -1882,6 +1882,9 @@ Use "view XX" where XX is a number to view information about link XX.
                             previous_line = l
                             l_file.write(l)
                             counter += 1
+                    else:
+                        # even if similar, we should handle back/forward 
+                        if to_truncate > 0: to_truncate -= 1
             l_file.close()
 
     # remove an url from a list.
