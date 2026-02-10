@@ -1,10 +1,10 @@
 # How I'm using Offpunk so far (by jmcs)
 
-Altough offpunk's great strength seems to be the cache mechanism that allows one to synchronize content and then read offline (using its tour feature), pretty much all of my offpunk usage has been 'online'. Here's what it looks like when I use offpunk:
+Although offpunk's great strength seems to be the cache mechanism that allows one to synchronize content and then read offline (using its tour feature), pretty much all of my offpunk usage has been 'online'. Here's what it looks like when I use offpunk:
 
 ## Most common workflow
 
-Most of the time, I use offpunk via ssh. I connect to my old laptop (that we have on the coffe table to watch videos most of the time), and reconnect to a screen session I have running there. Usually, offpunk is already open in one of the windows. If not, I create a new 'window', and start offpunk:
+Most of the time, I use offpunk via ssh. I connect to my old laptop (that we have on the coffee table to watch videos most of the time), and reconnect to a screen session I have running there. Usually, offpunk is already open in one of the windows. If not, I create a new 'window', and start offpunk:
 
 > offpunk
 
@@ -94,7 +94,7 @@ I've been using offpunk for just... some days, so my workflow is pretty simple. 
 
 > ON> tour [name of the list]
 
-Even when I am using only some of what offpunk offers (mostly because I still haven't learnt and memorized all of its capabilities), it has proven to be a nice distraction-free way to read content from gemini, http and gopher. I have used text-based web browser in the past, but I like specially the way pages are displayed in offpunk (even when sometimes you'll need to "view full" to read all that the page brings)
+Even when I am using only some of what offpunk offers (mostly because I still haven't learned and memorized all of its capabilities), it has proven to be a nice distraction-free way to read content from gemini, http and gopher. I have used text-based web browser in the past, but I like specially the way pages are displayed in offpunk (even when sometimes you'll need to "view full" to read all that the page brings)
 
 I'm probably not the most "usual" offpunk user, but maybe this document will show you that there are more than one way to use offpunk, and maybe you could try it and see how it can adapt to the way you want to read stuff from the internet :)
 

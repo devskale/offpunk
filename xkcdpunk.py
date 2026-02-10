@@ -35,7 +35,7 @@ def main():
     parser.add_argument(
             "number",
             nargs="*",
-            help=_("XKCD comic number")
+            help=_("XKCD comic number. Also accept value \"latest\" and \"random\". Default is \"latest\"")
             )
     parser.add_argument(
             "--offline", action="store_true", help=_("Only access cached comics")

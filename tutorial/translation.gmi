@@ -121,7 +121,7 @@ After you have translated the whole file (or even some of the strings), and you 
 # cp XX.mo /usr/share/locale/XX/LC_MESSAGES/offpunk.mo
 ```
 
-(these are the paths in a debian system. Not sure how universal this is, but right now it's more-or-less hardcoded in the .py files)
+(these are the paths in a Debian system. Not sure how universal this is, but right now it's more-or-less hardcoded in the .py files)
 
 keep in mind 'XX' in that path will match the output you see when you run "locale" in your terminal
 
@@ -129,7 +129,7 @@ then you can start offpunk.py from the source code and check if any of the strin
 
 NOTE: if you current LOCALE doesn't match the one you are translating into, you can test the language anyway, tweaking the environment a bit, only for offpunk.
 
-For example: your system is in spanish, but you also speak german, and are now translating offpunk to german. You could test the german translation by:
+For example: your system is in Spanish, but you also speak German, and are now translating offpunk to German. You could test the German translation by:
 
 ```
 # cp de.mo /usr/share/locale/de/LC_MESSAGES/offpunk.mo #this should require "sudo", or be run as root
@@ -149,7 +149,7 @@ Every now and then, new messages will make their way into offpunk. New features 
 $ msgmerge -U XX.po messages.pot 
 ```
 
-But, if you don't want to have to remember these commands, poedit also has a menu entry that would let you, while you are translating your po file, "Update from POT file". You can find that menu entry under the "Translation" menu. Then, navigate and choose the updated messages.pot file and you are done, new untranslated strings will apear in the poedit interface for you to translate. Translate, compile the .mo file, test your translation, and you're good!
+But, if you don't want to have to remember these commands, poedit also has a menu entry that would let you, while you are translating your po file, "Update from POT file". You can find that menu entry under the "Translation" menu. Then, navigate and choose the updated messages.pot file and you are done, new untranslated strings will appear in the poedit interface for you to translate. Translate, compile the .mo file, test your translation, and you're good!
 
 If you get into translating free software into your language, you can explore poedit's capabilities ("pre-translate" from "translation memory" will soon prove its usefulness), and other translation tools and maybe decide you like some other tool better than poedit. Poedit has been used as an example in this guide because it is powerful enough and easy enough to use that we can only recommend it as the perfect starting point.
 

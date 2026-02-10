@@ -6,21 +6,19 @@
 # run : run a shell command and get the results with some security
 # term_width : get or set the width to display on the terminal
 
+import gettext
 import io
 import os
 import shlex
 import shutil
 import subprocess
-import urllib.parse
-import gettext
 import sys
+import urllib.parse
 
-import cert_migration
 import netcache
-import netcache_migration
 
 # We can later add some logic to decide this based on OS family/version if needed?
-# With "None", the defaults should make this work in debian and RedHat based systems at least
+# With "None", the defaults should make this work in Debian and RedHat based systems at least
 # "None" would default to sys.base_prefix + "/share/locale/"
 # (i.e., "/usr/share/locale")
 # sys.base_prefix is always "/usr"
@@ -71,6 +69,7 @@ def upgrade_cache(cache_folder):
     # Now, let’s upgrade the cache if needed
     while current_version < CACHE_VERSION:
         current_version += 1
+        import netcache_migration
         upgrade_func = getattr(netcache_migration, "upgrade_to_" + str(current_version))
         upgrade_func(cache_folder)
         with open(version_path, "w") as f:
@@ -103,6 +102,7 @@ def upgrade_cert(config_folder: str, data_folder: str) -> None:
     # Now, let’s upgrade the certificate storage if needed
     while current_version < CERT_VERSION:
         current_version += 1
+        import cert_migration
         upgrade_func = getattr(cert_migration, "upgrade_to_" + str(current_version))
         upgrade_func(data_folder, config_folder)
         with open(version_path, "w") as f:
@@ -257,7 +257,7 @@ def unmode_url(url):
 
 #This function gives the root of an URL 
 # expect if the url contains /user/ or ~username/
-#in that case, it considers it as a muli-user servers
+#in that case, it considers it as a multi-user servers
 # it returns the root URL 
 # except if "return_value=name" then it return a name for that root
 # which is hostname by default or username if applicable
@@ -323,8 +323,9 @@ def find_root(url,absolute=False,return_value=""):
 # In terms of arguments, this can take an input file/string to be passed to
 # stdin, a parameter to do (well-escaped) "%" replacement on the command, a
 # flag requesting that the output go directly to the stdout, and a list of
-# additional environment variables to set.
-def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
+# additional environment variables to set.  An additional optional argument can
+# be used to supress output to stderr.
+def run(cmd, *, input=None, parameter=None, direct_output=False, env={}, no_err=False):
     if parameter:
         cmd = cmd % shlex.quote(parameter)
     e = os.environ
@@ -336,6 +337,8 @@ def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
         if input:
             input = input.encode()
         stdin = None
+
+    stderr = subprocess.DEVNULL if no_err else subprocess.STDOUT
     if not direct_output:
         # subprocess.check_output() wouldn't allow us to pass stdin.
         result = subprocess.run(
@@ -346,11 +349,11 @@ def run(cmd, *, input=None, parameter=None, direct_output=False, env={}):
             shell=True,
             stdin=stdin,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=stderr,
         )
         return result.stdout.decode()
     else:
-        subprocess.run(cmd, env=e, input=input, shell=True, stdin=stdin)
+        subprocess.run(cmd, env=e, input=input, shell=True, stdin=stdin, stderr=stderr)
 
 
 global TERM_WIDTH

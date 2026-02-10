@@ -2,7 +2,6 @@
 import argparse
 import base64
 import fnmatch
-import html
 import mimetypes
 import os
 import shutil
@@ -15,57 +14,73 @@ import gettext
 
 import netcache
 import offthemes
-import unmerdify
 from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg, _LOCALE_DIR, find_root, is_url_blocked, urlify
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
 gettext.textdomain('offpunk')
 _ = gettext.gettext
 
-try:
-    from readability import Document
+def load_READABILITY():
+    global Document
+    try:
+        from readability import Document
+        _HAS_READABILITY = True
+    except ModuleNotFoundError:
+        _HAS_READABILITY = False
+    return _HAS_READABILITY
 
-    _HAS_READABILITY = True
-except ModuleNotFoundError:
-    _HAS_READABILITY = False
+def load_HTML():
+    try:
+        # if bs4 version >= 4.11, we need to silent some xml warnings
+        global BeautifulSoup
+        global Comment
+        global html
+        import bs4
+        from bs4 import BeautifulSoup, Comment
+        import html
 
-try:
-    # if bs4 version >= 4.11, we need to silent some xml warnings
-    import bs4
-    from bs4 import BeautifulSoup, Comment
+        version = bs4.__version__.split(".")
+        recent = False
+        if int(version[0]) > 4:
+            recent = True
+        elif int(version[0]) == 4:
+            recent = int(version[1]) >= 11
+        if recent:
+            # As this is only for silencing some warnings, we fail
+            # silently. We don’t really care
+            try:
+                import warnings
 
-    version = bs4.__version__.split(".")
-    recent = False
-    if int(version[0]) > 4:
-        recent = True
-    elif int(version[0]) == 4:
-        recent = int(version[1]) >= 11
-    if recent:
-        # As this is only for silencing some warnings, we fail
-        # silently. We don’t really care
-        try:
-            import warnings
+                from bs4 import XMLParsedAsHTMLWarning
 
-            from bs4 import XMLParsedAsHTMLWarning
+                warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
+            except Exception:
+                pass
+        _HAS_SOUP = True
+    except ModuleNotFoundError:
+        _HAS_SOUP = False
+    return _HAS_SOUP
 
-            warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
-        except Exception:
-            pass
-    _HAS_SOUP = True
-except ModuleNotFoundError:
-    _HAS_SOUP = False
+def load_UNMERDIFY(options):
+    if "ftr_site_config" in options.keys() and options["ftr_site_config"]:
+        global unmerdify
+        import unmerdify
+        return True
+    else:
+        return False
 
-_DO_HTML = _HAS_SOUP  # and _HAS_READABILITY
-if _DO_HTML and not _HAS_READABILITY:
-    print(_("To improve your web experience (less cruft in webpages),"))
-    print(_("please install python3-readability or readability-lxml"))
+#if _DO_HTML and not _HAS_READABILITY:
+#    print(_("To improve your web experience (less cruft in webpages),"))
+#    print(_("please install python3-readability or readability-lxml"))
 
-try:
-    import feedparser
-
-    _DO_FEED = True
-except ModuleNotFoundError:
-    _DO_FEED = False
+def load_FEED():
+    try:
+        global feedparser
+        import feedparser
+        _DO_FEED = True
+    except ModuleNotFoundError:
+        _DO_FEED = False
+    return _DO_FEED
 
 _HAS_TIMG = False
 _HAS_CHAFA = False
@@ -200,7 +215,7 @@ class AbstractRenderer:
         # self.mime should be used only in renderer with multiple mime
         self.mime = None
         # The library used to clean the HTML
-        self.cleanlib = _("No cleaning required")
+        self.cleanlib = {} 
         #url redirections
         self.redirects = redirects
 
@@ -211,7 +226,7 @@ class AbstractRenderer:
         else:
             body = wtitle + "\n" + self.get_body(mode=mode)
             if "linkmode" in self.options:
-                # Avaliable linkmode are "none" and "end".
+                # Available linkmode are "none" and "end".
                 if self.options["linkmode"] == "end":
                     links = self.get_links(mode=mode)
                     for i in range(len(links)):
@@ -289,7 +304,7 @@ class AbstractRenderer:
                 # we insert the color code at the saved positions
                 while len(self.last_line_colors) > 0:
                     pos, colors = self.last_line_colors.popitem()
-                    # popitem itterates LIFO.
+                    # popitem iterates LIFO.
                     # So we go, backward, to the pos (starting at the end of last_line)
                     nextline = self.last_line[pos:] + nextline
                     ansicol = "\x1b["
@@ -485,7 +500,7 @@ class AbstractRenderer:
             lines = self.final_text.splitlines()
             lines2 = []
             termspace = shutil.get_terminal_size()[0]
-            # Following code instert blanck spaces to center the content
+            # Following code insert blank spaces to center the content
             if self.center and termspace > term_width():
                 margin = int((termspace - term_width()) // 2)
             else:
@@ -507,7 +522,10 @@ class AbstractRenderer:
         return self.last_mode
 
     def get_cleanlib(self):
-        return self.cleanlib
+        if self.last_mode in self.cleanlib.keys():
+            return self.cleanlib[self.last_mode]
+        else:
+            return _("No cleaning found for mode") + " %s"%self.last_mode
 
     def get_link(self, nb):
         links = self.get_links()
@@ -546,7 +564,7 @@ class AbstractRenderer:
     # this function is about creating a title derived from the URL
     def get_url_title(self):
         # small intelligence to try to find a good name for a capsule
-        # we try to find eithe ~username or /users/username
+        # we try to find either ~username or /users/username
         # else we fallback to hostname
         if not self.url:
             return ""
@@ -633,7 +651,7 @@ class AbstractRenderer:
         return title_r.get_final()
 
     # An instance of AbstractRenderer should have a 
-    # self.render(body,width=,mode=,starlinks=0) method.
+    # self.render(body,width=,mode=,startlinks=0) method.
     # It returns a tuple (rendered_body,[list of links])
     # 3 modes are used : readable (by default), full and links_only (the fastest, when
     # rendered content is not used, only the links are needed)
@@ -751,15 +769,15 @@ class GemtextRenderer(AbstractRenderer):
 
         def format_link(url, index, name=None):
             if "://" in url:
-                protocol, adress = url.split("://", maxsplit=1)
+                protocol, address = url.split("://", maxsplit=1)
                 protocol = " %s" % protocol
             else:
-                adress = url
+                address = url
                 protocol = ""
             if "gemini" in protocol or "list" in protocol:
                 protocol = ""
             if not name:
-                name = adress
+                name = address
             line = "[%d%s] %s" % (index, protocol, name)
             return line
 
@@ -772,7 +790,7 @@ class GemtextRenderer(AbstractRenderer):
                 else:
                     r.close_theme("preformatted")
             elif preformatted:
-                # infinite line to not wrap preformated
+                # infinite line to not wrap preformatted
                 r.add_block(line + "\n", theme="preformatted")
             elif len(line.strip()) == 0:
                 r.newparagraph(force=True)
@@ -1006,7 +1024,7 @@ class FolderRenderer(GemtextRenderer):
     # it was initialized with:
     # self.renderer = FolderRenderer("",self.get_cache_path(),datadir=xdg("data"))
     def __init__(self, content, url, center=True, datadir=None):
-        GemtextRenderer.__init__(self, content, url, center)
+        super().__init__(self, content, url, center)
         self.datadir = datadir
 
     def get_mime(self):
@@ -1084,7 +1102,7 @@ class FeedRenderer(GemtextRenderer):
         return "application/rss+xml"
 
     def is_valid(self):
-        if _DO_FEED:
+        if load_FEED():
             try:
                 parsed = feedparser.parse(self.body)
             except Exception:
@@ -1118,7 +1136,7 @@ class FeedRenderer(GemtextRenderer):
         self.title = "RSS/Atom feed"
         toreturn = []
         page = ""
-        if _DO_FEED:
+        if load_FEED():
             parsed = feedparser.parse(content)
         else:
             page += "Please install python-feedparser to handle RSS/Atom feeds\n"
@@ -1249,19 +1267,24 @@ class ImageRenderer(AbstractRenderer):
             return True
 
 class HtmlRenderer(AbstractRenderer):
+    def __init__(self, content, url, center=True,redirects={},**kwargs):
+        super().__init__(content, url, center=True,redirects={},**kwargs)
+        self.DO_HTML = load_HTML()
+        self.HAS_READABILITY = load_READABILITY()
+
     def get_mime(self):
         return "text/html"
 
     def is_valid(self):
-        if not _DO_HTML:
+        if not self.DO_HTML:
             print(
                 _("HTML document detected. Please install python-bs4 and python-readability.")
             )
-        return _DO_HTML and self.validity
+        return self.DO_HTML and self.validity
 
     def get_subscribe_links(self):
         subs = []
-        if _DO_HTML :
+        if self.DO_HTML :
             subs = [[self.url, self.get_mime(), self.get_title()]]
             soup = BeautifulSoup(self.body, "html.parser")
             links = soup.find_all("link", rel="alternate", recursive=True)
@@ -1277,8 +1300,8 @@ class HtmlRenderer(AbstractRenderer):
     def get_title(self):
         if self.title:
             return self.title
-        elif _DO_HTML and self.body:
-            if _HAS_READABILITY:
+        elif self.DO_HTML and self.body:
+            if self.HAS_READABILITY:
                 try:
                     readable = Document(self.body)
                     self.title = readable.short_title()
@@ -1296,7 +1319,7 @@ class HtmlRenderer(AbstractRenderer):
 
     def get_base_url(self):
         if not self.base :
-            if _DO_HTML and self.body:
+            if self.DO_HTML and self.body:
                 soup = BeautifulSoup(self.body, "html.parser")
                 if soup.base :
                     base = soup.base.get("href")
@@ -1314,7 +1337,7 @@ class HtmlRenderer(AbstractRenderer):
             mode = self.last_mode
         if not width:
             width = term_width()
-        if not _DO_HTML:
+        if not self.DO_HTML:
             print(
                 _("HTML document detected. Please install python-bs4 and python-readability.")
             )
@@ -1324,8 +1347,8 @@ class HtmlRenderer(AbstractRenderer):
             width, title=self.get_title(), center=self.center, theme=self.theme
             ,options=self.options)
         links = []
-        # You know how bad html is when you realize that space sometimes meaningful, somtimes not.
-        # CR are not meaniningful. Except that, somethimes, they should be interpreted as spaces.
+        # You know how bad html is when you realize that space sometimes meaningful, sometimes not.
+        # CR are not meaningful. Except that, sometimes, they should be interpreted as spaces.
         # HTML is real crap. At least the one people are generating.
 
         def render_image(src, width=None, mode=None):
@@ -1609,13 +1632,13 @@ class HtmlRenderer(AbstractRenderer):
         # the real render_html hearth
         # We will transform the body into a "summary" (clean-up version)
         summary = None
-        self.cleanlib = ""
+        self.cleanlib[mode] = ""
         # if mode full, we don’t clean anything
         if mode in ["full", "full_links_only"]:
             summary = body
-            self.cleanlib += "Full as requested"
+            self.cleanlib[mode] += _("Full as requested")
         # let’s try unmerdify
-        elif "ftr_site_config" in self.options.keys() and self.options["ftr_site_config"]:
+        elif load_UNMERDIFY(self.options):
             ftr = ftr_site_config=self.options["ftr_site_config"]
             # we want to unmerdify only if there’s a rule
             if unmerdify.is_unmerdifiable(self.url,ftr):
@@ -1623,24 +1646,24 @@ class HtmlRenderer(AbstractRenderer):
                     summary = unmerdify.unmerdify_html(body,url=self.url,\
                             ftr_site_config=ftr,NOCONF_FAIL=False)
                 except Exception as e:
-                    self.cleanlib += "Unmerdify CRASH - %s - "%e
+                    self.cleanlib[mode] += _("Unmerdify CRASH") + "- %s - "%e
                 if not summary:
-                    self.cleanlib += "Unmerdify failed - returns empty html"
+                    self.cleanlib[mode] += _("Unmerdify failed - returns empty html")
                 else:
-                    self.cleanlib += "Unmerdify"
+                    self.cleanlib[mode] += _("Unmerdify")
         if not summary:
-            # if no summary from unmerdify, we try readabilitty
-            if _HAS_READABILITY:
+            # if no summary from unmerdify, we try readability
+            if self.HAS_READABILITY:
                 try:
                     readable = Document(body)
                     summary = readable.summary()
-                    self.cleanlib += " - Readability"
+                    self.cleanlib[mode] += _("Readability")
                 except Exception as e:
                     summary = body
-                    self.cleanlib += " - Full (Readability failed) %s"%e
+                    self.cleanlib[mode] += _("Full (Readability failed)") + "%s"%e
             else:
                 summary = body
-                self.cleanlib += " - Full (No readability installed)"
+                self.cleanlib[mode] += _("Full (No readability installed)")
         soup = BeautifulSoup(summary, "html.parser")
         # soup = BeautifulSoup(summary, 'html5lib')
         if soup:
@@ -1707,7 +1730,7 @@ class XkcdRenderer(HtmlRenderer):
 
     #return [image_url,image_path, image_alt_text,image_title]
     def xkcd_extract(self):
-        if _DO_HTML :
+        if self.DO_HTML :
             soup = BeautifulSoup(self.body, "html.parser")
             comic_div = soup.find("div",{"id":"comic"})
             if comic_div:
@@ -1737,7 +1760,7 @@ class XkcdRenderer(HtmlRenderer):
             #now displaying
             if img_path and netcache.is_cache_valid(img_url):
                 terminal_image(img_path)
-            elif not _DO_HTML:
+            elif not self.DO_HTML:
                 self.printgemtext(_("\n> Please install python-bs4 to parse HTML"))
             else:
                 self.printgemtext(_("\n> Picture not in cache. Please reload this page.\n"))
@@ -1773,7 +1796,7 @@ _CUSTOM_RENDERERS = {
 
 
 def get_mime(path, url=None):
-    # Beware, this one is really a shaddy ad-hoc function
+    # Beware, this one is really a shady ad-hoc function
     if not path:
         return None
     # If the file is empty, simply returns it

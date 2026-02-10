@@ -4,7 +4,7 @@
 Offline-First Gemini/Web/Gopher/RSS reader and browser
 """
 
-__version__ = "3.0-beta2"
+__version__ = "3.0"
 
 # Initial imports and conditional imports {{{
 import argparse
@@ -16,6 +16,7 @@ import sys
 import time
 import urllib.parse
 import gettext
+from subprocess import CalledProcessError
 
 import ansicat
 import netcache
@@ -52,45 +53,51 @@ except ModuleNotFoundError:
 
 # This method copy a string to the system clipboard
 def clipboard_copy(to_copy):
-    copied = False
-    if shutil.which("xsel"):
-        run("xsel -b -i", input=to_copy, direct_output=True)
-        copied = True
-    if shutil.which("xclip"):
-        run("xclip -selection clipboard", input=to_copy, direct_output=True)
-        copied = True
-    if shutil.which("wl-copy"):
-        run("wl-copy", input=to_copy, direct_output=True)
-        copied = True
-    if not copied:
-        print(_("Install xsel/xclip (X11) or wl-clipboard (Wayland) to use copy"))
+    successes = []
+    programs = [
+         ["tmux", "tmux load-buffer -"], 
+         ["xsel", "xsel -b -i"],
+         ["xclip", "xclip -selection clipboard"],
+         ["wl-copy", "wl-copy"],
+         ["pbcopy", "pbcopy"],
+   ]
 
+    for program in programs:
+        if shutil.which(program[0]):
+            try:
+                run(program[1], input=to_copy, direct_output=True, no_err=True)
+                successes += [program[0]]
+            except CalledProcessError:
+                pass
+
+    if not any(successes):
+        print(_("Install xsel/xclip (X11) or wl-clipboard (Wayland) to use copy"))
 
 # This method returns an array with all the values in all system clipboards
 def clipboard_paste():
     # We use a set to avoid duplicates
     clipboards = set()
     commands = set()
-    pasted = False
-    if shutil.which("xsel"):
-        pasted = True
-        for selec in ["-p", "-s", "-b"]:
-            commands.add("xsel " + selec)
-    if shutil.which("xclip"):
-        pasted = True
-        for selec in ["clipboard", "primary", "secondary"]:
-            commands.add("xsel " + selec)
-    if shutil.which("wl-paste"):
-        pasted = True
-        for selec in ["", "-p"]:
-            commands.add("wl-paste " + selec)
-    for command in commands:
-        try:
-            clipboards.add(run(command))
-        except Exception:
-            # print("Skippink clipboard %s because %s"%(selec,err))
-            pass
-    if not pasted:
+    programs = [
+         ["tmux", ["save-buffer -"]], 
+         ["xsel", ["-p", "-s", "-b"]],
+         ["xclip", ["-o -selection clipboard", "-o -selection primary", "-o -selection secondary"]],
+         ["wl-paste", ["", "-p"]],
+         ["pbpaste", [""]]
+    ]
+    successes = []
+
+    for program in programs:
+        if shutil.which(program[0]):
+            for selec in program[1]:
+                try:
+                    command = f"{program[0]} {selec}"
+                    result = run(command, no_err=True)
+                    clipboards.update(result.split('\n'))
+                    successes += [program[0]]
+                except CalledProcessError:
+                    pass
+    if not any(successes):
         print(
             _("Install xsel/xclip (X11) or wl-clipboard (Wayland) to get URLs from your clipboard")
         )
@@ -162,7 +169,7 @@ class GeminiClient(cmd.Cmd):
         super().__init__(completekey=completekey)
         # Set umask so that nothing we create can be read by anybody else.
         # The certificate cache and TOFU database contain "browser history"
-        # type sensitivie information.
+        # type sensitive information.
         os.umask(0o077)
         self.opencache = openk.opencache()
         self.theme = offthemes.default
@@ -173,7 +180,6 @@ class GeminiClient(cmd.Cmd):
         # Sync-only mode is restricted by design
         self.offline_only = False
         self.sync_only = sync_only
-        self.support_http = netcache._DO_HTTP
         self.options = {
             "debug": False,
             "beta": False,
@@ -199,7 +205,7 @@ class GeminiClient(cmd.Cmd):
             # images_size should be an integer. If bigger than text width, 
             # it will be reduced
             "images_size": 100,
-            # avaliable linkmode are "none" and "end".
+            # available linkmode are "none" and "end".
             "linkmode": "none",
             #command that will be used on empty line,
             "default_cmd": "links 10",
@@ -358,7 +364,7 @@ class GeminiClient(cmd.Cmd):
             params["images_mode"] = self.options["images_mode"]
         params["images_size"] = self.options["images_size"]
         params["gemini_images"] = self.options["gemini_images"]
-        # avaliable linkmode are "none" and "end".
+        # available linkmode are "none" and "end".
         params["linkmode"] = self.options["linkmode"]
         if force_refresh:
             params["validity"] = 1
@@ -389,7 +395,7 @@ class GeminiClient(cmd.Cmd):
                     self._update_history(modedurl)
         else:
             # we are asked not to handle or in sync_only mode
-            if self.support_http or parsed.scheme not in ["http", "https"]:
+            if netcache.load_HTTP() or parsed.scheme not in ["http", "https"]:
                 netcache.fetch(url, redirects=self.opencache.redirects,**params)
 
     @needs_gi
@@ -487,12 +493,12 @@ class GeminiClient(cmd.Cmd):
             toprint += "--------------------\n"
             for r in self.opencache.redirects:
                 toprint += "%s\t->\t%s\n" % (r, self.opencache.redirects[r])
-            toprint += _('\nTo add new, use "redirect origine.com destination.org"')
-            toprint += _('\nTo remove a redirect, use "redirect origine.com NONE"')
+            toprint += _('\nTo add new, use "redirect origin.com destination.org"')
+            toprint += _('\nTo remove a redirect, use "redirect origin.com NONE"')
             toprint += (
-                _('\nTo completely block a website, use "redirect origine.com BLOCK"')
+                _('\nTo completely block a website, use "redirect origin.com BLOCK"')
             )
-            toprint += _('\nTo block also subdomains, prefix with *: "redirect *origine.com BLOCK"')
+            toprint += _('\nTo block also subdomains, prefix with *: "redirect *origin.com BLOCK"')
             print(toprint)
 
     def do_set(self, line):
@@ -537,7 +543,7 @@ class GeminiClient(cmd.Cmd):
                     print(_("%s is not a valid width (integer required)") % value)
             elif option == "linkmode":
                 if value.lower() not in ("none", "end"):
-                    print(_("Avaliable linkmode are `none` and `end`."))
+                    print(_("Available linkmode are `none` and `end`."))
                     return
             elif value.isnumeric():
                 value = int(value)
@@ -576,7 +582,7 @@ class GeminiClient(cmd.Cmd):
         theme can also be used with "preset" to load an existing theme.
 
         "theme preset"  : show available themes
-        "theme preset PRESET_NAME" : swith to a given preset"""
+        "theme preset PRESET_NAME" : switch to a given preset"""
 
         words = line.split()
         le = len(words)
@@ -676,7 +682,7 @@ class GeminiClient(cmd.Cmd):
             self.opencache.set_handler(mime, handler)
 
     def do_alias(self, line):
-        """Create or modifiy an alias
+        """Create or modify an alias
         alias : show all existing aliases
         alias ALIAS : show the command linked to ALIAS
         alias ALIAS CMD : create or replace existing ALIAS to be linked to command CMD"""
@@ -730,7 +736,7 @@ class GeminiClient(cmd.Cmd):
 
     def do_copy(self, arg):
         """Copy the content of the last visited page as gemtext/html in the clipboard.
-        Use with "url" as argument to only copy the adress.
+        Use with "url" as argument to only copy the address.
         Use with "raw" to copy ANSI content as seen in your terminal (with colour codes).
         Use with "cache" to copy the path of the cached content.
         Use with "title" to copy the title of the page.
@@ -773,7 +779,7 @@ class GeminiClient(cmd.Cmd):
         Use with "url" as first argument to send only the address.
         Use with "text" as first argument to send the full content. TODO
         Without argument, "url" is assumed.
-        Next arguments are the email adresses of the recipients.
+        Next arguments are the email addresses of the recipients.
         If no destination, you will need to fill it in your mail client."""
 
         # default "share" case were users has to give the recipient
@@ -801,7 +807,7 @@ class GeminiClient(cmd.Cmd):
                     args.pop(0)
                 if len(args) > 0:
                     for a in args:
-                        # we only takes arguments with @ as email adresses
+                        # we only takes arguments with @ as email addresses
                         if "@" in a:
                             dest += "," + a
             send_email(dest,subject=subject,body=body,toconfirm=False)
@@ -826,7 +832,7 @@ class GeminiClient(cmd.Cmd):
             # Reply is not allowed for local URL (at least for now)
             if not is_local(self.current_url):
                 potential_replies = []
-                # Add email adresses from arguments
+                # Add email addresses from arguments
                 for a in args:
                     if "@" in a: potential_replies.append(a)
                 saved_replies = []
@@ -876,7 +882,7 @@ class GeminiClient(cmd.Cmd):
                                     potential_replies.append(l)
                 #print("replying to %s"%potential_replies)
                 if len(potential_replies) > 1:
-                    stri = _("Multiple emails addresse were found:") + "\n"
+                    stri = _("Multiple emails addresses were found:") + "\n"
                     counter = 1
                     for mail in potential_replies:
                         stri += "[%s] %s\n" %(counter,mail)
@@ -919,7 +925,7 @@ class GeminiClient(cmd.Cmd):
                     if tosaveurl:
                         savefile = netcache.get_cache_path(tosaveurl,\
                                 include_protocol=False, xdgfolder="data",subfolder="reply")
-                        # first, let’s creat all the folders needed
+                        # first, let’s create all the folders needed
                         savefolder = os.path.dirname(savefile)
                         os.makedirs(savefolder, exist_ok=True)
                         # Then we write the email
@@ -1242,7 +1248,7 @@ class GeminiClient(cmd.Cmd):
             if self.list_has_url(url, l):
                 lists.append(l)
         if len(lists) > 0:
-            out += _("Page appeard in following lists :\n")
+            out += _("Page appeared in following lists :\n")
             for l in lists:
                 if not self.list_is_system(l):
                     status = _("normal list")
@@ -1279,15 +1285,15 @@ class GeminiClient(cmd.Cmd):
         output += _("\nHighly recommended:\n")
         output += " - xdg-open            : " + has(_HAS_XDGOPEN)
         output += _("\nWeb browsing:\n")
-        output += " - python-requests     : " + has(netcache._DO_HTTP)
-        output += " - python-feedparser   : " + has(ansicat._DO_FEED)
-        output += " - python-bs4          : " + has(ansicat._HAS_SOUP)
-        output += " - python-readability  : " + has(ansicat._HAS_READABILITY)
+        output += " - python-requests     : " + has(netcache.load_HTTP())
+        output += " - python-feedparser   : " + has(ansicat.load_FEED())
+        output += " - python-bs4          : " + has(ansicat.load_HTML())
+        output += " - python-readability  : " + has(ansicat.load_READABILITY())
         output += " - timg 1.3.2+         : " + has(ansicat._HAS_TIMG)
         output += " - chafa 1.10+         : " + has(ansicat._HAS_CHAFA)
         output += _("\nNice to have:\n")
         output += " - python-setproctitle             : " + has(_HAS_SETPROCTITLE)
-        output += " - python-cryptography             : " + has(netcache._HAS_CRYPTOGRAPHY)
+        output += " - python-cryptography             : " + has(netcache.load_CRYPTOGRAPHY())
         clip_support = shutil.which("xsel") or shutil.which("xclip")
         output += " - X11 clipboard (xsel or xclip)   : " + has(clip_support)
         output += " - Wayland clipboard (wl-clipboard): " + has(shutil.which("wl-copy"))
@@ -1297,16 +1303,16 @@ class GeminiClient(cmd.Cmd):
                 ansicat._RENDER_IMAGE
             )
         output += _(" - Render HTML (bs4, readability)             : ") + has(
-            ansicat._DO_HTML
+            ansicat.load_HTML() and ansicat.load_READABILITY()
         )
         output += _(" - Render Atom/RSS feeds (feedparser)         : ") + has(
-            ansicat._DO_FEED
+            ansicat.load_FEED()
         )
         output += _(" - Connect to http/https (requests)           : ") + has(
-            netcache._DO_HTTP
+            netcache.load_HTTP()
         )
         output += _(" - Detect text encoding (python-chardet)      : ") + has(
-            netcache._HAS_CHARDET
+            netcache.load_CHARDET()
         )
         output += _(" - restore last position (less 572+)          : ") + has(
             openk._LESS_RESTORE_POSITION
@@ -1315,7 +1321,7 @@ class GeminiClient(cmd.Cmd):
         output += _("ftr_site_config     : ") + str(self.options["ftr_site_config"]) + "\n"
         output += _("Config directory    : ") + xdg("config") + "\n"
         output += _("User Data directory : ") + xdg("data") + "\n"
-        output += _("Cache directoy      : ") + xdg("cache")
+        output += _("Cache directory     : ") + xdg("cache")
 
         if print_color:
             print(output)
@@ -1323,7 +1329,7 @@ class GeminiClient(cmd.Cmd):
             return output
 
     def do_bugreport(self,line):
-        """Send a mail to the offpunk-devel list with technical informations
+        """Send a mail to the offpunk-devel list with technical information
         about your offpunk version. You will be prompted to write an email
         describing how to reproduce the bug."""
         report = self.do_version(line, print_color=False)
@@ -1361,7 +1367,7 @@ class GeminiClient(cmd.Cmd):
     def do_wikipedia(self, line):
         """Search on wikipedia using the configured Gemini interface.
         The first word should be the two letters code for the language.
-        Exemple : "wikipedia en Gemini protocol"
+        Example : "wikipedia en Gemini protocol"
         But you can also use abbreviations to go faster:
         "wen Gemini protocol". (your abbreviation might be missing, report the bug)
         while it's not added, "w" is still an option you can use:
@@ -1477,7 +1483,7 @@ class GeminiClient(cmd.Cmd):
 previous position.
 Use "view normal" to see the default article view on html page.
 Use "view full" to see a complete html page instead of the article view.
-Use "view swich" to switch between normal and full
+Use "view switch" to switch between normal and full
 Use "view XX" where XX is a number to view information about link XX.
 (full, feed, feeds have no effect on non-html content)."""
         if self.current_url and args and args[0] != "":
@@ -1486,7 +1492,7 @@ Use "view XX" where XX is a number to view information about link XX.
             elif args[0] in ["normal", "readable"]:
                 self._go_to_url(self.current_url, mode="readable")
             elif args[0] == "feed":
-                #TRANSLATORS keep "view feed" and "feed" in english, those are literal commands
+                #TRANSLATORS keep "view feed" and "feed" in English, those are literal commands
                 print(_("view feed is deprecated. Use the command feed directly"))
                 self.do_feed()
             elif args[0] == "switch":
@@ -1511,7 +1517,7 @@ Use "view XX" where XX is a number to view information about link XX.
 
             else:
                 print(
-                    #TRANSLATORS keep "normal, full, switch, source" in english
+                    #TRANSLATORS keep "normal, full, switch, source" in English
                     _("Valid arguments for view are : normal, full, switch, source or a number")
                 )
         else:
@@ -2109,7 +2115,7 @@ Use "view XX" where XX is a number to view information about link XX.
 
         The following lists cannot be removed or frozen but can be edited with "list edit"
         - list archives  : contains last 200 archived URLs
-        - history        : contains last 200 visisted URLs
+        - history        : contains last 200 visited URLs
         - to_fetch       : contains URLs that will be fetch during the next sync
         - tour           : contains the next URLs to visit during a tour (see "help tour")"""
 
@@ -2295,7 +2301,7 @@ Use "view XX" where XX is a number to view information about link XX.
         ):
             # savetotour = True will save to tour newly cached content
             # else, do not save to tour
-            # regardless of valitidy
+            # regardless of validity
             if not url:
                 return
             if not netcache.is_cache_valid(url, validity=validity):
@@ -2316,7 +2322,7 @@ Use "view XX" where XX is a number to view information about link XX.
                         force_large_download=force_large_download)
                 if savetotour and isnew and netcache.is_cache_valid(url):
                     # we add to the next tour only if we managed to cache
-                    # the ressource
+                    # the resource
                     add_to_tour(url)
             # Now, recursive call, even if we didn’t refresh the cache
             # This recursive call is impacting performances a lot but is needed
@@ -2397,7 +2403,7 @@ Use "view XX" where XX is a number to view information about link XX.
         for l in subscriptions:
             fetch_list(l, validity=refresh_time, depth=depth, tourchildren=True)
         # Then the to_fetch list (item are removed from the list after fetch)
-        # We fetch regarless of the refresh_time
+        # We fetch regardless of the refresh_time
         if "to_fetch" in lists:
             nowtime = int(time.time())
             short_valid = nowtime - starttime
@@ -2483,7 +2489,7 @@ def main():
     parser.add_argument(
         "--features",
         action="store_true",
-        help=_("display available features and dependancies then quit"),
+        help=_("display available features and dependencies then quit"),
     )
     parser.add_argument(
         "url",

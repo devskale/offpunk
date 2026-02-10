@@ -1,0 +1,39 @@
+.Dd February 9, 2026
+.Dt XKCDPUNK 1
+.Os 
+.
+.Sh NAME
+.Nm xkcdpunk
+.Nd Display XKCD comics directly in your terminal
+.
+.Sh SYNOPSIS
+.Nm
+.Op \-offline
+.Op Ar INPUT ...
+.Nm
+.Fl h | \-help
+.
+.Sh DESCRIPTION
+xkcdpunk will display a given xkcd comic and its alt-text directly in your terminal. Without argument, the latest known comic will be displayed. The argument can also be "random" to display a random comic.
+.Ss Positional arguments
+.It Ar INPUT
+XKCD number. Besides a number, "latest" and "random" are accepted values. If missing, "latest" is assumed
+.El
+.Ss Keyword arguments
+.Bl -tag -width Ds -offset indent
+.It Fl \-offline
+Only access already cached comics and do not download anything. "latest" will fails if no comic cached ever and "random" might fails if not enough cached comics. 
+.El
+.
+.Sh EXIT STATUS
+.Ex -std
+.
+.Sh SEE ALSO
+.Xr ansicat 1 ,
+.Xr netcache 1 ,
+.Xr offpunk 1 ,
+.Xr openk 1 ,
+.Lk https://offpunk.net/
+.
+.Sh AUTHORS
+.An Lionel Dricot (Ploum) Aq Mt offpunk2 at ploum.eu

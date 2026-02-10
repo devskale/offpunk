@@ -66,7 +66,7 @@ else:
 # -W : hilite the new first line after a page skip (space)
 # -i : ignore case in search
 # -S : do not wrap long lines. Wrapping is done by offpunk, longlines
-# are there on purpose (surch in asciiart)
+# are there on purpose (such in asciiart)
 # --incsearch : incremental search starting rev581
 def less_cmd(file, histfile=None, cat=False, grep=None):
     less_prompt = "page %%d/%%D- lines %%lb/%%L - %%Pb\\%%"
@@ -141,7 +141,7 @@ class opencache:
         return cmd_str
 
     # Return the handler for a specific mimetype.
-    # Return the whole dic if no specific mime provided
+    # Return the whole dict if no specific mime provided
     def get_handlers(self, mime=None):
         if mime and mime in self.mime_handlers.keys():
             return self.mime_handlers[mime]
@@ -152,7 +152,7 @@ class opencache:
 
     def set_handler(self, mime, handler):
         if "%s" not in handler:
-            #if no %s, we automatically add one. I can’t think of any usecase
+            #if no %s, we automatically add one. I can’t think of any use case
             # where it should not be part of the handler
             handler += " %s"
         previous = None
@@ -224,7 +224,7 @@ class opencache:
             cachepath, inpath = netcache.fetch(inpath, redirects=self.redirects,**kwargs)
             if not cachepath:
                 return False, inpath
-        # folowing line is for :// which are locals (file,list)
+        # following line is for :// which are locals (file,list)
         elif "://" in inpath:
             cachepath, inpath = netcache.fetch(inpath, redirects=self.redirects,**kwargs)
         elif inpath.startswith("mailto:"):
@@ -339,7 +339,7 @@ class opencache:
         self.renderer_time = {}
         self.last_mode = {}
 
-    # Clean only a specificif url cache
+    # Clean only a specific url cache
     def clean_url(self,url,mode=None):
         def delfile(path):
             if os.path.isfile(path):
@@ -347,7 +347,7 @@ class opencache:
         # First, we take the full URL
         if mode:
             url = mode_url(url,mode)
-        # Unrendered element, such as picture, are not in the dictionnaries
+        # Unrendered element, such as picture, are not in the dictionaries
         if url in self.temp_files:
             delfile(self.temp_files.pop(url))
         if url in self.less_histfile:

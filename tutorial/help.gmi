@@ -22,7 +22,7 @@ This can be done from within Offpunk by asking for help twice!
 
 > help help
 
-Try to write a clear subject, present yourself and your usecase. The list is very open to every kind of discussions.
+Try to write a clear subject, present yourself and your use case. The list is very open to every kind of discussions.
 
 IMPORTANT: when replying to a message on the list, be sure to use the "reply all". If you forget, only the original sender will receive your message.
 

@@ -6,7 +6,7 @@ Offpunk is a command-line offline-first web browser for your terminal. But what 
 
 ## Command-line
 
-No mouse, no shortcut, no hidden key to press. Every action requires you to type a command. Content is displayed in the venerable "less" pager. Offpunk is intented for people who live in their terminal and don’t want to leave it.
+No mouse, no shortcut, no hidden key to press. Every action requires you to type a command. Content is displayed in the venerable "less" pager. Offpunk is intended for people who live in their terminal and don’t want to leave it.
 
 ## Offline-first
 
@@ -20,7 +20,7 @@ Offpunk transparently browse http/https/gemini/gopher/spartan/finger links. In y
 
 ## Unix philosophy
 
-Offpunk is made of 4 components that can be used separatly: netcache, ansicat, openk and offpunk. While being written in python, dependencies are kept minimal and, when possible, optional.
+Offpunk is made of 4 components that can be used separately: netcache, ansicat, openk and offpunk. While being written in python, dependencies are kept minimal and, when possible, optional.
 
 => /screenshots/resist.png RESIST!
 

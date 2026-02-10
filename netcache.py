@@ -11,7 +11,6 @@ import ssl
 import sys
 import time
 import urllib.parse
-import http.cookiejar
 import warnings
 from ssl import CertificateError
 import gettext
@@ -25,32 +24,38 @@ gettext.bindtextdomain('offpunk', _LOCALE_DIR)
 gettext.textdomain('offpunk')
 _ = gettext.gettext
 
-try:
-    import chardet
+def load_CHARDET():
+    try:
+        global chardet
+        import chardet
+        _HAS_CHARDET = True
+    except ModuleNotFoundError:
+        _HAS_CHARDET = False
+    return _HAS_CHARDET
 
-    _HAS_CHARDET = True
-except ModuleNotFoundError:
-    _HAS_CHARDET = False
+def load_CRYPTOGRAPHY():
+    try:
+        global x509, default_backend, hashes, serialization, rsa
+        from cryptography import x509
+        from cryptography.hazmat.backends import default_backend
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import rsa
+        _HAS_CRYPTOGRAPHY = True
+    except (ModuleNotFoundError, ImportError):
+        _HAS_CRYPTOGRAPHY = False
+    return _HAS_CRYPTOGRAPHY
 
-try:
-    from cryptography import x509
-    from cryptography.hazmat.backends import default_backend
-    from cryptography.hazmat.primitives import hashes, serialization
-    from cryptography.hazmat.primitives.asymmetric import rsa
-
-    _HAS_CRYPTOGRAPHY = True
-    _BACKEND = default_backend()
-except (ModuleNotFoundError, ImportError):
-    _HAS_CRYPTOGRAPHY = False
-try:
-    with warnings.catch_warnings():
-        # Disable annoying warning shown to LibreSSL users
-        warnings.simplefilter("ignore")
-        import requests
-
-    _DO_HTTP = True
-except (ModuleNotFoundError, ImportError):
-    _DO_HTTP = False
+def load_HTTP():
+    try:
+        with warnings.catch_warnings():
+            # Disable annoying warning shown to LibreSSL users
+            warnings.simplefilter("ignore")
+            global requests
+            import requests
+        _DO_HTTP = True
+    except (ModuleNotFoundError, ImportError):
+        _DO_HTTP = False
+    return _DO_HTTP
 
 # This list is also used as a list of supported protocols
 standard_ports = {
@@ -213,7 +218,7 @@ def get_cache_path(url, add_index=True, include_protocol=True, xdgfolder="cache"
     if local:
         cache_path = path
     elif scheme and host:
-        # shemepath should not starts with / but finish with /
+        # schemepath should not start with / but finish with /
         schemepath = ""
         if include_protocol: schemepath = scheme + "/"
         if subfolder: schemepath += subfolder + "/"
@@ -255,7 +260,7 @@ def get_cache_path(url, add_index=True, include_protocol=True, xdgfolder="cache"
         #        OS only allows 260 characters.\n\n"%(len(cache_path)))
         #print(url)
         #return None
-        # path lenght is limited to 260 charaters. Let’s cut it and
+        # path length is limited to 260 characters. Let’s cut it and
         # hope that there’s no major conflict here. (that’s still better
         # than crashing, after all.
         cache_path = cache_path[:259]
@@ -278,7 +283,7 @@ def write_body(url, body, mime=None):
         # We remove it (happens when accessing URL/subfolder before
         # URL/subfolder/file.gmi.
         # This causes loss of data in the cache
-        # proper solution would be to save "sufolder" as "sufolder/index.gmi"
+        # proper solution would be to save "subfolder" as "subfolder/index.gmi"
         # If the subdirectory doesn’t exist, we recursively try to find one
         # until it exists to avoid a file blocking the creation of folders
         root_dir = cache_dir
@@ -323,20 +328,24 @@ def set_error(url, err):
 
 
 def get_cookiejar(url, create=False):
-    parsed = urllib.parse.urlparse(url)
-    basedir = os.path.join(xdg("data") + "cookies/" )
-    cookie_path = basedir + parsed.netloc + ".txt"
-    if not os.path.exists(cookie_path):
-        if create:
-            os.makedirs(basedir, exist_ok=True)
-            with open(cookie_path, 'w') as f:
-                f.write("# Netscape HTTP Cookie File\n\n")
-        else:
-            return None
+    if load_HTTP():
+        parsed = urllib.parse.urlparse(url)
+        basedir = os.path.join(xdg("data") + "cookies/" )
+        cookie_path = basedir + parsed.netloc + ".txt"
+        if not os.path.exists(cookie_path):
+            if create:
+                os.makedirs(basedir, exist_ok=True)
+                with open(cookie_path, 'w') as f:
+                    f.write("# Netscape HTTP Cookie File\n\n")
+            else:
+                return None
+        import http.cookiejar
+        jar = http.cookiejar.MozillaCookieJar(cookie_path)
+        jar.load()
+        return jar
+    else:
+        return None
 
-    jar = http.cookiejar.MozillaCookieJar(cookie_path)
-    jar.load()
-    return jar
 
 def _fetch_http(
     url,
@@ -347,7 +356,7 @@ def _fetch_http(
     cookiejar=None,
     **kwargs,
 ):
-    if not _DO_HTTP:
+    if not load_HTTP():
         return None
 
     def too_large_error(url, length, max_size):
@@ -468,7 +477,7 @@ def _fetch_gopher(url, timeout=DEFAULT_TIMEOUT, interactive=True, **kwargs):
                 pass
         else:
             # try to find encoding
-            if _HAS_CHARDET:
+            if load_CHARDET():
                 detected = chardet.detect(response)
                 response = response.decode(detected["encoding"])
             else:
@@ -552,11 +561,11 @@ def _validate_cert(address, host, cert, accept_bad_ssl=False, automatic_choice=N
     hostname.
     """
     now = datetime.datetime.now(datetime.timezone.utc)
-    if _HAS_CRYPTOGRAPHY:
+    if load_CRYPTOGRAPHY():
         # Using the cryptography module we can get detailed access
         # to the properties of even self-signed certs, unlike in
         # the standard ssl library...
-        c = x509.load_der_x509_certificate(cert, _BACKEND)
+        c = x509.load_der_x509_certificate(cert, default_backend())
         # Check certificate validity dates
         if accept_bad_ssl:
             if c.not_valid_before >= now:
@@ -642,10 +651,10 @@ def _validate_cert(address, host, cert, accept_bad_ssl=False, automatic_choice=N
     if most_frequent_cert and not matching_fingerprint:
         with open(os.path.join(certcache, most_frequent_cert + ".crt"), "rb") as fp:
             previous_cert = fp.read()
-        if _HAS_CRYPTOGRAPHY:
+        if load_CRYPTOGRAPHY():
             # Load the most frequently seen certificate to see if it has
             # expired
-            previous_cert = x509.load_der_x509_certificate(previous_cert, _BACKEND)
+            previous_cert = x509.load_der_x509_certificate(previous_cert, default_backend())
             previous_ttl = previous_cert.not_valid_after_utc - now
             print(previous_ttl)
 
@@ -662,7 +671,7 @@ def _validate_cert(address, host, cert, accept_bad_ssl=False, automatic_choice=N
                 max_count
             )
         )
-        if _HAS_CRYPTOGRAPHY:
+        if load_CRYPTOGRAPHY():
             if previous_ttl < datetime.timedelta():
                 print(_("That certificate has expired, which reduces suspicion somewhat."))
             else:
@@ -1066,8 +1075,8 @@ def _fetch_gemini(
     return cache, url
 
 #fetch returns two things:
-#cachepath: the path to the cached ressource
-#newurl: the real URL of that cached ressource
+#cachepath: the path to the cached resource
+#newurl: the real URL of that cached resource
 def fetch(
     url,
     offline=False,
@@ -1127,7 +1136,7 @@ def fetch(
                     print(_("%s is not a supported protocol") % scheme)
                 path = None
             elif scheme in ("http", "https"):
-                if _DO_HTTP:
+                if load_HTTP():
                     if download_image_first and cookiejar is None:
                         cookiejar = get_cookiejar(newurl)
                     path = _fetch_http(newurl, cookiejar=cookiejar, **kwargs)
@@ -1167,7 +1176,7 @@ def fetch(
                     print(_("""ERROR5: Trying to create a directory which already exists
                         in the cache : """))
                 print(err)
-            elif _DO_HTTP and isinstance(err, requests.exceptions.SSLError):
+            elif load_HTTP() and isinstance(err, requests.exceptions.SSLError):
                 if print_error:
                     print(_("""ERROR6: Bad SSL certificate:\n"""))
                     print(err)
@@ -1175,7 +1184,7 @@ def fetch(
                         _("""\n If you know what you are doing, you can try to accept bad certificates with the following command:\n""")
                     )
                     print("""set accept_bad_ssl_certificates True""")
-            elif _DO_HTTP and isinstance(err, requests.exceptions.ConnectionError):
+            elif load_HTTP() and isinstance(err, requests.exceptions.ConnectionError):
                 if print_error:
                     print(_("""ERROR7: Cannot connect to URL:\n"""))
                     print(str(err))

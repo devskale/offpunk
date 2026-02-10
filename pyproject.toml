@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.5"]
+requires = ["hatchling>=1.5", "hatch-requirements-txt"]
 build-backend = "hatchling.build"
 
 [project]
@@ -25,7 +25,8 @@ classifiers = [
 ]
 keywords = ["gemini", "browser"]
 requires-python = ">=3.7"
-dynamic = ["version"]
+dynamic = ["version", "dependencies"]
+
 
 [project.optional-dependencies]
 better-tofu = ["cryptography"]
@@ -60,6 +61,9 @@ path = "offpunk.py" # read __version__
 
 [tool.hatch.build.targets.wheel.hooks.custom]
 path = "hatch_build.py"
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]
 
 [tool.hatch.build.targets.wheel]
 only-include = [

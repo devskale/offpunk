@@ -6,7 +6,7 @@ from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
 class TranslationFilesHook(BuildHookInterface):
     """Compile the GNU gettext translation files from their po-format into
-    their binary representating mo-format using 'msgfmt'.
+    their binary representing mo-format using 'msgfmt'.
     """
 
     # Command used to compile po into mo files.
