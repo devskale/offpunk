@@ -112,6 +112,11 @@ b
 
 This requies a sixel-compatible terminal that can display images.
 
+## When Offpunk is not enough
+
+Then, you may need to open a content in an external tool:
 
 => /open.gmi Open outside of Offpunk
+
+
 => /index.gmi Back to the tutorial
