@@ -738,38 +738,50 @@ class GeminiClient(cmd.Cmd):
         """Copy the content of the last visited page as gemtext/html in the clipboard.
         Use with "url" as argument to only copy the address.
         Use with "raw" to copy ANSI content as seen in your terminal (with colour codes).
+        Use with "content" to copy the source of the whole page.
         Use with "cache" to copy the path of the cached content.
         Use with "title" to copy the title of the page.
-        Use with "link" to copy a link in the gemtext format to that page with the title."""
+        Use with "link" to copy a link in the gemtext format to that page with the title.
+
+        Default parameter is "url" """
 
         if self.current_url:
             args = arg.split()
+            url = unmode_url(self.current_url)[0]
+            # if no argument or directly a decimal, we insert our default arg
+            if len(args) == 0 or (len(args) == 1 and args[0].isdecimal()):
+                args.insert(0,"url")
+            if args and len(args) >= 2 and args[1].isdecimal():
+                url = self.get_renderer().get_link(int(args[1]))
             if args and args[0] == "url":
-                if len(args) > 1 and args[1].isdecimal():
-                    url = self.get_renderer().get_link(int(args[1]))
-                else:
-                    url = unmode_url(self.current_url)[0]
                 print(url)
                 clipboard_copy(url)
             elif args and args[0] == "raw":
-                tmp = self.opencache.get_temp_filename(self.current_url)
+                tmp = self.opencache.get_temp_filename(url)
                 if tmp:
                     clipboard_copy(open(tmp, "rb"))
             elif args and args[0] == "cache":
-                clipboard_copy(netcache.get_cache_path(self.current_url))
+                clipboard_copy(netcache.get_cache_path(url))
             elif args and args[0] == "title":
-                title = self.get_renderer().get_page_title()
+                title = self.get_renderer(url).get_page_title()
                 clipboard_copy(title)
                 print(title)
             elif args and args[0] == "link":
                 link = "=> %s %s" % (
-                    unmode_url(self.current_url)[0],
-                    self.get_renderer().get_page_title(),
+                    url,
+                    self.get_renderer(url).get_page_title(),
                 )
                 print(link)
                 clipboard_copy(link)
+            elif args and args[0] == "content":
+                content = ""
+                if netcache.is_cache_valid(url):
+                    with open(netcache.get_cache_path(url)) as f:
+                        content = f.read()
+                        f.close()
+                    clipboard_copy(content)
             else:
-                clipboard_copy(open(netcache.get_cache_path(self.current_url), "rb"))
+                print(_("%s is not a recognized argument to copy"%arg))
         else:
             print(_("No content to copy, visit a page first"))
 
@@ -1882,6 +1894,9 @@ Use "view XX" where XX is a number to view information about link XX.
                             previous_line = l
                             l_file.write(l)
                             counter += 1
+                    else:
+                        # even if similar, we should handle back/forward 
+                        if to_truncate > 0: to_truncate -= 1
             l_file.close()
 
     # remove an url from a list.

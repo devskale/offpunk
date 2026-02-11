@@ -1,33 +1,122 @@
-# Different views of the same page
+# Navigating on the web efficiently with "view" and "feed"
+
+## The basics
 
 When you want to know where you are, simply type:
 
-> url
+```
+url
+```
 
 Url returns the current url. It can also easily be shared with your system clipboard thanks to the "copy url" command:
 
-> copy url
+```
+copy url
+```
 
 See "help copy" for other use of copy.
 
 If "url" is not enough, you can get plenty of information about the current page with "info".
 
-> info
+```
+info
+```
+
+## View full to get the full page when something is missing
 
 When you are in a gemini page, the page is straightforward. But, for HTML pages, Offpunk will try to extract the important information and remove useless cruft.
 
-This doesn’t always work. If you want to see the full page, use "view full" (or "v full"). Go back with "v normal". View also allows you to see if there are any embedded RSS feeds with "feed". Feed is not really a view as it opens a new page. Try it now by going to https://ploum.net then trying views. Come back here with "back".
+This doesn’t always work. If you want to see the full page, use "view full" (or "v full"). Go back with "v normal". You can swith with "v switch".
 
-> go https://ploum.net
-> v full
-> v normal
-> feed
-> back
-> back
+```
+v full
+v normal
+v switch
+```
 
-View also allows you to preview a given link. Try "v 1".
+The reason you may no see the whole content in "normal" mode is because Offpunk uses "readability". Readability is sometimes overzealous, especially when it comes to lists of links.
 
-> v 1
+Readability is still very much needed because, without it, most "modern web pages" have hundred (if not thousands) of links. During synchronization, Offpunk would try to cache all those links. Readability keep Offpunk sane by default, at the price of not always showing the full content.
+
+## Navigating using "feed"
+
+There are multiple way to navigate websites which are not perfectly displayed. The first one is getting used to check "v full", as we saw.
+
+The second solution is to use RSS feeds to navigate through a website. On a given homepage, scroll to the bottom (where available feeds are listed) or type:
+
+```
+feed
+```
+
+If multiple feeds exists, select the one you want to use. Through the feeds, you can quickly navigate between articles of a given website.
+
+By default, the feed view only list the items and you can follow links to read each of them individually. Some feeds contains the information directly. If you want to view the feed in full, not only as a list of items, you will use… Well, you guessed right:
+
+```
+v full
+```
+## Better rendering using unmerdify
+
+The third solution for better rendering of websites is to use unmerdify, which relies on a crowdsourced list of rules of each domain.
+
+You will need to get that list of rules and store it anywhere on your computer:
+
+```
+git clone https://github.com/fivefilters/ftr-site-config.git
+```
+
+Then, you should add the path to that repository in your offpunkrc:
+
+```
+set ftr_site_config /path/to/ftr-site-config
+```
+
+Remember to periodically refresh the rules by going in the ftr-site-config folder and typing:
+
+```
+git pull
+```
+
+You can also contribute rules for your favorites website:
+=> https://help.fivefilters.org/full-text-rss/site-patterns.html#github-repository Contributing to fivefilters
+
+## Previewing links and copying url
+
+Before following a link, you can simply preview it with "view" or "v". 
+
+```
+v X
+```
+
+(where X is the link number).
+
+You can similarly copy the url of a given link
+
+```
+cp url X
+```
+
+## Viewing images
+
+When browsing a page, images are "pixelated", even if you use a terminal that can display pictures. The reason is that the browsing of the page happens in "less", and less doesn’t support displaying pictures.
+
+The workaround is to simply follow the picture link (by default in yellow) to see the picture in your terminal then go back to where you were reading.
+
+Imagine your are reading an article and want to see image with number 7:
+
+```
+(press q to quit less)
+7
+b
+```
+
+This requies a sixel-compatible terminal that can display images.
+
+## When Offpunk is not enough
+
+Then, you may need to open a content in an external tool:
 
 => /open.gmi Open outside of Offpunk
+
+
 => /index.gmi Back to the tutorial

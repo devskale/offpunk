@@ -1500,11 +1500,15 @@ class HtmlRenderer(AbstractRenderer):
                             #print( "%s same as previous link %s ?"%(link,str(links[-1])))
                     # we check if the link is the same as the image itself
                     # if so, it is the last link in the links list
+                    # We will not display the link if it is the same or if
+                    # pointing to a blocked URL
                     abs_url = urllib.parse.urljoin(self.get_base_url(),link)
                     if not normal_link and len(links) > 0:
                         last_link = links[-1].split()
                         if len(last_link) > 0:
-                            display_this_picture = abs_url != last_link[0]
+                            different_urls = abs_url != last_link[0]
+                            blocked = is_url_blocked(abs_url,self.redirects)
+                            display_this_picture = different_urls and not blocked
                     if display_this_picture:
                         imgtext = "[IMG LINK %s]"
                     if display_this_picture or normal_link:
@@ -1548,7 +1552,8 @@ class HtmlRenderer(AbstractRenderer):
                     if not abs_url:
                         src = element.get("data-src")
                         abs_url, data = looks_like_base64(src,self.get_base_url())
-                    if abs_url:
+                    # Do not even try to show IMG from blocked URL
+                    if abs_url and not is_url_blocked(abs_url,self.redirects):
                         ansi_img = render_image(src, width=width, mode=mode)
                         abs_url = urlify(abs_url)
                         links.append(abs_url + " " + text)
