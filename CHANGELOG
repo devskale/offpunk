@@ -11,6 +11,7 @@
 - BUGFIX: history latest items was sometimes overwritten with multiple back/forward
 - PACKAGING: use hatch-requirements-txt (by link2xt)
 - Lot of typos fixed (by Sebastian Rasmussen)
+- Fixed xkcdpunk manpage (by Étienne Mollier)
 - TRANSLATION: added Swedish SV (by Sebastian Rasmussen)
 - TRANSLATION: added Persian (Farsi) (by Mati Mohammadi)
 
