@@ -13,6 +13,7 @@
 - PACKAGING: use hatch-requirements-txt (by link2xt)
 - Lot of typos fixed (by Sebastian Rasmussen)
 - Fixed xkcdpunk manpage (by Étienne Mollier)
+- "unmerdify" manpage (by Étienne Mollier)
 - TRANSLATION: added Swedish SV (by Sebastian Rasmussen)
 - TRANSLATION: added Persian (Farsi) (by Mati Mohammadi)
 
