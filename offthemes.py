@@ -44,7 +44,7 @@ offpunk1 = {
                 "preformatted":     ["faint"],
                 "blockquote" :      ["italic"],
                 "prompt_on" :       ["green"],
-                "prompt_off" :      ["green"],
+                "prompt_off" :      ["red"],
              }  
 
 yellow = {
