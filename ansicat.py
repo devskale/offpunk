@@ -1024,7 +1024,7 @@ class FolderRenderer(GemtextRenderer):
     # it was initialized with:
     # self.renderer = FolderRenderer("",self.get_cache_path(),datadir=xdg("data"))
     def __init__(self, content, url, center=True, datadir=None):
-        super().__init__(self, content, url, center)
+        super().__init__(content, url, center=center)
         self.datadir = datadir
 
     def get_mime(self):

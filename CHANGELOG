@@ -5,6 +5,7 @@
 - Adding support for tmux clipboard and cleaning clipboard code (by Stephen)
 - "copy" now default to "url" and works coherently 
 - hide pictures which are from blocked URL (and hide IMG links pointing to blocked URL)
+- CRASHFIX: "list" was crashing because of a bad call to super() (reported by Toby Kurien)
 - BUGFIX: "info" was sometimes returning the wrong cleaning method
 - BUGFIX: history latest items was sometimes overwritten with multiple back/forward
 - PACKAGING: use hatch-requirements-txt (by link2xt)
