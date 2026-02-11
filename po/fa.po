@@ -1,0 +1,2228 @@
+# Offpunk Persian Translation.
+# Copyright (C) 2026 Offpunk'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the Offpunk package.
+# Matin Mohammadi <matinmn87@gmail.com>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Offpunk\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-11 17:27+0330\n"
+"PO-Revision-Date: 2026-02-11 18:00+0330\n"
+"Last-Translator: \n"
+"Language-Team: Persian <fa@li.org>\n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: offpunk.py:3
+msgid ""
+"\n"
+"Offline-First Gemini/Web/Gopher/RSS reader and browser\n"
+msgstr ""
+"\n"
+"مرورگر و خواننده جمینای/وب/گوفر/RSS با اولویت آفلاین (Offline-First)\n"
+
+#: offpunk.py:330
+msgid ""
+"This method might be considered \"the heart of Offpunk\".\n"
+"Everything involved in fetching a gemini resource happens here:\n"
+"sending the request over the network, parsing the response,\n"
+"storing the response in a temporary file, choosing\n"
+"and calling a handler program, and updating the history.\n"
+"Nothing is returned."
+msgstr ""
+"این متد را می‌توان «قلب آف‌پانک» دانست.\n"
+"تمام کارهای مربوط به دریافت یک منبع جمینای در اینجا انجام می‌شود:\n"
+"ارسال درخواست در شبکه، تجزیه پاسخ،\n"
+"ذخیره پاسخ در یک فایل موقت، انتخاب\n"
+"و فراخوانی برنامه مسئول (handler) و به‌روزرسانی تاریخچه.\n"
+"هیچ مقداری برگردانده نمی‌شود."
+
+#: offpunk.py:469
+msgid ""
+"Display and manage the list of redirected URLs. This features is mostly "
+"useful to use privacy-friendly frontends for popular websites."
+msgstr ""
+"نمایش و مدیریت لیست آدرس‌های تغییر مسیر داده شده (Redirected). این قابلیت بیشتر "
+"برای استفاده از رابط‌های کاربری حافظ حریم خصوصی برای وب‌سایت‌های محبوب مفید است."
+
+#: offpunk.py:505
+msgid "View or set various options."
+msgstr ""
+"نمایش یا تنظیم گزینه‌های مختلف."
+
+#: offpunk.py:568
+msgid ""
+"Change the colors of your rendered text.\n"
+"\n"
+"\"theme ELEMENT COLOR\"\n"
+"\n"
+"ELEMENT is one of: window_title, window_subtitle, title,\n"
+"subtitle,subsubtitle,link,oneline_link,new_link,image_link,preformatted,"
+"blockquote,                blocked_link.\n"
+"\n"
+"COLOR is one or many (separated by space) of: bold, faint, italic, "
+"underline, black,\n"
+"red, green, yellow, blue, purple, cyan, white.\n"
+"\n"
+"Each color can alternatively be prefaced with \"bright_\".\n"
+"If color is \"none\", then that part of the theme is removed.\n"
+"\n"
+"theme can also be used with \"preset\" to load an existing theme.\n"
+"\n"
+"\"theme preset\"  : show available themes\n"
+"\"theme preset PRESET_NAME\" : switch to a given preset"
+msgstr ""
+"تغییر رنگ‌های متن رندر شده شما.\n"
+"\n"
+"\"theme ELEMENT COLOR\"\n"
+"\n"
+"بخش ELEMENT یکی از موارد زیر است: window_title, window_subtitle, title,\n"
+"subtitle,subsubtitle,link,oneline_link,new_link,image_link,preformatted,"
+"blockquote, blocked_link.\n"
+"\n"
+"بخش COLOR یک یا چند مورد (که با فاصله جدا شده‌اند) از: bold, faint, italic, "
+"underline, black,\n"
+"red, green, yellow, blue, purple, cyan, white.\n"
+"\n"
+"هر رنگ می‌تواند با پیشوند \"bright_\" نیز همراه شود.\n"
+"اگر رنگ \"none\" باشد، آن بخش از تم حذف می‌شود.\n"
+"\n"
+"دستور theme همچنین می‌تواند با \"preset\" برای بارگیری یک تم موجود استفاده شود.\n"
+"\n"
+"\"theme preset\" : نمایش تم‌های موجود\n"
+"\"theme preset PRESET_NAME\" : تغییر به یک تم پیش‌فرض خاص"
+
+#: offpunk.py:657
+msgid ""
+"View or set handler commands for different MIME types.\n"
+"handler MIMETYPE : see handler for MIMETYPE\n"
+"handler MIMETYPE CMD : set handler for MIMETYPE to CMD\n"
+"in the CMD, %s will be replaced by the filename.\n"
+"if no %s, it will be added at the end.\n"
+"MIMETYPE can be the true mimetype or the file extension.\n"
+"\n"
+"Examples: \n"
+"    handler application/pdf zathura %s\n"
+"    handler .odt lowriter\n"
+"    handler docx lowriter"
+msgstr ""
+"نمایش یا تنظیم دستورات متصدی (handler) برای انواع MIME مختلف.\n"
+"handler MIMETYPE : مشاهده متصدی برای MIMETYPE\n"
+"handler MIMETYPE CMD : تنظیم متصدی برای MIMETYPE به دستور CMD\n"
+"در CMD، علامت %s با نام فایل جایگزین خواهد شد.\n"
+"اگر %s وجود نداشته باشد، نام فایل به انتهای دستور اضافه می‌شود.\n"
+"MIMETYPE می‌تواند نوع واقعی mime یا پسوند فایل باشد.\n"
+"\n"
+"مثال‌ها: \n"
+"    handler application/pdf zathura %s\n"
+"    handler .odt lowriter\n"
+"    handler docx lowriter"
+
+#: offpunk.py:685
+msgid ""
+"Create or modify an alias\n"
+"alias : show all existing aliases\n"
+"alias ALIAS : show the command linked to ALIAS\n"
+"alias ALIAS CMD : create or replace existing ALIAS to be linked to command "
+"CMD"
+msgstr ""
+"ایجاد یا تغییر یک نام مستعار (alias)\n"
+"alias : نمایش تمام نام‌های مستعار موجود\n"
+"alias ALIAS : نمایش دستور مرتبط با ALIAS\n"
+"alias ALIAS CMD : ایجاد یا جایگزینی ALIAS موجود برای اتصال به دستور CMD"
+
+#: offpunk.py:720
+msgid "Use Offpunk offline by only accessing cached content"
+msgstr ""
+"استفاده از آف‌پانک به صورت آفلاین با دسترسی تنها به محتوای ذخیره شده (cached)"
+
+#: offpunk.py:729
+msgid "Use Offpunk online with a direct connection"
+msgstr ""
+"استفاده از آف‌پانک به صورت آنلاین با اتصال مستقیم"
+
+#: offpunk.py:738
+msgid ""
+"Copy the content of the last visited page as gemtext/html in the clipboard.\n"
+"Use with \"url\" as argument to only copy the address.\n"
+"Use with \"raw\" to copy ANSI content as seen in your terminal (with colour "
+"codes).\n"
+"Use with \"content\" to copy the source of the whole page.\n"
+"Use with \"cache\" to copy the path of the cached content.\n"
+"Use with \"title\" to copy the title of the page.\n"
+"Use with \"link\" to copy a link in the gemtext format to that page with the "
+"title.\n"
+"\n"
+"Default parameter is \"url\" "
+msgstr ""
+"کپی محتوای آخرین صفحه بازدید شده به عنوان gemtext/html در کلیپ‌بورد.\n"
+"با آرگومان \"url\" استفاده کنید تا فقط آدرس کپی شود.\n"
+"با \"raw\" استفاده کنید تا محتوای ANSI همانطور که در ترمینال دیده می‌شود (با کدهای رنگ) کپی شود.\n"
+"با \"content\" استفاده کنید تا سورس کامل صفحه کپی شود.\n"
+"با \"cache\" استفاده کنید تا مسیر فایل ذخیره شده (cache) کپی شود.\n"
+"با \"title\" استفاده کنید تا عنوان صفحه کپی شود.\n"
+"با \"link\" استفاده کنید تا یک لینک با فرمت gemtext به آن صفحه همراه با عنوان کپی شود.\n"
+"\n"
+"پارامتر پیش‌فرض \"url\" است "
+
+#: offpunk.py:790
+msgid ""
+"Send current page by email to someone else.\n"
+"Use with \"url\" as first argument to send only the address.\n"
+"Use with \"text\" as first argument to send the full content. TODO\n"
+"Without argument, \"url\" is assumed.\n"
+"Next arguments are the email addresses of the recipients.\n"
+"If no destination, you will need to fill it in your mail client."
+msgstr ""
+"ارسال صفحه جاری از طریق ایمیل به شخصی دیگر.\n"
+"با آرگومان اول \"url\" استفاده کنید تا فقط آدرس ارسال شود.\n"
+"با آرگومان اول \"text\" استفاده کنید تا محتوای کامل ارسال شود. (هنوز پیاده‌سازی نشده)\n"
+"بدون آرگومان، \"url\" فرض می‌شود.\n"
+"آرگومان‌های بعدی آدرس‌های ایمیل گیرندگان هستند.\n"
+"اگر مقصدی مشخص نشود، باید آن را در کلاینت ایمیل خود وارد کنید."
+
+#: offpunk.py:835
+msgid ""
+"Reply by email to a page by trying to find a good email for the author.\n"
+"If an email is provided as an argument, it will be used.\n"
+"arguments:\n"
+"- \"save\" : allows to detect and save email without actually sending an "
+"email.\n"
+"- \"save new@email\" : save a new reply email to replace an existing one"
+msgstr ""
+"پاسخ ایمیلی به یک صفحه با تلاش برای یافتن ایمیل مناسب برای نویسنده.\n"
+"اگر ایمیلی به عنوان آرگومان ارائه شود، از آن استفاده خواهد شد.\n"
+"آرگومان‌ها:\n"
+"- \"save\" : اجازه می‌دهد ایمیل شناسایی و ذخیره شود بدون اینکه واقعاً ایمیلی ارسال شود.\n"
+"- \"save new@email\" : ذخیره یک ایمیل پاسخ جدید برای جایگزینی ایمیل موجود"
+
+#: offpunk.py:962
+msgid ""
+"Manipulate cookies:\n"
+"\"cookies import <file> [url]\" - import cookies from file to be used with "
+"[url]\n"
+"\"cookies list [url]\" - list existing cookies for current url\n"
+"default is listing cookies for current domain.\n"
+"\n"
+"To get a cookie as a txt file,use the cookie-txt extension for Firefox."
+msgstr ""
+"دستکاری کوکی‌ها:\n"
+"\"cookies import <file> [url]\" - وارد کردن کوکی‌ها از فایل برای استفاده در [url]\n"
+"\"cookies list [url]\" - لیست کردن کوکی‌های موجود برای آدرس فعلی\n"
+"پیش‌فرض لیست کردن کوکی‌ها برای دامنه فعلی است.\n"
+"\n"
+"برای دریافت کوکی به عنوان فایل txt، از افزونه cookie-txt برای فایرفاکس استفاده کنید."
+
+#: offpunk.py:1017
+msgid "Go to a gemini URL or marked item."
+msgstr ""
+"رفتن به یک آدرس جمینای یا آیتم علامت‌گذاری شده."
+
+#: offpunk.py:1061
+msgid "Reload the current URL."
+msgstr ""
+"بارگیری مجدد آدرس فعلی."
+
+#: offpunk.py:1076
+msgid ""
+"Go up one directory in the path.\n"
+"Take an integer as argument to go up multiple times.\n"
+"Use \"~\" to go to the user root\"\n"
+"Use \"/\" to go to the server root."
+msgstr ""
+"رفتن به یک دایرکتوری بالاتر در مسیر.\n"
+"یک عدد صحیح به عنوان آرگومان می‌گیرد تا چندین بار بالا برود.\n"
+"از \"~\" استفاده کنید تا به ریشه کاربر (user root) بروید\n"
+"از \"/\" استفاده کنید تا به ریشه سرور (server root) بروید."
+
+#: offpunk.py:1101
+msgid "Go back to the previous gemini item."
+msgstr ""
+"بازگشت به آیتم قبلی جمینای."
+
+#: offpunk.py:1110
+msgid "Go forward to the next gemini item."
+msgstr ""
+"رفتن به جلو به آیتم بعدی جمینای."
+
+#: offpunk.py:1120
+msgid ""
+"Go to the root of current capsule/gemlog/page\n"
+"If arg is \"/\", the go to the real root of the server"
+msgstr ""
+"رفتن به ریشه کپسول/جم‌لاگ/صفحه فعلی\n"
+"اگر آرگومان \"/\" باشد، به ریشه واقعی سرور می‌رود"
+
+#: offpunk.py:1129
+msgid ""
+"Add index items as waypoints on a tour, which is basically a FIFO\n"
+"queue of gemini items.\n"
+"\n"
+"`tour` or `t` alone brings you to the next item in your tour.\n"
+"Items can be added with `tour 1 2 3 4` or ranges like `tour 1-4`.\n"
+"All items in current menu can be added with `tour *`.\n"
+"All items in $LIST can be added with `tour $LIST`.\n"
+"Current item can be added back to the end of the tour with `tour .`.\n"
+"Current tour can be listed with `tour ls` and scrubbed with `tour clear`."
+msgstr ""
+"افزودن آیتم‌های ایندکس به عنوان نقاط توقف در یک تور، که اساساً یک صف\n"
+"FIFO (ورود اول، خروج اول) از آیتم‌های جمینای است.\n"
+"\n"
+"`tour` یا `t` به تنهایی شما را به آیتم بعدی در تور می‌برد.\n"
+"آیتم‌ها می‌توانند با `tour 1 2 3 4` یا محدوده‌هایی مثل `tour 1-4` اضافه شوند.\n"
+"تمام آیتم‌های منوی فعلی را می‌توان با `tour *` اضافه کرد.\n"
+"تمام آیتم‌های موجود در $LIST را می‌توان با `tour $LIST` اضافه کرد.\n"
+"آیتم فعلی را می‌توان با `tour .` دوباره به انتهای تور اضافه کرد.\n"
+"تور فعلی را می‌توان با `tour ls` مشاهده و با `tour clear` پاک کرد."
+
+#: offpunk.py:1199
+msgid ""
+"Manage your client certificates (identities) for a site.\n"
+"`certs` will display all valid certificates for the current site\n"
+"`certs new <name> <days-valid> <url[optional]>` will create a new "
+"certificate, if no url is specified, the current open site will be used."
+msgstr ""
+"مدیریت گواهی‌های کلاینت (هویت‌های) شما برای یک سایت.\n"
+"`certs` تمام گواهی‌های معتبر برای سایت فعلی را نمایش می‌دهد\n"
+"`certs new <name> <days-valid> <url[optional]>` یک گواهی جدید ایجاد می‌کند، "
+"اگر آدرسی مشخص نشود، از سایت باز فعلی استفاده خواهد شد."
+
+#: offpunk.py:1226
+msgid ""
+"Mark the current item with a single letter.  This letter can then\n"
+"be passed to the 'go' command to return to the current item later.\n"
+"Think of it like marks in vi: 'mark a'='ma' and 'go a'=''a'.\n"
+"Marks are temporary until shutdown (not saved to disk)."
+msgstr ""
+"علامت‌گذاری آیتم فعلی با یک حرف واحد. این حرف سپس می‌تواند\n"
+"به دستور 'go' داده شود تا بعداً به آیتم فعلی بازگردید.\n"
+"این را مانند نشانه‌ها (marks) در vi در نظر بگیرید: 'mark a'='ma' و 'go a'=''a'.\n"
+"نشانه‌ها تا زمان خروج موقت هستند (روی دیسک ذخیره نمی‌شوند)."
+
+#: offpunk.py:1241
+msgid "Display information about current page."
+msgstr ""
+"نمایش اطلاعات درباره صفحه فعلی."
+
+#: offpunk.py:1280
+msgid "Display version and system information."
+msgstr ""
+"نمایش نسخه و اطلاعات سیستم."
+
+#: offpunk.py:1344
+msgid ""
+"Send a mail to the offpunk-devel list with technical information\n"
+"about your offpunk version. You will be prompted to write an email\n"
+"describing how to reproduce the bug."
+msgstr ""
+"ارسال ایمیل به لیست offpunk-devel با اطلاعات فنی\n"
+"درباره نسخه آف‌پانک شما. از شما خواسته می‌شود ایمیلی بنویسید\n"
+"و نحوه بازتولید باگ را شرح دهید."
+
+#: offpunk.py:1364
+msgid ""
+"Search on Gemini using the engine configured (by default kennedy.gemi.dev)\n"
+"You can configure it using \"set search URL\".\n"
+"URL should contains one \"%s\" that will be replaced by the search term."
+msgstr ""
+"جستجو در جمینای با استفاده از موتور تنظیم شده (پیش‌فرض kennedy.gemi.dev)\n"
+"می‌توانید آن را با \"set search URL\" پیکربندی کنید.\n"
+"آدرس URL باید شامل یک \"%s\" باشد که با عبارت جستجو جایگزین خواهد شد."
+
+#: offpunk.py:1372
+msgid ""
+"Search on the web using the engine configured (by default wiby.me)\n"
+"You can configure it using \"set websearch URL\".\n"
+"URL should contains one \"%s\" that will be replaced by the search term."
+msgstr ""
+"جستجو در وب با استفاده از موتور تنظیم شده (پیش‌فرض wiby.me)\n"
+"می‌توانید آن را با \"set websearch URL\" پیکربندی کنید.\n"
+"آدرس URL باید شامل یک \"%s\" باشد که با عبارت جستجو جایگزین خواهد شد."
+
+#: offpunk.py:1380
+msgid ""
+"Search on wikipedia using the configured Gemini interface.\n"
+"The first word should be the two letters code for the language.\n"
+"Example : \"wikipedia en Gemini protocol\"\n"
+"But you can also use abbreviations to go faster:\n"
+"\"wen Gemini protocol\". (your abbreviation might be missing, report the "
+"bug)\n"
+"while it's not added, \"w\" is still an option you can use:\n"
+"\"w en Gemini protocol\" will work as a shortcut as well\n"
+"The interface used can be modified with the command:\n"
+"\"set wikipedia URL\" where URL should contains two \"%s\", the first\n"
+"one used for the language, the second for the search string."
+msgstr ""
+"جستجو در ویکی‌پدیا با استفاده از رابط جمینای تنظیم شده.\n"
+"کلمه اول باید کد دو حرفی زبان باشد.\n"
+"مثال: \"wikipedia en Gemini protocol\"\n"
+"اما می‌توانید برای سرعت بیشتر از اختصارات استفاده کنید:\n"
+"\"wen Gemini protocol\". (ممکن است اختصار شما موجود نباشد، باگ را گزارش دهید)\n"
+"تا زمانی که اضافه نشده، \"w\" گزینه‌ای است که می‌توانید استفاده کنید:\n"
+"\"w en Gemini protocol\" نیز به عنوان میانبر کار می‌کند\n"
+"رابط مورد استفاده را می‌توان با دستور زیر تغییر داد:\n"
+"\"set wikipedia URL\" که در آن URL باید شامل دو \"%s\" باشد، اولی\n"
+"برای زبان و دومی برای رشته جستجو استفاده می‌شود."
+
+#: offpunk.py:1401
+msgid "Open the specified XKCD comics (a number is required as parameter)"
+msgstr ""
+"باز کردن کمیک XKCD مشخص شده (یک عدد به عنوان پارامتر لازم است)"
+
+#: offpunk.py:1409
+msgid "Submit a search query to the geminispace.info search engine."
+msgstr ""
+"ارسال یک درخواست جستجو به موتور جستجوی geminispace.info."
+
+#: offpunk.py:1417
+msgid "Display history."
+msgstr ""
+"نمایش تاریخچه."
+
+#: offpunk.py:1422
+msgid "Find in current page by displaying only relevant lines (grep)."
+msgstr ""
+"یافتن در صفحه جاری با نمایش تنها خطوط مرتبط (grep)."
+
+#: offpunk.py:1426
+msgid ""
+"Display all the links for the current page.\n"
+"   If argument N is provided, then page through N links at a time.\n"
+"   \"links 10\" show you the first 10 links, then 11 to 20, etc.\n"
+"   if N = 0, then all the links are displayed"
+msgstr ""
+"نمایش تمام لینک‌های صفحه جاری.\n"
+"   اگر آرگومان N ارائه شود، لینک‌ها را N تا N تا صفحه بندی می‌کند.\n"
+"   \"links 10\" ده لینک اول را نشان می‌دهد، سپس ۱۱ تا ۲۰، و غیره.\n"
+"   اگر N = 0 باشد، تمام لینک‌ها نمایش داده می‌شوند"
+
+#: offpunk.py:1447
+msgid "DEPRECATED: List contents of current index."
+msgstr ""
+"منسوخ شده (DEPRECATED): لیست محتویات ایندکس جاری."
+
+#: offpunk.py:1453
+msgid "Default action when line is empty"
+msgstr ""
+"عمل پیش‌فرض وقتی خط خالی است"
+
+#: offpunk.py:1469
+msgid "Display RSS or Atom feeds linked to the current page."
+msgstr ""
+"نمایش فیدهای RSS یا Atom لینک شده به صفحه جاری."
+
+#: offpunk.py:1494
+msgid ""
+"Run most recently visited item through \"less\" command, restoring previous "
+"position.\n"
+"Use \"view normal\" to see the default article view on html page.\n"
+"Use \"view full\" to see a complete html page instead of the article view.\n"
+"Use \"view switch\" to switch between normal and full\n"
+"Use \"view XX\" where XX is a number to view information about link XX.\n"
+"(full, feed, feeds have no effect on non-html content)."
+msgstr ""
+"اجرای آخرین آیتم بازدید شده از طریق دستور \"less\"، با بازیابی موقعیت قبلی.\n"
+"از \"view normal\" استفاده کنید تا نمای پیش‌فرض مقاله را در صفحه html ببینید.\n"
+"از \"view full\" استفاده کنید تا صفحه کامل html را به جای نمای مقاله ببینید.\n"
+"از \"view switch\" برای تعویض بین حالت normal و full استفاده کنید\n"
+"از \"view XX\" استفاده کنید که XX یک عدد است تا اطلاعات مربوط به لینک XX را ببینید.\n"
+"(full، feed، feeds روی محتوای غیر html تأثیری ندارند)."
+
+#: offpunk.py:1540
+msgid ""
+"Open current item with the configured handler or xdg-open.\n"
+"Use \"open url\" to open current URL in a browser.\n"
+"Use \"open 2 4\" to open links 2 and 4\n"
+"You can combine with \"open url 2 4\" to open URL of links\n"
+"see \"handler\" command to set your handler."
+msgstr ""
+"باز کردن آیتم فعلی با متصدی (handler) تنظیم شده یا xdg-open.\n"
+"از \"open url\" استفاده کنید تا URL فعلی در یک مرورگر باز شود.\n"
+"از \"open 2 4\" برای باز کردن لینک‌های ۲ و ۴ استفاده کنید\n"
+"می‌توانید با \"open url 2 4\" ترکیب کنید تا URL لینک‌ها باز شود\n"
+"دستور \"handler\" را برای تنظیم متصدی خود ببینید."
+
+#: offpunk.py:1575
+msgid ""
+"Send the content of the current page to the shell and pipe it.\n"
+"You are supposed to write what will come after the pipe. For example,\n"
+"if you want to count the number of lines containing STRING in the \n"
+"current page:\n"
+"> shell grep STRING|wc -l\n"
+"'!' is an useful shortcut.\n"
+"> !grep STRING|wc -l"
+msgstr ""
+"ارسال محتوای صفحه فعلی به پوسته (shell) و پایپ کردن آن.\n"
+"شما باید آنچه بعد از پایپ می‌آید را بنویسید. برای مثال،\n"
+"اگر می‌خواهید تعداد خطوط شامل STRING را در صفحه فعلی بشمارید:\n"
+"> shell grep STRING|wc -l\n"
+"'!' یک میانبر مفید است.\n"
+"> !grep STRING|wc -l"
+
+#: offpunk.py:1596
+msgid ""
+"Save an item to the filesystem.\n"
+"'save n filename' saves menu item n to the specified filename.\n"
+"'save filename' saves the last viewed item to the specified filename.\n"
+"'save n' saves menu item n to an automagic filename."
+msgstr ""
+"ذخیره یک آیتم در فایل‌سیستم.\n"
+"'save n filename' آیتم منوی شماره n را با نام فایل مشخص شده ذخیره می‌کند.\n"
+"'save filename' آخرین آیتم مشاهده شده را با نام فایل مشخص شده ذخیره می‌کند.\n"
+"'save n' آیتم منوی شماره n را با یک نام فایل خودکار ذخیره می‌کند."
+
+#: offpunk.py:1672
+msgid ""
+"Print the url of the current page.\n"
+"Use \"url XX\" where XX is a number to print the url of link XX.\n"
+"\"url\" can also be piped to the shell, using the pipe \"|\"."
+msgstr ""
+"چاپ آدرس (URL) صفحه فعلی.\n"
+"از \"url XX\" استفاده کنید که XX یک عدد است تا آدرس لینک XX چاپ شود.\n"
+"\"url\" همچنین می‌تواند با استفاده از پایپ \"|\" به شل فرستاده شود."
+
+#: offpunk.py:1694
+msgid ""
+"Add the current URL to the list specified as argument.\n"
+"If no argument given, URL is added to Bookmarks.\n"
+"You can pass a link number as the second argument to add the link.\n"
+"\"add $LIST XX\" will add link number XX to $LIST"
+msgstr ""
+"افزودن URL فعلی به لیستی که به عنوان آرگومان مشخص شده است.\n"
+"اگر آرگومانی داده نشود، URL به نشانه‌ها (Bookmarks) اضافه می‌شود.\n"
+"می‌توانید شماره لینک را به عنوان آرگومان دوم برای افزودن لینک بدهید.\n"
+"\"add $LIST XX\" لینک شماره XX را به $LIST اضافه می‌کند"
+
+#: offpunk.py:1739
+msgid ""
+"Subscribe to current page by saving it in the \"subscribed\" list.\n"
+"If a new link is found in the page during a --sync, the new link is "
+"automatically\n"
+"fetched and added to your next tour.\n"
+"To unsubscribe, remove the page from the \"subscribed\" list."
+msgstr ""
+"اشتراک در صفحه فعلی با ذخیره آن در لیست \"subscribed\".\n"
+"اگر در طول --sync لینک جدیدی در صفحه پیدا شود، لینک جدید به طور خودکار\n"
+"دریافت شده و به تور بعدی شما اضافه می‌شود.\n"
+"برای لغو اشتراک، صفحه را از لیست \"subscribed\" حذف کنید."
+
+#: offpunk.py:1779
+msgid ""
+"Show or access the bookmarks menu.\n"
+"'bookmarks' shows all bookmarks.\n"
+"'bookmarks n' navigates immediately to item n in the bookmark menu.\n"
+"Bookmarks are stored using the 'add' command."
+msgstr ""
+"نمایش یا دسترسی به منوی نشانه‌ها.\n"
+"'bookmarks' تمام نشانه‌ها را نشان می‌دهد.\n"
+"'bookmarks n' بلافاصله به آیتم n در منوی نشانه‌ها می‌رود.\n"
+"نشانه‌ها با استفاده از دستور 'add' ذخیره می‌شوند."
+
+#: offpunk.py:1793
+msgid ""
+"Archive current page by removing it from every list and adding it to\n"
+"archives, which is a special historical list limited in size. It is similar "
+"to `move archives`."
+msgstr ""
+"آرشیو کردن صفحه فعلی با حذف آن از همه لیست‌ها و افزودن آن به\n"
+"archives، که یک لیست تاریخی خاص با اندازه محدود است. این شبیه به دستور `move archives` است."
+
+#: offpunk.py:2033
+msgid ""
+"move LIST will add the current page to the list LIST.\n"
+"With a major twist: current page will be removed from all other lists.\n"
+"If current page was not in a list, this command is similar to `add LIST`."
+msgstr ""
+"move LIST صفحه فعلی را به لیست LIST اضافه می‌کند.\n"
+"با یک تغییر مهم: صفحه فعلی از تمام لیست‌های دیگر حذف خواهد شد.\n"
+"اگر صفحه فعلی در هیچ لیستی نبود، این دستور مشابه `add LIST` است."
+
+#: offpunk.py:2114
+msgid ""
+"Manage list of bookmarked pages.\n"
+"- list : display available lists\n"
+"- list $LIST : display pages in $LIST\n"
+"- list create $NEWLIST : create a new list\n"
+"- list edit $LIST : edit the list\n"
+"- list subscribe $LIST : during sync, add new links found in listed pages to "
+"tour\n"
+"- list freeze $LIST : don’t update pages in list during sync if a cache "
+"already exists\n"
+"- list normal $LIST : update pages in list during sync but don’t add "
+"anything to tour\n"
+"- list delete $LIST : delete a list permanently (a confirmation is "
+"required)\n"
+"- list help : print this help\n"
+"See also :\n"
+"- add $LIST (to add current page to $LIST or, by default, to bookmarks)\n"
+"- move $LIST (to add current page to list while removing from all others)\n"
+"- archive (to remove current page from all lists while adding to archives)\n"
+"\n"
+"There’s no \"delete\" on purpose. The use of \"archive\" is recommended.\n"
+"\n"
+"The following lists cannot be removed or frozen but can be edited with "
+"\"list edit\"\n"
+"- list archives  : contains last 200 archived URLs\n"
+"- history        : contains last 200 visited URLs\n"
+"- to_fetch       : contains URLs that will be fetch during the next sync\n"
+"- tour           : contains the next URLs to visit during a tour (see \"help "
+"tour\")"
+msgstr ""
+"مدیریت لیست صفحات نشان‌گذاری شده.\n"
+"- list : نمایش لیست‌های موجود\n"
+"- list $LIST : نمایش صفحات موجود در $LIST\n"
+"- list create $NEWLIST : ایجاد یک لیست جدید\n"
+"- list edit $LIST : ویرایش لیست\n"
+"- list subscribe $LIST : در هنگام همگام‌سازی (sync)، لینک‌های جدید یافت شده در صفحات لیست شده را به تور اضافه کن\n"
+"- list freeze $LIST : اگر کش وجود دارد، صفحات موجود در لیست را هنگام همگام‌سازی به‌روزرسانی نکن\n"
+"- list normal $LIST : صفحات موجود در لیست را هنگام همگام‌سازی به‌روزرسانی کن اما چیزی به تور اضافه نکن\n"
+"- list delete $LIST : حذف دائمی یک لیست (نیاز به تایید دارد)\n"
+"- list help : چاپ این راهنما\n"
+"همچنین ببینید:\n"
+"- add $LIST (برای افزودن صفحه فعلی به $LIST یا به طور پیش‌فرض به نشانه‌ها)\n"
+"- move $LIST (برای افزودن صفحه فعلی به لیست و حذف همزمان از سایر لیست‌ها)\n"
+"- archive (برای حذف صفحه فعلی از تمام لیست‌ها و افزودن به آرشیوها)\n"
+"\n"
+"گزینه \"delete\" عمداً وجود ندارد. استفاده از \"archive\" توصیه می‌شود.\n"
+"\n"
+"لیست‌های زیر قابل حذف یا فریز شدن نیستند اما می‌توانند با \"list edit\" ویرایش شوند:\n"
+"- list archives : شامل ۲۰۰ آدرس آرشیو شده آخر\n"
+"- history : شامل ۲۰۰ آدرس بازدید شده آخر\n"
+"- to_fetch : شامل آدرس‌هایی که در همگام‌سازی بعدی دریافت خواهند شد\n"
+"- tour : شامل آدرس‌های بعدی برای بازدید در طول یک تور (ببینید: \"help tour\")"
+
+#: offpunk.py:2238
+msgid "ALARM! Recursion detected! ALARM! Prepare to eject!"
+msgstr "هشدار! بازگشت (Recursion) شناسایی شد! هشدار! آماده خروج اضطراری!"
+
+#: offpunk.py:2265
+msgid "Access the offpunk.net tutorial (online)"
+msgstr ""
+"دسترسی به آموزش offpunk.net (آنلاین)"
+
+#: offpunk.py:2269
+msgid ""
+"Synchronize all bookmarks lists and URLs from the to_fetch list.\n"
+"- New elements in pages in subscribed lists will be added to tour\n"
+"- Elements in list to_fetch will be retrieved and added to tour\n"
+"- Normal lists will be synchronized and updated\n"
+"- Frozen lists will be fetched only if not present.\n"
+"\n"
+"Before a sync, you can edit the list of URLs that will be fetched with the\n"
+"following command: \"list edit to_fetch\"\n"
+"\n"
+"Argument : duration of cache validity (in seconds)."
+msgstr ""
+"همگام‌سازی (Sync) تمام لیست‌های نشانه‌ها و آدرس‌ها از لیست to_fetch.\n"
+"- عناصر جدید در صفحات لیست‌های مشترک شده (subscribed) به تور اضافه خواهند شد\n"
+"- عناصر موجود در لیست to_fetch دریافت شده و به تور اضافه می‌شوند\n"
+"- لیست‌های عادی همگام‌سازی و به‌روزرسانی می‌شوند\n"
+"- لیست‌های فریز شده (Frozen) تنها در صورت عدم وجود دریافت می‌شوند.\n"
+"\n"
+"قبل از همگام‌سازی، می‌توانید لیست آدرس‌هایی که دریافت خواهند شد را با دستور زیر ویرایش کنید:\n"
+"\"list edit to_fetch\"\n"
+"\n"
+"آرگومان: مدت اعتبار کش (به ثانیه)."
+
+#: offpunk.py:2441
+msgid "Exit Offpunk."
+msgstr ""
+"خروج از آف‌پانک."
+
+#: ansicat.py:115
+msgid "To render images inline, you need either chafa >= 1.10 or timg > 1.3.2"
+msgstr "برای رندر تصاویر در خط، به chafa >= 1.10 یا timg > 1.3.2 نیاز دارید"
+
+#: ansicat.py:528
+msgid "No cleaning found for mode"
+msgstr "هیچ پاک‌سازی برای این حالت یافت نشد"
+
+#: ansicat.py:533
+#, python-format
+msgid "%s is not a valid link for %s"
+msgstr "%s یک لینک معتبر برای %s نیست"
+
+#: ansicat.py:619
+#, python-format
+msgid "Urljoin Error: Could not make an URL out of %s and %s"
+msgstr "خطای Urljoin: نتوانست از %s و %s یک URL بسازد"
+
+#: ansicat.py:947
+msgid "Error rendering Gopher "
+msgstr "خطا در رندر گوفر "
+
+#: ansicat.py:1086
+msgid ""
+"\n"
+"## Bookmarks Lists (updated during sync)\n"
+msgstr ""
+"\n"
+"## لیست‌های نشانه‌ها (در هنگام همگام‌سازی به‌روز می‌شوند)\n"
+
+#: ansicat.py:1089
+msgid ""
+"\n"
+"## Subscriptions (new links in those are added to tour)\n"
+msgstr ""
+"\n"
+"## اشتراک‌ها (لینک‌های جدید در این‌ها به تور اضافه می‌شوند)\n"
+
+#: ansicat.py:1092
+msgid ""
+"\n"
+"## Frozen (fetched but never updated)\n"
+msgstr ""
+"\n"
+"## فریز شده (دریافت شده اما هرگز به‌روز نمی‌شوند)\n"
+
+#: ansicat.py:1095
+msgid ""
+"\n"
+"## System Lists\n"
+msgstr ""
+"\n"
+"## لیست‌های سیستمی\n"
+
+#: ansicat.py:1281 ansicat.py:1342
+msgid ""
+"HTML document detected. Please install python-bs4 and python-readability."
+msgstr ""
+"سند HTML شناسایی شد. لطفاً python-bs4 و python-readability را نصب کنید."
+
+#: ansicat.py:1644
+msgid "Full as requested"
+msgstr "کامل طبق درخواست"
+
+#: ansicat.py:1654
+msgid "Unmerdify CRASH"
+msgstr "Unmerdify کرش کرد"
+
+#: ansicat.py:1656
+msgid "Unmerdify failed - returns empty html"
+msgstr "Unmerdify ناموفق بود - html خالی برگرداند"
+
+#: ansicat.py:1658
+msgid "Unmerdify"
+msgstr "Unmerdify"
+
+#: ansicat.py:1665
+msgid "Readability"
+msgstr "Readability"
+
+#: ansicat.py:1668
+msgid "Full (Readability failed)"
+msgstr "کامل (Readability ناموفق بود)"
+
+#: ansicat.py:1671
+msgid "Full (No readability installed)"
+msgstr "کامل (readability نصب نیست)"
+
+#: ansicat.py:1769
+msgid ""
+"\n"
+"> Please install python-bs4 to parse HTML"
+msgstr ""
+"\n"
+"> لطفاً python-bs4 را برای تجزیه HTML نصب کنید"
+
+#: ansicat.py:1771
+msgid ""
+"\n"
+"> Picture not in cache. Please reload this page.\n"
+msgstr ""
+"\n"
+"> تصویر در حافظه نهان (کش) نیست. لطفاً این صفحه را بارگذاری مجدد کنید.\n"
+
+#: ansicat.py:1854
+msgid "Cannot guess the mime type of the file. Please install \"file\"."
+msgstr "نمی‌توان نوع mime فایل را حدس زد. لطفاً \"file\" را نصب کنید."
+
+#: ansicat.py:1968
+#, python-format
+msgid "Could not render %s"
+msgstr "نتوانست %s را رندر کند"
+
+#: ansicat.py:1973
+msgid ""
+"ansicat is a terminal rendering tool that will render multiple formats "
+"(HTML,             Gemtext, RSS, Gophermap, Image) into ANSI text and "
+"colors.\n"
+"            When used on a file, ansicat will try to autodetect the format. "
+"When used with             standard input, the format must be manually "
+"specified.\n"
+"            If the content contains links, the original URL of the content "
+"can be specified             in order to correctly modify relatives links."
+msgstr ""
+"ansicat یک ابزار رندر ترمینال است که فرمت‌های متعدد (HTML, Gemtext, RSS, Gophermap, Image) "
+"را به متن و رنگ‌های ANSI تبدیل می‌کند.\n"
+"هنگام استفاده روی یک فایل، ansicat سعی می‌کند فرمت را خودکار تشخیص دهد. "
+"هنگام استفاده با ورودی استاندارد (stdin)، فرمت باید به صورت دستی مشخص شود.\n"
+"اگر محتوا شامل لینک باشد، آدرس URL اصلی محتوا را می‌توان مشخص کرد تا لینک‌های نسبی به درستی اصلاح شوند."
+
+#: ansicat.py:1994
+msgid ""
+"Renderer to use. Available: auto, gemtext, html, feed, gopher, image, "
+"folder, plaintext"
+msgstr ""
+"رندر کننده‌ای که استفاده می‌شود. موجود: auto, gemtext, html, feed, gopher, image, "
+"folder, plaintext"
+
+#: ansicat.py:1996
+msgid "Mime of the content to parse"
+msgstr "نوع Mime محتوایی که باید تجزیه شود"
+
+#: ansicat.py:2000
+msgid "Original URL of the content"
+msgstr "آدرس URL اصلی محتوا"
+
+#: ansicat.py:2005 openk.py:371 opnk.py:371
+msgid ""
+"Which mode should be used to render: normal (default), full or "
+"source.                                With HTML, the normal mode try to "
+"extract the article."
+msgstr ""
+"کدام حالت برای رندر استفاده شود: normal (پیش‌فرض)، full یا source. "
+"با HTML، حالت normal سعی می‌کند مقاله را استخراج کند."
+
+#: ansicat.py:2014 openk.py:380 opnk.py:380
+msgid "Which mode should be used to render links: none (default) or end"
+msgstr "کدام حالت برای رندر لینک‌ها استفاده شود: none (پیش‌فرض) یا end"
+
+#: ansicat.py:2022
+msgid "Path to the text to render (default to stdin)"
+msgstr "مسیر متنی که باید رندر شود (پیش‌فرض stdin است)"
+
+#: ansicat.py:2045
+msgid "Ansicat needs at least one file as an argument"
+msgstr "Ansicat به حداقل یک فایل به عنوان آرگومان نیاز دارد"
+
+#: ansicat.py:2049
+msgid "Format or mime should be specified when running with stdin"
+msgstr "فرمت یا mime باید هنگام اجرا با stdin مشخص شود"
+
+#: netcache.py:131
+msgid "We return False because path is too long"
+msgstr "ما False برمی‌گردانیم چون مسیر خیلی طولانی است"
+
+#: netcache.py:319
+#, python-format
+msgid ""
+"ERROR while caching %s\n"
+"\n"
+msgstr ""
+"خطا هنگام کش کردن %s\n"
+"\n"
+
+#: netcache.py:324
+msgid "If you believe this error was temporary, type reload.\n"
+msgstr "اگر فکر می‌کنید این خطا موقتی بوده، reload را تایپ کنید.\n"
+
+#: netcache.py:325
+msgid "The resource will be tentatively fetched during next sync.\n"
+msgstr "این منبع به صورت آزمایشی در همگام‌سازی بعدی دریافت خواهد شد.\n"
+
+#: netcache.py:363
+#, python-format
+msgid "Size of %s is %s Mo\n"
+msgstr "اندازه %s برابر با %s مگابایت است\n"
+
+#: netcache.py:364
+#, python-format
+msgid "Offpunk only download automatically content under %s Mo\n"
+msgstr "آف‌پانک فقط محتوای زیر %s مگابایت را به طور خودکار دانلود می‌کند\n"
+
+#: netcache.py:367
+msgid "To retrieve this content anyway, type 'reload'."
+msgstr "برای دریافت این محتوا در هر صورت، 'reload' را تایپ کنید."
+
+#: netcache.py:407
+#, python-format
+msgid "  -> Receiving stream: %s%% of allowed data"
+msgstr "  -> دریافت جریان: %s%% از داده‌های مجاز"
+
+#: netcache.py:573
+msgid "Certificate not valid until: {}!"
+msgstr "گواهی تا {} معتبر نیست!"
+
+#: netcache.py:577
+msgid "Certificate expired as of: {})!"
+msgstr "گواهی در تاریخ {} منقضی شده است)!"
+
+#: netcache.py:606
+msgid ""
+"Hostname does not match certificate common name or any alternative names."
+msgstr "نام هاست با نام مشترک گواهی یا نام‌های جایگزین مطابقت ندارد."
+
+#: netcache.py:662
+msgid "[SECURITY WARNING] Unrecognised certificate!"
+msgstr "[هشدار امنیتی] گواهی ناشناخته!"
+
+#: netcache.py:664
+msgid "The certificate presented for {} ({}) has never been seen before."
+msgstr "گواهی ارائه شده برای {} ({}) قبلاً دیده نشده است."
+
+#: netcache.py:668
+msgid "This MIGHT be a Man-in-the-Middle attack."
+msgstr "این ممکن است یک حمله مرد میانی (Man-in-the-Middle) باشد."
+
+#: netcache.py:670
+msgid "A different certificate has previously been seen {} times."
+msgstr "یک گواهی متفاوت قبلاً {} بار دیده شده است."
+
+#: netcache.py:676
+msgid "That certificate has expired, which reduces suspicion somewhat."
+msgstr "آن گواهی منقضی شده است، که شک را تا حدی کاهش می‌دهد."
+
+#: netcache.py:678
+msgid "That certificate is still valid for: {}"
+msgstr "آن گواهی هنوز معتبر است برای: {}"
+
+#: netcache.py:680
+msgid "Attempt to verify the new certificate fingerprint out-of-band:"
+msgstr "تلاش برای تایید اثر انگشت گواهی جدید خارج از باند (out-of-band):"
+
+#. TRANSLATORS: keep "Y/N" because the answer has to be one of those
+#: netcache.py:686
+msgid "Accept this new certificate? Y/N "
+msgstr "پذیرش این گواهی جدید؟ Y/N "
+
+#: netcache.py:693
+msgid "TOFU Failure!"
+msgstr "شکست TOFU (اعتماد در اولین استفاده)!"
+
+#: netcache.py:790
+msgid "There are no certificates available for this site."
+msgstr "هیچ گواهی‌ای برای این سایت موجود نیست."
+
+#. TRANSLATORS: keep the "y/n"
+#: netcache.py:792
+msgid "Do you want to create one? (y/n) "
+msgstr "آیا می‌خواهید یکی ایجاد کنید؟ (y/n) "
+
+#: netcache.py:794
+msgid "Name for this certificate: "
+msgstr "نام برای این گواهی: "
+
+#: netcache.py:795
+msgid "Validity in days: "
+msgstr "اعتبار به روز: "
+
+#: netcache.py:802
+msgid "The name or validity you typed are invalid"
+msgstr "نام یا اعتباری که تایپ کردید نامعتبر است"
+
+#: netcache.py:807
+msgid "The one available certificate for this site is:"
+msgstr "تنها گواهی موجود برای این سایت:"
+
+#: netcache.py:810
+msgid "The {} available certificates for this site are:"
+msgstr "تعداد {} گواهی موجود برای این سایت عبارتند از:"
+
+#: netcache.py:819
+msgid "which certificate do you want to use? > "
+msgstr "از کدام گواهی می‌خواهید استفاده کنید؟ > "
+
+#: netcache.py:904
+msgid "This identity doesn't exist for this site (or is disabled)."
+msgstr "این هویت برای این سایت وجود ندارد (یا غیرفعال شده است)."
+
+#: netcache.py:969 netcache.py:975
+msgid "Received invalid header from server!"
+msgstr "هدر نامعتبر از سرور دریافت شد!"
+
+#: netcache.py:1000
+msgid "URL redirects to itself!"
+msgstr "URL به خودش تغییر مسیر می‌دهد!"
+
+#: netcache.py:1002
+msgid "Caught in redirect loop!"
+msgstr "در حلقه تغییر مسیر (redirect) گیر افتاد!"
+
+#: netcache.py:1005
+#, python-format
+msgid "Refusing to follow more than %d consecutive redirects!"
+msgstr "امتناع از دنبال کردن بیش از %d تغییر مسیر متوالی!"
+
+#: netcache.py:1036
+msgid "You need to provide a client-certificate to access this page."
+msgstr "برای دسترسی به این صفحه باید یک گواهی کلاینت ارائه دهید."
+
+#: netcache.py:1040
+msgid ""
+"You need to provide a client-certificate to access this page.\r\n"
+"Type \"certs\" to create or re-use one"
+msgstr ""
+"برای دسترسی به این صفحه باید یک گواهی کلاینت ارائه دهید.\r\n"
+"برای ایجاد یا استفاده مجدد از یکی، \"certs\" را تایپ کنید"
+
+#: netcache.py:1044
+#, python-format
+msgid "Server returned undefined status code %s!"
+msgstr "سرور کد وضعیت تعریف نشده %s را برگرداند!"
+
+#: netcache.py:1068
+#, python-format
+msgid ""
+"Could not decode response body using %s                                "
+"encoding declared in header!"
+msgstr ""
+"نتوانست بدنه پاسخ را با استفاده از کدگذاری %s اعلام شده در هدر رمزگشایی کند!"
+
+#: netcache.py:1104
+msgid "Blocked URL: "
+msgstr "URL مسدود شده: "
+
+#: netcache.py:1105
+msgid "This website has been blocked with the following rule:\n"
+msgstr "این وب‌سایت با قانون زیر مسدود شده است:\n"
+
+#: netcache.py:1107
+msgid "Use the following redirect command to unblock it:\n"
+msgstr "از دستور تغییر مسیر زیر برای رفع مسدودی آن استفاده کنید:\n"
+
+#: netcache.py:1136
+#, python-format
+msgid "%s is not a supported protocol"
+msgstr "%s یک پروتکل پشتیبانی شده نیست"
+
+#: netcache.py:1144
+msgid "HTTP requires python-requests"
+msgstr "HTTP به python-requests نیاز دارد"
+
+#: netcache.py:1163
+msgid "ERROR: DNS error!"
+msgstr "خطا: خطای DNS!"
+
+#: netcache.py:1166
+msgid "ERROR1: Connection refused!"
+msgstr "ERROR1: اتصال رد شد!"
+
+#: netcache.py:1169
+msgid "ERROR2: Connection reset!"
+msgstr "ERROR2: اتصال بازنشانی شد!"
+
+#: netcache.py:1172
+msgid ""
+"ERROR3: Connection timed out!\n"
+"    Slow internet connection?  Use 'set timeout' to be more patient."
+msgstr ""
+"ERROR3: زمان اتصال تمام شد!\n"
+"    اینترنت کند است؟ از 'set timeout' استفاده کنید تا صبورتر باشد."
+
+#: netcache.py:1176
+msgid ""
+"ERROR5: Trying to create a directory which already exists\n"
+"                        in the cache : "
+msgstr ""
+"ERROR5: تلاش برای ایجاد دایرکتوری که از قبل در حافظه نهان (cache) وجود دارد : "
+
+#: netcache.py:1181
+msgid "ERROR6: Bad SSL certificate:\n"
+msgstr "ERROR6: گواهی SSL بد:\n"
+
+#: netcache.py:1184
+msgid ""
+"\n"
+" If you know what you are doing, you can try to accept bad certificates with "
+"the following command:\n"
+msgstr ""
+"\n"
+" اگر می‌دانید چه می‌کنید، می‌توانید با دستور زیر سعی کنید گواهی‌های بد را بپذیرید:\n"
+
+#: netcache.py:1189
+msgid "ERROR7: Cannot connect to URL:\n"
+msgstr "ERROR7: نمی‌توان به URL متصل شد:\n"
+
+#: netcache.py:1195
+msgid "ERROR4: "
+msgstr "ERROR4: "
+
+#: netcache.py:1212
+#, python-format
+msgid "Downloading %s"
+msgstr "در حال دانلود %s"
+
+#: netcache.py:1234
+msgid ""
+"Netcache is a command-line tool to retrieve, cache and access networked "
+"content.\n"
+"            By default, netcache will returns a cached version of a given "
+"URL, downloading it             only if a cache version doesn't exist. A "
+"validity duration, in seconds, can also             be given so netcache "
+"downloads the content only if the existing cache is older than the validity."
+msgstr ""
+"Netcache یک ابزار خط فرمان برای بازیابی، ذخیره (cache) و دسترسی به محتوای شبکه‌ای است.\n"
+"به طور پیش‌فرض، netcache نسخه ذخیره شده یک URL داده شده را برمی‌گرداند و تنها در صورتی "
+"آن را دانلود می‌کند که نسخه ذخیره شده وجود نداشته باشد. مدت اعتبار به ثانیه نیز می‌تواند "
+"داده شود تا netcache تنها در صورتی محتوا را دانلود کند که کش موجود قدیمی‌تر از اعتبار باشد."
+
+#: netcache.py:1243
+msgid "return path to the cache instead of the content of the cache"
+msgstr "برگرداندن مسیر فایل کش به جای محتوای کش"
+
+#: netcache.py:1248
+msgid ""
+"return a list of id's for the gemini-site instead of the content of the cache"
+msgstr "برگرداندن لیستی از شناسه‌ها برای سایت جمینای به جای محتوای کش"
+
+#: netcache.py:1253
+msgid "Do not attempt to download, return cached version or error"
+msgstr "تلاش نکردن برای دانلود، برگرداندن نسخه کش شده یا خطا"
+
+#: netcache.py:1258
+msgid "Cancel download of items above that size (value in Mb)."
+msgstr "لغو دانلود آیتم‌های بالاتر از آن اندازه (مقدار به مگابایت)."
+
+#: netcache.py:1263
+msgid "Time to wait before cancelling connection (in second)."
+msgstr "زمان انتظار قبل از لغو اتصال (به ثانیه)."
+
+#: netcache.py:1269 openk.py:393 opnk.py:393
+msgid ""
+"maximum age, in second, of the cached version "
+"before                                 redownloading a new version"
+msgstr "حداکثر عمر (به ثانیه) نسخه کش شده قبل از دانلود مجدد نسخه جدید"
+
+#: netcache.py:1277
+msgid "download URL and returns the content or the path to a cached version"
+msgstr "دانلود URL و برگرداندن محتوا یا مسیر به نسخه کش شده"
+
+#: offpunk.py:74
+msgid "Install xsel/xclip (X11) or wl-clipboard (Wayland) to use copy"
+msgstr "برای استفاده از کپی، xsel/xclip (برای X11) یا wl-clipboard (برای Wayland) را نصب کنید"
+
+#: offpunk.py:102
+msgid ""
+"Install xsel/xclip (X11) or wl-clipboard (Wayland) to get URLs from your "
+"clipboard"
+msgstr ""
+"برای دریافت URLها از کلیپ‌بورد، xsel/xclip (برای X11) یا wl-clipboard (برای Wayland) را نصب کنید"
+
+#: offpunk.py:156
+msgid "You need to 'go' somewhere, first"
+msgstr "ابتدا باید به جایی بروید ('go')"
+
+#: offpunk.py:165
+msgid "Error: "
+msgstr "خطا: "
+
+#: offpunk.py:343
+#, python-format
+msgid "We don’t handle name of URL: %s"
+msgstr "ما نام URL: %s را مدیریت نمی‌کنیم"
+
+#: offpunk.py:387
+#, python-format
+msgid "%s not available, marked for syncing"
+msgstr "%s در دسترس نیست، برای همگام‌سازی علامت‌گذاری شد"
+
+#: offpunk.py:389 offpunk.py:1068
+#, python-format
+msgid "%s already marked for syncing"
+msgstr "%s قبلاً برای همگام‌سازی علامت‌گذاری شده است"
+
+#: offpunk.py:452 offpunk.py:1411
+msgid "What?"
+msgstr "چی؟"
+
+#: offpunk.py:456
+msgid "No links to index"
+msgstr "هیچ لینکی برای ایندکس کردن نیست"
+
+#: offpunk.py:464
+msgid "No page with links"
+msgstr "هیچ صفحه‌ای با لینک نیست"
+
+#: offpunk.py:472
+#, python-format
+msgid "%s is redirected to %s"
+msgstr "%s به %s تغییر مسیر داده شده است"
+
+#: offpunk.py:474
+#, python-format
+msgid "Please add a destination to redirect %s"
+msgstr "لطفاً مقصدی برای تغییر مسیر %s اضافه کنید"
+
+#: offpunk.py:480
+#, python-format
+msgid "Redirection for %s has been removed"
+msgstr "تغییر مسیر برای %s حذف شده است"
+
+#: offpunk.py:482
+#, python-format
+msgid "%s was not redirected. Nothing has changed."
+msgstr "%s تغییر مسیر نداشت. چیزی تغییر نکرد."
+
+#: offpunk.py:485
+#, python-format
+msgid "%s will now be blocked"
+msgstr "%s اکنون مسدود خواهد شد"
+
+#: offpunk.py:488
+#, python-format
+msgid "%s will now be redirected to %s"
+msgstr "%s اکنون به %s تغییر مسیر داده خواهد شد"
+
+#: offpunk.py:492
+msgid "Current redirections:\n"
+msgstr "تغییر مسیرهای فعلی:\n"
+
+#: offpunk.py:496
+msgid ""
+"\n"
+"To add new, use \"redirect origin.com destination.org\""
+msgstr ""
+"\n"
+"برای افزودن جدید، از \"redirect origin.com destination.org\" استفاده کنید"
+
+#: offpunk.py:497
+msgid ""
+"\n"
+"To remove a redirect, use \"redirect origin.com NONE\""
+msgstr ""
+"\n"
+"برای حذف یک تغییر مسیر، از \"redirect origin.com NONE\" استفاده کنید"
+
+#: offpunk.py:499
+msgid ""
+"\n"
+"To completely block a website, use \"redirect origin.com BLOCK\""
+msgstr ""
+"\n"
+"برای مسدود کردن کامل یک وب‌سایت، از \"redirect origin.com BLOCK\" استفاده کنید"
+
+#: offpunk.py:501
+msgid ""
+"\n"
+"To block also subdomains, prefix with *: \"redirect *origin.com BLOCK\""
+msgstr ""
+"\n"
+"برای مسدود کردن زیردامنه‌ها نیز، با * پیشوند بگذارید: \"redirect *origin.com BLOCK\""
+
+#: offpunk.py:516 offpunk.py:521
+#, python-format
+msgid "Unrecognised option %s"
+msgstr "گزینه ناشناخته %s"
+
+#: offpunk.py:526
+msgid "TLS mode must be `ca` or `tofu`!"
+msgstr "حالت TLS باید `ca` یا `tofu` باشد!"
+
+#: offpunk.py:530
+msgid "Only high security certificates are now accepted"
+msgstr "اکنون تنها گواهی‌های با امنیت بالا پذیرفته می‌شوند"
+
+#: offpunk.py:532
+msgid "Low security SSL certificates are now accepted"
+msgstr "گواهی‌های SSL با امنیت پایین اکنون پذیرفته می‌شوند"
+
+#. TRANSLATORS keep accept_bad_ssl_certificates, True, and False
+#: offpunk.py:535
+msgid "accept_bad_ssl_certificates should be True or False"
+msgstr "accept_bad_ssl_certificates باید True یا False باشد"
+
+#: offpunk.py:540
+msgid "changing width to "
+msgstr "تغییر عرض به "
+
+#: offpunk.py:543
+#, python-format
+msgid "%s is not a valid width (integer required)"
+msgstr "%s یک عرض معتبر نیست (عدد صحیح لازم است)"
+
+#: offpunk.py:546
+msgid "Available linkmode are `none` and `end`."
+msgstr "linkmode های موجود `none` و `end` هستند."
+
+#: offpunk.py:597
+msgid "Available preset themes are: "
+msgstr "تم‌های پیش‌فرض موجود عبارتند از: "
+
+#: offpunk.py:613
+#, python-format
+msgid "%s is not a valid preset theme"
+msgstr "%s یک تم پیش‌فرض معتبر نیست"
+
+#: offpunk.py:615
+#, python-format
+msgid "%s is not a valid theme element"
+msgstr "%s یک عنصر تم معتبر نیست"
+
+#: offpunk.py:616
+msgid "Valid theme elements are: "
+msgstr "عناصر تم معتبر عبارتند از: "
+
+#: offpunk.py:628
+#, python-format
+msgid "%s is set to %s"
+msgstr "%s روی %s تنظیم شده است"
+
+#: offpunk.py:633
+#, python-format
+msgid "%s reset (it was set to %s)"
+msgstr "%s بازنشانی شد (قبلاً روی %s تنظیم شده بود)"
+
+#: offpunk.py:636
+#, python-format
+msgid "%s is not set. Nothing to do"
+msgstr "%s تنظیم نشده است. کاری برای انجام نیست"
+
+#: offpunk.py:641
+#, python-format
+msgid "%s is not a valid color"
+msgstr "%s یک رنگ معتبر نیست"
+
+#: offpunk.py:642
+msgid "Valid colors are one of: "
+msgstr "رنگ‌های معتبر یکی از این‌ها هستند: "
+
+#: offpunk.py:679
+#, python-format
+msgid "No handler set for MIME type %s"
+msgstr "هیچ متصدی (handler) برای نوع MIME %s تنظیم نشده است"
+
+#: offpunk.py:705 offpunk.py:713
+#, python-format
+msgid "%s is a command and cannot be aliased"
+msgstr "%s یک دستور است و نمی‌تواند نام مستعار داشته باشد"
+
+#: offpunk.py:707
+#, python-format
+msgid "%s is currently aliased to \"%s\""
+msgstr "%s در حال حاضر نام مستعار \"%s\" است"
+
+#: offpunk.py:709
+#, python-format
+msgid "there’s no alias for \"%s\""
+msgstr "هیچ نام مستعاری برای \"%s\" وجود ندارد"
+
+#: offpunk.py:716
+#, python-format
+msgid "%s has been aliased to \"%s\""
+msgstr "%s به عنوان نام مستعار برای \"%s\" تنظیم شده است"
+
+#: offpunk.py:722
+msgid "Offline and undisturbed."
+msgstr "آفلاین و بدون مزاحمت."
+
+#: offpunk.py:726
+msgid "Offpunk is now offline and will only access cached content"
+msgstr "آف‌پانک اکنون آفلاین است و تنها به محتوای کش شده دسترسی خواهد داشت"
+
+#: offpunk.py:733
+msgid "Offpunk is online and will access the network"
+msgstr "آف‌پانک آنلاین است و به شبکه دسترسی خواهد داشت"
+
+#: offpunk.py:735
+msgid "Already online. Try offline."
+msgstr "هم‌اکنون آنلاین است. آفلاین را امتحان کنید."
+
+#: offpunk.py:784
+#, python-format
+msgid "%s is not a recognized argument to copy"
+msgstr "%s یک آرگومان شناخته شده برای کپی نیست"
+
+#: offpunk.py:786
+msgid "No content to copy, visit a page first"
+msgstr "محتوایی برای کپی نیست، ابتدا یک صفحه را بازدید کنید"
+
+#: offpunk.py:802
+#, python-format
+msgid "We cannot share %s because it is local only"
+msgstr "نمی‌توانیم %s را به اشتراک بگذاریم چون فقط محلی است"
+
+#: offpunk.py:814
+msgid "TODO: sharing text is not yet implemented"
+msgstr "TODO: اشتراک‌گذاری متن هنوز پیاده‌سازی نشده است"
+
+#: offpunk.py:831 offpunk.py:958
+msgid "Nothing to share, visit a page first"
+msgstr "چیزی برای اشتراک نیست، ابتدا یک صفحه را بازدید کنید"
+
+#: offpunk.py:897
+msgid "Multiple emails addresses were found:"
+msgstr "چندین آدرس ایمیل پیدا شد:"
+
+#: offpunk.py:902
+msgid "None of the above"
+msgstr "هیچکدام از موارد بالا"
+
+#: offpunk.py:904
+msgid "Which email will you use to reply?"
+msgstr "از کدام ایمیل برای پاسخ استفاده خواهید کرد؟"
+
+#: offpunk.py:916
+msgid "Enter the contact email for this page?"
+msgstr "وارد کردن ایمیل تماس برای این صفحه؟"
+
+#: offpunk.py:925
+msgid "Email address:"
+msgstr "آدرس ایمیل:"
+
+#: offpunk.py:926
+msgid "Do you want to save this email as a contact for"
+msgstr "آیا می‌خواهید این ایمیل را به عنوان مخاطب ذخیره کنید برای"
+
+#: offpunk.py:927
+msgid "Current page only"
+msgstr "فقط صفحه جاری"
+
+#: offpunk.py:928
+#, python-format
+msgid "The whole %s space"
+msgstr "کل فضای %s"
+
+#: offpunk.py:929
+msgid "Don’t save this email"
+msgstr "این ایمیل را ذخیره نکن"
+
+#: offpunk.py:931
+msgid "Your choice?"
+msgstr "انتخاب شما؟"
+
+#: offpunk.py:949
+#, python-format
+msgid "Email %s has been recorded as contact for %s"
+msgstr "ایمیل %s به عنوان مخاطب برای %s ثبت شد"
+
+#: offpunk.py:950
+msgid "Nothing to save"
+msgstr "چیزی برای ذخیره نیست"
+
+#: offpunk.py:953
+msgid "In reply to "
+msgstr "در پاسخ به "
+
+#: offpunk.py:956
+#, python-format
+msgid "We cannot reply to %s because it is local only"
+msgstr "نمی‌توانیم به %s پاسخ دهیم چون فقط محلی است"
+
+#: offpunk.py:977
+msgid "Too many arguments to list."
+msgstr "آرگومان‌های بیش از حد برای list."
+
+#: offpunk.py:980 offpunk.py:1002
+msgid "URL required (or visit a page)."
+msgstr "URL لازم است (یا بازدید از یک صفحه)."
+
+#: offpunk.py:984
+msgid "Cookies not enabled for url"
+msgstr "کوکی‌ها برای url فعال نیستند"
+
+#: offpunk.py:986
+msgid "Cookies for url:"
+msgstr "کوکی‌ها برای url:"
+
+#. TRANSLATORS domain, path, expiration time, name, value
+#: offpunk.py:989
+#, python-format
+msgid "%s %s expires:%s %s=%s"
+msgstr "%s %s انقضا:%s %s=%s"
+
+#: offpunk.py:994
+msgid "File parameter required for import."
+msgstr "پارامتر فایل برای import لازم است."
+
+#: offpunk.py:999
+msgid "Too many arguments to import"
+msgstr "آرگومان‌های بیش از حد برای import"
+
+#: offpunk.py:1009
+msgid "File not found"
+msgstr "فایل یافت نشد"
+
+#: offpunk.py:1011
+msgid "Imported."
+msgstr "وارد شد."
+
+#: offpunk.py:1013
+msgid "Huh?"
+msgstr "هان؟"
+
+#: offpunk.py:1026
+msgid "URLs in your clipboard\n"
+msgstr "آدرس‌ها در کلیپ‌بورد شما\n"
+
+#: offpunk.py:1031
+msgid "Where do you want to go today ?> "
+msgstr "امروز می‌خواهید کجا بروید ?> "
+
+#: offpunk.py:1038
+msgid "Go where? (hint: simply copy an URL in your clipboard)"
+msgstr "کجا برود؟ (راهنما: به سادگی یک URL را در کلیپ‌بورد خود کپی کنید)"
+
+#: offpunk.py:1057
+#, python-format
+msgid "%s is not a valid URL to go"
+msgstr "%s یک URL معتبر برای رفتن نیست"
+
+#: offpunk.py:1066
+#, python-format
+msgid "%s marked for syncing"
+msgstr "%s برای همگام‌سازی علامت‌گذاری شد"
+
+#: offpunk.py:1089
+msgid "Up only take integer as arguments"
+msgstr "Up تنها عدد صحیح به عنوان آرگومان می‌پذیرد"
+
+#: offpunk.py:1144
+msgid "End of tour."
+msgstr "پایان تور."
+
+#: offpunk.py:1164
+#, python-format
+msgid "List %s does not exist. Cannot add it to tour"
+msgstr "لیست %s وجود ندارد. نمی‌توان آن را به تور اضافه کرد"
+
+#: offpunk.py:1191
+#, python-format
+msgid "Invalid use of range syntax %s, skipping"
+msgstr "استفاده نامعتبر از نحو دامنه %s، رد شدن"
+
+#: offpunk.py:1193 offpunk.py:1560
+#, python-format
+msgid "Non-numeric index %s, skipping."
+msgstr "ایندکس غیر عددی %s، رد شدن."
+
+#: offpunk.py:1195 offpunk.py:1562
+#, python-format
+msgid "Invalid index %d, skipping."
+msgstr "ایندکس نامعتبر %d، رد شدن."
+
+#: offpunk.py:1237
+msgid "Invalid mark, must be one letter"
+msgstr "علامت نامعتبر، باید یک حرف باشد"
+
+#. TRANSLATORS: this string and "Mime", "Cache", "Renderer" are formatted to align.
+#. if you can obtain the same effect in your language, try to do it ;)
+#. they are displayed with the "info" command
+#: offpunk.py:1248
+msgid "URL      :   "
+msgstr "آدرس     :   "
+
+#: offpunk.py:1249
+msgid "Mime     :   "
+msgstr "نوع Mime :   "
+
+#: offpunk.py:1250
+msgid "Cache    :   "
+msgstr "کش       :   "
+
+#: offpunk.py:1256
+msgid "Renderer :   "
+msgstr "رندرکننده:   "
+
+#: offpunk.py:1257
+msgid "Cleaned with : "
+msgstr "پاک شده با : "
+
+#: offpunk.py:1263
+msgid "Page appeared in following lists :\n"
+msgstr "صفحه در لیست‌های زیر ظاهر شده است :\n"
+
+#: offpunk.py:1266
+msgid "normal list"
+msgstr "لیست عادی"
+
+#: offpunk.py:1268
+msgid "subscription"
+msgstr "اشتراک"
+
+#: offpunk.py:1270
+msgid "frozen list"
+msgstr "لیست فریز شده"
+
+#: offpunk.py:1276
+msgid "Page is not save in any list"
+msgstr "صفحه در هیچ لیستی ذخیره نشده است"
+
+#: offpunk.py:1294
+msgid "System: "
+msgstr "سیستم: "
+
+#: offpunk.py:1295
+msgid "Python: "
+msgstr "پایتون: "
+
+#: offpunk.py:1296
+msgid "Language: "
+msgstr "زبان: "
+
+#: offpunk.py:1297
+msgid ""
+"\n"
+"Highly recommended:\n"
+msgstr ""
+"\n"
+"بسیار توصیه شده:\n"
+
+#: offpunk.py:1299
+msgid ""
+"\n"
+"Web browsing:\n"
+msgstr ""
+"\n"
+"مرور وب:\n"
+
+#: offpunk.py:1306
+msgid ""
+"\n"
+"Nice to have:\n"
+msgstr ""
+"\n"
+"خوب است داشته باشید:\n"
+
+#: offpunk.py:1313
+msgid ""
+"\n"
+"Features :\n"
+msgstr ""
+"\n"
+"ویژگی‌ها :\n"
+
+#: offpunk.py:1314
+msgid " - Render images (chafa or timg)              : "
+msgstr " - رندر تصاویر (chafa یا timg)              : "
+
+#: offpunk.py:1317
+msgid " - Render HTML (bs4, readability)             : "
+msgstr " - رندر HTML (bs4, readability)             : "
+
+#: offpunk.py:1320
+msgid " - Render Atom/RSS feeds (feedparser)         : "
+msgstr " - رندر فیدهای Atom/RSS (feedparser)        : "
+
+#: offpunk.py:1323
+msgid " - Connect to http/https (requests)           : "
+msgstr " - اتصال به http/https (requests)           : "
+
+#: offpunk.py:1326
+msgid " - Detect text encoding (python-chardet)      : "
+msgstr " - تشخیص کدگذاری متن (python-chardet)       : "
+
+#: offpunk.py:1329
+msgid " - restore last position (less 572+)          : "
+msgstr " - بازیابی آخرین موقعیت (less 572+)         : "
+
+#: offpunk.py:1333
+msgid "ftr_site_config     : "
+msgstr "ftr_site_config     : "
+
+#: offpunk.py:1334
+msgid "Config directory    : "
+msgstr "دایرکتوری پیکربندی  : "
+
+#: offpunk.py:1335
+msgid "User Data directory : "
+msgstr "دایرکتوری داده کاربر: "
+
+#: offpunk.py:1336
+msgid "Cache directory     : "
+msgstr "دایرکتوری کش        : "
+
+#: offpunk.py:1349
+msgid "Found a bug in Offpunk? You can report it by email to the developers."
+msgstr "باگی در Offpunk پیدا کردید؟ می‌توانید آن را با ایمیل به توسعه‌دهندگان گزارش دهید."
+
+#: offpunk.py:1351
+msgid "Please describe your problem as clearly as possible:"
+msgstr "لطفاً مشکل خود را تا حد امکان واضح شرح دهید:"
+
+#: offpunk.py:1352
+msgid ""
+"Include all the steps to reproduce the problem, including the URLs you are "
+"currently visiting."
+msgstr ""
+"تمام مراحل بازتولید مشکل، شامل URLهایی که در حال بازدید هستید را بگنجانید."
+
+#: offpunk.py:1353 offpunk.py:2246
+msgid "Another point: always use \"reply-all\" when replying to this list."
+msgstr "یک نکته دیگر: همیشه هنگام پاسخ به این لیست از \"reply-all\" استفاده کنید."
+
+#: offpunk.py:1355
+msgid "Describe the bug in one line: "
+msgstr "باگ را در یک خط شرح دهید: "
+
+#: offpunk.py:1360
+msgid "No description of the bug, report cancelled"
+msgstr "بدون شرح باگ، گزارش لغو شد"
+
+#: offpunk.py:1406
+msgid "Please enter the number of the XKCD comic you want to see"
+msgstr "لطفاً شماره کمیک XKCD که می‌خواهید ببینید را وارد کنید"
+
+#: offpunk.py:1474
+msgid "Current page is already a feed"
+msgstr "صفحه فعلی خودش یک فید است"
+
+#: offpunk.py:1476
+msgid "No feed found on current page"
+msgstr "هیچ فیدی در صفحه فعلی یافت نشد"
+
+#: offpunk.py:1479
+msgid "Available feeds :\n"
+msgstr "فیدهای موجود :\n"
+
+#: offpunk.py:1484
+msgid "Which view do you want to see ? >"
+msgstr "کدام نما را می‌خواهید ببینید ؟ >"
+
+#. TRANSLATORS keep "view feed" and "feed" in English, those are literal commands
+#: offpunk.py:1508
+msgid "view feed is deprecated. Use the command feed directly"
+msgstr "view feed منسوخ شده است. مستقیماً از دستور feed استفاده کنید"
+
+#: offpunk.py:1517
+#, python-format
+msgid "Link %s is: %s"
+msgstr "لینک %s است: %s"
+
+#: offpunk.py:1525
+msgid "Empty cached version"
+msgstr "نسخه کش شده خالی"
+
+#: offpunk.py:1526
+#, python-format
+msgid "Last cached on %s"
+msgstr "آخرین بار کش شده در %s"
+
+#: offpunk.py:1528
+msgid "No cached version for this link"
+msgstr "هیچ نسخه کش شده‌ای برای این لینک وجود ندارد"
+
+#. TRANSLATORS keep "normal, full, switch, source" in English
+#: offpunk.py:1533
+msgid "Valid arguments for view are : normal, full, switch, source or a number"
+msgstr "آرگومان‌های معتبر برای view عبارتند از: normal, full, switch, source یا یک عدد"
+
+#: offpunk.py:1607
+msgid "You cannot save if not cached!"
+msgstr "اگر کش نشده باشد نمی‌توانید ذخیره کنید!"
+
+#: offpunk.py:1630
+msgid "First argument is not a valid item index!"
+msgstr "آرگومان اول یک ایندکس آیتم معتبر نیست!"
+
+#: offpunk.py:1634
+msgid "You must provide an index, a filename, or both."
+msgstr "باید یک ایندکس، یک نام فایل، یا هر دو را ارائه دهید."
+
+#: offpunk.py:1643
+msgid "Index too high!"
+msgstr "ایندکس خیلی بالا است!"
+
+#: offpunk.py:1654
+#, python-format
+msgid "File %s already exists!"
+msgstr "فایل %s از قبل وجود دارد!"
+
+#: offpunk.py:1661
+#, python-format
+msgid "Can’t save %s because it’s a folder, not a file"
+msgstr "نمی‌توان %s را ذخیره کرد چون یک پوشه است، نه یک فایل"
+
+#: offpunk.py:1663
+#, python-format
+msgid "Saved to %s"
+msgstr "ذخیره شد در %s"
+
+#: offpunk.py:1728
+msgid ""
+"Subscriptions #subscribed (new links in those pages will be added to tour)"
+msgstr ""
+"اشتراک‌ها #subscribed (لینک‌های جدید در این صفحات به تور اضافه خواهند شد)"
+
+#: offpunk.py:1730
+msgid "Links requested and to be fetched during the next --sync"
+msgstr "لینک‌های درخواست شده و قابل دریافت در --sync بعدی"
+
+#: offpunk.py:1745
+msgid "Multiple feeds have been found :\n"
+msgstr "چندین فید پیدا شد :\n"
+
+#: offpunk.py:1747
+msgid "This page is already a feed:\n"
+msgstr "این صفحه خودش یک فید است:\n"
+
+#: offpunk.py:1749
+msgid "No feed detected. You can still watch the page :\n"
+msgstr "هیچ فیدی تشخیص داده نشد. هنوز می‌توانید صفحه را زیر نظر داشته باشید :\n"
+
+#: offpunk.py:1760
+#, python-format
+msgid "\t -> (already subscribed through lists %s)\n"
+msgstr "\t -> (قبلاً از طریق لیست‌های %s مشترک شده‌اید)\n"
+
+#: offpunk.py:1763
+msgid "Which feed do you want to subscribe ? > "
+msgstr "کدام فید را می‌خواهید مشترک شوید ؟ > "
+
+#: offpunk.py:1772
+#, python-format
+msgid "Subscribed to %s"
+msgstr "مشترک شد در %s"
+
+#: offpunk.py:1774
+#, python-format
+msgid "You are already subscribed to %s"
+msgstr "شما قبلاً مشترک %s شده‌اید"
+
+#: offpunk.py:1776
+msgid "No subscription registered"
+msgstr "هیچ اشتراکی ثبت نشد"
+
+#: offpunk.py:1785
+msgid "bookmarks command takes a single integer argument!"
+msgstr "دستور bookmarks یک آرگومان عدد صحیح تکی می‌گیرد!"
+
+#: offpunk.py:1800 offpunk.py:2052
+#, python-format
+msgid "Removed from %s"
+msgstr "حذف شد از %s"
+
+#: offpunk.py:1804
+#, python-format
+msgid "Archiving: %s"
+msgstr "آرشیو کردن: %s"
+
+#: offpunk.py:1806
+#, python-format
+msgid "Current maximum size of archives : %s"
+msgstr "حداکثر اندازه فعلی آرشیوها : %s"
+
+#: offpunk.py:1829 offpunk.py:1975 offpunk.py:1994
+#, python-format
+msgid "List %s does not exist. Create it with list create %s"
+msgstr "لیست %s وجود ندارد. آن را با list create %s ایجاد کنید"
+
+#: offpunk.py:1841
+#, python-format
+msgid "%s already in %s."
+msgstr "%s قبلاً در %s است."
+
+#: offpunk.py:1848
+#, python-format
+msgid "%s has updated mode in %s to %s"
+msgstr "%s حالت را در %s به %s به‌روزرسانی کرد"
+
+#. TRANSLATORS parameters are url, list
+#: offpunk.py:1855
+#, python-format
+msgid "%s added to %s"
+msgstr "%s اضافه شد به %s"
+
+#: offpunk.py:1862
+msgid ", archived on "
+msgstr "، آرشیو شد در "
+
+#: offpunk.py:1864
+msgid ", visited on "
+msgstr "، بازدید شد در "
+
+#. TRANSLATORS parameter is a "list" name
+#: offpunk.py:1867
+#, python-format
+msgid ", added to %s on "
+msgstr "، اضافه شد به %s در "
+
+#. TRANSLATORS keep 'go_to_line' as is
+#: offpunk.py:1981
+msgid "go_to_line requires a number as parameter"
+msgstr "go_to_line به یک عدد به عنوان پارامتر نیاز دارد"
+
+#: offpunk.py:2016
+#, python-format
+msgid "%s is not allowed as a name for a list"
+msgstr "%s به عنوان نام برای یک لیست مجاز نیست"
+
+#: offpunk.py:2028
+#, python-format
+msgid "list created. Display with `list %s`"
+msgstr "لیست ایجاد شد. نمایش با `list %s`"
+
+#: offpunk.py:2030
+#, python-format
+msgid "list %s already exists"
+msgstr "لیست %s از قبل وجود دارد"
+
+#: offpunk.py:2037
+msgid "LIST argument is required as the target for your move"
+msgstr "آرگومان LIST به عنوان مقصد جابجایی شما لازم است"
+
+#: offpunk.py:2044
+#, python-format
+msgid "%s is not a list, aborting the move"
+msgstr "%s یک لیست نیست، لغو جابجایی"
+
+#: offpunk.py:2103
+#, python-format
+msgid "List %s has been marked as %s"
+msgstr "لیست %s به عنوان %s علامت‌گذاری شده است"
+
+#: offpunk.py:2105
+#, python-format
+msgid "List %s is now a normal list"
+msgstr "لیست %s اکنون یک لیست عادی است"
+
+#: offpunk.py:2145
+msgid "No lists yet. Use `list create`"
+msgstr "هنوز لیستی وجود ندارد. از `list create` استفاده کنید"
+
+#: offpunk.py:2156
+msgid "A name is required to create a new list. Use `list create NAME`"
+msgstr "یک نام برای ایجاد لیست جدید لازم است. از `list create NAME` استفاده کنید"
+
+#: offpunk.py:2177
+msgid "Please set a valid editor with \"set editor\""
+msgstr "لطفاً یک ویرایشگر معتبر با \"set editor\" تنظیم کنید"
+
+#: offpunk.py:2179
+msgid "A valid list name is required to edit a list"
+msgstr "یک نام لیست معتبر برای ویرایش لیست لازم است"
+
+#: offpunk.py:2181
+msgid "No valid editor has been found."
+msgstr "هیچ ویرایشگر معتبری یافت نشد."
+
+#: offpunk.py:2183
+msgid "You can use the following command to set your favourite editor:"
+msgstr "می‌توانید از دستور زیر برای تنظیم ویرایشگر مورد علاقه خود استفاده کنید:"
+
+#. TRANSLATORS keep 'set editor', it's a command
+#: offpunk.py:2186
+msgid "set editor EDITOR"
+msgstr "set editor EDITOR"
+
+#: offpunk.py:2187
+msgid "or use the $VISUAL or $EDITOR environment variables."
+msgstr "یا از متغیرهای محیطی $VISUAL یا $EDITOR استفاده کنید."
+
+#: offpunk.py:2191
+#, python-format
+msgid "%s is a system list which cannot be deleted"
+msgstr "%s یک لیست سیستمی است که قابل حذف نیست"
+
+#: offpunk.py:2194
+#, python-format
+msgid "Are you sure you want to delete %s ?\n"
+msgstr "آیا مطمئن هستید که می‌خواهید %s را حذف کنید ؟\n"
+
+#: offpunk.py:2197
+#, python-format
+msgid "! %s items in the list will be lost !\n"
+msgstr "! %s آیتم در لیست از دست خواهند رفت !\n"
+
+#: offpunk.py:2201
+msgid "The list is empty, it should be safe to delete it.\n"
+msgstr "لیست خالی است، حذف آن باید امن باشد.\n"
+
+#: offpunk.py:2204
+#, python-format
+msgid "Type \"%s\" (in capital, without quotes) to confirm :"
+msgstr "برای تایید، \"%s\" را (با حروف بزرگ، بدون نقل قول) تایپ کنید :"
+
+#: offpunk.py:2211
+#, python-format
+msgid "* * * %s has been deleted"
+msgstr "* * * %s حذف شده است"
+
+#: offpunk.py:2213 offpunk.py:2215
+msgid "A valid list name is required to be deleted"
+msgstr "یک نام لیست معتبر برای حذف شدن لازم است"
+
+#: offpunk.py:2219
+#, python-format
+msgid "You cannot modify %s which is a system list"
+msgstr "شما نمی‌توانید %s را که یک لیست سیستمی است تغییر دهید"
+
+#: offpunk.py:2229
+#, python-format
+msgid "A valid list name is required after %s"
+msgstr "یک نام لیست معتبر بعد از %s لازم است"
+
+#: offpunk.py:2240
+msgid ""
+"Need help from a fellow human? Simply send an email to the offpunk-users "
+"list."
+msgstr ""
+"از یک انسان هم‌نوع کمک می‌خواهید؟ کافیست یک ایمیل به لیست offpunk-users بفرستید."
+
+#: offpunk.py:2243
+msgid "Describe your problem/question as clearly as possible."
+msgstr "مشکل/سوال خود را تا حد امکان واضح شرح دهید."
+
+#: offpunk.py:2244
+msgid "Don’t forget to present yourself and why you would like to use Offpunk!"
+msgstr "فراموش نکنید خودتان را معرفی کنید و بگویید چرا می‌خواهید از آف‌پانک استفاده کنید!"
+
+#: offpunk.py:2249
+msgid "! is an alias for 'shell'"
+msgstr "! یک نام مستعار برای 'shell' است"
+
+#: offpunk.py:2251
+msgid "? is an alias for 'help'"
+msgstr "? یک نام مستعار برای 'help' است"
+
+#: offpunk.py:2254
+#, python-format
+msgid "%s is an alias for '%s'"
+msgstr "%s یک نام مستعار برای '%s' است"
+
+#: offpunk.py:2255
+msgid "See the list of aliases with 'abbrevs'"
+msgstr "لیست نام‌های مستعار را با 'abbrevs' ببینید"
+
+#: offpunk.py:2256
+#, python-format
+msgid "'help %s':"
+msgstr "'help %s':"
+
+#: offpunk.py:2280
+msgid "Sync can only be achieved online. Change status with `online`."
+msgstr "همگام‌سازی فقط به صورت آنلاین ممکن است. وضعیت را با `online` تغییر دهید."
+
+#: offpunk.py:2285
+msgid "sync argument should be the cache validity expressed in seconds"
+msgstr "آرگومان sync باید اعتبار کش بیان شده به ثانیه باشد"
+
+#: offpunk.py:2303
+#, python-format
+msgid "  -> adding to tour: %s"
+msgstr "  -> افزودن به تور: %s"
+
+#: offpunk.py:2329
+#, python-format
+msgid "%s [%s/%s] Fetch "
+msgstr "%s [%s/%s] دریافت "
+
+#: offpunk.py:2382
+#, python-format
+msgid " * * * %s to fetch in %s * * *"
+msgstr " * * * %s برای دریافت در %s * * *"
+
+#: offpunk.py:2436
+msgid "End of sync"
+msgstr "پایان همگام‌سازی"
+
+#: offpunk.py:2443
+msgid "You can close your screen!"
+msgstr "می‌توانید صفحه خود را ببندید!"
+
+#: offpunk.py:2454
+msgid "start with your list of bookmarks"
+msgstr "شروع با لیست نشانه‌های شما"
+
+#: offpunk.py:2460
+msgid "Launch this command after startup"
+msgstr "اجرای این دستور پس از شروع"
+
+#: offpunk.py:2465
+msgid "use this particular config file instead of default"
+msgstr "استفاده از این فایل پیکربندی خاص به جای پیش‌فرض"
+
+#: offpunk.py:2470
+msgid ""
+"run non-interactively to build cache by exploring lists "
+"passed                                 as argument. Without argument, all "
+"lists are fetched."
+msgstr ""
+"اجرا به صورت غیر تعاملی برای ساخت کش با کاوش لیست‌های داده شده به عنوان آرگومان. "
+"بدون آرگومان، تمام لیست‌ها دریافت می‌شوند."
+
+#: offpunk.py:2476
+msgid ""
+"assume-yes when asked questions about certificates/redirections during sync "
+"(lower security)"
+msgstr ""
+"فرض پاسخ بله (assume-yes) هنگام سوال درباره گواهی‌ها/تغییر مسیرها در همگام‌سازی (امنیت پایین‌تر)"
+
+#: offpunk.py:2481
+msgid "do not try to get http(s) links (but already cached will be displayed)"
+msgstr "تلاش نکردن برای دریافت لینک‌های http(s) (اما کش شده‌های قبلی نمایش داده می‌شوند)"
+
+#: offpunk.py:2486
+msgid "run non-interactively with an URL as argument to fetch it later"
+msgstr "اجرا به صورت غیر تعاملی با یک URL به عنوان آرگومان برای دریافت بعدی آن"
+
+#: offpunk.py:2490
+msgid ""
+"depth of the cache to build. Default is 1. More is crazy. Use at your own "
+"risks!"
+msgstr ""
+"عمق کش برای ساختن. پیش‌فرض ۱ است. بیشتر از آن دیوانگی است. با مسئولیت خودتان استفاده کنید!"
+
+#: offpunk.py:2494
+msgid ""
+"the mode to use to choose which images to download in a HTML "
+"page.                             one of (None, readable, full). Warning: "
+"full will slowdown your sync."
+msgstr ""
+"حالت مورد استفاده برای انتخاب تصاویر جهت دانلود در یک صفحه HTML. "
+"یکی از (None, readable, full). هشدار: full سرعت همگام‌سازی شما را کم می‌کند."
+
+#: offpunk.py:2499
+msgid "duration for which a cache is valid before sync (seconds)"
+msgstr "مدت زمانی که کش قبل از همگام‌سازی معتبر است (ثانیه)"
+
+#: offpunk.py:2502
+msgid "display version information and quit"
+msgstr "نمایش اطلاعات نسخه و خروج"
+
+#: offpunk.py:2507
+msgid "display available features and dependencies then quit"
+msgstr "نمایش ویژگی‌ها و وابستگی‌های موجود سپس خروج"
+
+#: offpunk.py:2513
+msgid "Arguments should be URL to be fetched or, if --sync is used, lists"
+msgstr "آرگومان‌ها باید URL برای دریافت باشند یا، اگر --sync استفاده شده، لیست‌ها"
+
+#: offpunk.py:2527
+msgid "Creating config directory {}"
+msgstr "ایجاد دایرکتوری پیکربندی {}"
+
+#: offpunk.py:2559
+#, python-format
+msgid "%s is not a valid URL to fetch"
+msgstr "%s یک URL معتبر برای دریافت نیست"
+
+#: offpunk.py:2561
+msgid "--fetch-later requires an URL (or a list of URLS) as argument"
+msgstr "--fetch-later به یک URL (یا لیستی از URLها) به عنوان آرگومان نیاز دارد"
+
+#: offpunk.py:2589
+msgid "Welcome to Offpunk!"
+msgstr "به آف‌پانک خوش آمدید!"
+
+#. TRANSLATORS keep 'help', it's a literal command
+#: offpunk.py:2591
+msgid "Type `help` to get the list of available command."
+msgstr "برای دریافت لیست دستورات موجود `help` را تایپ کنید."
+
+#: offutils.py:153
+#, python-format
+msgid "No XDG folder for %s. Check your code."
+msgstr "هیچ پوشه XDG برای %s وجود ندارد. کد خود را بررسی کنید."
+
+#: offutils.py:166
+#, python-format
+msgid "Using config %s"
+msgstr "استفاده از پیکربندی %s"
+
+#: offutils.py:179
+#, python-format
+msgid "Skipping startup command \"%s\" due to provided URL"
+msgstr "رد کردن دستور شروع \"%s\" به دلیل URL ارائه شده"
+
+#: offutils.py:391
+#, python-format
+msgid "%s is not a valid email address"
+msgstr "%s یک آدرس ایمیل معتبر نیست"
+
+#. TRANSLATORS please keep the 'Y/N' as is
+#: offutils.py:395
+#, python-format
+msgid "Send an email to %s Y/N? "
+msgstr "ارسال ایمیل به %s Y/N؟ "
+
+#: offutils.py:412
+#, python-format
+msgid "Cannot find a mail client to send mail to %s"
+msgstr "نمی‌توان کلاینت ایمیلی برای ارسال نامه به %s پیدا کرد"
+
+#: offutils.py:413 openk.py:140 opnk.py:140
+msgid "Please install xdg-open (usually from xdg-util package)"
+msgstr "لطفاً xdg-open را نصب کنید (معمولاً از بسته xdg-util)"
+
+#: openk.py:38 opnk.py:38
+msgid "Please install the pager \"less\" to run Offpunk."
+msgstr "لطفاً پیجر \"less\" را برای اجرای آف‌پانک نصب کنید."
+
+#: openk.py:39 opnk.py:39
+msgid "If you wish to use another pager, send me an email !"
+msgstr "اگر می‌خواهید از پیجر دیگری استفاده کنید، به من ایمیل بزنید!"
+
+#: openk.py:41 opnk.py:41
+msgid ""
+"(I’m really curious to hear about people not having \"less\" on their "
+"system.)"
+msgstr ""
+"(من واقعاً کنجکاوم درباره افرادی که \"less\" را روی سیستم خود ندارند بشنوم.)"
+
+#. TRANSLATORS: keep echo and %s, translate the text between ""
+#: openk.py:139 opnk.py:139
+#, python-format
+msgid "echo \"Can’t find how to open \"%s"
+msgstr "echo \"نمی‌توان یافت چگونه \"%s باز شود"
+
+#: openk.py:235 opnk.py:235
+#, python-format
+msgid "%s does not exist"
+msgstr "%s وجود ندارد"
+
+#. TRANSLATORS translate only "MY_PREFERED_APP"
+#: openk.py:309 opnk.py:309
+#, python-format
+msgid "\"handler %s MY_PREFERED_APP %%s\""
+msgstr "\"handler %s MY_PREFERED_APP %%s\""
+
+#: openk.py:314 opnk.py:314
+#, python-format
+msgid "External open of type %s with \"%s\""
+msgstr "باز کردن خارجی نوع %s با \"%s\""
+
+#: openk.py:315 openk.py:327 opnk.py:315 opnk.py:327
+#, python-format
+msgid "You can change the default handler with %s"
+msgstr "می‌توانید متصدی پیش‌فرض را با %s تغییر دهید"
+
+#: openk.py:323 opnk.py:323
+#, python-format
+msgid "Handler program %s not found!"
+msgstr "برنامه متصدی %s یافت نشد!"
+
+#: openk.py:324 opnk.py:324
+msgid ""
+"You can use the ! command to specify another handler "
+"program                        or pipeline."
+msgstr ""
+"می‌توانید از دستور ! برای مشخص کردن یک برنامه متصدی یا خط لوله (pipeline) "
+"دیگر استفاده کنید."
+
+#: openk.py:363 opnk.py:363
+msgid ""
+"openk is an universal open command tool that will try to display any "
+"file              in the pager less after rendering its content with "
+"ansicat. If that fails,              openk will fallback to opening the file "
+"with xdg-open. If given an URL as input              instead of a path, "
+"openk will rely on netcache to get the networked content."
+msgstr ""
+"openk یک ابزار دستور باز کردن جهانی است که سعی می‌کند هر فایلی را "
+"در پیجر less پس از رندر محتوای آن با ansicat نمایش دهد. اگر ناموفق بود، "
+"openk به باز کردن فایل با xdg-open متوسل می‌شود. اگر به جای مسیر، یک URL "
+"به عنوان ورودی داده شود، openk برای دریافت محتوای شبکه‌ای به netcache تکیه خواهد کرد."
+
+#: openk.py:387 opnk.py:387
+msgid "Path to the file or URL to open"
+msgstr "مسیر فایل یا URL برای باز کردن"
+
+#: xkcdpunk.py:33
+msgid "xkcdpunk is a tool to display a given XKCD comic in your terminal"
+msgstr "xkcdpunk ابزاری برای نمایش یک کمیک XKCD خاص در ترمینال شماست"
+
+#: xkcdpunk.py:38
+msgid ""
+"XKCD comic number. Also accept value \"latest\" and \"random\". Default is "
+"\"latest\""
+msgstr ""
+"شماره کمیک XKCD. همچنین مقادیر \"latest\" و \"random\" را می‌پذیرد. پیش‌فرض "
+"\"latest\" است"
+
+#: xkcdpunk.py:41
+msgid "Only access cached comics"
+msgstr "دسترسی فقط به کمیک‌های کش شده"

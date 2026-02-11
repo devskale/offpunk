@@ -10,7 +10,8 @@
 - BUGFIX: history latest items was sometimes overwritten with multiple back/forward
 - PACKAGING: use hatch-requirements-txt (by link2xt)
 - Lot of typos fixed (by Sebastian Rasmussen)
-- TRANSLATION: added SV (by Sebastian Rasmussen)
+- TRANSLATION: added Swedish SV (by Sebastian Rasmussen)
+- TRANSLATION: added Persian (Farsi) (by Mati Mohammadi)
 
 ## 3.0 - February 9th 2026
 Changes since 2.8
