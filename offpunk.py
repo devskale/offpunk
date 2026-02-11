@@ -2518,7 +2518,8 @@ def main():
         print("Offpunk " + __version__)
         sys.exit()
     elif args.features:
-        GeminiClient.do_version(None, None)
+        gc = GeminiClient(None)
+        gc.do_version(None, None)
         sys.exit()
     else:
         for f in [xdg("config"), xdg("data")]:
