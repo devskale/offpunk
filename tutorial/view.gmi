@@ -26,7 +26,7 @@ info
 
 When you are in a gemini page, the page is straightforward. But, for HTML pages, Offpunk will try to extract the important information and remove useless cruft.
 
-This doesn’t always work. If you want to see the full page, use "view full" (or "v full"). Go back with "v normal". You can swith with "v switch".
+This doesn’t always work. If you want to see the full page, use "view full" (or "v full"). Go back with "v normal". You can switch with "v switch".
 
 ```
 v full
