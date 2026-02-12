@@ -193,7 +193,6 @@ class GeminiClient(cmd.Cmd):
             "max_size_download": 10,
             "editor": None,
             "images_mode": "readable",
-            "redirects": True,
             # the wikipedia entry needs two %s, one for lang, other for search
             "wikipedia": "gemini://gemi.dev/cgi-bin/wp.cgi/view/%s?%s",
             "search": "gemini://kennedy.gemi.dev/search?%s",
@@ -2519,7 +2518,8 @@ def main():
         print("Offpunk " + __version__)
         sys.exit()
     elif args.features:
-        GeminiClient.do_version(None, None)
+        gc = GeminiClient(None)
+        gc.do_version(None, None)
         sys.exit()
     else:
         for f in [xdg("config"), xdg("data")]:

@@ -1,0 +1,49 @@
+.Dd February 11, 2026
+.Dt UNMERDIFY 1
+.Os
+.
+.Sh NAME
+.Nm unmerdify
+.Nd get the content, only the content: unenshittificator for the web
+.
+.Sh SYNOPSIS
+.Nm
+.Op Fl u | \-url Ar URL
+.Op Fl l | \-loglevel Ar LEVEL
+.Ar ftr_site_config
+.Op Ar FILE ...
+.Nm
+.Fl h | \-help
+.
+.Sh DESCRIPTION
+unmerdify is an unenshittificator for the web.
+It filters out the noise from web pages in order to allow the reader to focus on the content and only the content.
+.Pp
+This implementation is shipped as part of
+.Xr offpunk 1 ,
+the Gemini browser.
+.Ss Positional arguments
+.Bl -tag -width Ds -offset indent
+.It Ar ftr_site_config
+The path to the https://github.com/fivefilters/ftr-site-config directory,
+or a path to a config file.
+.It Ar FILE
+Files to read, if empty, stdin is used.
+.El
+.Ss Keyword arguments
+.Bl -tag -width Ds -offset indent
+.It Fl h , \-help
+Show a help message and exit.
+.It Fl u , \-url Ar URL
+The url you want to unmerdify.
+.It Fl l , \-loglevel Ar LEVEL
+Set log level.
+.Ar LEVEL
+can be any of: CRITICAL, FATAL, ERROR, WARN, WARNING, INFO, DEBUG, or NOTSET.
+.El
+.
+.Sh EXIT STATUS
+.Ex -std
+.
+.Sh AUTHORS
+.An Vincent Jousse

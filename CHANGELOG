@@ -3,13 +3,19 @@
 ## 3.1 - Unreleased
 - Cut startup time in half by lazy loading optional modules
 - Adding support for tmux clipboard and cleaning clipboard code (by Stephen)
+- Default OFF prompt color set to red (by Matin Mohammadi)
 - "copy" now default to "url" and works coherently 
 - hide pictures which are from blocked URL (and hide IMG links pointing to blocked URL)
+- CRASHFIX: "list" was crashing because of a bad call to super() (reported by Toby Kurien)
+- CRASHFIX: "--features" was crashing (patch by Étienne Mollier)
 - BUGFIX: "info" was sometimes returning the wrong cleaning method
 - BUGFIX: history latest items was sometimes overwritten with multiple back/forward
 - PACKAGING: use hatch-requirements-txt (by link2xt)
 - Lot of typos fixed (by Sebastian Rasmussen)
-- TRANSLATION: added SV (by Sebastian Rasmussen)
+- Fixed xkcdpunk manpage (by Étienne Mollier)
+- "unmerdify" manpage (by Étienne Mollier)
+- TRANSLATION: added Swedish SV (by Sebastian Rasmussen)
+- TRANSLATION: added Persian (Farsi) (by Mati Mohammadi)
 
 ## 3.0 - February 9th 2026
 Changes since 2.8
