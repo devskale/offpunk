@@ -3,7 +3,7 @@
 ## 3.1 - Unreleased
 - Cut startup time in half by lazy loading optional modules
 - Adding support for tmux clipboard and cleaning clipboard code (by Stephen)
-- Default ON prompt color set to red (by Matin Mohammadi)
+- Default ON prompt color set to yellow (by Matin Mohammadi)
 - "copy" now default to "url" and works coherently 
 - hide pictures which are from blocked URL (and hide IMG links pointing to blocked URL)
 - CRASHFIX: "list" was crashing because of a bad call to super() (reported by Toby Kurien)
