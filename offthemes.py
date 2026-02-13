@@ -43,8 +43,8 @@ offpunk1 = {
                 "image_link" :      ["yellow","faint"],
                 "preformatted":     ["faint"],
                 "blockquote" :      ["italic"],
-                "prompt_on" :       ["green"],
-                "prompt_off" :      ["red"],
+                "prompt_on" :       ["yellow"],
+                "prompt_off" :      ["green"],
              }  
 
 yellow = {
