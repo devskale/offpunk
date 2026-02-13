@@ -12,6 +12,7 @@
 - CRASHFIX: "--features" was crashing (patch by Étienne Mollier)
 - BUGFIX: "info" was sometimes returning the wrong cleaning method
 - BUGFIX: history latest items was sometimes overwritten with multiple back/forward
+- BUGFIX: replace wrongly encoded UTF-8 in Gemini page instead of crashing (Pawel Piatkwoski)
 - PACKAGING: use hatch-requirements-txt (by link2xt)
 - Lot of typos fixed (by Sebastian Rasmussen)
 - Fixed xkcdpunk manpage (by Étienne Mollier)
