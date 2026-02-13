@@ -877,6 +877,7 @@ class GeminiClient(cmd.Cmd):
                             f.close()
                 #No mail recorded? Let’s look at the current page
                 #We check for any mailto: link
+                parents = []
                 if len(potential_replies) == 0:
                     for l in r.get_links():
                         if l.startswith("mailto:"):
@@ -884,11 +885,16 @@ class GeminiClient(cmd.Cmd):
                             l = l.removeprefix("mailto:").split("?")[0]
                             if l not in potential_replies:
                                 potential_replies.append(l)
+                        #if the word "contact" in the URL, let’s check that page
+                        elif "contact" in l and l not in parents:
+                            parents.append(l)
                 # if we have no reply address, we investigate parents page
                 # Until we are at the root of users capsule/website/hole
-                parents = find_root(self.current_url, return_value = "list")
+                parents += find_root(self.current_url, return_value = "list")
+                already_checked = []
                 while len(potential_replies) == 0 and len(parents) > 0 :
                     parurl = parents.pop(0)
+                    already_checked.append(parurl)
                     replydir = netcache.get_cache_path(parurl,xdgfolder="data",\
                                 include_protocol=False,subfolder="reply")
                     #print(replydir)
@@ -900,6 +906,10 @@ class GeminiClient(cmd.Cmd):
                                 l = l.removeprefix("mailto:").split("?")[0]
                                 if l not in potential_replies:
                                     potential_replies.append(l)
+                            #if the word "contact" in the URL, let’s check that page
+                            elif "contact" in l and l not in parents \
+                                    and l not in already_checked:
+                                parents.append(l)
                 #print("replying to %s"%potential_replies)
                 if len(potential_replies) > 1:
                     stri = _("Multiple emails addresses were found:") + "\n"

@@ -7,6 +7,7 @@
 - Default ON prompt color set to yellow (by Matin Mohammadi)
 - "copy" now default to "url" and works coherently 
 - hide pictures which are from blocked URL (and hide IMG links pointing to blocked URL)
+- "reply" now also looks for "contact" pages
 - CRASHFIX: "list" was crashing because of a bad call to super() (reported by Toby Kurien)
 - CRASHFIX: "--features" was crashing (patch by Étienne Mollier)
 - BUGFIX: "info" was sometimes returning the wrong cleaning method
