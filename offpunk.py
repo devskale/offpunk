@@ -33,7 +33,7 @@ from offutils import (
     xdg,
     init_config,
     send_email,
-    _HAS_XDGOPEN,
+    CMDS,
     _LOCALE_DIR,
     find_root,
 )
@@ -55,17 +55,18 @@ except ModuleNotFoundError:
 def clipboard_copy(to_copy):
     successes = []
     programs = [
-         ["tmux", "tmux load-buffer -"], 
-         ["xsel", "xsel -b -i"],
-         ["xclip", "xclip -selection clipboard"],
-         ["wl-copy", "wl-copy"],
-         ["pbcopy", "pbcopy"],
+         ["tmux", " load-buffer -"], 
+         ["xsel", " -b -i"],
+         ["xclip", " -selection clipboard"],
+         ["wl-copy", ""],
+         ["pbcopy", ""],
    ]
 
     for program in programs:
-        if shutil.which(program[0]):
+        if CMDS[program[0]]:
             try:
-                run(program[1], input=to_copy, direct_output=True, no_err=True)
+                copy_cmd = CMDS[program[0]] + program[1]
+                run(copy_cmd, input=to_copy, direct_output=True, no_err=True)
                 successes += [program[0]]
             except CalledProcessError:
                 pass
@@ -88,10 +89,10 @@ def clipboard_paste():
     successes = []
 
     for program in programs:
-        if shutil.which(program[0]):
+        if CMDS[program[0]]:
             for selec in program[1]:
                 try:
-                    command = f"{program[0]} {selec}"
+                    command = CMDS[program[0]] + " " + selec
                     result = run(command, no_err=True)
                     clipboards.update(result.split('\n'))
                     successes += [program[0]]
@@ -1313,20 +1314,21 @@ class GeminiClient(cmd.Cmd):
         output += _("Python: ") + sys.version + "\n"
         output += _("Language: ") + os.getenv('LANG') + "\n"
         output += _("\nHighly recommended:\n")
-        output += " - xdg-open            : " + has(_HAS_XDGOPEN)
+        output += " - xdg-open            : " + has(CMDS["xdg-open"])
         output += _("\nWeb browsing:\n")
         output += " - python-requests     : " + has(netcache.load_HTTP())
         output += " - python-feedparser   : " + has(ansicat.load_FEED())
         output += " - python-bs4          : " + has(ansicat.load_HTML())
         output += " - python-readability  : " + has(ansicat.load_READABILITY())
-        output += " - timg 1.3.2+         : " + has(ansicat._HAS_TIMG)
-        output += " - chafa 1.10+         : " + has(ansicat._HAS_CHAFA)
+        output += " - timg 1.3.2+         : " + has(CMDS["timg"])
+        output += " - chafa 1.10+         : " + has(CMDS["chafa"])
         output += _("\nNice to have:\n")
         output += " - python-setproctitle             : " + has(_HAS_SETPROCTITLE)
         output += " - python-cryptography             : " + has(netcache.load_CRYPTOGRAPHY())
-        clip_support = shutil.which("xsel") or shutil.which("xclip")
+        clip_support = CMDS["xsel"] or CMDS["xclip"] 
         output += " - X11 clipboard (xsel or xclip)   : " + has(clip_support)
-        output += " - Wayland clipboard (wl-clipboard): " + has(shutil.which("wl-copy"))
+        output += " - Wayland clipboard (wl-clipboard): " + has(CMDS["wl-copy"])
+        output += " - MacOS clipboard                 : " + has(CMDS["pbcopy"])
 
         output += _("\nFeatures :\n")
         output += _(" - Render images (chafa or timg)              : ") + has(
@@ -1584,8 +1586,8 @@ Use "view XX" where XX is a number to view information about link XX.
             url = unmode_url(self.current_url)[0]
             url_list.append(url)
         for u in url_list:
-            if urlmode:
-                run("xdg-open %s", parameter=u, direct_output=True)
+            if urlmode and CMDS["xdg-open"]:
+                run(CMDS["xdg-open"] + " %s", parameter=u, direct_output=True)
             else:
                 self.opencache.openk(u, terminal=False)
 

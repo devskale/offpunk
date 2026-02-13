@@ -14,7 +14,7 @@ import gettext
 
 import netcache
 import offthemes
-from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg, _LOCALE_DIR, find_root, is_url_blocked, urlify
+from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg, _LOCALE_DIR, find_root, is_url_blocked, urlify, CMDS
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
 gettext.textdomain('offpunk')
@@ -82,34 +82,30 @@ def load_FEED():
         _DO_FEED = False
     return _DO_FEED
 
-_HAS_TIMG = False
-_HAS_CHAFA = False
 _RENDER_IMAGE = False
 
 # All this code to know if we render image inline or not
 #Do we have chafa >= 1.10 ?
-if shutil.which("chafa"):
+if CMDS["chafa"]:
     # starting with 1.10, chafa can return only one frame
     # we thus requires chafa to be at least 1.10
     # output is "Chafa version M.m.p"
     # check for m < 1.10
     try:
-        output = run("chafa --version")
+        output = run(CMDS["chafa"] + " --version")
         chafa_major, chafa_minor, rest = output.split("\n")[0].split(" ")[-1].split(".")
         if int(chafa_major) >= 1 and int(chafa_minor) >= 10:
-            _HAS_CHAFA = True
             _RENDER_IMAGE = True
     except Exception:
         pass
 #Do we have timg?
-if shutil.which("timg"):
+if CMDS["timg"]:
     try:
-        output = run("timg --version")
+        output = run(CMDS["timg"] + " --version")
     except subprocess.CalledProcessError:
         output = False
     # We don’t deal with timg before 1.3.2 (looping options)
     if output and output[5:10] > "1.3.2":
-        _HAS_TIMG = True
         _RENDER_IMAGE = True
 if not _RENDER_IMAGE:
     print(_("To render images inline, you need either chafa >= 1.10 or timg > 1.3.2"))
@@ -125,15 +121,15 @@ def inline_image(img_file, width):
     inlines = []
     ansi_img = ""
     # We avoid errors by not trying to render non-image files
-    if shutil.which("file"):
-        mime = run("file -b --mime-type %s", parameter=img_file).strip()
+    if CMDS["file"]:
+        mime = run(CMDS["file"] + " -b --mime-type %s", parameter=img_file).strip()
         if "image" not in mime:
             return ansi_img
-    if _HAS_CHAFA:
+    if CMDS["chafa"]:
         # -O 0 remove optimisation and allows every line to be the same length
-        inlines.append("chafa -O 0 --bg white -t 1 -s %s -f symbols --animate=off")
-    if _HAS_TIMG:
-        inlines.append("timg --frames=1 -p q -g %sx1000")
+        inlines.append(CMDS["chafa"] + " -O 0 --bg white -t 1 -s %s -f symbols --animate=off")
+    if CMDS["timg"]:
+        inlines.append(CMDS["timg"] + " --frames=1 -p q -g %sx1000")
     image_success = False
     while not image_success and len(inlines) > 0:
         cmd = inlines.pop(0) % width + " %s"
@@ -148,10 +144,10 @@ def inline_image(img_file, width):
 def terminal_image(img_file):
     # This code will try chafa first and, if it fails, try timg
     cmds = []
-    if _HAS_CHAFA:
-        cmds.append("chafa -C on -d 0 --bg white -w 1")
-    if _HAS_TIMG:
-        cmds.append("timg --loops=1 -C")
+    if CMDS["chafa"]:
+        cmds.append(CMDS["chafa"] + " -C on -d 0 --bg white -w 1")
+    if CMDS["timg"]:
+        cmds.append(CMDS["timg"] + " --loops=1 -C")
     image_success = False
     while not image_success and len(cmds) > 0:
         cmd = cmds.pop(0) + " %s"
@@ -1823,8 +1819,8 @@ def get_mime(path, url=None):
         mime = "text/gemini"
     elif path.endswith("gophermap"):
         mime = "text/gopher"
-    elif shutil.which("file"):
-        mime = run("file -b --mime-type %s", parameter=path).strip()
+    elif CMDS["file"]:
+        mime = run(CMDS["file"] + " -b --mime-type %s", parameter=path).strip()
         mime2, encoding = mimetypes.guess_type(path, strict=False)
         # If we hesitate between html and xml, takes the xml one
         # because the FeedRendered fallback to HtmlRenderer
@@ -1855,7 +1851,7 @@ def get_mime(path, url=None):
     else:
         mime, encoding = mimetypes.guess_type(path, strict=False)
     # gmi Mimetype is not recognized yet
-    if not mime and not shutil.which("file"):
+    if not mime and not CMDS["file"]:
         print(_('Cannot guess the mime type of the file. Please install "file".'))
     if mime.startswith("text") and mime not in _FORMAT_RENDERERS:
         if mime2 and mime2 in _FORMAT_RENDERERS:

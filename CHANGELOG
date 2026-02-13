@@ -18,6 +18,7 @@
 - "unmerdify" manpage (by Étienne Mollier)
 - TRANSLATION: added Swedish SV (by Sebastian Rasmussen)
 - TRANSLATION: added Persian (Farsi) (by Mati Mohammadi)
+- refactorisation to handle every external binary in one place in offutils.py
 
 ## 3.0 - February 9th 2026
 Changes since 2.8
