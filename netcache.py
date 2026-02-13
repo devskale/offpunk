@@ -1110,7 +1110,7 @@ def fetch(
             print(text)
         cache = set_error(newurl, text)
         return cache, newurl
-    elif redirection:
+    elif redirection and redirection.lower() != "whitelisted":
         parsed = urllib.parse.urlparse(url)
         parsed = parsed._replace(netloc=redirection)
         url = urllib.parse.urlunparse(parsed)

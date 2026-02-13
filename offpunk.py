@@ -218,6 +218,8 @@ class GeminiClient(cmd.Cmd):
         self.opencache.redirects = offblocklist.redirects
         for i in offblocklist.blocked:
             self.opencache.redirects[i] = "blocked"
+        for i in offblocklist.whitelisted:
+            self.opencache.redirects[i] = "whitelisted"
         term_width(new_width=self.options["width"])
         self.log = {
             "start_time": time.time(),
@@ -479,9 +481,12 @@ class GeminiClient(cmd.Cmd):
                     print(_("Redirection for %s has been removed") % orig)
                 else:
                     print(_("%s was not redirected. Nothing has changed.") % orig)
-            elif dest.lower() == "block":
+            elif dest.lower() == "block" or dest.lower() == "blocked":
                 self.opencache.redirects[orig] = "blocked"
                 print(_("%s will now be blocked") % orig)
+            elif dest.lower() == "whitelist" or dest.lower() == "whitelisted":
+                self.opencache.redirects[orig] = "whitelisted"
+                print(_("%s will always be fully displayed") % orig)
             else:
                 self.opencache.redirects[orig] = dest
                 print(_("%s will now be redirected to %s") % (orig, dest))
@@ -492,12 +497,16 @@ class GeminiClient(cmd.Cmd):
             toprint += "--------------------\n"
             for r in self.opencache.redirects:
                 toprint += "%s\t->\t%s\n" % (r, self.opencache.redirects[r])
-            toprint += _('\nTo add new, use "redirect origin.com destination.org"')
-            toprint += _('\nTo remove a redirect, use "redirect origin.com NONE"')
-            toprint += (
-                _('\nTo completely block a website, use "redirect origin.com BLOCK"')
-            )
-            toprint += _('\nTo block also subdomains, prefix with *: "redirect *origin.com BLOCK"')
+            toprint += "\n"
+            toprint += _('To add new, use "redirect origin.com destination.org"')
+            toprint += "\n"
+            toprint += _('To remove a redirect, use "redirect origin.com NONE"')
+            toprint += "\n"
+            toprint += _('To completely block a website, use "redirect origin.com BLOCK"')
+            toprint += "\n"
+            toprint += _('To block also subdomains, prefix with *: "redirect *origin.com BLOCK"')
+            toprint += "\n"
+            toprint += _('To always fully display a website, use "redirect origin.com WHITELIST"')
             print(toprint)
 
     def do_set(self, line):

@@ -1638,8 +1638,13 @@ class HtmlRenderer(AbstractRenderer):
         # We will transform the body into a "summary" (clean-up version)
         summary = None
         self.cleanlib[mode] = ""
+        #If domain is whitelisted, we don’t clean anything
+        domain = urllib.parse.urlparse(self.url).netloc.removeprefix("www.")
+        if domain in self.redirects and self.redirects[domain] == "whitelisted":
+            summary = body
+            self.cleanlib[mode] += _("Full because %s is whitelisted")%domain
         # if mode full, we don’t clean anything
-        if mode in ["full", "full_links_only"]:
+        elif mode in ["full", "full_links_only"]:
             summary = body
             self.cleanlib[mode] += _("Full as requested")
         # let’s try unmerdify
