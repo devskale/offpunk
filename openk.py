@@ -17,7 +17,7 @@ import netcache
 import offutils
 import offblocklist
 from offutils import (
-        GREPCMD, 
+        CMDS, 
         is_local, 
         mode_url, 
         run, 
@@ -25,7 +25,7 @@ from offutils import (
         unmode_url, 
         init_config,
         send_email,
-        _HAS_XDGOPEN,
+        CMDS,
         _LOCALE_DIR,
         )
 
@@ -34,14 +34,14 @@ gettext.textdomain('offpunk')
 _ = gettext.gettext
 
 less_version = 0
-if not shutil.which("less"):
+if not shutil.which(CMDS["less"]):
     print(_('Please install the pager "less" to run Offpunk.'))
     print(_("If you wish to use another pager, send me an email !"))
     print(
         _('(I’m really curious to hear about people not having "less" on their system.)')
     )
     sys.exit()
-output = run("less --version")
+output = run(CMDS["less"] + " --version")
 # We get less Version (which is the only integer on the first line)
 words = output.split("\n")[0].split()
 less_version = 0
@@ -71,11 +71,11 @@ else:
 def less_cmd(file, histfile=None, cat=False, grep=None):
     less_prompt = "page %%d/%%D- lines %%lb/%%L - %%Pb\\%%"
     if less_version >= 581:
-        less_base = 'less --incsearch --save-marks -~ -XRfWiS -P "%s"' % less_prompt
+        less_base = CMDS["less"] + ' --incsearch --save-marks -~ -XRfWiS -P "%s"' % less_prompt
     elif less_version >= 572:
-        less_base = "less --save-marks -XRfMWiS"
+        less_base = CMDS["less"] + " --save-marks -XRfMWiS"
     else:
-        less_base = "less -XRfMWiS"
+        less_base = CMDS["less"] + " -XRfMWiS"
     _DEFAULT_LESS = less_base + " \"+''\" %s"
     _DEFAULT_CAT = less_base + " -EF %s"
     if histfile:
@@ -85,11 +85,15 @@ def less_cmd(file, histfile=None, cat=False, grep=None):
     if cat and not grep:
         cmd_str = _DEFAULT_CAT
     elif grep:
-        grep_cmd = GREPCMD
-        # case insensitive for lowercase search
-        if grep.islower():
-            grep_cmd += " -i"
-        cmd_str = _DEFAULT_CAT + "|" + grep_cmd + " %s" % grep
+        if CMDS["grep"]:
+            grep_cmd = CMDS["grep"]
+            # case insensitive for lowercase search
+            if grep.islower():
+                grep_cmd += " -i"
+            cmd_str = _DEFAULT_CAT + "|" + grep_cmd + " %s" % grep
+        else:
+            toecho = _("please install \"grep\" to search in a %s")
+            cmd_str = "echo %s"%toecho
     else:
         cmd_str = _DEFAULT_LESS
     run(cmd_str, parameter=file, direct_output=True, env=env)
@@ -132,8 +136,8 @@ class opencache:
                 break
         else:
             # Use "xdg-open" as a last resort.
-            if _HAS_XDGOPEN:
-                cmd_str = "xdg-open %s"
+            if CMDS["xdg-open"]:
+                cmd_str = CMDS["xdg-open"] + " %s"
             else:
                 #TRANSLATORS: keep echo and %s, translate the text between ""
                 cmd_str = _('echo "Can’t find how to open "%s')

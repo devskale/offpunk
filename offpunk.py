@@ -33,7 +33,7 @@ from offutils import (
     xdg,
     init_config,
     send_email,
-    _HAS_XDGOPEN,
+    CMDS,
     _LOCALE_DIR,
     find_root,
 )
@@ -55,17 +55,18 @@ except ModuleNotFoundError:
 def clipboard_copy(to_copy):
     successes = []
     programs = [
-         ["tmux", "tmux load-buffer -"], 
-         ["xsel", "xsel -b -i"],
-         ["xclip", "xclip -selection clipboard"],
-         ["wl-copy", "wl-copy"],
-         ["pbcopy", "pbcopy"],
+         ["tmux", " load-buffer -"], 
+         ["xsel", " -b -i"],
+         ["xclip", " -selection clipboard"],
+         ["wl-copy", ""],
+         ["pbcopy", ""],
    ]
 
     for program in programs:
-        if shutil.which(program[0]):
+        if CMDS[program[0]]:
             try:
-                run(program[1], input=to_copy, direct_output=True, no_err=True)
+                copy_cmd = CMDS[program[0]] + program[1]
+                run(copy_cmd, input=to_copy, direct_output=True, no_err=True)
                 successes += [program[0]]
             except CalledProcessError:
                 pass
@@ -88,10 +89,10 @@ def clipboard_paste():
     successes = []
 
     for program in programs:
-        if shutil.which(program[0]):
+        if CMDS[program[0]]:
             for selec in program[1]:
                 try:
-                    command = f"{program[0]} {selec}"
+                    command = CMDS[program[0]] + " " + selec
                     result = run(command, no_err=True)
                     clipboards.update(result.split('\n'))
                     successes += [program[0]]
@@ -218,6 +219,8 @@ class GeminiClient(cmd.Cmd):
         self.opencache.redirects = offblocklist.redirects
         for i in offblocklist.blocked:
             self.opencache.redirects[i] = "blocked"
+        for i in offblocklist.whitelisted:
+            self.opencache.redirects[i] = "whitelisted"
         term_width(new_width=self.options["width"])
         self.log = {
             "start_time": time.time(),
@@ -479,9 +482,12 @@ class GeminiClient(cmd.Cmd):
                     print(_("Redirection for %s has been removed") % orig)
                 else:
                     print(_("%s was not redirected. Nothing has changed.") % orig)
-            elif dest.lower() == "block":
+            elif dest.lower() == "block" or dest.lower() == "blocked":
                 self.opencache.redirects[orig] = "blocked"
                 print(_("%s will now be blocked") % orig)
+            elif dest.lower() == "whitelist" or dest.lower() == "whitelisted":
+                self.opencache.redirects[orig] = "whitelisted"
+                print(_("%s will always be fully displayed") % orig)
             else:
                 self.opencache.redirects[orig] = dest
                 print(_("%s will now be redirected to %s") % (orig, dest))
@@ -492,12 +498,16 @@ class GeminiClient(cmd.Cmd):
             toprint += "--------------------\n"
             for r in self.opencache.redirects:
                 toprint += "%s\t->\t%s\n" % (r, self.opencache.redirects[r])
-            toprint += _('\nTo add new, use "redirect origin.com destination.org"')
-            toprint += _('\nTo remove a redirect, use "redirect origin.com NONE"')
-            toprint += (
-                _('\nTo completely block a website, use "redirect origin.com BLOCK"')
-            )
-            toprint += _('\nTo block also subdomains, prefix with *: "redirect *origin.com BLOCK"')
+            toprint += "\n"
+            toprint += _('To add new, use "redirect origin.com destination.org"')
+            toprint += "\n"
+            toprint += _('To remove a redirect, use "redirect origin.com NONE"')
+            toprint += "\n"
+            toprint += _('To completely block a website, use "redirect origin.com BLOCK"')
+            toprint += "\n"
+            toprint += _('To block also subdomains, prefix with *: "redirect *origin.com BLOCK"')
+            toprint += "\n"
+            toprint += _('To always fully display a website, use "redirect origin.com WHITELIST"')
             print(toprint)
 
     def do_set(self, line):
@@ -868,6 +878,7 @@ class GeminiClient(cmd.Cmd):
                             f.close()
                 #No mail recorded? Let’s look at the current page
                 #We check for any mailto: link
+                parents = []
                 if len(potential_replies) == 0:
                     for l in r.get_links():
                         if l.startswith("mailto:"):
@@ -875,11 +886,16 @@ class GeminiClient(cmd.Cmd):
                             l = l.removeprefix("mailto:").split("?")[0]
                             if l not in potential_replies:
                                 potential_replies.append(l)
+                        #if the word "contact" in the URL, let’s check that page
+                        elif "contact" in l and l not in parents:
+                            parents.append(l)
                 # if we have no reply address, we investigate parents page
                 # Until we are at the root of users capsule/website/hole
-                parents = find_root(self.current_url, return_value = "list")
+                parents += find_root(self.current_url, return_value = "list")
+                already_checked = []
                 while len(potential_replies) == 0 and len(parents) > 0 :
                     parurl = parents.pop(0)
+                    already_checked.append(parurl)
                     replydir = netcache.get_cache_path(parurl,xdgfolder="data",\
                                 include_protocol=False,subfolder="reply")
                     #print(replydir)
@@ -891,6 +907,10 @@ class GeminiClient(cmd.Cmd):
                                 l = l.removeprefix("mailto:").split("?")[0]
                                 if l not in potential_replies:
                                     potential_replies.append(l)
+                            #if the word "contact" in the URL, let’s check that page
+                            elif "contact" in l and l not in parents \
+                                    and l not in already_checked:
+                                parents.append(l)
                 #print("replying to %s"%potential_replies)
                 if len(potential_replies) > 1:
                     stri = _("Multiple emails addresses were found:") + "\n"
@@ -1294,20 +1314,21 @@ class GeminiClient(cmd.Cmd):
         output += _("Python: ") + sys.version + "\n"
         output += _("Language: ") + os.getenv('LANG') + "\n"
         output += _("\nHighly recommended:\n")
-        output += " - xdg-open            : " + has(_HAS_XDGOPEN)
+        output += " - xdg-open            : " + has(CMDS["xdg-open"])
         output += _("\nWeb browsing:\n")
         output += " - python-requests     : " + has(netcache.load_HTTP())
         output += " - python-feedparser   : " + has(ansicat.load_FEED())
         output += " - python-bs4          : " + has(ansicat.load_HTML())
         output += " - python-readability  : " + has(ansicat.load_READABILITY())
-        output += " - timg 1.3.2+         : " + has(ansicat._HAS_TIMG)
-        output += " - chafa 1.10+         : " + has(ansicat._HAS_CHAFA)
+        output += " - timg 1.3.2+         : " + has(CMDS["timg"])
+        output += " - chafa 1.10+         : " + has(CMDS["chafa"])
         output += _("\nNice to have:\n")
         output += " - python-setproctitle             : " + has(_HAS_SETPROCTITLE)
         output += " - python-cryptography             : " + has(netcache.load_CRYPTOGRAPHY())
-        clip_support = shutil.which("xsel") or shutil.which("xclip")
+        clip_support = CMDS["xsel"] or CMDS["xclip"] 
         output += " - X11 clipboard (xsel or xclip)   : " + has(clip_support)
-        output += " - Wayland clipboard (wl-clipboard): " + has(shutil.which("wl-copy"))
+        output += " - Wayland clipboard (wl-clipboard): " + has(CMDS["wl-copy"])
+        output += " - MacOS clipboard                 : " + has(CMDS["pbcopy"])
 
         output += _("\nFeatures :\n")
         output += _(" - Render images (chafa or timg)              : ") + has(
@@ -1565,8 +1586,8 @@ Use "view XX" where XX is a number to view information about link XX.
             url = unmode_url(self.current_url)[0]
             url_list.append(url)
         for u in url_list:
-            if urlmode:
-                run("xdg-open %s", parameter=u, direct_output=True)
+            if urlmode and CMDS["xdg-open"]:
+                run(CMDS["xdg-open"] + " %s", parameter=u, direct_output=True)
             else:
                 self.opencache.openk(u, terminal=False)
 

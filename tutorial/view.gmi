@@ -80,6 +80,20 @@ git pull
 You can also contribute rules for your favorites website:
 => https://help.fivefilters.org/full-text-rss/site-patterns.html#github-repository Contributing to fivefilters
 
+## Whitelisting a website
+
+If a given website is permanently badly displayed with readability and you want to enforce a full view for all its pages, you can whitelist this website with:
+
+```
+redirect DOMAIN.COM whitelist
+```
+
+The whitelist can be undone with
+
+```
+redirect DOMAIN.COM none
+```
+
 ## Previewing links and copying url
 
 Before following a link, you can simply preview it with "view" or "v". 

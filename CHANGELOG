@@ -2,20 +2,24 @@
 
 ## 3.1 - Unreleased
 - Cut startup time in half by lazy loading optional modules
+- "redirect" now has support for "whitelist". Whitelisted websites will always be shown in full view, skipping readability/unmerdify
 - Adding support for tmux clipboard and cleaning clipboard code (by Stephen)
 - Default ON prompt color set to yellow (by Matin Mohammadi)
 - "copy" now default to "url" and works coherently 
 - hide pictures which are from blocked URL (and hide IMG links pointing to blocked URL)
+- "reply" now also looks for "contact" pages
 - CRASHFIX: "list" was crashing because of a bad call to super() (reported by Toby Kurien)
 - CRASHFIX: "--features" was crashing (patch by Étienne Mollier)
 - BUGFIX: "info" was sometimes returning the wrong cleaning method
 - BUGFIX: history latest items was sometimes overwritten with multiple back/forward
+- BUGFIX: replace wrongly encoded UTF-8 in Gemini page instead of crashing (Pawel Piatkwoski)
 - PACKAGING: use hatch-requirements-txt (by link2xt)
 - Lot of typos fixed (by Sebastian Rasmussen)
 - Fixed xkcdpunk manpage (by Étienne Mollier)
 - "unmerdify" manpage (by Étienne Mollier)
 - TRANSLATION: added Swedish SV (by Sebastian Rasmussen)
 - TRANSLATION: added Persian (Farsi) (by Mati Mohammadi)
+- refactorisation to handle every external binary in one place in offutils.py
 
 ## 3.0 - February 9th 2026
 Changes since 2.8

@@ -1062,7 +1062,7 @@ def _fetch_gemini(
         # Get the charset and default to UTF-8 in none
         encoding = mime_options.get("charset", "UTF-8")
         try:
-            body = fbody.decode(encoding)
+            body = fbody.decode(encoding, "replace")
         except UnicodeError:
             raise RuntimeError(
                 _("Could not decode response body using %s\
@@ -1110,7 +1110,7 @@ def fetch(
             print(text)
         cache = set_error(newurl, text)
         return cache, newurl
-    elif redirection:
+    elif redirection and redirection.lower() != "whitelisted":
         parsed = urllib.parse.urlparse(url)
         parsed = parsed._replace(netloc=redirection)
         url = urllib.parse.urlunparse(parsed)

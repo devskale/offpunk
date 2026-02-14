@@ -33,20 +33,45 @@ _ = gettext.gettext
 CACHE_VERSION = 1
 CERT_VERSION = 1
 
+# CMDS is a dic that contains, for each "command" (as a key), the default
+# invocation for this command (including options and, optionnaly, a full path)
+# If the value for key "command" is None of False, the command cannot be called
+# By default, we populate with all commands we might use. 
+# The CMDS dic must be populated assuming everything is installed.
+# Check will done later to ensure the command really exist and add
+# default options but the full path could be patched here if need and will be preserved
+CMDS = {
+    "grep"       : "grep",
+    "xdg-open"   : "xdg-open",
+    "less"       : "less",
+    "chafa"      : "chafa",
+    "timg"       : "timg",
+    "file"       : "file",
+    "tmux"       : "tmux",
+    "xsel"       : "xsel",
+    "xclip"      : "xclip",
+    "wl-copy"    : "wl-copy",
+    "wl-paste"   : "wl-paste",
+    "pbcopy"     : "pbcopy",
+    "pbpaste"    : "pbpaste",
+        }
+
+# We check that the commands exists and are available
+for cmd in CMDS.keys():
+    if not CMDS[cmd] or not shutil.which(CMDS[cmd]): CMDS[cmd] = None
+
 # let’s find if grep supports --color=auto
 try:
     test = subprocess.run(
-        ["grep", "--color=auto", "x"],
+        [CMDS["grep"], "--color=auto", "x"],
         input=b"x",
         check=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
-    GREPCMD = "grep --color=auto"
+    CMDS["grep"] += " --color=auto"
 except Exception:
-    GREPCMD = "grep"
-
-_HAS_XDGOPEN = shutil.which("xdg-open")
+    pass
 
 # We upgrade the cache only once at startup, hence the CACHE_UPGRADED variable
 # This is only to avoid unnecessary checks each time the cache is accessed
@@ -397,7 +422,7 @@ def send_email(dest,subject=None,body=None,toconfirm=True,allowemptydest=True):
     else:
         confirmed = True
     if confirmed:
-        if _HAS_XDGOPEN:
+        if CMDS["xdg-open"]:
             param = dest
             if subject or body:
                 param += "?"
@@ -407,7 +432,7 @@ def send_email(dest,subject=None,body=None,toconfirm=True,allowemptydest=True):
                     param += "&"
             if body:
                 param += "body=%s"%urllib.parse.quote(body)
-            run("xdg-open mailto:%s", parameter=param, direct_output=True)
+            run(CMDS["xdg-open"] + " mailto:%s", parameter=param, direct_output=True)
         else:
             print(_("Cannot find a mail client to send mail to %s") % inpath)
             print(_("Please install xdg-open (usually from xdg-util package)"))

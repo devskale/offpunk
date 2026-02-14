@@ -32,3 +32,9 @@ blocked = {
     "*advertising.theguardian.com",
     "*advertise.newrepublic.com",
 }
+
+## Whitelisted URL will always be displayed "fully". Readability will not be used
+
+whitelisted = {
+        "offpunk.net",
+        }
