@@ -8,11 +8,11 @@ def test_set_prompt():
     prompt_value = "ON"
     prompt = gc.set_prompt(prompt_value)
 
-    # Default prompt should be green 32 and go back to default 39
-    assert prompt == format_prompt("32", "39", prompt_value)
+    # Default prompt should be yellow 33 and go back to default 39
+    assert prompt == format_prompt("33", "39", prompt_value)
 
 
-# Prompt should still be green if nothing is set
+# Prompt should still be yellow if nothing is set
 def test_set_prompt_without_themes(mocker):
     mocker.patch("offthemes.offpunk1", {})
     mocker.patch("offthemes.colors", {})
@@ -21,11 +21,11 @@ def test_set_prompt_without_themes(mocker):
     prompt_value = "ON"
     prompt = gc.set_prompt(prompt_value)
 
-    # Default prompt should be green 32 and go back to default 39
-    assert prompt == format_prompt("32", "39", prompt_value)
+    # Default prompt should be yellow 33 and go back to default 39
+    assert prompt == format_prompt("33", "39", prompt_value)
 
 
-# Prompt should still be green if nothing is set
+# Prompt should still be yellow if nothing is set
 def test_set_prompt_without_themes(mocker):
     new_theme = offthemes.default.copy()
     new_theme["prompt_on"] = ["blue"]
