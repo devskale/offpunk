@@ -36,6 +36,7 @@ from offutils import (
     CMDS,
     _LOCALE_DIR,
     find_root,
+    _LESS_RESTORE_POSITION,
 )
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
@@ -1347,7 +1348,7 @@ class GeminiClient(cmd.Cmd):
             netcache.load_CHARDET()
         )
         output += _(" - restore last position (less 572+)          : ") + has(
-            openk._LESS_RESTORE_POSITION
+            _LESS_RESTORE_POSITION
         )
         output += "\n"
         output += _("ftr_site_config     : ") + str(self.options["ftr_site_config"]) + "\n"

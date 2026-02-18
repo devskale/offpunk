@@ -367,13 +367,12 @@ def get_body_element(site_config: dict, lxml_tree):
         elements = lxml_tree.xpath(pattern)
         for body_element in elements:
             body_contents.append(body_element)
-
     if len(body_contents) == 1:
         return body_contents[0]
 
     if len(body_contents) > 1:
         body = etree.Element("div")
-        for element in elements:
+        for element in body_contents:
             body.append(element)
         return body
 

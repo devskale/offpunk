@@ -33,6 +33,41 @@ _ = gettext.gettext
 CACHE_VERSION = 1
 CERT_VERSION = 1
 
+# In terms of arguments, this can take an input file/string to be passed to
+# stdin, a parameter to do (well-escaped) "%" replacement on the command, a
+# flag requesting that the output go directly to the stdout, and a list of
+# additional environment variables to set.  An additional optional argument can
+# be used to supress output to stderr.
+def run(cmd, *, input=None, parameter=None, direct_output=False, env={}, no_err=False):
+    if parameter:
+        cmd = cmd % shlex.quote(parameter)
+    e = os.environ
+    e.update(env)
+    if isinstance(input, io.IOBase):
+        stdin = input
+        input = None
+    else:
+        if input:
+            input = input.encode()
+        stdin = None
+
+    stderr = subprocess.DEVNULL if no_err else subprocess.STDOUT
+    if not direct_output:
+        # subprocess.check_output() wouldn't allow us to pass stdin.
+        result = subprocess.run(
+            cmd,
+            check=True,
+            env=e,
+            input=input,
+            shell=True,
+            stdin=stdin,
+            stdout=subprocess.PIPE,
+            stderr=stderr,
+        )
+        return result.stdout.decode()
+    else:
+        subprocess.run(cmd, env=e, input=input, shell=True, stdin=stdin, stderr=stderr)
+
 # CMDS is a dic that contains, for each "command" (as a key), the default
 # invocation for this command (including options and, optionnaly, a full path)
 # If the value for key "command" is None of False, the command cannot be called
@@ -44,6 +79,7 @@ CMDS = {
     "grep"       : "grep",
     "xdg-open"   : "xdg-open",
     "less"       : "less",
+    "cat"        : "cat",
     "chafa"      : "chafa",
     "timg"       : "timg",
     "file"       : "file",
@@ -72,6 +108,52 @@ try:
     CMDS["grep"] += " --color=auto"
 except Exception:
     pass
+
+# Let’s change our default less and cat commands
+less_version = 0
+if not shutil.which(CMDS["less"]):
+    print(_('Please install the pager "less" to run Offpunk.'))
+    print(_("If you wish to use another pager, send me an email !"))
+    print(
+        _('(I’m really curious to hear about people not having "less" on their system.)')
+    )
+    sys.exit()
+output = run(CMDS["less"] + " --version")
+# We get less Version (which is the only integer on the first line)
+words = output.split("\n")[0].split()
+less_version = 0
+for w in words:
+    # On macOS the version can be something like 581.2 not just an int:
+    if all(_.isdigit() for _ in w.split(".")):
+        less_version = int(w.split(".", 1)[0])
+# restoring position only works for version of less > 572
+if less_version >= 572:
+    _LESS_RESTORE_POSITION = True
+else:
+    _LESS_RESTORE_POSITION = False
+# _DEFAULT_LESS = "less -EXFRfM -PMurl\ lines\ \%lt-\%lb/\%L\ \%Pb\%$ %s"
+# -E : quit when reaching end of file (to behave like "cat")
+# -F : quit if content fits the screen (behave like "cat")
+# -X : does not clear the screen
+# -R : interpret ANSI colors correctly
+# -f : suppress warning for some contents
+# -M : long prompt (to have info about where you are in the file)
+# -W : hilite the new first line after a page skip (space)
+# -i : ignore case in search
+# -S : do not wrap long lines. Wrapping is done by offpunk, longlines
+# are there on purpose (such in asciiart)
+# --incsearch : incremental search starting rev581
+less_prompt = "page %%d/%%D- lines %%lb/%%L - %%Pb\\%%"
+if less_version >= 581:
+    less_base = CMDS["less"] + ' --incsearch --save-marks -~ -XRfWiS -P "%s"' % less_prompt
+elif less_version >= 572:
+    less_base = CMDS["less"] + " --save-marks -XRfMWiS"
+else:
+    less_base = CMDS["less"] + " -XRfMWiS"
+CMDS["less"] = less_base + " \"+''\" %s"
+CMDS["cat"] = less_base + " -EF %s"
+
+
 
 # We upgrade the cache only once at startup, hence the CACHE_UPGRADED variable
 # This is only to avoid unnecessary checks each time the cache is accessed
@@ -345,40 +427,6 @@ def find_root(url,absolute=False,return_value=""):
         root = urllib.parse.urlunparse((parsed.scheme, parsed.netloc, path, "","",""))
         return root
 
-# In terms of arguments, this can take an input file/string to be passed to
-# stdin, a parameter to do (well-escaped) "%" replacement on the command, a
-# flag requesting that the output go directly to the stdout, and a list of
-# additional environment variables to set.  An additional optional argument can
-# be used to supress output to stderr.
-def run(cmd, *, input=None, parameter=None, direct_output=False, env={}, no_err=False):
-    if parameter:
-        cmd = cmd % shlex.quote(parameter)
-    e = os.environ
-    e.update(env)
-    if isinstance(input, io.IOBase):
-        stdin = input
-        input = None
-    else:
-        if input:
-            input = input.encode()
-        stdin = None
-
-    stderr = subprocess.DEVNULL if no_err else subprocess.STDOUT
-    if not direct_output:
-        # subprocess.check_output() wouldn't allow us to pass stdin.
-        result = subprocess.run(
-            cmd,
-            check=True,
-            env=e,
-            input=input,
-            shell=True,
-            stdin=stdin,
-            stdout=subprocess.PIPE,
-            stderr=stderr,
-        )
-        return result.stdout.decode()
-    else:
-        subprocess.run(cmd, env=e, input=input, shell=True, stdin=stdin, stderr=stderr)
 
 
 global TERM_WIDTH

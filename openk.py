@@ -33,69 +33,25 @@ gettext.bindtextdomain('offpunk', _LOCALE_DIR)
 gettext.textdomain('offpunk')
 _ = gettext.gettext
 
-less_version = 0
-if not shutil.which(CMDS["less"]):
-    print(_('Please install the pager "less" to run Offpunk.'))
-    print(_("If you wish to use another pager, send me an email !"))
-    print(
-        _('(I’m really curious to hear about people not having "less" on their system.)')
-    )
-    sys.exit()
-output = run(CMDS["less"] + " --version")
-# We get less Version (which is the only integer on the first line)
-words = output.split("\n")[0].split()
-less_version = 0
-for w in words:
-    # On macOS the version can be something like 581.2 not just an int:
-    if all(_.isdigit() for _ in w.split(".")):
-        less_version = int(w.split(".", 1)[0])
-# restoring position only works for version of less > 572
-if less_version >= 572:
-    _LESS_RESTORE_POSITION = True
-else:
-    _LESS_RESTORE_POSITION = False
-
-
-# _DEFAULT_LESS = "less -EXFRfM -PMurl\ lines\ \%lt-\%lb/\%L\ \%Pb\%$ %s"
-# -E : quit when reaching end of file (to behave like "cat")
-# -F : quit if content fits the screen (behave like "cat")
-# -X : does not clear the screen
-# -R : interpret ANSI colors correctly
-# -f : suppress warning for some contents
-# -M : long prompt (to have info about where you are in the file)
-# -W : hilite the new first line after a page skip (space)
-# -i : ignore case in search
-# -S : do not wrap long lines. Wrapping is done by offpunk, longlines
-# are there on purpose (such in asciiart)
-# --incsearch : incremental search starting rev581
 def less_cmd(file, histfile=None, cat=False, grep=None):
-    less_prompt = "page %%d/%%D- lines %%lb/%%L - %%Pb\\%%"
-    if less_version >= 581:
-        less_base = CMDS["less"] + ' --incsearch --save-marks -~ -XRfWiS -P "%s"' % less_prompt
-    elif less_version >= 572:
-        less_base = CMDS["less"] + " --save-marks -XRfMWiS"
-    else:
-        less_base = CMDS["less"] + " -XRfMWiS"
-    _DEFAULT_LESS = less_base + " \"+''\" %s"
-    _DEFAULT_CAT = less_base + " -EF %s"
     if histfile:
         env = {"LESSHISTFILE": histfile}
     else:
         env = {}
     if cat and not grep:
-        cmd_str = _DEFAULT_CAT
+        cmd_str = CMDS["cat"]
     elif grep:
         if CMDS["grep"]:
             grep_cmd = CMDS["grep"]
             # case insensitive for lowercase search
             if grep.islower():
                 grep_cmd += " -i"
-            cmd_str = _DEFAULT_CAT + "|" + grep_cmd + " %s" % grep
+            cmd_str =  grep_cmd + " %s" % grep + " %s"
         else:
             toecho = _("please install \"grep\" to search in a %s")
             cmd_str = "echo %s"%toecho
     else:
-        cmd_str = _DEFAULT_LESS
+        cmd_str = CMDS["less"]
     run(cmd_str, parameter=file, direct_output=True, env=env)
 
 
