@@ -153,15 +153,15 @@ def get_possible_config_file_names_for_host(
     domain = parts.pop()
 
     first_possible_name = f"{domain}.{tld}{file_extension}"
-    possible_names = [first_possible_name, f".{first_possible_name}"]
+    possible_names = [ f".{first_possible_name}",first_possible_name,]
 
     # While we still have parts in the domain name, prepend the part
     # and create the 2 new possible names
     while len(parts) > 0:
         next_part = parts.pop()
-        possible_name = f"{next_part}.{possible_names[-2]}"
-        possible_names.append(possible_name)
+        possible_name = f"{next_part}.{possible_names[-1]}"
         possible_names.append(f".{possible_name}")
+        possible_names.append(possible_name)
 
     # Put the most specific file names first
     possible_names.reverse()
@@ -171,9 +171,9 @@ def get_possible_config_file_names_for_host(
 
 def get_config_file_for_host(config_files: list[str], host: str) -> str | None:
     possible_config_file_names = get_possible_config_file_names_for_host(host)
-    for config_file in config_files:
-        basename = os.path.basename(config_file)
-        for possible_config_file_name in possible_config_file_names:
+    for possible_config_file_name in possible_config_file_names:
+        for config_file in config_files:
+            basename = os.path.basename(config_file)
             if basename == possible_config_file_name:
                 return config_file
 
