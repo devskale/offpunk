@@ -1,6 +1,7 @@
 # Offpunk History
 
 ## 3.1 - Unreleased
+PACKAGERS: timg has been removed from suggestion, to favor chafa
 - Cut startup time in half by lazy loading optional modules
 - "redirect" now has support for "whitelist". Whitelisted websites will always be shown in full view, skipping readability/unmerdify
 - Support for multi-lines input in Gemini (by JMCS)

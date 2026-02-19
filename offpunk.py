@@ -1324,7 +1324,6 @@ class GeminiClient(cmd.Cmd):
         output += " - python-feedparser   : " + has(ansicat.load_FEED())
         output += " - python-bs4          : " + has(ansicat.load_HTML())
         output += " - python-readability  : " + has(ansicat.load_READABILITY())
-        output += " - timg 1.3.2+         : " + has(CMDS["timg"])
         output += " - chafa 1.10+         : " + has(CMDS["chafa"])
         output += _("\nNice to have:\n")
         output += " - python-setproctitle             : " + has(_HAS_SETPROCTITLE)
@@ -1335,7 +1334,7 @@ class GeminiClient(cmd.Cmd):
         output += " - MacOS clipboard                 : " + has(CMDS["pbcopy"])
 
         output += _("\nFeatures :\n")
-        output += _(" - Render images (chafa or timg)              : ") + has(
+        output += _(" - Render images (chafa)              : ") + has(
                 ansicat._RENDER_IMAGE
             )
         output += _(" - Render HTML (bs4, readability)             : ") + has(
