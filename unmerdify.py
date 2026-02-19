@@ -111,8 +111,10 @@ def get_config_files(
         filenames (list[str]): The list of filenames found with the .txt extension
     """
     filenames: list[str] = []
+    globs = glob.glob(f"{site_config_dir}/*.txt")
+    globs.extend(glob.glob(f"{site_config_dir}/.*.txt"))
 
-    for file in glob.iglob(f"{site_config_dir}/*.txt", include_hidden=True):
+    for file in globs:
         if file.endswith("LICENSE.txt"):
             continue
 
