@@ -229,7 +229,7 @@ class opencache:
                 # We actually put the body in a tmpfile before giving it to less
                 if not usecache:
                     tmpf = tempfile.NamedTemporaryFile(
-                        "w", encoding="UTF-8", delete=False
+                        "w", encoding="UTF-8", delete=False, prefix="openk."
                     )
                     self.temp_files[key] = tmpf.name
                     tmpf.write(body)
@@ -237,7 +237,7 @@ class opencache:
                 if key not in self.less_histfile:
                     firsttime = True
                     tmpf = tempfile.NamedTemporaryFile(
-                        "w", encoding="UTF-8", delete=False
+                        "w", encoding="UTF-8", delete=False, prefix="openk."
                     )
                     self.less_histfile[key] = tmpf.name
                 else:

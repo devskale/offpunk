@@ -23,6 +23,7 @@ PACKAGERS: timg has been removed from suggestion, to favor chafa
 - TRANSLATION: added Persian (Farsi) (by Mati Mohammadi)
 - refactorisation to handle every external binary in one place in offutils.py
 - Improve compatibility with python < 3.10 by removing type annotations
+- temporary files in /tmp/ are now identified with "openk." prefix (by Silica)
 
 ## 3.0 - February 9th 2026
 Changes since 2.8
