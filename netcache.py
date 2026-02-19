@@ -17,7 +17,7 @@ import gettext
 
 import ansicat
 import offutils
-from offutils import xdg, _LOCALE_DIR, get_url_redirected
+from offutils import xdg, _LOCALE_DIR, get_url_redirected, edit_file
 import offblocklist
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
@@ -105,6 +105,51 @@ def normalize_url(url):
             url = "gemini://" + url
     return url
 
+def multi_line_input(prompt, url="", meta="", options={}):
+    print (_("Ctrl+c to cancel. Press 'enter' on a blank line to open an external editor"))
+    text = input(prompt)
+    if text == "":
+        text = external_editor_input(url, meta, options)
+    return urllib.parse.quote(text)
+
+def external_editor_input(url, meta, options):
+    done = False
+    text = ""
+    initial_message = ""
+    initial_message += _("|# Editing input for url: ") + str(url) + '\n'
+    initial_message += _("|# The site said: ") + str(meta) + '\n'
+    initial_message += _("|# (lines starting with '|#' will be deleted)") + '\n'
+    initial_message += _("|# ") + '\n'
+    initial_message = initial_message.encode("utf-8")
+    while not done:
+        to_add = initial_message + text.encode("utf-8")
+        text = ""
+        # calling the new function
+        raw_text = edit_file(None, to_add, options)
+
+        if not raw_text is None:
+            for line in raw_text:
+                if not line.startswith(b"|#"):
+                    text += line.decode("utf-8")
+            print(text)
+            response = ""
+            while response not in ("a","e","c"):
+                response = input(_("(a)ccept, (e)dit again, (c)ancel? "))
+                response = response.lower()
+                if response == "a":
+                    done = True
+                elif response == "c":
+                    text = ""
+                    done = True
+                elif response == "e":
+                    break
+                else:
+                    pass
+        else:
+            # There was a problem with $EDITOR, or we can't get the file contents
+            text = ""
+            done = True
+    return text
 
 def cache_last_modified(url):
     if not url:
@@ -988,7 +1033,7 @@ def _fetch_gemini(
             if status == "11":
                 user_input = getpass.getpass("> ")
             else:
-                user_input = input("> ")
+                user_input = multi_line_input("> ", newurl, meta, kwargs)
             newurl = url.split("?")[0]
             return _fetch_gemini(newurl + "?" + user_input)
         else:

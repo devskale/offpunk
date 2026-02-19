@@ -37,6 +37,7 @@ from offutils import (
     _LOCALE_DIR,
     find_root,
     _LESS_RESTORE_POSITION,
+    edit_file,
 )
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
@@ -350,6 +351,8 @@ class GeminiClient(cmd.Cmd):
         if netloc.startswith("www."):
             netloc = netloc[4:]
         params = {}
+        if self.options["editor"]:
+            params["editor"] = self.options["editor"]
         params["timeout"] = self.options["short_timeout"]
         if limit_size:
             params["max_size"] = int(self.options["max_size_download"]) * 1000000
@@ -2177,35 +2180,9 @@ Use "view XX" where XX is a number to view information about link XX.
                         _("A name is required to create a new list. Use `list create NAME`")
                     )
             elif args[0] == "edit":
-                editor = None
-                if "editor" in self.options and self.options["editor"]:
-                    editor = self.options["editor"]
-                elif os.environ.get("VISUAL"):
-                    editor = os.environ.get("VISUAL")
-                elif os.environ.get("EDITOR"):
-                    editor = os.environ.get("EDITOR")
-                if editor:
-                    if len(args) > 1 and args[1] in self.list_lists():
-                        path = os.path.join(listdir, args[1] + ".gmi")
-                        try:
-                            # Note that we intentionally don't quote the editor.
-                            # In the unlikely case `editor` includes a percent
-                            # sign, we also escape it for the %-formatting.
-                            cmd = editor.replace("%", "%%") + " %s"
-                            run(cmd, parameter=path, direct_output=True)
-                        except Exception as err:
-                            print(err)
-                            print(_('Please set a valid editor with "set editor"'))
-                    else:
-                        print(_("A valid list name is required to edit a list"))
-                else:
-                    print(_("No valid editor has been found."))
-                    print(
-                        _("You can use the following command to set your favourite editor:")
-                    )
-                    #TRANSLATORS keep 'set editor', it's a command
-                    print(_("set editor EDITOR"))
-                    print(_("or use the $VISUAL or $EDITOR environment variables."))
+                if len(args) > 1 and args[1] in self.list_lists():
+                    path = os.path.join(listdir, args[1] + ".gmi")
+                    edit_file(path, "", self.options)
             elif args[0] == "delete":
                 if len(args) > 1:
                     if self.list_is_system(args[1]):

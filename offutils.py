@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 import urllib.parse
+import tempfile
 
 import netcache
 
@@ -560,3 +561,56 @@ def get_url_blocking_rule(url,redirectlist):
 def is_url_blocked(url,redirectlist):
     if get_url_blocking_rule(url,redirectlist): return True
     else: return False
+
+# Method for editing a file, or a temporal file.
+# It will find the user's editor, and if path to edit is None,
+# it will create a temporal file, add some text_to_append to it
+# (useful for instructions, context, placeholders, examples)
+# open it in the editor, return its contents if it was a temporal file
+def edit_file(path_to_edit, text_to_append="", options={}):
+    return_content=False
+    user_editor= None
+
+    if "editor" in options and options["editor"]:
+        user_editor = options["editor"]
+    elif os.environ.get("VISUAL"):
+        user_editor = os.environ.get("VISUAL")
+    elif os.environ.get("EDITOR"):
+        user_editor = os.environ.get("EDITOR")
+
+    if user_editor == None:
+        print(_("No valid editor has been found."))
+        print(
+            _("You can use the following command to set your favourite editor:")
+        )
+        #TRANSLATORS keep 'set editor', it's a command
+        print(_("set editor EDITOR"))
+        print(_("or use the $VISUAL or $EDITOR environment variables."))
+        return
+
+    if path_to_edit is None:
+        f = tempfile.NamedTemporaryFile(suffix=".tmp")
+        # only append to temp files
+        # we also only return the content in this case
+        if not text_to_append == "":
+            f.write(text_to_append)
+            f.flush()
+        path_to_edit = f.name
+        return_content = True
+
+    try:
+        # Note that we intentionally don't quote the editor.
+        # In the unlikely case `editor` includes a percent
+        # sign, we also escape it for the %-formatting.
+        cmd = user_editor.replace("%", "%%") + " %s"
+        run(cmd, parameter=path_to_edit, direct_output=True)
+    except Exception as err:
+        print(err)
+        print(_('Please set a valid editor with "set editor"'))
+    if return_content:
+        f.seek(0)
+        # lines are returned "raw" as a list of ... byte-streams?
+        # process outside as needed (see netcache.external_editor_input)
+        blob = f.readlines()
+        f.close()
+        return blob

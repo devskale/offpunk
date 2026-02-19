@@ -3,6 +3,7 @@
 ## 3.1 - Unreleased
 - Cut startup time in half by lazy loading optional modules
 - "redirect" now has support for "whitelist". Whitelisted websites will always be shown in full view, skipping readability/unmerdify
+- Support for multi-lines input in Gemini (by JMCS)
 - Adding support for tmux clipboard and cleaning clipboard code (by Stephen)
 - Default ON prompt color set to yellow (by Matin Mohammadi)
 - "copy" now default to "url" and works coherently 
