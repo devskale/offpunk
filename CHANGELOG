@@ -21,6 +21,7 @@
 - TRANSLATION: added Swedish SV (by Sebastian Rasmussen)
 - TRANSLATION: added Persian (Farsi) (by Mati Mohammadi)
 - refactorisation to handle every external binary in one place in offutils.py
+- Improve compatibility with python < 3.10 by removing type annotations
 
 ## 3.0 - February 9th 2026
 Changes since 2.8
