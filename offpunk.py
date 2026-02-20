@@ -772,7 +772,10 @@ class GeminiClient(cmd.Cmd):
             elif args and args[0] == "raw":
                 tmp = self.opencache.get_temp_filename(url)
                 if tmp:
-                    clipboard_copy(open(tmp, "rb"))
+                    with open(tmp) as f:
+                        tocopy = f.read()
+                        f.close()
+                    clipboard_copy(tocopy)
             elif args and args[0] == "cache":
                 clipboard_copy(netcache.get_cache_path(url))
             elif args and args[0] == "title":
