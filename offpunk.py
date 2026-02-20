@@ -754,9 +754,12 @@ class GeminiClient(cmd.Cmd):
         Use with "content" to copy the source of the whole page.
         Use with "cache" to copy the path of the cached content.
         Use with "title" to copy the title of the page.
-        Use with "link" to copy a link in the gemtext format to that page with the title.
+        Use with "link" to copy a link to that page in the gemtext format. 
+        Use with "mdlink" to copy a link to that page in the markdown format.
 
-        Default parameter is "url" """
+        Default parameter is "url" 
+
+        If the command is followed by an integer, that link will be used instead of current page."""
 
         if self.current_url:
             args = arg.split()
@@ -766,6 +769,7 @@ class GeminiClient(cmd.Cmd):
                 args.insert(0,"url")
             if args and len(args) >= 2 and args[1].isdecimal():
                 url = self.get_renderer().get_link(int(args[1]))
+                if not url: return
             if args and args[0] == "url":
                 print(url)
                 clipboard_copy(url)
@@ -777,16 +781,27 @@ class GeminiClient(cmd.Cmd):
                         f.close()
                     clipboard_copy(tocopy)
             elif args and args[0] == "cache":
-                clipboard_copy(netcache.get_cache_path(url))
+                cache = netcache.get_cache_path(url)
+                print(cache)
+                clipboard_copy(cache)
             elif args and args[0] == "title":
-                title = self.get_renderer(url).get_page_title()
-                clipboard_copy(title)
-                print(title)
+                r = self.get_renderer(url)
+                if r:
+                    title = r.get_page_title()
+                    clipboard_copy(title)
+                    print(title)
             elif args and args[0] == "link":
-                link = "=> %s %s" % (
-                    url,
-                    self.get_renderer(url).get_page_title(),
-                )
+                r = self.get_renderer(url)
+                title = ""
+                if r: title = r.get_page_title()
+                link = "=> %s %s" % (url,title)
+                print(link)
+                clipboard_copy(link)
+            elif args and args [0] == "mdlink":
+                r = self.get_renderer(url)
+                title = ""
+                if r:  title = r.get_page_title()
+                link = "[%s](%s)" %(title,url)
                 print(link)
                 clipboard_copy(link)
             elif args and args[0] == "content":

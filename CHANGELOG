@@ -8,6 +8,7 @@ PACKAGERS: timg has been removed from suggestion, to favor chafa
 - Adding support for tmux clipboard and cleaning clipboard code (by Stephen)
 - Default ON prompt color set to yellow (by Matin Mohammadi)
 - "copy" now default to "url" and works coherently 
+- new "copy mdlink" to create markdown links
 - hide pictures which are from blocked URL (and hide IMG links pointing to blocked URL)
 - "reply" now also looks for "contact" pages
 - CRASHFIX: "list" was crashing because of a bad call to super() (reported by Toby Kurien)
