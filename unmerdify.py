@@ -99,7 +99,7 @@ COMMANDS_PER_NAME: dict[str, Command] = {
 
 def get_config_files(
     site_config_dir: str, include_config_dir: bool = True
-) -> list[str]:
+) :
     """
     Read the *.txt files from the site_config directory and returns the file list.
 
@@ -111,8 +111,10 @@ def get_config_files(
         filenames (list[str]): The list of filenames found with the .txt extension
     """
     filenames: list[str] = []
+    globs = glob.glob(f"{site_config_dir}/*.txt")
+    globs.extend(glob.glob(f"{site_config_dir}/.*.txt"))
 
-    for file in glob.iglob(f"{site_config_dir}/*.txt", include_hidden=True):
+    for file in globs:
         if file.endswith("LICENSE.txt"):
             continue
 
@@ -125,14 +127,14 @@ def get_config_files(
     return filenames
 
 
-def get_host_for_url(url: str) -> str:
+def get_host_for_url(url: str) :
     parsed_uri = urlparse(url)
     return parsed_uri.netloc
 
 
 def get_possible_config_file_names_for_host(
     host: str, file_extension: str = ".txt"
-) -> list[str]:
+) :
     """
     The five filters config files can be of the form
 
@@ -169,7 +171,7 @@ def get_possible_config_file_names_for_host(
     return possible_names
 
 
-def get_config_file_for_host(config_files: list[str], host: str) -> str | None:
+def get_config_file_for_host(config_files: list[str], host: str) :
     possible_config_file_names = get_possible_config_file_names_for_host(host)
     for possible_config_file_name in possible_config_file_names:
         for config_file in config_files:
@@ -184,7 +186,7 @@ def is_unmerdifiable(url,ftr_site_config):
         else:
             return False
 
-def parse_site_config_file(config_file_path: str) -> dict | None:
+def parse_site_config_file(config_file_path: str) :
     config = {}
     with open(config_file_path, "r") as file:
         previous_command = None
@@ -280,7 +282,7 @@ def parse_site_config_file(config_file_path: str) -> dict | None:
     return config if config != {} else None
 
 
-def load_site_config_for_host(config_files: list[str], host: str) -> dict | None:
+def load_site_config_for_host(config_files: list[str], host: str) :
     logging.debug(f"-> Loading site config for {host}")
     config_file = get_config_file_for_host(config_files, host)
 
@@ -291,14 +293,14 @@ def load_site_config_for_host(config_files: list[str], host: str) -> dict | None
         logging.debug(f"-> No config file found for host {host}.")
 
 
-def load_site_config_for_url(config_files: list[str], url: str) -> dict | None:
+def load_site_config_for_url(config_files: list[str], url: str) :
     return load_site_config_for_host(config_files, get_host_for_url(url))
 
 
 # Content extractor code
 
 
-def replace_strings(site_config: dict, html: str) -> str:
+def replace_strings(site_config: dict, html: str) :
     replace_string_cmds = site_config.get("replace_string", [])
     find_string_cmds = site_config.get("find_string", [])
 
@@ -418,7 +420,7 @@ def remove_elements_by_xpath(xpath_expression, lxml_tree):
 
 def get_xpath_value_for_command(
     site_config: dict, command_name: str, lxml_tree
-) -> str | None:
+) :
     command_xpaths = site_config.get(command_name, [])
 
     for command_xpath in command_xpaths:
@@ -429,7 +431,7 @@ def get_xpath_value_for_command(
 
 def get_multiple_xpath_values_for_command(
     site_config: dict, command_name: str, lxml_tree
-) -> list[str]:
+) :
     command_xpaths = site_config.get(command_name, [])
     values = []
 
@@ -556,7 +558,7 @@ def unmerdify_html(html,url=None,ftr_site_config=None,loglevel=logging.ERROR,\
     return body_html
 
 
-def main() -> int:
+def main() :
     parser = argparse.ArgumentParser(
         description="Get the content, only the content: unenshittificator for the web"
     )

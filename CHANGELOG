@@ -1,6 +1,7 @@
 # Offpunk History
 
 ## 3.1 - Unreleased
+PACKAGERS: timg has been removed from suggestion, to favor chafa
 - Cut startup time in half by lazy loading optional modules
 - "redirect" now has support for "whitelist". Whitelisted websites will always be shown in full view, skipping readability/unmerdify
 - Support for multi-lines input in Gemini (by JMCS)
@@ -21,6 +22,9 @@
 - TRANSLATION: added Swedish SV (by Sebastian Rasmussen)
 - TRANSLATION: added Persian (Farsi) (by Mati Mohammadi)
 - refactorisation to handle every external binary in one place in offutils.py
+- Improve compatibility with python < 3.10 by removing type annotations
+- Improve compatibilty with python < 3.11 by removing include_hidden (by Lumin Etherlight)
+- temporary files in /tmp/ are now identified with "openk." prefix (by Silica)
 
 ## 3.0 - February 9th 2026
 Changes since 2.8
