@@ -48,3 +48,7 @@ Offpunk contains three tools that you can use independently in your project.
 - ansicat
 - openk
 
+## Projects using Offpunk
+
+=> https://git.thatit.be/neopunk.nvim.git/ Neopunk, a neovim plugin
+
