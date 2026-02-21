@@ -1648,15 +1648,16 @@ class HtmlRenderer(AbstractRenderer):
             ftr = ftr_site_config=self.options["ftr_site_config"]
             # we want to unmerdify only if there’s a rule
             if unmerdify.is_unmerdifiable(self.url,ftr):
+                ftr_config = unmerdify.get_config_file_for_url(self.url,ftr)
                 try:
                     summary = unmerdify.unmerdify_html(body,url=self.url,\
                             ftr_site_config=ftr,NOCONF_FAIL=False)
                 except Exception as e:
-                    self.cleanlib[mode] += _("Unmerdify CRASH") + "- %s - "%e
+                    self.cleanlib[mode] += _("Unmerdify CRASH with %s "%ftr_config) + "- %s - "%e
                 if not summary:
-                    self.cleanlib[mode] += _("Unmerdify failed - returns empty html")
+                    self.cleanlib[mode] += _("Unmerdify failed with %s - returns empty html "%ftr_config)
                 else:
-                    self.cleanlib[mode] += _("Unmerdify")
+                    self.cleanlib[mode] += _("Unmerdify with %s "%ftr_config)
         if not summary:
             # if no summary from unmerdify, we try readability
             if self.HAS_READABILITY:

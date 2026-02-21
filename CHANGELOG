@@ -11,6 +11,7 @@ PACKAGERS: timg has been removed from suggestion, to favor chafa
 - new "copy mdlink" to create markdown links
 - hide pictures which are from blocked URL (and hide IMG links pointing to blocked URL)
 - "reply" now also looks for "contact" pages
+- "info" now tells which file was used by unmerdify
 - CRASHFIX: "list" was crashing because of a bad call to super() (reported by Toby Kurien)
 - CRASHFIX: "--features" was crashing (patch by Étienne Mollier)
 - BUGFIX: "info" was sometimes returning the wrong cleaning method

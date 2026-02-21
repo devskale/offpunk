@@ -179,6 +179,11 @@ def get_config_file_for_host(config_files: list[str], host: str) :
             if basename == possible_config_file_name:
                 return config_file
 
+def get_config_file_for_url(url,ftr_site_config):
+        config_files = get_config_files(ftr_site_config)
+        host = get_host_for_url(url)
+        return get_config_file_for_host(config_files,host)
+
 def is_unmerdifiable(url,ftr_site_config):
         config_files = get_config_files(ftr_site_config)
         if load_site_config_for_url(config_files,url):
