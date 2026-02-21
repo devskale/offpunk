@@ -2451,6 +2451,10 @@ Use "view XX" where XX is a number to view information about link XX.
         print(_("End of sync"))
         self.sync_only = False
 
+    def do_EOF(self, arg):
+        print()
+        return self.do_quit(arg)
+
     # The end!
     def do_quit(self, *args):
         """Exit Offpunk."""
