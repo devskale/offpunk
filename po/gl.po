@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: offpunk 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-07 10:12+0100\n"
-"PO-Revision-Date: 2026-02-07 10:13+0100\n"
+"POT-Creation-Date: 2026-02-23 18:19+0100\n"
+"PO-Revision-Date: 2026-02-23 18:27+0100\n"
 "Last-Translator: jmcs <chavescesures@gmail.com>\n"
 "Language-Team: Galician <proxecto@trasno.gal>\n"
 "Language: gl_ES\n"
@@ -25,7 +25,7 @@ msgstr ""
 "\n"
 "Lector e navegador Gemini/Web/Gopher/RSS \"Offline Primeiro\"\n"
 
-#: offpunk.py:324
+#: offpunk.py:334
 msgid ""
 "This method might be considered \"the heart of Offpunk\".\n"
 "Everything involved in fetching a gemini resource happens here:\n"
@@ -41,7 +41,7 @@ msgstr ""
 "e lanzar un programa manexador, e actualizar o histórico.\n"
 "Non devolve nada."
 
-#: offpunk.py:463
+#: offpunk.py:475
 msgid ""
 "Display and manage the list of redirected URLs. This features is mostly useful to use privacy-"
 "friendly frontends for popular websites."
@@ -49,11 +49,11 @@ msgstr ""
 "Mostrar e xestionar a lista de URLs redirixidas. Esta funcionalidade é maiormente útil para usar "
 "frontends para sitios webs populares que respetan a privacidade."
 
-#: offpunk.py:499
+#: offpunk.py:518
 msgid "View or set various options."
 msgstr "Ver ou configurar varias opcións."
 
-#: offpunk.py:562
+#: offpunk.py:581
 msgid ""
 "Change the colors of your rendered text.\n"
 "\n"
@@ -72,7 +72,7 @@ msgid ""
 "theme can also be used with \"preset\" to load an existing theme.\n"
 "\n"
 "\"theme preset\"  : show available themes\n"
-"\"theme preset PRESET_NAME\" : swith to a given preset"
+"\"theme preset PRESET_NAME\" : switch to a given preset"
 msgstr ""
 "Cambiar as cores do texto renderizado.\n"
 "\n"
@@ -92,7 +92,7 @@ msgstr ""
 "\"theme preset\"  : amosar temas dispoñíbeis\n"
 "\"theme preset NOME_DO_PRESET\" : cambiar a o preset especificado"
 
-#: offpunk.py:651
+#: offpunk.py:670
 msgid ""
 "View or set handler commands for different MIME types.\n"
 "handler MIMETYPE : see handler for MIMETYPE\n"
@@ -118,9 +118,9 @@ msgstr ""
 "    handler .odt lowriter\n"
 "    handler docx lowriter"
 
-#: offpunk.py:679
+#: offpunk.py:698
 msgid ""
-"Create or modifiy an alias\n"
+"Create or modify an alias\n"
 "alias : show all existing aliases\n"
 "alias ALIAS : show the command linked to ALIAS\n"
 "alias ALIAS CMD : create or replace existing ALIAS to be linked to command CMD"
@@ -130,47 +130,59 @@ msgstr ""
 "alias ALIAS : amosar o comando ligado a ALIAS\n"
 "alias ALIAS COMANDO : crear ou reemplazar un ALIAS existente para estar ligado ao comando COMANDO"
 
-#: offpunk.py:714
+#: offpunk.py:733
 msgid "Use Offpunk offline by only accessing cached content"
 msgstr "Use Offpunk offline accedendo só a contido na caché"
 
-#: offpunk.py:723
+#: offpunk.py:742
 msgid "Use Offpunk online with a direct connection"
 msgstr "Use Offpunk en liña cunha conexión directa"
 
-#: offpunk.py:732
+#: offpunk.py:751
 msgid ""
 "Copy the content of the last visited page as gemtext/html in the clipboard.\n"
-"Use with \"url\" as argument to only copy the adress.\n"
+"Use with \"url\" as argument to only copy the address.\n"
 "Use with \"raw\" to copy ANSI content as seen in your terminal (with colour codes).\n"
+"Use with \"content\" to copy the source of the whole page.\n"
 "Use with \"cache\" to copy the path of the cached content.\n"
 "Use with \"title\" to copy the title of the page.\n"
-"Use with \"link\" to copy a link in the gemtext format to that page with the title."
+"Use with \"link\" to copy a link to that page in the gemtext format. \n"
+"Use with \"mdlink\" to copy a link to that page in the markdown format.\n"
+"\n"
+"Default parameter is \"url\" \n"
+"\n"
+"If the command is followed by an integer, that link will be used instead of current page."
 msgstr ""
 "Copiar o contido da última páxina visitada en formato gemtext/html no portapapeis.\n"
 "Úseo con \"url\" como argumento para copiar só o enderezo.\n"
 "Úseo con \"raw\" para copiar contido ANSI tal como o ve no seu terminal (con códigos de cor).\n"
+"Úseo con \"content\" para copiar o código fonte da páxina completa.\n"
 "Úseo con \"cache\" para copiar a ruta ao contido en caché.\n"
 "Úseo con \"title\" para copiar o título da páxina.\n"
-"Úseo con \"link\" para copiar unha ligazón en formato gemtext á páxina, co título."
+"Úseo con \"link\" para copiar unha ligazón á páxina en formato gemtext.\n"
+"Úseo con \"mdlink\" para copiar unha ligazón á páxina en formato markdown.\n"
+"\n"
+"O parámetro predeterminado é \"url\" \n"
+"\n"
+"Se a orde vai seguida dun número, empregarase esa ligazón en lugar da páxina actual."
 
-#: offpunk.py:772
+#: offpunk.py:821
 msgid ""
 "Send current page by email to someone else.\n"
 "Use with \"url\" as first argument to send only the address.\n"
 "Use with \"text\" as first argument to send the full content. TODO\n"
 "Without argument, \"url\" is assumed.\n"
-"Next arguments are the email adresses of the recipients.\n"
+"Next arguments are the email addresses of the recipients.\n"
 "If no destination, you will need to fill it in your mail client."
 msgstr ""
 "Enviar a páxina actual por email a alguén.\n"
 "Úseo con \"url\" como primeiro argumento para enviar só o enderezo.\n"
 "Úseo con \"text\" como primeiro argumento para enviar o contido completo. PENDENTE\n"
 "Sen argumento, asúmese \"url\" .\n"
-"Os seguintes argumentos son o enderezo email do destinatario.\n"
+"Os seguintes argumentos son o enderezo email do(s) destinatario(s).\n"
 "Se non hai destinatario, terá que introducilo no seu cliente de correo."
 
-#: offpunk.py:817
+#: offpunk.py:866
 msgid ""
 "Reply by email to a page by trying to find a good email for the author.\n"
 "If an email is provided as an argument, it will be used.\n"
@@ -184,7 +196,7 @@ msgstr ""
 "- \"save\" : permite detectar e gardar o correo sen realmente enviar o email.\n"
 "- \"save novo@email\" : gardar un novo email de resposta para substituir a un existente"
 
-#: offpunk.py:944
+#: offpunk.py:1003
 msgid ""
 "Manipulate cookies:\n"
 "\"cookies import <file> [url]\" - import cookies from file to be used with [url]\n"
@@ -201,15 +213,15 @@ msgstr ""
 "\n"
 "Para obter unha coockie en formato ficheiro txt, utilice a extensión cookie-txt para Firefox."
 
-#: offpunk.py:999
+#: offpunk.py:1058
 msgid "Go to a gemini URL or marked item."
 msgstr "Ir a unha URL gemini ou a un elemento marcado."
 
-#: offpunk.py:1043
+#: offpunk.py:1102
 msgid "Reload the current URL."
 msgstr "Recargar a URL actual."
 
-#: offpunk.py:1058
+#: offpunk.py:1117
 msgid ""
 "Go up one directory in the path.\n"
 "Take an integer as argument to go up multiple times.\n"
@@ -221,15 +233,15 @@ msgstr ""
 "Use \"~\" para ir á raíz do usuario\n"
 "Use \"/\" para ir á raíz do servidor."
 
-#: offpunk.py:1083
+#: offpunk.py:1142
 msgid "Go back to the previous gemini item."
 msgstr "Volver ao elemento gemini previo."
 
-#: offpunk.py:1092
+#: offpunk.py:1151
 msgid "Go forward to the next gemini item."
 msgstr "Avanzar ao seguinte elemento gemini."
 
-#: offpunk.py:1102
+#: offpunk.py:1161
 msgid ""
 "Go to the root of current capsule/gemlog/page\n"
 "If arg is \"/\", the go to the real root of the server"
@@ -237,7 +249,7 @@ msgstr ""
 "Ir á raíz da páxina/cápsula/gemlog actual\n"
 "Se o argumento é \"/\", ir á raíz real do servidor"
 
-#: offpunk.py:1111
+#: offpunk.py:1170
 msgid ""
 "Add index items as waypoints on a tour, which is basically a FIFO\n"
 "queue of gemini items.\n"
@@ -259,7 +271,7 @@ msgstr ""
 "O elemento actual pódese engadir de novo ao final do tour con 'tour .'.\n"
 "Pódese listar o tour actual con 'tour ls' e vacialo con 'tour clear'."
 
-#: offpunk.py:1181
+#: offpunk.py:1240
 msgid ""
 "Manage your client certificates (identities) for a site.\n"
 "`certs` will display all valid certificates for the current site\n"
@@ -271,7 +283,7 @@ msgstr ""
 "'certs new <nome> <dias-de-validez> <url[opcional]>' creará un certificado novo. Se non se "
 "especifica unha url, usarase o sitio aberto actual."
 
-#: offpunk.py:1208
+#: offpunk.py:1267
 msgid ""
 "Mark the current item with a single letter.  This letter can then\n"
 "be passed to the 'go' command to return to the current item later.\n"
@@ -283,17 +295,17 @@ msgstr ""
 "Pense nas marcas como no editor vi: 'mark a'='ma' e 'go a'=''a'.\n"
 "As marcas son temporais ata cerrar offpunk (non se gardan no disco)."
 
-#: offpunk.py:1223
+#: offpunk.py:1282
 msgid "Display information about current page."
 msgstr "Amosar información da páxina actual."
 
-#: offpunk.py:1262
+#: offpunk.py:1321
 msgid "Display version and system information."
 msgstr "Amosar información de versión e sistema."
 
-#: offpunk.py:1326
+#: offpunk.py:1385
 msgid ""
-"Send a mail to the offpunk-devel list with technical informations\n"
+"Send a mail to the offpunk-devel list with technical information\n"
 "about your offpunk version. You will be prompted to write an email\n"
 "describing how to reproduce the bug."
 msgstr ""
@@ -301,7 +313,7 @@ msgstr ""
 "acerca da súa versión de offpunk. Pediráselle que escriba un correo electrónico\n"
 "describindo como reproducir o erro."
 
-#: offpunk.py:1346
+#: offpunk.py:1405
 msgid ""
 "Search on Gemini using the engine configured (by default kennedy.gemi.dev)\n"
 "You can configure it using \"set search URL\".\n"
@@ -311,7 +323,7 @@ msgstr ""
 "Pode configuralo usando \"set search URL\".\n"
 "URL debería conter un \"%s\" que se substituirá polo termo de busca."
 
-#: offpunk.py:1354
+#: offpunk.py:1413
 msgid ""
 "Search on the web using the engine configured (by default wiby.me)\n"
 "You can configure it using \"set websearch URL\".\n"
@@ -321,11 +333,11 @@ msgstr ""
 "Pode configuralo usando \"set websearch URL\".\n"
 "URL debería conter un \"%s\" que se substiruirá polo termo de busca."
 
-#: offpunk.py:1362
+#: offpunk.py:1421
 msgid ""
 "Search on wikipedia using the configured Gemini interface.\n"
 "The first word should be the two letters code for the language.\n"
-"Exemple : \"wikipedia en Gemini protocol\"\n"
+"Example : \"wikipedia en Gemini protocol\"\n"
 "But you can also use abbreviations to go faster:\n"
 "\"wen Gemini protocol\". (your abbreviation might be missing, report the bug)\n"
 "while it's not added, \"w\" is still an option you can use:\n"
@@ -345,23 +357,23 @@ msgstr ""
 "\"set wikipedia URL\", onde URL debe conter dous \"%s\", o primeiro\n"
 "usado para o idioma, e o segundo para a cadea de busca."
 
-#: offpunk.py:1383
+#: offpunk.py:1442
 msgid "Open the specified XKCD comics (a number is required as parameter)"
 msgstr "Abrir o cómic de XKCD especificado (requírese un número como parámetro)"
 
-#: offpunk.py:1391
+#: offpunk.py:1450
 msgid "Submit a search query to the geminispace.info search engine."
 msgstr "Enviar unha busca ao motor de busca geminispace.info."
 
-#: offpunk.py:1399
+#: offpunk.py:1458
 msgid "Display history."
 msgstr "Amosar o historial."
 
-#: offpunk.py:1404
+#: offpunk.py:1463
 msgid "Find in current page by displaying only relevant lines (grep)."
 msgstr "Buscar na páxina actual mostrando só as liñas relevantes (grep)."
 
-#: offpunk.py:1408
+#: offpunk.py:1467
 msgid ""
 "Display all the links for the current page.\n"
 "   If argument N is provided, then page through N links at a time.\n"
@@ -373,24 +385,24 @@ msgstr ""
 "\"links 10\" amosará as primeiras 10 ligazóns, despois da 11 á 20, etc.\n"
 "se N é 0, amosaranse todas as ligazóns"
 
-#: offpunk.py:1429
+#: offpunk.py:1488
 msgid "DEPRECATED: List contents of current index."
 msgstr "DEPRECADO: Lista contidos do índice actual."
 
-#: offpunk.py:1435
+#: offpunk.py:1494
 msgid "Default action when line is empty"
 msgstr "Acción predeterminada se a liña está baleira"
 
-#: offpunk.py:1451
+#: offpunk.py:1510
 msgid "Display RSS or Atom feeds linked to the current page."
 msgstr "Amosar feeds RSS ou Atom ligados á páxina actual."
 
-#: offpunk.py:1476
+#: offpunk.py:1535
 msgid ""
 "Run most recently visited item through \"less\" command, restoring previous position.\n"
 "Use \"view normal\" to see the default article view on html page.\n"
 "Use \"view full\" to see a complete html page instead of the article view.\n"
-"Use \"view swich\" to switch between normal and full\n"
+"Use \"view switch\" to switch between normal and full\n"
 "Use \"view XX\" where XX is a number to view information about link XX.\n"
 "(full, feed, feeds have no effect on non-html content)."
 msgstr ""
@@ -401,7 +413,7 @@ msgstr ""
 "Use \"view XX\" where XX é un número para ver información acerca da ligazón XX.\n"
 "('full', 'feed', 'feeds' non ten efecto en contido non-html)."
 
-#: offpunk.py:1522
+#: offpunk.py:1581
 msgid ""
 "Open current item with the configured handler or xdg-open.\n"
 "Use \"open url\" to open current URL in a browser.\n"
@@ -415,7 +427,7 @@ msgstr ""
 "Pódese combinar con \"open url 2 4\" para abrir a URL das ligazóns\n"
 "vexa o comando \"handler\" para configurar o seu manexador."
 
-#: offpunk.py:1557
+#: offpunk.py:1616
 msgid ""
 "Send the content of the current page to the shell and pipe it.\n"
 "You are supposed to write what will come after the pipe. For example,\n"
@@ -433,7 +445,7 @@ msgstr ""
 "'!' é un atallo útil.\n"
 "> !grep CADEA | wc -l"
 
-#: offpunk.py:1578
+#: offpunk.py:1637
 msgid ""
 "Save an item to the filesystem.\n"
 "'save n filename' saves menu item n to the specified filename.\n"
@@ -445,7 +457,7 @@ msgstr ""
 "'save nome_ficheiro' garda o último elemento visto ao nome de ficheiro especificado.\n"
 "'save n' garda o elemento de menú 'n' a un nome de ficheiro 'automáxico'."
 
-#: offpunk.py:1654
+#: offpunk.py:1713
 msgid ""
 "Print the url of the current page.\n"
 "Use \"url XX\" where XX is a number to print the url of link XX.\n"
@@ -455,7 +467,7 @@ msgstr ""
 "Use \"url XX\", onde XX é un número, para imprimir a url do link XX.\n"
 "\"url\" tamén se pode 'pipear' ao intérprete de ordes, usando o 'pipe' \"|\"."
 
-#: offpunk.py:1676
+#: offpunk.py:1735
 msgid ""
 "Add the current URL to the list specified as argument.\n"
 "If no argument given, URL is added to Bookmarks.\n"
@@ -467,7 +479,7 @@ msgstr ""
 "Pode pasar un número de ligazón como segundo argumento para engadir a ligazón.\n"
 "\"add $LISTA XX\" engadirá a ligazón número XX á lista $LISTA"
 
-#: offpunk.py:1721
+#: offpunk.py:1780
 msgid ""
 "Subscribe to current page by saving it in the \"subscribed\" list.\n"
 "If a new link is found in the page during a --sync, the new link is automatically\n"
@@ -479,7 +491,7 @@ msgstr ""
 "automaticamente e engadirase ao seu próximo tour.\n"
 "Para de-subscribirse, quite a páxina da lista \"subscribed\"."
 
-#: offpunk.py:1761
+#: offpunk.py:1820
 msgid ""
 "Show or access the bookmarks menu.\n"
 "'bookmarks' shows all bookmarks.\n"
@@ -491,7 +503,7 @@ msgstr ""
 "'bookmarks n' navega inmediatamente ao elemento n no ménú de marcadores.\n"
 "Os marcadores gárdanse usando o comando 'add'."
 
-#: offpunk.py:1775
+#: offpunk.py:1834
 msgid ""
 "Archive current page by removing it from every list and adding it to\n"
 "archives, which is a special historical list limited in size. It is similar to `move archives`."
@@ -499,7 +511,7 @@ msgstr ""
 "Arquivar a páxina actual borrándoa de todas as listas e engadíndoa á lista\n"
 "'archives', que é unha lista histórica especial limitada en tamaño. É similar a 'move archives'."
 
-#: offpunk.py:2010
+#: offpunk.py:2074
 msgid ""
 "move LIST will add the current page to the list LIST.\n"
 "With a major twist: current page will be removed from all other lists.\n"
@@ -509,7 +521,7 @@ msgstr ""
 "Con unha diferenza importante:a páxina actual quitarase de todas as outras listas.\n"
 "Se a páxina actual non estaba nunha lista, este comando é similar a 'add LISTA'."
 
-#: offpunk.py:2091
+#: offpunk.py:2155
 msgid ""
 "Manage list of bookmarked pages.\n"
 "- list : display available lists\n"
@@ -530,7 +542,7 @@ msgid ""
 "\n"
 "The following lists cannot be removed or frozen but can be edited with \"list edit\"\n"
 "- list archives  : contains last 200 archived URLs\n"
-"- history        : contains last 200 visisted URLs\n"
+"- history        : contains last 200 visited URLs\n"
 "- to_fetch       : contains URLs that will be fetch during the next sync\n"
 "- tour           : contains the next URLs to visit during a tour (see \"help tour\")"
 msgstr ""
@@ -556,20 +568,20 @@ msgstr ""
 "\n"
 "As seguintes listas non se poden quitar nen \"conxelar\" ('freeze') pero pódense editar con \"list "
 "edit\"\n"
-"- list archives  : contén as últimas 200 URLSs arquivadas\n"
-"- history        : contén as últimas 200 URLSs visitadas\n"
+"- list archives  : contén as últimas 200 URLs arquivadas\n"
+"- history        : contén as últimas 200 URLs visitadas\n"
 "- to_fetch       : contén as URLs que se descargarán duranto o próximo sync\n"
 "- tour           : contén as pŕoximas URLs a visitar durante o tour (vexa \"help tour\")"
 
-#: offpunk.py:2215
+#: offpunk.py:2253
 msgid "ALARM! Recursion detected! ALARM! Prepare to eject!"
 msgstr "ALARMA! Recursión detectada! ALARMA! Prepárese para evacuar!"
 
-#: offpunk.py:2242
+#: offpunk.py:2280
 msgid "Access the offpunk.net tutorial (online)"
 msgstr "Acceder ao tutorial en offpunk.net (en liña)"
 
-#: offpunk.py:2246
+#: offpunk.py:2284
 msgid ""
 "Synchronize all bookmarks lists and URLs from the to_fetch list.\n"
 "- New elements in pages in subscribed lists will be added to tour\n"
@@ -593,41 +605,33 @@ msgstr ""
 "\n"
 "Argumento : a duración da validez da caché (en segundos)."
 
-#: offpunk.py:2418
+#: offpunk.py:2460
 msgid "Exit Offpunk."
 msgstr "Sair de Offpunk."
 
-#: ansicat.py:60
-msgid "To improve your web experience (less cruft in webpages),"
-msgstr "Para mellorar a súa experiencia web (menos morralla nas páxinas web),"
-
-#: ansicat.py:61
-msgid "please install python3-readability or readability-lxml"
-msgstr "por favor instale python3-readability ou readability-lxml"
-
-#: ansicat.py:100
+#: ansicat.py:111
 msgid "To render images inline, you need either chafa >= 1.10 or timg > 1.3.2"
 msgstr "Para renderizar imaxes en liña, precísase ou chafa >= 1.10, ou timg > 1.3.2"
 
-#: ansicat.py:203
-msgid "No cleaning required"
-msgstr "Non se requeriu limpeza"
+#: ansicat.py:524
+msgid "No cleaning found for mode"
+msgstr "Non se requeriu limpeza para o modo"
 
-#: ansicat.py:515
+#: ansicat.py:529
 #, python-format
 msgid "%s is not a valid link for %s"
 msgstr "%s non é unha ligazón válida para %s"
 
-#: ansicat.py:601
+#: ansicat.py:615
 #, python-format
 msgid "Urljoin Error: Could not make an URL out of %s and %s"
 msgstr "Erro de Urljoin: Non se puido construir unha URL a partir de %s e máis %s"
 
-#: ansicat.py:929
+#: ansicat.py:943
 msgid "Error rendering Gopher "
 msgstr "Erro ao renderizar Gopher "
 
-#: ansicat.py:1068
+#: ansicat.py:1082
 msgid ""
 "\n"
 "## Bookmarks Lists (updated during sync)\n"
@@ -635,7 +639,7 @@ msgstr ""
 "\n"
 "## Listas de marcadores (actualízanse durante o 'sync')\n"
 
-#: ansicat.py:1071
+#: ansicat.py:1085
 msgid ""
 "\n"
 "## Subscriptions (new links in those are added to tour)\n"
@@ -643,7 +647,7 @@ msgstr ""
 "\n"
 "##Subscripcións  (ligazóns novas nestas páxinas engadiranse ao tour)\n"
 
-#: ansicat.py:1074
+#: ansicat.py:1088
 msgid ""
 "\n"
 "## Frozen (fetched but never updated)\n"
@@ -651,7 +655,7 @@ msgstr ""
 "\n"
 "## Conxeladas (descárganse pero non se actualizan)\n"
 
-#: ansicat.py:1077
+#: ansicat.py:1091
 msgid ""
 "\n"
 "## System Lists\n"
@@ -659,11 +663,47 @@ msgstr ""
 "\n"
 "## Listas do sistema\n"
 
-#: ansicat.py:1258 ansicat.py:1319
+#: ansicat.py:1277 ansicat.py:1338
 msgid "HTML document detected. Please install python-bs4 and python-readability."
 msgstr "Documento HTML detectado. Por favor, instale python-bs4 e python-readability."
 
-#: ansicat.py:1741
+#: ansicat.py:1641
+#, python-format
+msgid "Full because %s is whitelisted"
+msgstr "\"Full\" porque %s está na lista branca"
+
+#: ansicat.py:1645
+msgid "Full as requested"
+msgstr "\"Full\" como se pediu"
+
+#: ansicat.py:1656
+#, python-format
+msgid "Unmerdify CRASH with %s "
+msgstr "ERRO de Unmerdify con %s "
+
+#: ansicat.py:1658
+#, python-format
+msgid "Unmerdify failed with %s - returns empty html "
+msgstr "Unmerdify fallou con %s - devolve html valeiro"
+
+#: ansicat.py:1660
+#, python-format
+msgid "Unmerdify with %s "
+msgstr "Unmerdify con %s "
+
+#: ansicat.py:1667
+msgid "Readability"
+msgstr "Readability"
+
+#: ansicat.py:1670
+msgid "Full (Readability failed)"
+msgstr "\"Full\" (Readability fallou)"
+
+#: ansicat.py:1673
+msgid "Full (No readability installed)"
+msgstr "\"Full\" (Readability non está instalado)"
+
+#: ansicat.py:1771
 msgid ""
 "\n"
 "> Please install python-bs4 to parse HTML"
@@ -671,7 +711,7 @@ msgstr ""
 "\n"
 "> Por favor, instale python-bs4 para parsear HTML"
 
-#: ansicat.py:1743
+#: ansicat.py:1773
 msgid ""
 "\n"
 "> Picture not in cache. Please reload this page.\n"
@@ -679,16 +719,16 @@ msgstr ""
 "\n"
 "> A imaxe non está en caché. Por favor, recargue esta páxina. ('reload')\n"
 
-#: ansicat.py:1826
+#: ansicat.py:1856
 msgid "Cannot guess the mime type of the file. Please install \"file\"."
 msgstr "Non se pode averiguar o tipo MIME do ficheiro. Por favor, instale \\\"file\\\"."
 
-#: ansicat.py:1940
+#: ansicat.py:1970
 #, python-format
 msgid "Could not render %s"
 msgstr "Non se puido renderizar %s"
 
-#: ansicat.py:1945
+#: ansicat.py:1975
 msgid ""
 "ansicat is a terminal rendering tool that will render multiple formats (HTML,             Gemtext, "
 "RSS, Gophermap, Image) into ANSI text and colors.\n"
@@ -704,20 +744,20 @@ msgstr ""
 "            Si o contido contén ligazóns, pódese especificar a URL orixinal do contido             "
 "para así modificar correctamente as ligazóns relativas."
 
-#: ansicat.py:1966
+#: ansicat.py:1996
 msgid "Renderer to use. Available: auto, gemtext, html, feed, gopher, image, folder, plaintext"
 msgstr ""
 "Renderizador a empregar. Dispoñíbeis: auto, gemtext, html, feed, gopher, image, folder, plaintext"
 
-#: ansicat.py:1968
+#: ansicat.py:1998
 msgid "Mime of the content to parse"
 msgstr "MIME do contido a parsear"
 
-#: ansicat.py:1972
+#: ansicat.py:2002
 msgid "Original URL of the content"
 msgstr "URL orixinal do contido"
 
-#: ansicat.py:1977 openk.py:371 opnk.py:371
+#: ansicat.py:2007 openk.py:353 opnk.py:353
 msgid ""
 "Which mode should be used to render: normal (default), full or "
 "source.                                With HTML, the normal mode try to extract the article."
@@ -725,27 +765,51 @@ msgstr ""
 "Que modo se debe usar para renderizar: normal (por defecto), full ou "
 "source.                                Con HTML, o modo normal intentará extraer o artigo."
 
-#: ansicat.py:1986 openk.py:380 opnk.py:380
+#: ansicat.py:2016 openk.py:362 opnk.py:362
 msgid "Which mode should be used to render links: none (default) or end"
 msgstr "Que modo se debería usar para amosar ligazóns: 'none' (predeterminado) ou 'end'"
 
-#: ansicat.py:1994
+#: ansicat.py:2024
 msgid "Path to the text to render (default to stdin)"
 msgstr "Ruta ao texto a renderizar (por defecto, a entrada estándar)"
 
-#: ansicat.py:2017
+#: ansicat.py:2047
 msgid "Ansicat needs at least one file as an argument"
 msgstr "Ansicat precisa cando menos un ficheiro como argumento"
 
-#: ansicat.py:2021
+#: ansicat.py:2051
 msgid "Format or mime should be specified when running with stdin"
 msgstr "Débese especificar formato ou MIME cando se executa coa entrada estándar"
 
-#: netcache.py:134
+#: netcache.py:109
+msgid "Ctrl+c to cancel. Press 'enter' on a blank line to open an external editor"
+msgstr "Ctrl+c para cancelar. Prema 'intro' na liña en branco para abrir un editor externo"
+
+#: netcache.py:119
+msgid "|# Editing input for url: "
+msgstr "|# Editando entrada para a url: "
+
+#: netcache.py:120
+msgid "|# The site said: "
+msgstr "|# O sitio dixo: "
+
+#: netcache.py:121
+msgid "|# (lines starting with '|#' will be deleted)"
+msgstr "|# (as liñas que comezan por '|#' serán eliminadas)"
+
+#: netcache.py:122
+msgid "|# "
+msgstr "|# "
+
+#: netcache.py:136
+msgid "(a)ccept, (e)dit again, (c)ancel? "
+msgstr "(a)ceptar, (e)ditar de novo, (c)ancelar? "
+
+#: netcache.py:175
 msgid "We return False because path is too long"
 msgstr "Retornamos False porque a ruta é demasiado longa"
 
-#: netcache.py:322
+#: netcache.py:363
 #, python-format
 msgid ""
 "ERROR while caching %s\n"
@@ -754,141 +818,141 @@ msgstr ""
 "ERRO mentras se cacheaba %s\n"
 "\n"
 
-#: netcache.py:327
+#: netcache.py:368
 msgid "If you believe this error was temporary, type reload.\n"
 msgstr "Se pensa que este erro foi temporal, escriba 'reload'.\n"
 
-#: netcache.py:328
+#: netcache.py:369
 msgid "The resource will be tentatively fetched during next sync.\n"
 msgstr "Intentarase descargar o recurso no seguinte sync.\n"
 
-#: netcache.py:362
+#: netcache.py:407
 #, python-format
 msgid "Size of %s is %s Mo\n"
 msgstr "O tamaño de %s é %s Mb\n"
 
-#: netcache.py:363
+#: netcache.py:408
 #, python-format
 msgid "Offpunk only download automatically content under %s Mo\n"
 msgstr "Offpunk só descargará automaticamente contido de menos de %s Mb\n"
 
-#: netcache.py:366
+#: netcache.py:411
 msgid "To retrieve this content anyway, type 'reload'."
 msgstr "Para descargar este contido igualmente, escriba 'reload'."
 
-#: netcache.py:406
+#: netcache.py:451
 #, python-format
 msgid "  -> Receiving stream: %s%% of allowed data"
 msgstr "  -> Recibindo fluxo: %s%% dos datos permitidos"
 
-#: netcache.py:572
+#: netcache.py:617
 msgid "Certificate not valid until: {}!"
 msgstr "O certificado non é válido ata: {}!"
 
-#: netcache.py:576
+#: netcache.py:621
 msgid "Certificate expired as of: {})!"
 msgstr "O certificado expirou no: {})!"
 
-#: netcache.py:605
+#: netcache.py:650
 msgid "Hostname does not match certificate common name or any alternative names."
 msgstr "O hostname non coincide co common name nen ningún dos names alternativos do certificado."
 
-#: netcache.py:661
+#: netcache.py:706
 msgid "[SECURITY WARNING] Unrecognised certificate!"
 msgstr "[AVISO DE SEGURIDADE] certificado non recoñecido!"
 
-#: netcache.py:663
+#: netcache.py:708
 msgid "The certificate presented for {} ({}) has never been seen before."
 msgstr "É a primeira vez que se ve o certificado presentado para {} ({})."
 
-#: netcache.py:667
+#: netcache.py:712
 msgid "This MIGHT be a Man-in-the-Middle attack."
 msgstr "Isto PODERÍA ser un ataque Man-in-the-Middle."
 
-#: netcache.py:669
+#: netcache.py:714
 msgid "A different certificate has previously been seen {} times."
 msgstr "Un certificado diferente veuse anteriormente {} veces."
 
-#: netcache.py:675
+#: netcache.py:720
 msgid "That certificate has expired, which reduces suspicion somewhat."
 msgstr "Ese certificado expirou, o que reduce en certa maneira a sospeita."
 
-#: netcache.py:677
+#: netcache.py:722
 msgid "That certificate is still valid for: {}"
 msgstr "O certificado aínda é válido para: {}"
 
-#: netcache.py:679
+#: netcache.py:724
 msgid "Attempt to verify the new certificate fingerprint out-of-band:"
 msgstr "Intente verificar a pegada do novo certificado por outra canle:"
 
 #. TRANSLATORS: keep "Y/N" because the answer has to be one of those
-#: netcache.py:685
+#: netcache.py:730
 msgid "Accept this new certificate? Y/N "
 msgstr "Aceptar este novo certificado? Y/N "
 
-#: netcache.py:692
+#: netcache.py:737
 msgid "TOFU Failure!"
 msgstr "Erro de TOFU!"
 
-#: netcache.py:789
+#: netcache.py:834
 msgid "There are no certificates available for this site."
 msgstr "Non hai certificados dispoñíbeis para este sitio."
 
 #. TRANSLATORS: keep the "y/n"
-#: netcache.py:791
+#: netcache.py:836
 msgid "Do you want to create one? (y/n) "
 msgstr "Quere crear un novo? (y/n) "
 
-#: netcache.py:793
+#: netcache.py:838
 msgid "Name for this certificate: "
 msgstr "Nome para este certificado: "
 
-#: netcache.py:794
+#: netcache.py:839
 msgid "Validity in days: "
 msgstr "Validez en días: "
 
-#: netcache.py:801
+#: netcache.py:846
 msgid "The name or validity you typed are invalid"
 msgstr "O nome ou validez que escribiu non son válidos"
 
-#: netcache.py:806
+#: netcache.py:851
 msgid "The one available certificate for this site is:"
 msgstr "O único certificado dispoñibel para este sitio é:"
 
-#: netcache.py:809
+#: netcache.py:854
 msgid "The {} available certificates for this site are:"
 msgstr "Os {} certificados dispoñibeis para este sitio son:"
 
-#: netcache.py:818
+#: netcache.py:863
 msgid "which certificate do you want to use? > "
 msgstr "que certificado quere empregar? > "
 
-#: netcache.py:903
+#: netcache.py:948
 msgid "This identity doesn't exist for this site (or is disabled)."
 msgstr "Esta identidade non existe para este sitio (ou está deshabilitada)."
 
-#: netcache.py:968 netcache.py:974
+#: netcache.py:1013 netcache.py:1019
 msgid "Received invalid header from server!"
 msgstr "Recibiuse unha cabeceira non válida do servidor!"
 
-#: netcache.py:999
+#: netcache.py:1046
 msgid "URL redirects to itself!"
 msgstr "A URL redirixe a sí mesma!"
 
-#: netcache.py:1001
+#: netcache.py:1048
 msgid "Caught in redirect loop!"
 msgstr "Atrapados nun bucle de redirección!"
 
-#: netcache.py:1004
+#: netcache.py:1051
 #, python-format
 msgid "Refusing to follow more than %d consecutive redirects!"
 msgstr "Rexeitando seguir máis de %d redireccións consecutivas!"
 
-#: netcache.py:1035
+#: netcache.py:1082
 msgid "You need to provide a client-certificate to access this page."
 msgstr "Precisa empregar un certificado de cliente para acceder a esta páxina."
 
-#: netcache.py:1039
+#: netcache.py:1086
 msgid ""
 "You need to provide a client-certificate to access this page.\r\n"
 "Type \"certs\" to create or re-use one"
@@ -896,12 +960,12 @@ msgstr ""
 "Precisa empregar un certificado de cliente para acceder a esta páxina.\r\n"
 "Escriba \"certs\" para crear ou seleccionar un"
 
-#: netcache.py:1043
+#: netcache.py:1090
 #, python-format
 msgid "Server returned undefined status code %s!"
 msgstr "O servidor devolveu un código de estado non definido: %s!"
 
-#: netcache.py:1067
+#: netcache.py:1114
 #, python-format
 msgid ""
 "Could not decode response body using %s                                encoding declared in header!"
@@ -909,40 +973,40 @@ msgstr ""
 "Non se puido descodificar o corpo da resposta                                 usando a "
 "codificación %s declarada na cabeceira!"
 
-#: netcache.py:1103
+#: netcache.py:1150
 msgid "Blocked URL: "
 msgstr "URL bloqueada: "
 
-#: netcache.py:1104
+#: netcache.py:1151
 msgid "This website has been blocked with the following rule:\n"
 msgstr "Este sitio web foi bloqueado segundo esta regra:\n"
 
-#: netcache.py:1106
+#: netcache.py:1153
 msgid "Use the following redirect command to unblock it:\n"
 msgstr "Empregue a seguinte orde de redirect para desbloquealo:\n"
 
-#: netcache.py:1135
+#: netcache.py:1182
 #, python-format
 msgid "%s is not a supported protocol"
 msgstr "%s non é un protocolo soportado"
 
-#: netcache.py:1143
+#: netcache.py:1190
 msgid "HTTP requires python-requests"
 msgstr "HTTP require python-requests"
 
-#: netcache.py:1162
+#: netcache.py:1209
 msgid "ERROR: DNS error!"
 msgstr "ERRO: erro de DNS!"
 
-#: netcache.py:1165
+#: netcache.py:1212
 msgid "ERROR1: Connection refused!"
 msgstr "ERROR1: Conexión rexeitada!"
 
-#: netcache.py:1168
+#: netcache.py:1215
 msgid "ERROR2: Connection reset!"
 msgstr "ERROR2: Conexión reseteada!"
 
-#: netcache.py:1171
+#: netcache.py:1218
 msgid ""
 "ERROR3: Connection timed out!\n"
 "    Slow internet connection?  Use 'set timeout' to be more patient."
@@ -950,7 +1014,7 @@ msgstr ""
 "ERROR3: Esgotouse o tempo da conexión!\n"
 "    Ten unha conexión a internet lenta? Use 'set timeout' para ser máis paciente."
 
-#: netcache.py:1175
+#: netcache.py:1222
 msgid ""
 "ERROR5: Trying to create a directory which already exists\n"
 "                        in the cache : "
@@ -958,11 +1022,11 @@ msgstr ""
 "ERROR5: Intentando crear un directorio que xa existe\n"
 "                        na caché : "
 
-#: netcache.py:1180
+#: netcache.py:1227
 msgid "ERROR6: Bad SSL certificate:\n"
 msgstr "ERROR6: Certificado SSL incorrecto:\n"
 
-#: netcache.py:1183
+#: netcache.py:1230
 msgid ""
 "\n"
 " If you know what you are doing, you can try to accept bad certificates with the following "
@@ -971,20 +1035,20 @@ msgstr ""
 "\n"
 "Se sabe o que está facendo, pode intentar aceptar certificados incorrectos coa seguinte orde:\n"
 
-#: netcache.py:1188
+#: netcache.py:1235
 msgid "ERROR7: Cannot connect to URL:\n"
 msgstr "ERRO7: Non se pode conectar coa URL:\n"
 
-#: netcache.py:1194
+#: netcache.py:1241
 msgid "ERROR4: "
 msgstr "ERROR4: "
 
-#: netcache.py:1211
+#: netcache.py:1258
 #, python-format
 msgid "Downloading %s"
 msgstr "Descargando %s"
 
-#: netcache.py:1233
+#: netcache.py:1280
 msgid ""
 "Netcache is a command-line tool to retrieve, cache and access networked content.\n"
 "            By default, netcache will returns a cached version of a given URL, downloading "
@@ -999,27 +1063,27 @@ msgstr ""
 "unha validez,             en segundos, para que netcache só descargue o contido se a caché "
 "existente é máis vella que a validez especificada."
 
-#: netcache.py:1242
+#: netcache.py:1289
 msgid "return path to the cache instead of the content of the cache"
 msgstr "devolve a ruta á caché en lugar do contido da caché"
 
-#: netcache.py:1247
+#: netcache.py:1294
 msgid "return a list of id's for the gemini-site instead of the content of the cache"
 msgstr "devolve unha lista de id's para o sitio gemini no lugar do contido da caché"
 
-#: netcache.py:1252
+#: netcache.py:1299
 msgid "Do not attempt to download, return cached version or error"
 msgstr "Non intentar descargar, devolver a versión da caché ou un erro"
 
-#: netcache.py:1257
+#: netcache.py:1304
 msgid "Cancel download of items above that size (value in Mb)."
 msgstr "Cancelar a descarga de elementos maiores que ese tamaño (valor en Mb)."
 
-#: netcache.py:1262
+#: netcache.py:1309
 msgid "Time to wait before cancelling connection (in second)."
 msgstr "Tempo a esperar antes de cancelar a conexión (en segundos)."
 
-#: netcache.py:1268 openk.py:393 opnk.py:393
+#: netcache.py:1315 openk.py:375 opnk.py:375
 msgid ""
 "maximum age, in second, of the cached version before                                 redownloading "
 "a new version"
@@ -1027,465 +1091,463 @@ msgstr ""
 "idade máxima, en segundos, da versión en caché antes                                  de descargar "
 "unha nova versión"
 
-#: netcache.py:1276
+#: netcache.py:1323
 msgid "download URL and returns the content or the path to a cached version"
 msgstr "descarga a URL e devolve o contido ou a ruta á versión en caché"
 
-#: offpunk.py:66
+#: offpunk.py:77
 msgid "Install xsel/xclip (X11) or wl-clipboard (Wayland) to use copy"
 msgstr "Instale xsel/xclip (X11) ou wl-clipboard (Wayland) para usar 'copy'"
 
-#: offpunk.py:95
+#: offpunk.py:105
 msgid "Install xsel/xclip (X11) or wl-clipboard (Wayland) to get URLs from your clipboard"
 msgstr "Instale xsel/xclip (X11) ou wl-clipboard (Wayland) para obter URLs dende o seu portapapeis"
 
-#: offpunk.py:149
+#: offpunk.py:159
 msgid "You need to 'go' somewhere, first"
 msgstr "É preciso ir a algún sitio primeiro (con 'go')"
 
-#: offpunk.py:158
+#: offpunk.py:168
 msgid "Error: "
 msgstr "Erro: "
 
-#: offpunk.py:337
+#: offpunk.py:347
 #, python-format
 msgid "We don’t handle name of URL: %s"
 msgstr "Non manexamos nome da URL: %s"
 
-#: offpunk.py:381
+#: offpunk.py:393
 #, python-format
 msgid "%s not available, marked for syncing"
 msgstr "%s non dispoñible, foi marcado para sincronizar (sync)"
 
-#: offpunk.py:383 offpunk.py:1050
+#: offpunk.py:395 offpunk.py:1109
 #, python-format
 msgid "%s already marked for syncing"
 msgstr "%s xa está marcado para sincronizar ('sync')"
 
-#: offpunk.py:446 offpunk.py:1393
+#: offpunk.py:458 offpunk.py:1452
 msgid "What?"
 msgstr "Como di?"
 
-#: offpunk.py:450
+#: offpunk.py:462
 msgid "No links to index"
 msgstr "Non hai ligazóns para indexar"
 
-#: offpunk.py:458
+#: offpunk.py:470
 msgid "No page with links"
 msgstr "Non hai páxina con ligazóns"
 
-#: offpunk.py:466
+#: offpunk.py:478
 #, python-format
 msgid "%s is redirected to %s"
 msgstr "%s rediríxese a %s"
 
-#: offpunk.py:468
+#: offpunk.py:480
 #, python-format
 msgid "Please add a destination to redirect %s"
 msgstr "Por favor, engada un destino para redirixir %s"
 
-#: offpunk.py:474
+#: offpunk.py:486
 #, python-format
 msgid "Redirection for %s has been removed"
 msgstr "Quitouse a redirección para %s"
 
-#: offpunk.py:476
+#: offpunk.py:488
 #, python-format
 msgid "%s was not redirected. Nothing has changed."
 msgstr "Non se redirixiu %s. Non se cambiou nada."
 
-#: offpunk.py:479
+#: offpunk.py:491
 #, python-format
 msgid "%s will now be blocked"
 msgstr "Agora bloquearase %s"
 
-#: offpunk.py:482
+#: offpunk.py:494
+#, python-format
+msgid "%s will always be fully displayed"
+msgstr "%s sempre se amosará completamente"
+
+#: offpunk.py:497
 #, python-format
 msgid "%s will now be redirected to %s"
 msgstr "%s vaise redirixir a %s"
 
-#: offpunk.py:486
+#: offpunk.py:501
 msgid "Current redirections:\n"
 msgstr "Redireccións actuais:\n"
 
-#: offpunk.py:490
-msgid ""
-"\n"
-"To add new, use \"redirect origine.com destination.org\""
-msgstr ""
-"\n"
-"Para engadir unha nova, use \"redirect orixe.com destino.org\""
+#: offpunk.py:506
+msgid "To add new, use \"redirect origin.com destination.org\""
+msgstr "Para engadir unha nova, use \"redirect orixe.com destino.org\""
 
-#: offpunk.py:491
-msgid ""
-"\n"
-"To remove a redirect, use \"redirect origine.com NONE\""
-msgstr ""
-"\n"
-"Para quitar unha redirección, use \"redirect orixe.com NONE\""
+#: offpunk.py:508
+msgid "To remove a redirect, use \"redirect origin.com NONE\""
+msgstr "Para quitar unha redirección, use \"redirect orixe.com NONE\""
 
-#: offpunk.py:493
-msgid ""
-"\n"
-"To completely block a website, use \"redirect origine.com BLOCK\""
-msgstr ""
-"\n"
-"Para bloquear un sitio web por completo, use \"redirect orixe.com BLOCK\""
+#: offpunk.py:510
+msgid "To completely block a website, use \"redirect origin.com BLOCK\""
+msgstr "Para bloquear un sitio web por completo, use \"redirect orixe.com BLOCK\""
 
-#: offpunk.py:495
-msgid ""
-"\n"
-"To block also subdomains, prefix with *: \"redirect *origine.com BLOCK\""
-msgstr ""
-"\n"
-"Para bloquear tamén subdominios, use * diante: \"redirect *orixe.com BLOCK\""
+#: offpunk.py:512
+msgid "To block also subdomains, prefix with *: \"redirect *origin.com BLOCK\""
+msgstr "Para bloquear tamén subdominios, use * diante: \"redirect *orixe.com BLOCK\""
 
-#: offpunk.py:510 offpunk.py:515
+#: offpunk.py:514
+msgid "To always fully display a website, use \"redirect origin.com WHITELIST\""
+msgstr "Para amosar sempre un sitio web de modo completo, use \"redirect orixe.com WHITELIST\""
+
+#: offpunk.py:529 offpunk.py:534
 #, python-format
 msgid "Unrecognised option %s"
 msgstr "Opción non recoñecida: %s"
 
-#: offpunk.py:520
+#: offpunk.py:539
 msgid "TLS mode must be `ca` or `tofu`!"
 msgstr "O modo TLS debe ser `ca` ou `tofu`!"
 
-#: offpunk.py:524
+#: offpunk.py:543
 msgid "Only high security certificates are now accepted"
 msgstr "Agora só se aceptarán certificados de alta seguridade"
 
-#: offpunk.py:526
+#: offpunk.py:545
 msgid "Low security SSL certificates are now accepted"
 msgstr "Agora aceptaranse certificados SSL de baixa seguridade"
 
 #. TRANSLATORS keep accept_bad_ssl_certificates, True, and False
-#: offpunk.py:529
+#: offpunk.py:548
 msgid "accept_bad_ssl_certificates should be True or False"
 msgstr "accept_bad_ssl_certificates debería ser True ou False"
 
-#: offpunk.py:534
+#: offpunk.py:553
 msgid "changing width to "
 msgstr "cambiando o ancho a "
 
-#: offpunk.py:537
+#: offpunk.py:556
 #, python-format
 msgid "%s is not a valid width (integer required)"
 msgstr "%s non é un ancho válido (require un número enteiro)"
 
-#: offpunk.py:540
-msgid "Avaliable linkmode are `none` and `end`."
-msgstr "Os linkmodes dispoñíbeis son `none` e `end`."
+#: offpunk.py:559
+msgid "Available linkmode are `none` and `end`."
+msgstr "Os linkmodes dispoñíbeis son 'none' e 'end'."
 
-#: offpunk.py:591
+#: offpunk.py:610
 msgid "Available preset themes are: "
 msgstr "Os temas predefinidos dispoñíbeis son: "
 
-#: offpunk.py:607
+#: offpunk.py:626
 #, python-format
 msgid "%s is not a valid preset theme"
 msgstr "%s non é un tema predefinido válido"
 
-#: offpunk.py:609
+#: offpunk.py:628
 #, python-format
 msgid "%s is not a valid theme element"
 msgstr "%s non é un elemento de 'theme' válido"
 
-#: offpunk.py:610
+#: offpunk.py:629
 msgid "Valid theme elements are: "
 msgstr "Os elementos de 'theme' válidos son: "
 
-#: offpunk.py:622
+#: offpunk.py:641
 #, python-format
 msgid "%s is set to %s"
 msgstr "%s está configurado a %s"
 
-#: offpunk.py:627
+#: offpunk.py:646
 #, python-format
 msgid "%s reset (it was set to %s)"
 msgstr "%s reseteado (estaba configurado a %s)"
 
-#: offpunk.py:630
+#: offpunk.py:649
 #, python-format
 msgid "%s is not set. Nothing to do"
 msgstr "%s non está configurado. Non se fará nada"
 
-#: offpunk.py:635
+#: offpunk.py:654
 #, python-format
 msgid "%s is not a valid color"
 msgstr "%s non é unha cor válida"
 
-#: offpunk.py:636
+#: offpunk.py:655
 msgid "Valid colors are one of: "
 msgstr "As cores válidas son: "
 
-#: offpunk.py:673
+#: offpunk.py:692
 #, python-format
 msgid "No handler set for MIME type %s"
 msgstr "Non hai manexador configurado para o tipo MIME %s"
 
-#: offpunk.py:699 offpunk.py:707
+#: offpunk.py:718 offpunk.py:726
 #, python-format
 msgid "%s is a command and cannot be aliased"
 msgstr "%s é unha orde e non se pode usar como alias"
 
-#: offpunk.py:701
+#: offpunk.py:720
 #, python-format
 msgid "%s is currently aliased to \"%s\""
 msgstr "%s ten actualmente o alias \"%s\""
 
-#: offpunk.py:703
+#: offpunk.py:722
 #, python-format
 msgid "there’s no alias for \"%s\""
 msgstr "non hai ningún alias para \"%s\""
 
-#: offpunk.py:710
+#: offpunk.py:729
 #, python-format
 msgid "%s has been aliased to \"%s\""
 msgstr "%s é agora un alias para \"%s\""
 
-#: offpunk.py:716
+#: offpunk.py:735
 msgid "Offline and undisturbed."
 msgstr "Offline e tranquilo."
 
-#: offpunk.py:720
+#: offpunk.py:739
 msgid "Offpunk is now offline and will only access cached content"
 msgstr "Offpunk está agora offline e só accederá a contido na caché"
 
-#: offpunk.py:727
+#: offpunk.py:746
 msgid "Offpunk is online and will access the network"
 msgstr "Offpunk está agora en liña e accederá á rede"
 
-#: offpunk.py:729
+#: offpunk.py:748
 msgid "Already online. Try offline."
 msgstr "Xa estamos online. Probe con 'offline'."
 
-#: offpunk.py:768
+#: offpunk.py:815
+#, python-format
+msgid "%s is not a recognized argument to copy"
+msgstr "%s non é un argumento recoñecido para 'copy'"
+
+#: offpunk.py:817
 msgid "No content to copy, visit a page first"
 msgstr "Non hai contido que copiar, visite unha páxina primeiro"
 
-#: offpunk.py:784
+#: offpunk.py:833
 #, python-format
 msgid "We cannot share %s because it is local only"
 msgstr "Non se pode compartir %s porque é só local"
 
-#: offpunk.py:796
+#: offpunk.py:845
 msgid "TODO: sharing text is not yet implemented"
 msgstr "PENDENTE: compartir textos açinda non está implementado"
 
-#: offpunk.py:813 offpunk.py:940
+#: offpunk.py:862 offpunk.py:999
 msgid "Nothing to share, visit a page first"
 msgstr "Non hai nada que compartir , visite unha páxina primeiro"
 
-#: offpunk.py:879
-msgid "Multiple emails addresse were found:"
+#: offpunk.py:938
+msgid "Multiple emails addresses were found:"
 msgstr "Atopáronse varios enderezos de correo:"
 
-#: offpunk.py:884
+#: offpunk.py:943
 msgid "None of the above"
 msgstr "Ningún dos anteriores"
 
-#: offpunk.py:886
+#: offpunk.py:945
 msgid "Which email will you use to reply?"
 msgstr "Qué correo empregará para responder?"
 
-#: offpunk.py:898
+#: offpunk.py:957
 msgid "Enter the contact email for this page?"
 msgstr "Introducir o correo de contacto para esta páxina?"
 
-#: offpunk.py:907
+#: offpunk.py:966
 msgid "Email address:"
 msgstr "Enderezo de correo:"
 
-#: offpunk.py:908
+#: offpunk.py:967
 msgid "Do you want to save this email as a contact for"
 msgstr "Quere gardar este enderezo como contacto para"
 
-#: offpunk.py:909
+#: offpunk.py:968
 msgid "Current page only"
 msgstr "A páxina actual soamente"
 
-#: offpunk.py:910
+#: offpunk.py:969
 #, python-format
 msgid "The whole %s space"
 msgstr "O espazo %s completo"
 
-#: offpunk.py:911
+#: offpunk.py:970
 msgid "Don’t save this email"
 msgstr "Non gardar este enderezo"
 
-#: offpunk.py:913
+#: offpunk.py:972
 msgid "Your choice?"
 msgstr "A súa decisión?"
 
-#: offpunk.py:931
+#: offpunk.py:990
 #, python-format
 msgid "Email %s has been recorded as contact for %s"
 msgstr "O enderezo %s gardouse como contacto para %s"
 
-#: offpunk.py:932
+#: offpunk.py:991
 msgid "Nothing to save"
 msgstr "Nada que gardar"
 
-#: offpunk.py:935
+#: offpunk.py:994
 msgid "In reply to "
 msgstr "En resposta a "
 
-#: offpunk.py:938
+#: offpunk.py:997
 #, python-format
 msgid "We cannot reply to %s because it is local only"
 msgstr "Non se pode responder a %s porque é só local"
 
-#: offpunk.py:959
+#: offpunk.py:1018
 msgid "Too many arguments to list."
 msgstr "Demasiados argumentos para a lista."
 
-#: offpunk.py:962 offpunk.py:984
+#: offpunk.py:1021 offpunk.py:1043
 msgid "URL required (or visit a page)."
 msgstr "Requírese unha URL (ou, visite unha páxina)."
 
-#: offpunk.py:966
+#: offpunk.py:1025
 msgid "Cookies not enabled for url"
 msgstr "Cookies non habilitadas para esta url"
 
-#: offpunk.py:968
+#: offpunk.py:1027
 msgid "Cookies for url:"
 msgstr "Cookies para a url:"
 
 #. TRANSLATORS domain, path, expiration time, name, value
-#: offpunk.py:971
+#: offpunk.py:1030
 #, python-format
 msgid "%s %s expires:%s %s=%s"
 msgstr "%s %s expira:%s %s=%s"
 
-#: offpunk.py:976
+#: offpunk.py:1035
 msgid "File parameter required for import."
 msgstr "Requírese o parámetro ficheiro para importar."
 
-#: offpunk.py:981
+#: offpunk.py:1040
 msgid "Too many arguments to import"
 msgstr "Demasiados argumentos para importar"
 
-#: offpunk.py:991
+#: offpunk.py:1050
 msgid "File not found"
 msgstr "Ficheiro non atopado"
 
-#: offpunk.py:993
+#: offpunk.py:1052
 msgid "Imported."
 msgstr "Importado."
 
-#: offpunk.py:995
+#: offpunk.py:1054
 msgid "Huh?"
 msgstr "Como?"
 
-#: offpunk.py:1008
+#: offpunk.py:1067
 msgid "URLs in your clipboard\n"
 msgstr "URLs no seu portapapeis\n"
 
-#: offpunk.py:1013
+#: offpunk.py:1072
 msgid "Where do you want to go today ?> "
 msgstr "Onde quere ir hoxe? > "
 
-#: offpunk.py:1020
+#: offpunk.py:1079
 msgid "Go where? (hint: simply copy an URL in your clipboard)"
 msgstr "Onde quere ir con 'go' ? (pista: pode simplemente copiar  unha URL no portapapeis)"
 
-#: offpunk.py:1039
+#: offpunk.py:1098
 #, python-format
 msgid "%s is not a valid URL to go"
 msgstr "%s non é unha URL válida para ir con 'go'"
 
-#: offpunk.py:1048
+#: offpunk.py:1107
 #, python-format
 msgid "%s marked for syncing"
 msgstr "%s marcado para sincronizar ('sync')"
 
-#: offpunk.py:1071
+#: offpunk.py:1130
 msgid "Up only take integer as arguments"
 msgstr "'up' só acepta números enteiros como argumento"
 
-#: offpunk.py:1126
+#: offpunk.py:1185
 msgid "End of tour."
 msgstr "Fin do Tour."
 
-#: offpunk.py:1146
+#: offpunk.py:1205
 #, python-format
 msgid "List %s does not exist. Cannot add it to tour"
 msgstr "A lista %s non existe. Non se pode engadir ao tour"
 
-#: offpunk.py:1173
+#: offpunk.py:1232
 #, python-format
 msgid "Invalid use of range syntax %s, skipping"
 msgstr "O uso da sintaxe de rango %s non é válida, ignorando"
 
-#: offpunk.py:1175 offpunk.py:1542
+#: offpunk.py:1234 offpunk.py:1601
 #, python-format
 msgid "Non-numeric index %s, skipping."
 msgstr "O índice %s non é numérico, ignorando."
 
-#: offpunk.py:1177 offpunk.py:1544
+#: offpunk.py:1236 offpunk.py:1603
 #, python-format
 msgid "Invalid index %d, skipping."
 msgstr "O índice %d non é válido, ignorando."
 
-#: offpunk.py:1219
+#: offpunk.py:1278
 msgid "Invalid mark, must be one letter"
 msgstr "A marca non é válida, debe ser unha letra"
 
 #. TRANSLATORS: this string and "Mime", "Cache", "Renderer" are formatted to align.
 #. if you can obtain the same effect in your language, try to do it ;)
 #. they are displayed with the "info" command
-#: offpunk.py:1230
+#: offpunk.py:1289
 msgid "URL      :   "
 msgstr "URL          :   "
 
-#: offpunk.py:1231
+#: offpunk.py:1290
 msgid "Mime     :   "
 msgstr "Mime         :   "
 
-#: offpunk.py:1232
+#: offpunk.py:1291
 msgid "Cache    :   "
 msgstr "Cache        :   "
 
-#: offpunk.py:1238
+#: offpunk.py:1297
 msgid "Renderer :   "
 msgstr "Renderizador :   "
 
-#: offpunk.py:1239
+#: offpunk.py:1298
 msgid "Cleaned with : "
 msgstr "Limpado con : "
 
-#: offpunk.py:1245
-msgid "Page appeard in following lists :\n"
+#: offpunk.py:1304
+msgid "Page appeared in following lists :\n"
 msgstr "A páxina aparece nas seguintes listas:\n"
 
-#: offpunk.py:1248
+#: offpunk.py:1307
 msgid "normal list"
 msgstr "lista normal"
 
-#: offpunk.py:1250
+#: offpunk.py:1309
 msgid "subscription"
 msgstr "subscripción"
 
-#: offpunk.py:1252
+#: offpunk.py:1311
 msgid "frozen list"
 msgstr "lista conxelada"
 
-#: offpunk.py:1258
+#: offpunk.py:1317
 msgid "Page is not save in any list"
 msgstr "A páxina non está gardada en ningunha lista"
 
-#: offpunk.py:1276
+#: offpunk.py:1335
 msgid "System: "
 msgstr "Sistema: "
 
-#: offpunk.py:1277
+#: offpunk.py:1336
 msgid "Python: "
 msgstr "Python: "
 
-#: offpunk.py:1278
+#: offpunk.py:1337
 msgid "Language: "
 msgstr "Idioma: "
 
-#: offpunk.py:1279
+#: offpunk.py:1338
 msgid ""
 "\n"
 "Highly recommended:\n"
@@ -1493,7 +1555,7 @@ msgstr ""
 "\n"
 "Altamente recomendado:\n"
 
-#: offpunk.py:1281
+#: offpunk.py:1340
 msgid ""
 "\n"
 "Web browsing:\n"
@@ -1501,7 +1563,7 @@ msgstr ""
 "\n"
 "Navegación web:\n"
 
-#: offpunk.py:1288
+#: offpunk.py:1346
 msgid ""
 "\n"
 "Nice to have:\n"
@@ -1509,7 +1571,7 @@ msgstr ""
 "\n"
 "Sería bo ter:\n"
 
-#: offpunk.py:1295
+#: offpunk.py:1354
 msgid ""
 "\n"
 "Features :\n"
@@ -1517,442 +1579,417 @@ msgstr ""
 "\n"
 "Características :\n"
 
-#: offpunk.py:1296
-msgid " - Render images (chafa or timg)              : "
-msgstr " - Renderizar imaxes (chafa ou timg)              : "
+#: offpunk.py:1355
+msgid " - Render images (chafa)              : "
+msgstr " - Renderizar imaxes (chafa)              : "
 
-#: offpunk.py:1299
+#: offpunk.py:1358
 msgid " - Render HTML (bs4, readability)             : "
 msgstr " - Renderizar HTML (bs4, readability)             : "
 
-#: offpunk.py:1302
+#: offpunk.py:1361
 msgid " - Render Atom/RSS feeds (feedparser)         : "
 msgstr " - Renderizar feeds Atom/RSS (feedparser)         : "
 
-#: offpunk.py:1305
+#: offpunk.py:1364
 msgid " - Connect to http/https (requests)           : "
 msgstr " - Connectar con http/https (requests)           : "
 
-#: offpunk.py:1308
+#: offpunk.py:1367
 msgid " - Detect text encoding (python-chardet)      : "
 msgstr " - Detectar codificación de texto (python-chardet)      : "
 
-#: offpunk.py:1311
+#: offpunk.py:1370
 msgid " - restore last position (less 572+)          : "
 msgstr " - restaurar a última posición (less 572+)          : "
 
-#: offpunk.py:1315
+#: offpunk.py:1374
 msgid "ftr_site_config     : "
 msgstr "ftr_site_config     : "
 
-#: offpunk.py:1316
+#: offpunk.py:1375
 msgid "Config directory    : "
 msgstr "Directorio de configuración : "
 
-#: offpunk.py:1317
+#: offpunk.py:1376
 msgid "User Data directory : "
 msgstr "Directorio de datos de usuario: "
 
-#: offpunk.py:1318
-msgid "Cache directoy      : "
+#: offpunk.py:1377
+msgid "Cache directory     : "
 msgstr "Directorio de caché: "
 
-#: offpunk.py:1331
+#: offpunk.py:1390
 msgid "Found a bug in Offpunk? You can report it by email to the developers."
 msgstr "Atopou un erro en Offpunk? Pode informar aos desenvolvedores por correo electrónico."
 
-#: offpunk.py:1333
+#: offpunk.py:1392
 msgid "Please describe your problem as clearly as possible:"
 msgstr "Por favor, describa o seu problema tan claramente como sexa posíbel:"
 
-#: offpunk.py:1334
+#: offpunk.py:1393
 msgid ""
 "Include all the steps to reproduce the problem, including the URLs you are currently visiting."
 msgstr "Inclúa todos os pasos para reproducir o problema, incluindo as URLs que está visitando."
 
-#: offpunk.py:1335 offpunk.py:2223
+#: offpunk.py:1394 offpunk.py:2261
 msgid "Another point: always use \"reply-all\" when replying to this list."
 msgstr "Outro detalle: use sempre \"responder a todos\" cando responda a esta lista."
 
-#: offpunk.py:1337
+#: offpunk.py:1396
 msgid "Describe the bug in one line: "
 msgstr "Describa o erro nunha liña: "
 
-#: offpunk.py:1342
+#: offpunk.py:1401
 msgid "No description of the bug, report cancelled"
 msgstr "Non hai descrición para o erro, cancelamos o informe"
 
-#: offpunk.py:1388
+#: offpunk.py:1447
 msgid "Please enter the number of the XKCD comic you want to see"
 msgstr "Por favor, introduza o número do comic XKCD que quere ver"
 
-#: offpunk.py:1456
+#: offpunk.py:1515
 msgid "Current page is already a feed"
 msgstr "A páxina actual xa é un feed"
 
-#: offpunk.py:1458
+#: offpunk.py:1517
 msgid "No feed found on current page"
 msgstr "Non se atopou ningún feed na páxina actual"
 
-#: offpunk.py:1461
+#: offpunk.py:1520
 msgid "Available feeds :\n"
 msgstr "Feeds dispoñíbeis: \n"
 
-#: offpunk.py:1466
+#: offpunk.py:1525
 msgid "Which view do you want to see ? >"
 msgstr "Qué vista quere ver? >"
 
-#. TRANSLATORS keep "view feed" and "feed" in english, those are literal commands
-#: offpunk.py:1490
+#. TRANSLATORS keep "view feed" and "feed" in English, those are literal commands
+#: offpunk.py:1549
 msgid "view feed is deprecated. Use the command feed directly"
 msgstr "'view feed' está deprecado. Use a orde 'feed' directamente"
 
-#: offpunk.py:1499
+#: offpunk.py:1558
 #, python-format
 msgid "Link %s is: %s"
 msgstr "A ligazón %s é: %s"
 
-#: offpunk.py:1507
+#: offpunk.py:1566
 msgid "Empty cached version"
 msgstr "Varsión na caché baleira"
 
-#: offpunk.py:1508
+#: offpunk.py:1567
 #, python-format
 msgid "Last cached on %s"
 msgstr "Cacheado por última vez en %s"
 
-#: offpunk.py:1510
+#: offpunk.py:1569
 msgid "No cached version for this link"
 msgstr "Non hai versión en caché para esta ligazón"
 
-#. TRANSLATORS keep "normal, full, switch, source" in english
-#: offpunk.py:1515
+#. TRANSLATORS keep "normal, full, switch, source" in English
+#: offpunk.py:1574
 msgid "Valid arguments for view are : normal, full, switch, source or a number"
 msgstr "Os argumentos válidos para 'view' son: 'normal', 'full', 'switch', 'source', ou un número"
 
-#: offpunk.py:1589
+#: offpunk.py:1648
 msgid "You cannot save if not cached!"
 msgstr "Non se pode gardar se non está en caché!"
 
-#: offpunk.py:1612
+#: offpunk.py:1671
 msgid "First argument is not a valid item index!"
 msgstr "O primeiro argumento non é un índice de elemento válido!"
 
-#: offpunk.py:1616
+#: offpunk.py:1675
 msgid "You must provide an index, a filename, or both."
 msgstr "Precisa introducir un índice, un nome de ficheiro, ou ambos."
 
-#: offpunk.py:1625
+#: offpunk.py:1684
 msgid "Index too high!"
 msgstr "O índice é moi alto!"
 
-#: offpunk.py:1636
+#: offpunk.py:1695
 #, python-format
 msgid "File %s already exists!"
 msgstr "O ficheiro %s xa existe!"
 
-#: offpunk.py:1643
+#: offpunk.py:1702
 #, python-format
 msgid "Can’t save %s because it’s a folder, not a file"
 msgstr "Non se pode gardar %s porque é un directorio, non un ficheiro"
 
-#: offpunk.py:1645
+#: offpunk.py:1704
 #, python-format
 msgid "Saved to %s"
 msgstr "Gardado en %s"
 
-#: offpunk.py:1710
+#: offpunk.py:1769
 msgid "Subscriptions #subscribed (new links in those pages will be added to tour)"
 msgstr "Subscripcións #subscribed (ligazóns novas nestas páxinas engadiranse ao tour)"
 
-#: offpunk.py:1712
+#: offpunk.py:1771
 msgid "Links requested and to be fetched during the next --sync"
 msgstr "Ligazóns solicitadas e que se descargarán durante a seguinte sincronización (--sync)"
 
-#: offpunk.py:1727
+#: offpunk.py:1786
 msgid "Multiple feeds have been found :\n"
 msgstr "Atopáronse múltiple feeds: \n"
 
-#: offpunk.py:1729
+#: offpunk.py:1788
 msgid "This page is already a feed:\n"
 msgstr "Esta páxina xa é un feed:\n"
 
-#: offpunk.py:1731
+#: offpunk.py:1790
 msgid "No feed detected. You can still watch the page :\n"
 msgstr "Non se detectou ningún feed. Aínda así, pode monitorizar a páxina:\n"
 
-#: offpunk.py:1742
+#: offpunk.py:1801
 #, python-format
 msgid "\t -> (already subscribed through lists %s)\n"
 msgstr "\t -> (xa está subscrito via as listas %s)\n"
 
-#: offpunk.py:1745
+#: offpunk.py:1804
 msgid "Which feed do you want to subscribe ? > "
 msgstr "A que feed se quere subscribir? > "
 
-#: offpunk.py:1754
+#: offpunk.py:1813
 #, python-format
 msgid "Subscribed to %s"
 msgstr "Subscrito a %s"
 
-#: offpunk.py:1756
+#: offpunk.py:1815
 #, python-format
 msgid "You are already subscribed to %s"
 msgstr "Xa está subscrito a %s"
 
-#: offpunk.py:1758
+#: offpunk.py:1817
 msgid "No subscription registered"
 msgstr "Non se rexistrou ningunha subscripción"
 
-#: offpunk.py:1767
+#: offpunk.py:1826
 msgid "bookmarks command takes a single integer argument!"
 msgstr "a orde 'bookmarks' só acepta un único argumento numérico!"
 
-#: offpunk.py:1782 offpunk.py:2029
+#: offpunk.py:1841 offpunk.py:2093
 #, python-format
 msgid "Removed from %s"
 msgstr "Quitado de %s"
 
-#: offpunk.py:1786
+#: offpunk.py:1845
 #, python-format
 msgid "Archiving: %s"
 msgstr "Arquivando: %s"
 
-#: offpunk.py:1788
+#: offpunk.py:1847
 #, python-format
 msgid "[2;34mCurrent maximum size of archives : %s[0m"
 msgstr "[2;34mTamaño máximo actual dos arquivos : %s[0m"
 
-#: offpunk.py:1811 offpunk.py:1952 offpunk.py:1971
+#: offpunk.py:1870 offpunk.py:2016 offpunk.py:2035
 #, python-format
 msgid "List %s does not exist. Create it with list create %s"
 msgstr "A lista %s non existe. Pode creala coa orde 'list create %s'"
 
-#: offpunk.py:1823
+#: offpunk.py:1882
 #, python-format
 msgid "%s already in %s."
 msgstr "%s xa está en %s."
 
-#: offpunk.py:1830
+#: offpunk.py:1889
 #, python-format
 msgid "%s has updated mode in %s to %s"
 msgstr "O modo de %s na lista %s actualizouse a %s"
 
 #. TRANSLATORS parameters are url, list
-#: offpunk.py:1837
+#: offpunk.py:1896
 #, python-format
 msgid "%s added to %s"
 msgstr "%s engadido a  %s"
 
-#: offpunk.py:1844
+#: offpunk.py:1903
 msgid ", archived on "
 msgstr ", arquivado en "
 
-#: offpunk.py:1846
+#: offpunk.py:1905
 msgid ", visited on "
 msgstr ", visitado en "
 
 #. TRANSLATORS parameter is a "list" name
-#: offpunk.py:1849
+#: offpunk.py:1908
 #, python-format
 msgid ", added to %s on "
 msgstr ", engadido a %s no "
 
 #. TRANSLATORS keep 'go_to_line' as is
-#: offpunk.py:1958
+#: offpunk.py:2022
 msgid "go_to_line requires a number as parameter"
 msgstr "'go_to_line' require un número como parámetro"
 
-#: offpunk.py:1993
+#: offpunk.py:2057
 #, python-format
 msgid "%s is not allowed as a name for a list"
 msgstr "%s non é un nome permitido para unha lista"
 
-#: offpunk.py:2005
+#: offpunk.py:2069
 #, python-format
 msgid "list created. Display with `list %s`"
 msgstr "lista creada. Móstrea coa orde `list %s`"
 
-#: offpunk.py:2007
+#: offpunk.py:2071
 #, python-format
 msgid "list %s already exists"
 msgstr "a lista %s xa existe"
 
-#: offpunk.py:2014
+#: offpunk.py:2078
 msgid "LIST argument is required as the target for your move"
 msgstr "O argumento LISTA é requerido como destino do 'move'"
 
-#: offpunk.py:2021
+#: offpunk.py:2085
 #, python-format
 msgid "%s is not a list, aborting the move"
 msgstr "%s non é unha lista, abortando o 'move'"
 
-#: offpunk.py:2080
+#: offpunk.py:2144
 #, python-format
 msgid "List %s has been marked as %s"
 msgstr "A lista %s marcouse como %s"
 
-#: offpunk.py:2082
+#: offpunk.py:2146
 #, python-format
 msgid "List %s is now a normal list"
 msgstr "A lista %s é agora unha lista normal"
 
-#: offpunk.py:2122
+#: offpunk.py:2186
 msgid "No lists yet. Use `list create`"
 msgstr "Aínda non hai ningunha lista. Use `list create`"
 
-#: offpunk.py:2133
+#: offpunk.py:2197
 msgid "A name is required to create a new list. Use `list create NAME`"
 msgstr "Requírese un nome para crear unha nova lista. Use `list create NAME`"
 
-#: offpunk.py:2154
-msgid "Please set a valid editor with \"set editor\""
-msgstr "Por favor, configure un editor válido con \"set editor\""
-
-#: offpunk.py:2156
-msgid "A valid list name is required to edit a list"
-msgstr "Requírese un nome de lista válido para editar unha lista"
-
-#: offpunk.py:2158
-msgid "No valid editor has been found."
-msgstr "Non se atopou ningún editor válido."
-
-#: offpunk.py:2160
-msgid "You can use the following command to set your favourite editor:"
-msgstr "Pode usar a seguinte orde para configurar o seu editor favorito:"
-
-#. TRANSLATORS keep 'set editor', it's a command
-#: offpunk.py:2163
-msgid "set editor EDITOR"
-msgstr "set editor EDITOR"
-
-#: offpunk.py:2164
-msgid "or use the $VISUAL or $EDITOR environment variables."
-msgstr "ou use as variables de contorno $VISUAL ou $EDITOR."
-
-#: offpunk.py:2168
+#: offpunk.py:2206
 #, python-format
 msgid "%s is a system list which cannot be deleted"
 msgstr "%s é unha lista do sistema e non se pode borrar"
 
-#: offpunk.py:2171
+#: offpunk.py:2209
 #, python-format
 msgid "Are you sure you want to delete %s ?\n"
 msgstr "Está seguro de querer borrar %s ?\n"
 
-#: offpunk.py:2174
+#: offpunk.py:2212
 #, python-format
 msgid "! %s items in the list will be lost !\n"
 msgstr "! Perderanse %s elementos nesa lista !\n"
 
-#: offpunk.py:2178
+#: offpunk.py:2216
 msgid "The list is empty, it should be safe to delete it.\n"
 msgstr "Esta lista está baleira, debería poder borrarse de forma segura.\n"
 
-#: offpunk.py:2181
+#: offpunk.py:2219
 #, python-format
 msgid "Type \"%s\" (in capital, without quotes) to confirm :"
 msgstr "Escriba \"%s\" (en maiúsculas, sen comiñas) para confirmar :"
 
-#: offpunk.py:2188
+#: offpunk.py:2226
 #, python-format
 msgid "* * * %s has been deleted"
 msgstr "* * * %s foi borrada"
 
-#: offpunk.py:2190 offpunk.py:2192
+#: offpunk.py:2228 offpunk.py:2230
 msgid "A valid list name is required to be deleted"
 msgstr "Requírese un nome de lista válido para borrar unha lista"
 
-#: offpunk.py:2196
+#: offpunk.py:2234
 #, python-format
 msgid "You cannot modify %s which is a system list"
 msgstr "Non pode modificar %s, que é unha lista do sistema"
 
-#: offpunk.py:2206
+#: offpunk.py:2244
 #, python-format
 msgid "A valid list name is required after %s"
 msgstr "Requírese un nome de lista válido despois de %s"
 
-#: offpunk.py:2217
+#: offpunk.py:2255
 msgid "Need help from a fellow human? Simply send an email to the offpunk-users list."
 msgstr ""
 "Precisa axuda doutro humano? Só ten que enviar un email á lista de correo de usuarios de offpunk "
 "(offpunk-users)."
 
-#: offpunk.py:2220
+#: offpunk.py:2258
 msgid "Describe your problem/question as clearly as possible."
 msgstr "Describa o seu problema/pregunta tan claramente como sexa posíbel."
 
-#: offpunk.py:2221
+#: offpunk.py:2259
 msgid "Don’t forget to present yourself and why you would like to use Offpunk!"
 msgstr "Non esqueza presentarse e contarnos por que lle gusta usar Offpunk!"
 
-#: offpunk.py:2226
+#: offpunk.py:2264
 msgid "! is an alias for 'shell'"
 msgstr "! é un alias de 'shell'"
 
-#: offpunk.py:2228
+#: offpunk.py:2266
 msgid "? is an alias for 'help'"
 msgstr "? é un alias de 'help'"
 
-#: offpunk.py:2231
+#: offpunk.py:2269
 #, python-format
 msgid "%s is an alias for '%s'"
 msgstr "%s é un alias de '%s'"
 
-#: offpunk.py:2232
+#: offpunk.py:2270
 msgid "See the list of aliases with 'abbrevs'"
 msgstr "Vexa a lista de alias escribindo 'abbrevs'"
 
-#: offpunk.py:2233
+#: offpunk.py:2271
 #, python-format
 msgid "'help %s':"
 msgstr "'help %s':"
 
-#: offpunk.py:2257
+#: offpunk.py:2295
 msgid "Sync can only be achieved online. Change status with `online`."
 msgstr "Sync só se pode facer estando en liña. Cambie o estado escribindo 'online'."
 
-#: offpunk.py:2262
+#: offpunk.py:2300
 msgid "sync argument should be the cache validity expressed in seconds"
 msgstr "o argumento para 'sync' debería ser a validez da caché expresada en segundos"
 
-#: offpunk.py:2280
+#: offpunk.py:2318
 #, python-format
 msgid "  -> adding to tour: %s"
 msgstr "  -> engadindo ao tour: %s"
 
-#: offpunk.py:2306
+#: offpunk.py:2344
 #, python-format
 msgid "%s [%s/%s] Fetch "
 msgstr "%s [%s/%s] Descargando "
 
-#: offpunk.py:2359
+#: offpunk.py:2397
 #, python-format
 msgid " * * * %s to fetch in %s * * *"
 msgstr " * * * %s para descargar en %s * * *"
 
-#: offpunk.py:2413
+#: offpunk.py:2451
 msgid "End of sync"
 msgstr "Fin da sincronización (sync)"
 
-#: offpunk.py:2420
+#: offpunk.py:2462
 msgid "You can close your screen!"
 msgstr "Pode pechar a súa pantalla!"
 
-#: offpunk.py:2431
+#: offpunk.py:2473
 msgid "start with your list of bookmarks"
 msgstr "comezar coa súa lista de marcadores"
 
-#: offpunk.py:2437
+#: offpunk.py:2479
 msgid "Launch this command after startup"
 msgstr "Lanzar esta orde tras arrancar"
 
-#: offpunk.py:2442
+#: offpunk.py:2484
 msgid "use this particular config file instead of default"
 msgstr "usar este ficheiro de configuración en particular no canto do ficheiro por defecto"
 
-#: offpunk.py:2447
+#: offpunk.py:2489
 msgid ""
 "run non-interactively to build cache by exploring lists passed                                 as "
 "argument. Without argument, all lists are fetched."
@@ -1961,27 +1998,27 @@ msgstr ""
 "pasadas                                 como argumento. Se non hai argumentos, descargaranse todas "
 "as listas."
 
-#: offpunk.py:2453
+#: offpunk.py:2495
 msgid "assume-yes when asked questions about certificates/redirections during sync (lower security)"
 msgstr ""
 "asumir 'si' como resposta cando se lle pregunten cuestións sobre certificados durante o 'sync' "
 "(menor seguridade)"
 
-#: offpunk.py:2458
+#: offpunk.py:2500
 msgid "do not try to get http(s) links (but already cached will be displayed)"
 msgstr "non tratar de descargar ligazóns http(s) (aínda que se mostrarán as que xa estean na caché)"
 
-#: offpunk.py:2463
+#: offpunk.py:2505
 msgid "run non-interactively with an URL as argument to fetch it later"
 msgstr "executar de xeito non interactivo cunha URL como argumento para descargala máis tarde"
 
-#: offpunk.py:2467
+#: offpunk.py:2509
 msgid "depth of the cache to build. Default is 1. More is crazy. Use at your own risks!"
 msgstr ""
 "profundidade da caché a construir. Por defecto é 1. Máis é unha tolemia. Use este parámetro baixo "
 "o seu propio risco!"
 
-#: offpunk.py:2471
+#: offpunk.py:2513
 msgid ""
 "the mode to use to choose which images to download in a HTML page.                             one "
 "of (None, readable, full). Warning: full will slowdown your sync."
@@ -1990,130 +2027,160 @@ msgstr ""
 "HTML.                              Pode ser un de ('None', 'readable', 'full)). Aviso: 'full' "
 "ralentizará a sincronización."
 
-#: offpunk.py:2476
+#: offpunk.py:2518
 msgid "duration for which a cache is valid before sync (seconds)"
 msgstr "tempo durante o cal unha caché é válida antes de sincronizar (en segundos)"
 
-#: offpunk.py:2479
+#: offpunk.py:2521
 msgid "display version information and quit"
 msgstr "amosar información de versión e saír"
 
-#: offpunk.py:2484
-msgid "display available features and dependancies then quit"
+#: offpunk.py:2526
+msgid "display available features and dependencies then quit"
 msgstr "amosar características dispoñíbeis e dependencias e saír"
 
-#: offpunk.py:2490
+#: offpunk.py:2532
 msgid "Arguments should be URL to be fetched or, if --sync is used, lists"
 msgstr "Os argumentos deberían ser unha URL para descargar ou, se se usa --sync, listas"
 
-#: offpunk.py:2504
+#: offpunk.py:2547
 msgid "Creating config directory {}"
 msgstr "Creando directorio de configuración {}"
 
-#: offpunk.py:2536
+#: offpunk.py:2579
 #, python-format
 msgid "%s is not a valid URL to fetch"
 msgstr "%s non é unha URL válida para descargar"
 
-#: offpunk.py:2538
+#: offpunk.py:2581
 msgid "--fetch-later requires an URL (or a list of URLS) as argument"
 msgstr "--fetch-later require unha URL (ou unha lista de URLs) como argumento"
 
-#: offpunk.py:2566
+#: offpunk.py:2609
 msgid "Welcome to Offpunk!"
 msgstr "Benvido a Offpunk!"
 
 #. TRANSLATORS keep 'help', it's a literal command
-#: offpunk.py:2568
+#: offpunk.py:2611
 msgid "Type `help` to get the list of available command."
 msgstr "Escriba 'help' para ver a lista de ordes dispoñíbeis."
 
-#: offutils.py:153
+#: offutils.py:116
+msgid "Please install the pager \"less\" to run Offpunk."
+msgstr "Por favor, instale o paxinador 'less' para executar Offpunk."
+
+#: offutils.py:117
+msgid "If you wish to use another pager, send me an email !"
+msgstr "Se desexa utilizar un paxinador distinto, envíeme un correo electrónico !"
+
+#: offutils.py:119
+msgid "(I’m really curious to hear about people not having \"less\" on their system.)"
+msgstr "(interésame moito saber de xente que non teña 'less' no seu sistema.)"
+
+#: offutils.py:261
 #, python-format
 msgid "No XDG folder for %s. Check your code."
 msgstr "Non hai directorio XDG para %s. Revise o seu código."
 
-#: offutils.py:166
+#: offutils.py:274
 #, python-format
 msgid "Using config %s"
 msgstr "Usando a configuración %s"
 
-#: offutils.py:179
+#: offutils.py:287
 #, python-format
 msgid "Skipping startup command \"%s\" due to provided URL"
 msgstr "Ignorando a orde de arrinque \"%s\" xa que se introduciu unha URL"
 
-#: offutils.py:388
+#: offutils.py:465
 #, python-format
 msgid "%s is not a valid email address"
 msgstr "%s non é unha dirección de correo electrónico válida"
 
 #. TRANSLATORS please keep the 'Y/N' as is
-#: offutils.py:392
+#: offutils.py:469
 #, python-format
 msgid "Send an email to %s Y/N? "
 msgstr "Mandar un correo electrónico a %s ? Y/N "
 
-#: offutils.py:409
+#: offutils.py:486
 #, python-format
 msgid "Cannot find a mail client to send mail to %s"
 msgstr "Non atopo un cliente de correo electrónico para enviar un correo a %s"
 
-#: offutils.py:410 openk.py:140 opnk.py:140
+#: offutils.py:487 openk.py:100 opnk.py:100
 msgid "Please install xdg-open (usually from xdg-util package)"
 msgstr "Por favor, instale 'xdg-open' (normalmente no paquete 'xdg-util')"
 
-#: openk.py:38 opnk.py:38
-msgid "Please install the pager \"less\" to run Offpunk."
-msgstr "Por favor, instale o paxinador 'less' para executar Offpunk."
+#: offutils.py:582
+msgid "No valid editor has been found."
+msgstr "Non se atopou ningún editor válido."
 
-#: openk.py:39 opnk.py:39
-msgid "If you wish to use another pager, send me an email !"
-msgstr "Se desexa utilizar un paxinador distinto, envíeme un correo electrónico !"
+#: offutils.py:584
+msgid "You can use the following command to set your favourite editor:"
+msgstr "Pode usar a seguinte orde para configurar o seu editor favorito:"
 
-#: openk.py:41 opnk.py:41
-msgid "(I’m really curious to hear about people not having \"less\" on their system.)"
-msgstr "(interésame moito saber de xente que non teña 'less' no seu sistema.)"
+#. TRANSLATORS keep 'set editor', it's a command
+#: offutils.py:587
+msgid "set editor EDITOR"
+msgstr "set editor EDITOR"
+
+#: offutils.py:588
+msgid "or use the $VISUAL or $EDITOR environment variables."
+msgstr "ou use as variables de contorno $VISUAL ou $EDITOR."
+
+#: offutils.py:609
+msgid "Please set a valid editor with \"set editor\""
+msgstr "Por favor, configure un editor válido con \"set editor\""
+
+#: openk.py:51 opnk.py:51
+#, python-format
+msgid "please install \"grep\" to search in a %s"
+msgstr "por favor, instale \"grep\" para buscar nun %s"
 
 #. TRANSLATORS: keep echo and %s, translate the text between ""
-#: openk.py:139 opnk.py:139
+#: openk.py:99 opnk.py:99
 #, python-format
 msgid "echo \"Can’t find how to open \"%s"
 msgstr "echo \"Non atopo como abrir \"%s"
 
-#: openk.py:235 opnk.py:235
+#: openk.py:195 opnk.py:195
+msgid "This is an offline input that will be sent in the next sync"
+msgstr "Esta é unha entrada 'offline' que se enviará no próximo 'sync'"
+
+#: openk.py:217 opnk.py:217
 #, python-format
 msgid "%s does not exist"
 msgstr "%s non existe"
 
 #. TRANSLATORS translate only "MY_PREFERED_APP"
-#: openk.py:309 opnk.py:309
+#: openk.py:291 opnk.py:291
 #, python-format
 msgid "\"handler %s MY_PREFERED_APP %%s\""
 msgstr "\"handler %s O_MEU_APLICATIVO_PREFERIDO %%s\""
 
-#: openk.py:314 opnk.py:314
+#: openk.py:296 opnk.py:296
 #, python-format
 msgid "External open of type %s with \"%s\""
 msgstr "Abra externamente os elementos de tipo %s con \"%s\""
 
-#: openk.py:315 openk.py:327 opnk.py:315 opnk.py:327
+#: openk.py:297 openk.py:309 opnk.py:297 opnk.py:309
 #, python-format
 msgid "You can change the default handler with %s"
 msgstr "Pode cambiar o manexador por defecto con %s"
 
-#: openk.py:323 opnk.py:323
+#: openk.py:305 opnk.py:305
 #, python-format
 msgid "Handler program %s not found!"
 msgstr "Non se atopa o programa manexador %s !"
 
-#: openk.py:324 opnk.py:324
+#: openk.py:306 opnk.py:306
 msgid ""
 "You can use the ! command to specify another handler program                        or pipeline."
 msgstr ""
 "Pode usar a orde ! para especificar outro programa ou pipeline                         manexador."
 
-#: openk.py:363 opnk.py:363
+#: openk.py:345 opnk.py:345
 msgid ""
 "openk is an universal open command tool that will try to display any file              in the "
 "pager less after rendering its content with ansicat. If that fails,              openk will "
@@ -2125,7 +2192,7 @@ msgstr ""
 "openk intentará abrir o ficheiro con 'xdg-open'. Se se lle da unha URL como entrada,               "
 "en lugar dunha ruta, opnk fará uso de netcache para obter o contido da rede."
 
-#: openk.py:387 opnk.py:387
+#: openk.py:369 opnk.py:369
 msgid "Path to the file or URL to open"
 msgstr "Ruta ao ficheiro ou URL para abrir"
 
@@ -2134,12 +2201,26 @@ msgid "xkcdpunk is a tool to display a given XKCD comic in your terminal"
 msgstr "xkcdpunk é unha ferramenta para amosar un comic de XKCD dado na súa terminal"
 
 #: xkcdpunk.py:38
-msgid "XKCD comic number"
-msgstr "Número de comic XKCD"
+msgid "XKCD comic number. Also accept value \"latest\" and \"random\". Default is \"latest\""
+msgstr ""
+"Número de cómic XKCD. Tamén se aceptan os valores \"latest\" e \"random\". O predeterminado é "
+"\"latest\""
 
 #: xkcdpunk.py:41
 msgid "Only access cached comics"
 msgstr "Acceder só a cómics na caché"
+
+#~ msgid "To improve your web experience (less cruft in webpages),"
+#~ msgstr "Para mellorar a súa experiencia web (menos morralla nas páxinas web),"
+
+#~ msgid "please install python3-readability or readability-lxml"
+#~ msgstr "por favor instale python3-readability ou readability-lxml"
+
+#~ msgid "A valid list name is required to edit a list"
+#~ msgstr "Requírese un nome de lista válido para editar unha lista"
+
+#~ msgid "XKCD comic number"
+#~ msgstr "Número de comic XKCD"
 
 #~ msgid " (empty line to send)"
 #~ msgstr " (liña en branco para enviar)"
