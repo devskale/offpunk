@@ -1,6 +1,6 @@
 # Offpunk History
 
-## 3.1 - Unreleased
+## 3.1 - March 1st 2026
 PACKAGERS: timg has been removed from suggestion, to favor chafa
 - Cut startup time in half by lazy loading optional modules
 - "redirect" now has support for "whitelist". Whitelisted websites will always be shown in full view, skipping readability/unmerdify
