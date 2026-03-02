@@ -4,7 +4,7 @@
 Offline-First Gemini/Web/Gopher/RSS reader and browser
 """
 
-__version__ = "3.0"
+__version__ = "3.1"
 
 # Initial imports and conditional imports {{{
 import argparse
