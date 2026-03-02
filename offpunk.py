@@ -38,6 +38,7 @@ from offutils import (
     find_root,
     _LESS_RESTORE_POSITION,
     edit_file,
+    clean_url,
 )
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
@@ -340,6 +341,7 @@ class GeminiClient(cmd.Cmd):
         if not url:
             return
         url, newmode = unmode_url(url)
+        url = clean_url(url)
         if not mode:
             mode = newmode
         # we don’t handle the name anymore !
