@@ -627,5 +627,3 @@ def clean_url(url):
         newquery.rstrip("&")
         newurl = urllib.parse.urlunparse(parsed._replace(query=newquery))
     return newurl
-
-    print(query)
