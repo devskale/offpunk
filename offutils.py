@@ -614,3 +614,16 @@ def edit_file(path_to_edit, text_to_append="", options={}):
         blob = f.readlines()
         f.close()
         return blob
+
+# Cleanup an url, by removing unnecessary stuff like utm parameters
+def clean_url(url):
+    parsed = urllib.parse.urlparse(url)
+    newquery = ""
+    newurl = url
+    if parsed.scheme in ["http","https"]:
+        for query_element in parsed.query.split("&"):
+            if query_element and not query_element.startswith("utm"):
+                newquery += query_element + "&"
+        newquery.rstrip("&")
+        newurl = urllib.parse.urlunparse(parsed._replace(query=newquery))
+    return newurl

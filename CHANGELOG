@@ -1,5 +1,8 @@
 # Offpunk History
 
+## 3.2 - Unreleased
+- Strip all http urls from "utm" attributes
+
 ## 3.1 - March 1st 2026
 PACKAGERS: timg has been removed from suggestion, to favor chafa
 - Cut startup time in half by lazy loading optional modules

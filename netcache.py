@@ -17,7 +17,7 @@ import gettext
 
 import ansicat
 import offutils
-from offutils import xdg, _LOCALE_DIR, get_url_redirected, edit_file
+from offutils import xdg, _LOCALE_DIR, get_url_redirected, edit_file, clean_url
 import offblocklist
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
@@ -201,6 +201,7 @@ def get_cache_path(url, add_index=True, include_protocol=True, xdgfolder="cache"
     # First, we parse the URL
     if not url:
         return None
+    url = clean_url(url)
     parsed = urllib.parse.urlparse(url)
     if url[0] == "/" or url.startswith("./") or os.path.exists(url):
         scheme = "file"
@@ -1135,6 +1136,7 @@ def fetch(
     **kwargs,
 ):
     url = normalize_url(url)
+    url = clean_url(url)
     newurl = url
     path = None
     print_error = "print_error" in kwargs.keys() and kwargs["print_error"]
