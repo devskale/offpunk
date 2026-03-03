@@ -26,6 +26,10 @@ See info on the bug tracker:
 
 => https://todo.sr.ht/~lioploum/offpunk/42 bug #42: IDN handling 
 
+## Git support in netcache
+
+Allows netcache to have git support. That way, the git repository of ftr-site-config could be automatically downloaded and updated.
+
 
 # Heavy refactoring
 
@@ -47,6 +51,10 @@ https://todo.sr.ht/~lioploum/offpunk/3
 ## Switch from python-requests to curl
 
 Current netcache code is really slow using python-requests. It could be probably optimised greatly by using concurrent http requests and, maybe, switching to libcurl instead of requests (which would also give access to all protocols supported by libcurl)
+
+## Using etree instead of bs4
+
+Ansicat could ditch BS4 in favour of lxml. That would allows one less dependency.
 
 
 
