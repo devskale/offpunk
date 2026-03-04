@@ -57,6 +57,13 @@ Current netcache code is really slow using python-requests. It could be probably
 Ansicat could ditch BS4 in favour of lxml. That would allows one less dependency.
 
 
+## Get rid of readability and bs4
+
+This is an heavy task but there are too many problems with readability. The idea would be to implement our own readability in unmerdify then to remove bs4 dependency by using lxml instead of bs4. Less dependencies, faster loading time, faster rendering.
+
+
+
+
 
 
 
