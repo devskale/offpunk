@@ -1269,14 +1269,14 @@ class HtmlRenderer(AbstractRenderer):
         self.HAS_READABILITY = load_READABILITY()
         self.soup = None
 
+    #This method build the "soup" document only once to be reused later
     def has_soup(self):
-        if not self.soup and self.DO_HTML:
+        if not self.soup and self.DO_HTML and self.body:
             self.soup = BeautifulSoup(self.body, "html.parser")
         if self.soup:
             return True
         else: 
             return False
-
 
     def get_mime(self):
         return "text/html"
@@ -1323,7 +1323,7 @@ class HtmlRenderer(AbstractRenderer):
 
     def get_base_url(self):
         if not self.base :
-            if self.body and self.has_soup():
+            if self.has_soup():
                 if self.soup.base :
                     base = self.soup.base.get("href")
                     self.base = urllib.parse.urljoin(self.url,base)
