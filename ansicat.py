@@ -1650,8 +1650,8 @@ class HtmlRenderer(AbstractRenderer):
         elif mode in ["full", "full_links_only"]:
             summary = body
             self.cleanlib[mode] += _("Full as requested")
-        # let’s try unmerdify
-        elif load_UNMERDIFY(self.options):
+        # let’s try unmerdify but only for non-local pages
+        elif not is_local(self.url) and load_UNMERDIFY(self.options):
             ftr = ftr_site_config=self.options["ftr_site_config"]
             # we want to unmerdify only if there’s a rule
             if unmerdify.is_unmerdifiable(self.url,ftr):
