@@ -4,6 +4,7 @@
 - Strip all http urls from "utm" attributes
 - CRASHFIX: "open" would crash if parameter out of range (found by JMCS)
 - CRASHFIX: do not use unmerdify with local files
+- CRASHFIX: open X was crashing on pages without renderer
 - PERF: improve html rendering by loading each page only once in BS4
 
 ## 3.1 - March 1st 2026
