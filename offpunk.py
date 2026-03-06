@@ -1598,7 +1598,7 @@ Use "view XX" where XX is a number to view information about link XX.
                 try:
                     n = int(a)
                     u = self.get_renderer().get_link(n)
-                    url_list.append(u)
+                    if u: url_list.append(u)
                 except ValueError:
                     print(_("Non-numeric index %s, skipping.") % a)
                 except IndexError:

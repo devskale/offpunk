@@ -2,6 +2,7 @@
 
 ## 3.2 - Unreleased
 - Strip all http urls from "utm" attributes
+- CRASHFIX: "open" would crash if parameter out of range (found by JMCS)
 
 ## 3.1 - March 1st 2026
 PACKAGERS: timg has been removed from suggestion, to favor chafa
