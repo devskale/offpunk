@@ -5,7 +5,7 @@
 * Offpunk is, first and foremost, a Gemini browser. Gemini should stay first-class. Gopher second, Web third.
 * Offpunk is intended first and foremost for offline use. 
 * Offpunk goal is not to browse the web but to extract useful information from web pages.
-* Each page should always be presented the same. There will never be any CSS or design support in Offpunk.
+* Each page should always be presented the same, like a Gemini page. There will never be any CSS or design support in Offpunk. (Geminify the Web)
 * Offpunk is a reading tool. It doesn’t run any app. There will never be any kind of JS support. If information cannot be extracted without JS on a given page, this page should be considered as broken and it is not Offpunk’s fault. 
 * Offpunk is an open tool. It will only implement free and open protocols. No proprietary protocols.
 * Offpunk is a CLI tool. Every interaction is done by typing a visible command, not by using a shortcut or a mouse.
@@ -19,6 +19,7 @@
 * It’s OK to change your mind, to disappear for a while or to miss a deadline.
 * Contributing to Offpunk should be fun. If it becomes an obligation, stop it for a while.
 * Developers are assumed to work offline, development should be done asynchronously by email.
+* Output of chatbots are *not* welcome in any form. Every contribution/question/message should be written by an human who takes full responsibility about it.
 * Each commit should probably comes with an CHANGELOG entry
 
 ## Accessibility
@@ -32,8 +33,8 @@
 
 * Offpunk should run directly as a Python script without any installation, environment settings or anything else. This is non-negotiable core value. python ./offpunk.py
 * Code should be in as few files as possible in one single folder.
-* Code should be split in separate files only if it makes sense to use some part of the code as an independent tool.
-* Everything is a file. The only database is user’s hard disk. No complex data structure but plain text files.
+* Code should be split in separate files only if it makes sense to use some part of the code as an independant tool.
+* Everything is a file. The only database is the user’s hard disk. No complex data structure but plain text files.
 
 ## Crash and errors
 
