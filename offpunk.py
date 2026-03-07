@@ -1555,7 +1555,9 @@ Use "view XX" where XX is a number to view information about link XX.
                 new_mode = "readable" if mode is not None and mode not in ["normal", "readable"] else "full"
                 self._go_to_url(self.current_url, mode=new_mode)
             elif args[0].isdigit():
-                link_url = self.get_renderer().get_link(int(args[0]))
+                r = self.get_renderer()
+                link_url = None
+                if r: link_url = r.get_link(int(args[0]))
                 if link_url:
                     print(_("Link %s is: %s") % (args[0], link_url))
                     if netcache.is_cache_valid(link_url):
@@ -1569,6 +1571,8 @@ Use "view XX" where XX is a number to view information about link XX.
                         print(_("Last cached on %s") % time.ctime(last_modified))
                     else:
                         print(_("No cached version for this link"))
+                else:
+                    print(_("No links on current page"))
 
             else:
                 print(
@@ -1598,7 +1602,7 @@ Use "view XX" where XX is a number to view information about link XX.
                 try:
                     n = int(a)
                     u = self.get_renderer().get_link(n)
-                    url_list.append(u)
+                    if u: url_list.append(u)
                 except ValueError:
                     print(_("Non-numeric index %s, skipping.") % a)
                 except IndexError:

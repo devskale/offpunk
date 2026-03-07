@@ -1267,6 +1267,16 @@ class HtmlRenderer(AbstractRenderer):
         super().__init__(content, url, center=True,redirects={},**kwargs)
         self.DO_HTML = load_HTML()
         self.HAS_READABILITY = load_READABILITY()
+        self.soup = None
+
+    #This method build the "soup" document only once to be reused later
+    def has_soup(self):
+        if not self.soup and self.DO_HTML and self.body:
+            self.soup = BeautifulSoup(self.body, "html.parser")
+        if self.soup:
+            return True
+        else: 
+            return False
 
     def get_mime(self):
         return "text/html"
@@ -1280,10 +1290,9 @@ class HtmlRenderer(AbstractRenderer):
 
     def get_subscribe_links(self):
         subs = []
-        if self.DO_HTML :
+        if self.has_soup() :
             subs = [[self.url, self.get_mime(), self.get_title()]]
-            soup = BeautifulSoup(self.body, "html.parser")
-            links = soup.find_all("link", rel="alternate", recursive=True)
+            links = self.soup.find_all("link", rel="alternate", recursive=True)
             for l in links:
                 ty = l.get("type")
                 if ty:
@@ -1304,9 +1313,8 @@ class HtmlRenderer(AbstractRenderer):
                     return self.title
                 except Exception:
                     pass
-            soup = BeautifulSoup(self.body, "html.parser")
-            if soup.title:
-                self.title = str(soup.title.string)
+            if self.has_soup() and self.soup.title:
+                self.title = str(self.soup.title.string)
             else:
                 self.title = ""
             return self.title
@@ -1315,10 +1323,9 @@ class HtmlRenderer(AbstractRenderer):
 
     def get_base_url(self):
         if not self.base :
-            if self.DO_HTML and self.body:
-                soup = BeautifulSoup(self.body, "html.parser")
-                if soup.base :
-                    base = soup.base.get("href")
+            if self.has_soup():
+                if self.soup.base :
+                    base = self.soup.base.get("href")
                     self.base = urllib.parse.urljoin(self.url,base)
                 else:
                     self.base = self.url
@@ -1643,8 +1650,8 @@ class HtmlRenderer(AbstractRenderer):
         elif mode in ["full", "full_links_only"]:
             summary = body
             self.cleanlib[mode] += _("Full as requested")
-        # let’s try unmerdify
-        elif load_UNMERDIFY(self.options):
+        # let’s try unmerdify but only for non-local pages
+        elif not is_local(self.url) and load_UNMERDIFY(self.options):
             ftr = ftr_site_config=self.options["ftr_site_config"]
             # we want to unmerdify only if there’s a rule
             if unmerdify.is_unmerdifiable(self.url,ftr):
@@ -1671,13 +1678,11 @@ class HtmlRenderer(AbstractRenderer):
             else:
                 summary = body
                 self.cleanlib[mode] += _("Full (No readability installed)")
-        soup = BeautifulSoup(summary, "html.parser")
-        # soup = BeautifulSoup(summary, 'html5lib')
-        if soup:
-            if soup.body:
-                recursive_render(soup.body)
+        if self.has_soup():
+            if self.soup.body:
+                recursive_render(self.soup.body)
             else:
-                recursive_render(soup)
+                recursive_render(self.soup)
         # inserting available feeds at the end of the page (if any)
         sublinks = self.get_subscribe_links()
         if len(sublinks) > 1:
@@ -1737,9 +1742,8 @@ class XkcdRenderer(HtmlRenderer):
 
     #return [image_url,image_path, image_alt_text,image_title]
     def xkcd_extract(self):
-        if self.DO_HTML :
-            soup = BeautifulSoup(self.body, "html.parser")
-            comic_div = soup.find("div",{"id":"comic"})
+        if self.has_soup():
+            comic_div = self.soup.find("div",{"id":"comic"})
             if comic_div:
                 img_element = comic_div.find("img")
                 src=img_element.get("src")
