@@ -1270,6 +1270,7 @@ class HtmlRenderer(AbstractRenderer):
         self.soup = None
 
     #This method build the "soup" document only once to be reused later
+    #This is the full HTML
     def has_soup(self):
         if not self.soup and self.DO_HTML and self.body:
             self.soup = BeautifulSoup(self.body, "html.parser")
@@ -1678,11 +1679,12 @@ class HtmlRenderer(AbstractRenderer):
             else:
                 summary = body
                 self.cleanlib[mode] += _("Full (No readability installed)")
-        if self.has_soup():
-            if self.soup.body:
-                recursive_render(self.soup.body)
+        soup = BeautifulSoup(summary, "html.parser")
+        if soup:
+            if soup.body:
+                recursive_render(soup.body)
             else:
-                recursive_render(self.soup)
+                recursive_render(soup)
         # inserting available feeds at the end of the page (if any)
         sublinks = self.get_subscribe_links()
         if len(sublinks) > 1:
