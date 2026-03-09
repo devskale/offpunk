@@ -46,7 +46,7 @@
 
 * Offpunk should depend on as few dependencies as possible. Any work toward removing a dependency is good work.
 * Dependencies should be optional. Code should run without that dependency.
-* For a decency to be considered, 4 conditions should be met:
+* For a dependency to be considered, 4 conditions should be met:
 
 > 0. The dependency is 100% open and free software, as defined by the FSF.
 > 1. The dependency is well maintained with a stable and reliable API. There’s no need to track API changes across versions.
