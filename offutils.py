@@ -95,7 +95,7 @@ CMDS = {
 
 # We check that the commands exists and are available
 for cmd in CMDS.keys():
-    if not CMDS[cmd] or not shutil.which(CMDS[cmd]): CMDS[cmd] = None
+    if not CMDS[cmd] or not shutil.which(CMDS[cmd]): CMDS[cmd] = str()
 
 # let’s find if grep supports --color=auto
 try:
