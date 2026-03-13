@@ -302,14 +302,16 @@ class AbstractRenderer:
                     pos, colors = self.last_line_colors.popitem()
                     # popitem iterates LIFO.
                     # So we go, backward, to the pos (starting at the end of last_line)
-                    nextline = self.last_line[pos:] + nextline
-                    ansicol = "\x1b["
-                    for c, o in colors:
-                        ansicol += self.colors[c][o] + ";"
-                    ansicol = ansicol[:-1] + "m"
-                    nextline = ansicol + nextline
-                    added_char += len(ansicol)
-                    self.last_line = self.last_line[:pos]
+                    # but we only act if there are true colors at the position
+                    if len(colors) > 0:
+                        nextline = self.last_line[pos:] + nextline
+                        ansicol = "\x1b["
+                        for c, o in colors:
+                            ansicol += self.colors[c][o] + ";"
+                        ansicol = ansicol[:-1] + "m"
+                        nextline = ansicol + nextline
+                        added_char += len(ansicol)
+                        self.last_line = self.last_line[:pos]
                 nextline = self.last_line + nextline
                 if self.last_line_center:
                     # we have to care about the ansi char while centering
