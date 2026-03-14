@@ -1,4 +1,4 @@
-chardet
+charset-normalizer
 cryptography
 requests
 feedparser

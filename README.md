@@ -61,7 +61,7 @@ Dependencies to enable web browsing (packagers may put those in an offpunk-web m
 
 Gopher dependencies:
 
-- [Python-chardet](https://github.com/chardet/chardet) is used to detect the character encoding on Gopher (and may be used more in the future)
+- [Charset-normalizer](https://github.com/jawah/charset_normalizer) is used to detect the character encoding on Gopher (and may be used more in the future)
 
 Nice to have (packagers should may make those optional):
 
