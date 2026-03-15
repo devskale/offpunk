@@ -62,9 +62,6 @@ path = "offpunk.py" # read __version__
 [tool.hatch.build.targets.wheel.hooks.custom]
 path = "hatch_build.py"
 
-[tool.hatch.metadata.hooks.requirements_txt]
-files = ["requirements.txt"]
-
 [tool.hatch.build.targets.wheel]
 only-include = [
   "ansicat.py", "netcache_migration.py", "netcache.py",
