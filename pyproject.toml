@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.5", "hatch-requirements-txt"]
+requires = ["hatchling>=1.5"]
 build-backend = "hatchling.build"
 
 [project]
@@ -25,12 +25,12 @@ classifiers = [
 ]
 keywords = ["gemini", "browser"]
 requires-python = ">=3.7"
-dynamic = ["version", "dependencies"]
+dynamic = ["version"]
 
 
 [project.optional-dependencies]
 better-tofu = ["cryptography"]
-chardet = ["chardet"]
+chardet = ["charset-normalizer"]
 html = ["bs4", "readability-lxml", "lxml"]
 http = ["requests"]
 process-title = ["setproctitle"]

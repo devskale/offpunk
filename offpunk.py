@@ -1366,7 +1366,7 @@ class GeminiClient(cmd.Cmd):
         output += _(" - Connect to http/https (requests)           : ") + has(
             netcache.load_HTTP()
         )
-        output += _(" - Detect text encoding (python-chardet)      : ") + has(
+        output += _(" - Detect text encoding (charset-normalizer)  : ") + has(
             netcache.load_CHARDET()
         )
         output += _(" - restore last position (less 572+)          : ") + has(

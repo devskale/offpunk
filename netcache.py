@@ -25,12 +25,17 @@ gettext.textdomain('offpunk')
 _ = gettext.gettext
 
 def load_CHARDET():
+    global chardet
+    _HAS_CHARDET = False
     try:
-        global chardet
-        import chardet
+        import charset_normalizer as chardet
         _HAS_CHARDET = True
     except ModuleNotFoundError:
-        _HAS_CHARDET = False
+        try:
+            import chardet
+            _HAS_CHARDET = True
+        except ModuleNotFoundError:
+            pass
     return _HAS_CHARDET
 
 def load_CRYPTOGRAPHY():
