@@ -3,6 +3,7 @@
 ## 3.2 - Unreleased
 PACKAGERS: dependency to "chardet" has been replaced by "charset-normalizer"
 - Strip all http urls from "utm" attributes
+- ansicat now uses "charset-normalizer" to detect encoding (if available)
 - Replace "chardet" by "charset-normalizer" (by Anna Cybertailor)
 - CRASHFIX: "open" would crash if parameter out of range (found by JMCS)
 - CRASHFIX: do not use unmerdify with local files

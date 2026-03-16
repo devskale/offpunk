@@ -1883,9 +1883,13 @@ def renderer_from_file(path, url=None, theme=None, redirectlist={}, **kwargs):
         url = path
     if os.path.exists(path):
         if mime.startswith("text/") or mime in _FORMAT_RENDERERS:
-            with open(path, errors="ignore") as f:
-                content = f.read()
-                f.close()
+            try:
+                from charset_normalizer import from_path
+                content = str(from_path(path).best())
+            except:
+                with open(path, errors="ignore") as f:
+                    content = f.read()
+                    f.close()
         else:
             content = path
         toreturn = set_renderer(content, url, mime, theme=theme, \
