@@ -14,6 +14,7 @@ import urllib.parse
 import warnings
 from ssl import CertificateError
 import gettext
+import subprocess
 
 import ansicat
 import offutils
@@ -51,16 +52,9 @@ def load_CRYPTOGRAPHY():
     return _HAS_CRYPTOGRAPHY
 
 def load_HTTP():
-    try:
-        with warnings.catch_warnings():
-            # Disable annoying warning shown to LibreSSL users
-            warnings.simplefilter("ignore")
-            global requests
-            import requests
-        _DO_HTTP = True
-    except (ModuleNotFoundError, ImportError):
-        _DO_HTTP = False
-    return _DO_HTTP
+    if offutils.CMDS["curl"]:
+        return True
+    return False
 
 # This list is also used as a list of supported protocols
 standard_ports = {
@@ -397,6 +391,76 @@ def get_cookiejar(url, create=False):
     else:
         return None
 
+# 60: Peer certificate cannot be authenticated with known CA certificates.
+CURL_BAD_SSL = 60
+# 63: Maximum file size exceeded
+CURL_MAX_FILE_SIZE_EXCEEDED = 63
+
+class CurlError(Exception):
+    pass
+
+def _fetch_curl(url, verify=True, headers={}, timeout=DEFAULT_TIMEOUT, cookies=None, max_size=None, extra_args=[]):
+    """
+    return cache path
+    can raise CurlError(exitcode, error message)
+    """
+    if offutils.CMDS["curl"] is None:
+        return None
+
+    import http.cookiejar
+    use_cookie = cookies is not None and isinstance(cookies, http.cookiejar.MozillaCookieJar)
+
+    def too_large_error(url, length, max_size):
+        err = _("Size of %s is %s Mo\n") % (url, length)
+        err += _("Offpunk only download automatically content under %s Mo\n") % (
+            max_size / 1000000
+        )
+        err += _("To retrieve this content anyway, type 'reload'.")
+        return set_error(url, err)
+
+    # -b : use cookies from file
+    # -c : save cookies to file
+    # -k : accept bad server certificate
+    # -o : write output to file, single URL per file
+    # -s : don't show anything
+    # -w : write format string after a request is finished or failed
+    # -A : set user agent
+    # -D : dump response header to file
+    # -H : set header
+    # -L : redirect
+    # -S : print error to stderr
+    # -Z : use parallel request
+    # --connect-timeout
+    # --create-dirs      creates the necessary local directory hierarchy as needed
+    # --max-filesize
+    cmd = [offutils.CMDS["curl"], "-sSL", "--create-dirs"]
+    cmd += ["-A", "Offpunk/Netcache - https://offpunk.net"]
+    for key in headers:
+        cmd += ["-H", f"{key}: {headers[key]}"]
+    if not verify:
+        cmd += ["-k"]
+    if timeout:
+        cmd += ["--connect-timeout", str(timeout)]
+    if max_size:
+        cmd += ["--max-filesize", str(max_size)]
+    if use_cookie:
+        # save all cookies for curl to read
+        cookies.save()
+        cmd += ["-c", cookies.filename]
+        cmd += ["-b", cookies.filename]
+    # curl only write its output as-is, it DOES NOT re-encode output to utf-8 like python-requests.
+    # Response with non-unicode charset may crash with UnicodeDecodeError when python read the output file.
+    cache = get_cache_path(url)
+    cmd += [url, "-o", cache]
+    cmd += extra_args
+    try:
+        subprocess.run(cmd, capture_output=True, check=True)
+    except Exception as err:
+        if err.returncode == CURL_MAX_FILE_SIZE_EXCEEDED:
+            return too_large_error(url, length, max_size)
+        else:
+            raise CurlError(err.returncode, err.stderr.decode().strip())
+    return cache
 
 def _fetch_http(
     url,
@@ -410,67 +474,11 @@ def _fetch_http(
     if not load_HTTP():
         return None
 
-    def too_large_error(url, length, max_size):
-        err = _("Size of %s is %s Mo\n") % (url, length)
-        err += _("Offpunk only download automatically content under %s Mo\n") % (
-            max_size / 1000000
-        )
-        err += _("To retrieve this content anyway, type 'reload'.")
-        return set_error(url, err)
-
-    if accept_bad_ssl_certificates:
-        requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = "ALL:@SECLEVEL=1"
-        requests.packages.urllib3.disable_warnings()
-        verify = False
-    else:
-        requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = "ALL:@SECLEVEL=2"
-        verify = True
-    header = {}
-    header["User-Agent"] = "Offpunk/Netcache - https://offpunk.net"
-    with requests.get(
-        url, verify=verify, headers=header, stream=True, timeout=DEFAULT_TIMEOUT,
-        cookies=cookiejar
-    ) as response:
-        if "content-type" in response.headers:
-            mime = response.headers["content-type"]
-        else:
-            mime = None
-        if "content-length" in response.headers:
-            length = int(response.headers["content-length"])
-        else:
-            length = 0
-        if not force_large_download and max_size and length > max_size:
-            response.close()
-            return too_large_error(url, str(length / 100), max_size)
-        elif not force_large_download and max_size and length == 0:
-            body = b""
-            downloaded = 0
-            for r in response.iter_content():
-                body += r
-                # We divide max_size for streamed content
-                # in order to catch them faster
-                size = sys.getsizeof(body)
-                max = max_size / 2
-                current = round(size * 100 / max, 1)
-                if current > downloaded:
-                    downloaded = current
-                    print(
-                        _("  -> Receiving stream: %s%% of allowed data") % downloaded,
-                        end="\r",
-                    )
-                # print("size: %s (%s\% of maxlenght)"%(size,size/max_size))
-                if size > max_size / 2:
-                    response.close()
-                    return too_large_error(url, "streaming", max_size)
-        else:
-            body = response.content
-        if cookiejar is not None:
-            requests.cookies.extract_cookies_to_jar(cookiejar, response.request, response.raw)
-        response.close()
-    if mime and "text/" in mime:
-        body = body.decode("UTF-8", "replace")
-    cache = write_body(url, body, mime)
-    return cache
+    verify = not accept_bad_ssl_certificates
+    if force_large_download:
+        max_size = None
+    return _fetch_curl(url=url, verify=verify, timeout=timeout,
+                cookies=cookiejar, max_size=max_size)
 
 
 def _fetch_gopher(url, timeout=DEFAULT_TIMEOUT, interactive=True, **kwargs):
@@ -1193,7 +1201,7 @@ def fetch(
                         cookiejar = get_cookiejar(newurl)
                     path = _fetch_http(newurl, cookiejar=cookiejar, **kwargs)
                 else:
-                    print(_("HTTP requires python-requests"))
+                    print(_("HTTP requires curl"))
             elif scheme == "gopher":
                 path = _fetch_gopher(newurl, **kwargs)
             elif scheme == "finger":
@@ -1228,18 +1236,17 @@ def fetch(
                     print(_("""ERROR5: Trying to create a directory which already exists
                         in the cache : """))
                 print(err)
-            elif load_HTTP() and isinstance(err, requests.exceptions.SSLError):
+            elif load_HTTP() and isinstance(err, CurlError) and err.args[0] == CURL_BAD_SSL:
                 if print_error:
                     print(_("""ERROR6: Bad SSL certificate:\n"""))
-                    print(err)
                     print(
                         _("""\n If you know what you are doing, you can try to accept bad certificates with the following command:\n""")
                     )
                     print("""set accept_bad_ssl_certificates True""")
-            elif load_HTTP() and isinstance(err, requests.exceptions.ConnectionError):
+            elif load_HTTP() and isinstance(err, CurlError):
                 if print_error:
-                    print(_("""ERROR7: Cannot connect to URL:\n"""))
-                    print(str(err))
+                    print(_("""ERROR7: curl exit with %s:""") % err.args[0])
+                    print(err.args[1])
             else:
                 if print_error:
                     import traceback

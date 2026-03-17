@@ -91,6 +91,7 @@ CMDS = {
     "wl-paste"   : "wl-paste",
     "pbcopy"     : "pbcopy",
     "pbpaste"    : "pbpaste",
+    "curl"       : "curl",
         }
 
 # We check that the commands exists and are available

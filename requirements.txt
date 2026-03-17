@@ -1,6 +1,5 @@
 charset-normalizer
 cryptography
-requests
 feedparser
 bs4
 readability-lxml

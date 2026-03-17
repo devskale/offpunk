@@ -1340,7 +1340,7 @@ class GeminiClient(cmd.Cmd):
         output += _("\nHighly recommended:\n")
         output += " - xdg-open            : " + has(CMDS["xdg-open"])
         output += _("\nWeb browsing:\n")
-        output += " - python-requests     : " + has(netcache.load_HTTP())
+        output += " - curl                : " + has(CMDS["curl"])
         output += " - python-feedparser   : " + has(ansicat.load_FEED())
         output += " - python-bs4          : " + has(ansicat.load_HTML())
         output += " - python-readability  : " + has(ansicat.load_READABILITY())
@@ -1363,8 +1363,8 @@ class GeminiClient(cmd.Cmd):
         output += _(" - Render Atom/RSS feeds (feedparser)         : ") + has(
             ansicat.load_FEED()
         )
-        output += _(" - Connect to http/https (requests)           : ") + has(
-            netcache.load_HTTP()
+        output += _(" - Connect to http/https (curl)               : ") + has(
+            CMDS["curl"]
         )
         output += _(" - Detect text encoding (charset-normalizer)  : ") + has(
             netcache.load_CHARDET()
