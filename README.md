@@ -53,7 +53,7 @@ Mandatory or highly recommended (packagers should probably make those mandatory)
 
 Dependencies to enable web browsing (packagers may put those in an offpunk-web meta-package but it is recommended to have it for a better offpunk experience)
 
-- [Python-requests](http://python-requests.org) is needed to handle http/https requests natively (apt-get install python3-requests). Without it, http links will be opened in an external browser
+- [curl](http://curl.se/) is needed to handle http/https requests (apt-get install curl). Without it, http links will be opened in an external browser
 - [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup) is needed to render HTML. Without it, HTML will not be rendered or be sent to an external parser like Lynx. (apt-get install python3-bs4)
 - [Readability](https://github.com/buriy/python-readability) is highly suggested to trim useless part of most html pages (apt-get install python3-readability or pip3 install readability-lxml)
 - [Python-feedparser](https://github.com/kurtmckee/feedparser) will allow parsing of RSS/Atom feeds and thus subscriptions to them. (apt-get install python3-feedparser)
