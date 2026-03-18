@@ -3,6 +3,7 @@
 ## 3.2 - Unreleased
 PACKAGERS: dependency to "chardet" has been replaced by "charset-normalizer"
 PACKAGERS: depenceny to "python-requests" has been replaced by "curl"
+- output of "version" has been refactored to clarify dependencies
 - "netcache" will now uses the "curl" binary instead of python-requests (by Silica)
 - Strip all http urls from "utm" attributes
 - ansicat now uses "charset-normalizer" to detect encoding (if available)
