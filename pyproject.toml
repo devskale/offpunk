@@ -32,10 +32,9 @@ dynamic = ["version"]
 better-tofu = ["cryptography"]
 chardet = ["charset-normalizer"]
 html = ["bs4", "readability-lxml", "lxml"]
-http = ["requests"]
 process-title = ["setproctitle"]
 rss = ["feedparser"]
-full = [ "cryptography", "chardet", "bs4", "readability-lxml", "lxml", "requests", "setproctitle", "feedparser" ]
+full = [ "cryptography", "chardet", "bs4", "readability-lxml", "lxml", "setproctitle", "feedparser" ]
 
 [project.urls]
 Homepage = "https://offpunk.net/"

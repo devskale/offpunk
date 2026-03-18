@@ -1839,10 +1839,11 @@ def get_mime(path, url=None):
         elif not mime2 and "html" in mime:
             if path and os.path.exists(path):
                 firstline = None
-                with open(path) as f:
+                # Avoid crash from non-unicode charset
+                with open(path, "rb") as f:
                     firstline = f.readline()
                     f.close()
-                if firstline.startswith("<rss"):
+                if firstline.startswith(b"<rss"):
                     mime = "text/xml"
                 else:
                     mime = "text/html"
