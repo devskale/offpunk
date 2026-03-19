@@ -35,17 +35,21 @@ Allows netcache to have git support. That way, the git repository of ftr-site-co
 
 Those tasks are hard and requires touching the code everywhere.
 
-## Refactoring of redirections is needed
+## Refactoring of redirections and errors code
 
 bug #34: redirections are not kept while offline
 https://todo.sr.ht/~lioploum/offpunk/34
-
-## Refactoring of errors is needed
-
 bug #30:  Netcache: gemini status 4 and 5 should not emit a full traceback 
 https://todo.sr.ht/~lioploum/offpunk/30
 bug #3: Error pages are stored in the cache  
 https://todo.sr.ht/~lioploum/offpunk/3
+
+The way I see it would be to have a folder in the cache for "return  codes".  :  cache/offpunk/codes/https/ploum.net/
+
+If an URL is downloaded successfully, codes for that URL are removed from the cache.
+If a special code is returned, it is saved in the codecache.
+
+When browsing offline, netcache would then check if there’s a codecache which is more recent than the content cache. If yes, this code cache is used (but content cache could still be displayed if available).
 
 
 ## Using etree instead of bs4
@@ -57,7 +61,9 @@ Ansicat could ditch BS4 in favour of lxml. That would allows one less dependency
 
 This is an heavy task but there are too many problems with readability. The idea would be to implement our own readability in unmerdify then to remove bs4 dependency by using lxml instead of bs4. Less dependencies, faster loading time, faster rendering.
 
+## Remove dependency to python-cryptography
 
+Python-cryptography is only used to handle some properties of Gemini certificates. There should be a way to remove this dependency completely.
 
 
 
