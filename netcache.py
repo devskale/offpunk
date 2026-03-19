@@ -56,17 +56,7 @@ def load_HTTP():
         return True
     return False
 
-# This list is also used as a list of supported protocols
-standard_ports = {
-    "gemini": 1965,
-    "gopher": 70,
-    "finger": 79,
-    "http": 80,
-    "https": 443,
-    "spartan": 300,
-}
-default_protocol = "gemini"
-
+# For the list of supported protocols, see "PROTOCOLS" below
 CRLF = "\r\n"
 DEFAULT_TIMEOUT = 10
 _MAX_REDIRECTS = 5
@@ -233,9 +223,9 @@ def get_cache_path(url, add_index=True, include_protocol=True, xdgfolder="cache"
         # Convert unicode hostname to punycode using idna RFC3490
         host = parsed.netloc  # .encode("idna").decode()
         try:
-            port = parsed.port or standard_ports.get(scheme, 0)
+            port = parsed.port or PROTOCOLS[scheme]["port"]
         except ValueError:
-            port = standard_ports.get(scheme, 0)
+            port = PROTOCOLS[scheme]["port"]
         # special gopher selector case
         if scheme == "gopher":
             if len(parsed.path) >= 2:
@@ -477,14 +467,15 @@ def _fetch_http(
     **kwargs,
 ):
     if not load_HTTP():
+        print(_("HTTP requires curl"))
         return None
-
+    if not cookiejar:
+        cookiejar = get_cookiejar(url)
     verify = not accept_bad_ssl_certificates
     if force_large_download:
         max_size = None
     return _fetch_curl(url=url, verify=verify, timeout=timeout,
                 cookies=cookiejar, max_size=max_size)
-
 
 def _fetch_gopher(url, timeout=DEFAULT_TIMEOUT, interactive=True, **kwargs):
     parsed = urllib.parse.urlparse(url)
@@ -564,7 +555,7 @@ def _fetch_gopher(url, timeout=DEFAULT_TIMEOUT, interactive=True, **kwargs):
 def _fetch_finger(url, timeout=DEFAULT_TIMEOUT, **kwargs):
     parsed = urllib.parse.urlparse(url)
     host = parsed.hostname
-    port = parsed.port or standard_ports["finger"]
+    port = parsed.port or PROTOCOLS["finger"]["port"]
     query = parsed.path.lstrip("/") + "\r\n"
     with socket.create_connection((host, port)) as sock:
         sock.settimeout(timeout)
@@ -579,7 +570,7 @@ def _fetch_spartan(url, **kwargs):
     cache = None
     url_parts = urllib.parse.urlparse(url)
     host = url_parts.hostname
-    port = url_parts.port or standard_ports["spartan"]
+    port = url_parts.port or PROTOCOLS["spartan"]["port"]
     path = url_parts.path or "/"
     query = url_parts.query
     redirect_url = None
@@ -926,7 +917,7 @@ def _fetch_gemini(
     url_parts = urllib.parse.urlparse(url)
     host = url_parts.hostname
     site_id = url_parts.username
-    port = url_parts.port or standard_ports["gemini"]
+    port = url_parts.port or PROTOCOLS["gemini"]["port"]
     path = url_parts.path or "/"
     query = url_parts.query
     # In AV-98, this was the _send_request method
@@ -1013,7 +1004,7 @@ def _fetch_gemini(
     # Handle IPV6 hostname
     if ":" in new_host:
         new_host = "[" + new_host + "]"
-    if port != standard_ports["gemini"]:
+    if port != PROTCOLS["gemini"]["port"]:
         new_host += ":" + str(port)
     url_no_username = urllib.parse.urlunparse(url._replace(netloc=new_host))
 
@@ -1138,6 +1129,18 @@ def _fetch_gemini(
     cache = write_body(url, body, mime)
     return cache, url
 
+# This is the list of supported protocols and their method
+PROTOCOLS = {
+    "gemini": { "port": 1965, "fetch": _fetch_gemini},
+    "gopher": { "port": 70, "fetch": _fetch_gopher},
+    "finger": { "port": 79, "fetch": _fetch_finger},
+    "http": { "port": 80, "fetch": _fetch_http},
+    "https": { "port": 443, "fetch": _fetch_http},
+    "spartan": { "port": 300, "fetch": _fetch_spartan},
+}
+
+default_protocol = "gemini"
+
 #fetch returns two things:
 #cachepath: the path to the cached resource
 #newurl: the real URL of that cached resource
@@ -1196,25 +1199,12 @@ def fetch(
     elif "://" in url and not offline:
         try:
             scheme = url.split("://")[0]
-            if scheme not in standard_ports:
+            if scheme not in PROTOCOLS:
                 if print_error:
                     print(_("%s is not a supported protocol") % scheme)
                 path = None
-            elif scheme in ("http", "https"):
-                if load_HTTP():
-                    if download_image_first and cookiejar is None:
-                        cookiejar = get_cookiejar(newurl)
-                    path = _fetch_http(newurl, cookiejar=cookiejar, **kwargs)
-                else:
-                    print(_("HTTP requires curl"))
-            elif scheme == "gopher":
-                path = _fetch_gopher(newurl, **kwargs)
-            elif scheme == "finger":
-                path = _fetch_finger(newurl, **kwargs)
-            elif scheme == "gemini":
-                path, newurl = _fetch_gemini(url, **kwargs)
-            elif scheme == "spartan":
-                path, newurl = _fetch_spartan(url, **kwargs)
+            elif scheme in PROTOCOLS:
+                path = PROTOCOLS[scheme]["fetch"](newurl, **kwargs)
             else:
                 print("scheme %s not implemented yet" % scheme)
         except UserAbortException:

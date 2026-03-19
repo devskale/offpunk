@@ -322,7 +322,7 @@ def looks_like_url(word):
         port = parsed.port
         scheme = word.split("://")[0]
         mailto = word.startswith("mailto:")
-        start = scheme in netcache.standard_ports
+        start = scheme in netcache.PROTOCOLS
         local = scheme in ["file", "list"]
         if mailto:
             return "@" in word
