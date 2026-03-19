@@ -1337,41 +1337,36 @@ class GeminiClient(cmd.Cmd):
         output += _("System: ") + sys.platform + "\n"
         output += _("Python: ") + sys.version + "\n"
         output += _("Language: ") + os.getenv('LANG') + "\n"
-        output += _("\nHighly recommended:\n")
-        output += " - xdg-open            : " + has(CMDS["xdg-open"])
-        output += _("\nWeb browsing:\n")
-        output += " - curl                : " + has(CMDS["curl"])
-        output += " - python-feedparser   : " + has(ansicat.load_FEED())
-        output += " - python-bs4          : " + has(ansicat.load_HTML())
-        output += " - python-readability  : " + has(ansicat.load_READABILITY())
-        output += " - chafa 1.10+         : " + has(CMDS["chafa"])
+        output += _("\nRecommended:\n")
+        output += _(" - less 572+           (restore last position in page)     : ") + \
+                                has(_LESS_RESTORE_POSITION  )
+        output += _(" - chafa 1.10+         (display pixelated pictures in page): ") + \
+                                has(CMDS["chafa"])
+        output += _(" - charset-normalizer  (detect text encoding)              : ") + \
+                                has(netcache.load_CHARDET())
+        output += _(" - python-setproctitle (change the process name to offpunk): ") + \
+                                            has(_HAS_SETPROCTITLE)
+        output += _("\nSuggested:\n")
+        output += _(" - xdg-open       (automatically open in external handlers): ") + \
+                                has(CMDS["xdg-open"])
+        output += _(" - curl                (support for HTTP/HTTPS)            : ") + \
+                                            has(CMDS["curl"])
+        output += _(" - python-feedparser   (support for RSS/ATOM)              : ") + \
+                                            has(ansicat.load_FEED())
+        output += _(" - python-bs4          (support for HTML)                  : ") + \
+                                            has(ansicat.load_HTML())
+        output += _(" - python-readability  (extract content from HTML)         : ") + \
+                                            has(ansicat.load_READABILITY())
         output += _("\nNice to have:\n")
-        output += " - python-setproctitle             : " + has(_HAS_SETPROCTITLE)
-        output += " - python-cryptography             : " + has(netcache.load_CRYPTOGRAPHY())
+        output += _(" - python-cryptography (slightly better security in Gemini): ") + \
+                                            has(netcache.load_CRYPTOGRAPHY())
         clip_support = CMDS["xsel"] or CMDS["xclip"] 
-        output += " - X11 clipboard (xsel or xclip)   : " + has(clip_support)
-        output += " - Wayland clipboard (wl-clipboard): " + has(CMDS["wl-copy"])
-        output += " - MacOS clipboard                 : " + has(CMDS["pbcopy"])
-
-        output += _("\nFeatures :\n")
-        output += _(" - Render images (chafa)              : ") + has(
-                ansicat._RENDER_IMAGE
-            )
-        output += _(" - Render HTML (bs4, readability)             : ") + has(
-            ansicat.load_HTML() and ansicat.load_READABILITY()
-        )
-        output += _(" - Render Atom/RSS feeds (feedparser)         : ") + has(
-            ansicat.load_FEED()
-        )
-        output += _(" - Connect to http/https (curl)               : ") + has(
-            CMDS["curl"]
-        )
-        output += _(" - Detect text encoding (charset-normalizer)  : ") + has(
-            netcache.load_CHARDET()
-        )
-        output += _(" - restore last position (less 572+)          : ") + has(
-            _LESS_RESTORE_POSITION
-        )
+        output += _(" - xsel or xclip       (X11 clipboard support)             : ") + \
+                                            has(clip_support)
+        output += _(" - wl-clipboard        (Wayland clipboard support)         : ") + \
+                                            has(CMDS["wl-copy"])
+        output += _(" - pbcoby              (MacOS clipboard support)           : ") + \
+                                            has(CMDS["pbcopy"])
         output += "\n"
         output += _("ftr_site_config     : ") + str(self.options["ftr_site_config"]) + "\n"
         output += _("Config directory    : ") + xdg("config") + "\n"

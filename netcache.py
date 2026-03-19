@@ -433,7 +433,7 @@ def _fetch_curl(url, verify=True, headers={}, timeout=DEFAULT_TIMEOUT, cookies=N
     # --connect-timeout
     # --create-dirs      creates the necessary local directory hierarchy as needed
     # --max-filesize
-    cmd = [offutils.CMDS["curl"], "-sSL", "--create-dirs"]
+    cmd = [offutils.CMDS["curl"], "-sSL", "--compressed", "--create-dirs"]
     cmd += ["-A", "Offpunk/Netcache - https://offpunk.net"]
     for key in headers:
         cmd += ["-H", f"{key}: {headers[key]}"]
