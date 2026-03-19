@@ -391,6 +391,8 @@ def get_cookiejar(url, create=False):
     else:
         return None
 
+#23: CURLE_WRITE_ERROR
+CURL_WRITE_ERROR = 23
 # 60: Peer certificate cannot be authenticated with known CA certificates.
 CURL_BAD_SSL = 60
 # 63: Maximum file size exceeded
@@ -458,6 +460,9 @@ def _fetch_curl(url, verify=True, headers={}, timeout=DEFAULT_TIMEOUT, cookies=N
     except Exception as err:
         if err.returncode == CURL_MAX_FILE_SIZE_EXCEEDED:
             return too_large_error(url, length, max_size)
+        elif err.returncode == CURL_WRITE_ERROR:
+            #There’s a write error so we don’t have any cache, we return none
+            return None
         else:
             raise CurlError(err.returncode, err.stderr.decode().strip())
     return cache
