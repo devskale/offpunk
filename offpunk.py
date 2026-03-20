@@ -1341,14 +1341,16 @@ class GeminiClient(cmd.Cmd):
         output += _(" - less 572+           (restore last position in page)     : ") + \
                                 has(_LESS_RESTORE_POSITION  )
         output += _(" - chafa 1.10+         (display pixelated pictures in page): ") + \
-                                has(CMDS["chafa"])
-        output += _(" - charset-normalizer  (detect text encoding)              : ") + \
-                                has(netcache.load_CHARDET())
+                                            has(CMDS["chafa"])
+        output += _(" - file                (better detection of file type)     : ") + \
+                                            has(CMDS["file"])
+        output += _(" - python-charset-normalizer  (detect text encoding)       : ") + \
+                                            has(netcache.load_CHARDET())
         output += _(" - python-setproctitle (change the process name to offpunk): ") + \
                                             has(_HAS_SETPROCTITLE)
         output += _("\nSuggested:\n")
         output += _(" - xdg-open       (automatically open in external handlers): ") + \
-                                has(CMDS["xdg-open"])
+                                            has(CMDS["xdg-open"])
         output += _(" - curl                (support for HTTP/HTTPS)            : ") + \
                                             has(CMDS["curl"])
         output += _(" - python-feedparser   (support for RSS/ATOM)              : ") + \
@@ -1358,7 +1360,7 @@ class GeminiClient(cmd.Cmd):
         output += _(" - python-readability  (extract content from HTML)         : ") + \
                                             has(ansicat.load_READABILITY())
         output += _("\nNice to have:\n")
-        output += _(" - python-cryptography (slightly better security in Gemini): ") + \
+        output += _(" - python-cryptography (better infos about Gemini certifs) : ") + \
                                             has(netcache.load_CRYPTOGRAPHY())
         clip_support = CMDS["xsel"] or CMDS["xclip"] 
         output += _(" - xsel or xclip       (X11 clipboard support)             : ") + \
