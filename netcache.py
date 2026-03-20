@@ -536,7 +536,7 @@ def _fetch_gopher(url, timeout=DEFAULT_TIMEOUT, interactive=True, **kwargs):
                 detected = chardet.detect(response)
                 response = response.decode(detected["encoding"])
             else:
-                raise UnicodeDecodeError
+                response = response.decode("UTF-8", errors="replace")
     if itemtype == "0":
         mime = "text/gemini"
     elif itemtype == "1":
