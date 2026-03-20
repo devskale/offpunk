@@ -1004,7 +1004,7 @@ def _fetch_gemini(
     # Handle IPV6 hostname
     if ":" in new_host:
         new_host = "[" + new_host + "]"
-    if port != PROTCOLS["gemini"]["port"]:
+    if port != PROTOCOLS["gemini"]["port"]:
         new_host += ":" + str(port)
     url_no_username = urllib.parse.urlunparse(url._replace(netloc=new_host))
 
