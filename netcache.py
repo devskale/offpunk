@@ -455,7 +455,7 @@ def _fetch_curl(url, verify=True, headers={}, timeout=DEFAULT_TIMEOUT, cookies=N
             return None
         else:
             raise CurlError(err.returncode, err.stderr.decode().strip())
-    return cache
+    return cache, url
 
 def _fetch_http(
     url,
@@ -513,7 +513,7 @@ def _fetch_gopher(url, timeout=DEFAULT_TIMEOUT, interactive=True, **kwargs):
             user_input = input("> ")
             request = selector + "\t" + user_input
         else:
-            return None
+            return None, url
     else:
         request = selector
     request += "\r\n"
@@ -536,7 +536,7 @@ def _fetch_gopher(url, timeout=DEFAULT_TIMEOUT, interactive=True, **kwargs):
                 detected = chardet.detect(response)
                 response = response.decode(detected["encoding"])
             else:
-                raise UnicodeDecodeError
+                response = response.decode("UTF-8", errors="replace")
     if itemtype == "0":
         mime = "text/gemini"
     elif itemtype == "1":
@@ -549,7 +549,7 @@ def _fetch_gopher(url, timeout=DEFAULT_TIMEOUT, interactive=True, **kwargs):
         # by default, we should consider Gopher
         mime = "text/gopher"
     cache = write_body(url, response, mime)
-    return cache
+    return cache, url
 
 
 def _fetch_finger(url, timeout=DEFAULT_TIMEOUT, **kwargs):
@@ -562,7 +562,7 @@ def _fetch_finger(url, timeout=DEFAULT_TIMEOUT, **kwargs):
         sock.send(query.encode())
         response = sock.makefile("rb").read().decode("UTF-8")
         cache = write_body(response, "text/plain")
-    return cache
+    return cache, url
 
 
 # Originally copied from reference spartan client by Michael Lazar
@@ -1004,7 +1004,7 @@ def _fetch_gemini(
     # Handle IPV6 hostname
     if ":" in new_host:
         new_host = "[" + new_host + "]"
-    if port != PROTCOLS["gemini"]["port"]:
+    if port != PROTOCOLS["gemini"]["port"]:
         new_host += ":" + str(port)
     url_no_username = urllib.parse.urlunparse(url._replace(netloc=new_host))
 
@@ -1204,7 +1204,7 @@ def fetch(
                     print(_("%s is not a supported protocol") % scheme)
                 path = None
             elif scheme in PROTOCOLS:
-                path = PROTOCOLS[scheme]["fetch"](newurl, **kwargs)
+                path, url = PROTOCOLS[scheme]["fetch"](newurl, **kwargs)
             else:
                 print("scheme %s not implemented yet" % scheme)
         except UserAbortException:
