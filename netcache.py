@@ -218,7 +218,7 @@ def get_cache_path(url, add_index=True, include_protocol=True, xdgfolder="cache"
                 path = os.path.join(listdir, "%s.gmi" % listname)
         else:
             path = url
-    else:
+    elif scheme in PROTOCOLS:
         local = False
         # Convert unicode hostname to punycode using idna RFC3490
         host = parsed.netloc  # .encode("idna").decode()
@@ -248,6 +248,9 @@ def get_cache_path(url, add_index=True, include_protocol=True, xdgfolder="cache"
             # Also, very long query are usually useless stuff
             if len(path + parsed.query) < 258:
                 path += "/" + parsed.query
+    else:
+        print("%s is not a supported protocol"%scheme)
+        return None
 
     # Now, we have a partial path. Let’s make it full path.
     if local:
