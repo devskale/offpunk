@@ -201,7 +201,6 @@ def get_cache_path(url, add_index=True, include_protocol=True, xdgfolder="cache"
     if scheme in ["file", "mailto", "list"]:
         local = True
         host = ""
-        port = None
         # file:// is 7 char
         if url.startswith("file://"):
             path = url[7:]
@@ -218,14 +217,11 @@ def get_cache_path(url, add_index=True, include_protocol=True, xdgfolder="cache"
                 path = os.path.join(listdir, "%s.gmi" % listname)
         else:
             path = url
+    #elif scheme in PROTOCOLS:
     else:
         local = False
         # Convert unicode hostname to punycode using idna RFC3490
         host = parsed.netloc  # .encode("idna").decode()
-        try:
-            port = parsed.port or PROTOCOLS[scheme]["port"]
-        except ValueError:
-            port = PROTOCOLS[scheme]["port"]
         # special gopher selector case
         if scheme == "gopher":
             if len(parsed.path) >= 2:
@@ -248,6 +244,9 @@ def get_cache_path(url, add_index=True, include_protocol=True, xdgfolder="cache"
             # Also, very long query are usually useless stuff
             if len(path + parsed.query) < 258:
                 path += "/" + parsed.query
+    #else:
+        # print("%s is not a supported protocol"%scheme)
+        # return None
 
     # Now, we have a partial path. Let’s make it full path.
     if local:
