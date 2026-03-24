@@ -1203,7 +1203,7 @@ def fetch(
                     print(_("%s is not a supported protocol") % scheme)
                 path = None
             elif scheme in PROTOCOLS:
-                path, url = PROTOCOLS[scheme]["fetch"](newurl, **kwargs)
+                path, newurl = PROTOCOLS[scheme]["fetch"](newurl, **kwargs)
             else:
                 print("scheme %s not implemented yet" % scheme)
         except UserAbortException:
