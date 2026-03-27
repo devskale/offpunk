@@ -8,6 +8,7 @@ PACKAGERS: depenceny to "python-requests" has been replaced by "curl"
 - Strip all http urls from "utm" attributes
 - ansicat now uses "charset-normalizer" to detect encoding (if available)
 - Replace "chardet" by "charset-normalizer" (by Anna Cybertailor)
+- Fix list "subscribed" not being autocreated (reported by cosarara)
 - CRASHFIX: "open" would crash if parameter out of range (found by JMCS)
 - CRASHFIX: do not use unmerdify with local files
 - CRASHFIX: open X was crashing on pages without renderer

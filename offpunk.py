@@ -2127,7 +2127,7 @@ Use "view XX" where XX is a number to view information about link XX.
         return self.list_has_status(list, "#frozen")
 
     def list_is_system(self, list):
-        return list in ["history", "to_fetch", "archives", "tour"]
+        return list in ["history", "to_fetch", "archives", "tour","subscribed"]
 
     # This modify the status of a list to one of :
     # normal, frozen, subscribed
