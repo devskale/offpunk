@@ -1811,6 +1811,7 @@ Use "view XX" where XX is a number to view information about link XX.
         else:
             sublink = None
         if sublink:
+            self.get_list("subscribed")
             added = self.list_add_line("subscribed", url=sublink, verbose=False)
             if added:
                 print(_("Subscribed to %s") % sublink)
@@ -2127,7 +2128,7 @@ Use "view XX" where XX is a number to view information about link XX.
         return self.list_has_status(list, "#frozen")
 
     def list_is_system(self, list):
-        return list in ["history", "to_fetch", "archives", "tour","subscribed"]
+        return list in ["history", "to_fetch", "archives", "tour"]
 
     # This modify the status of a list to one of :
     # normal, frozen, subscribed
