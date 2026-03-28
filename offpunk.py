@@ -1811,6 +1811,7 @@ Use "view XX" where XX is a number to view information about link XX.
         else:
             sublink = None
         if sublink:
+            self.get_list("subscribed")
             added = self.list_add_line("subscribed", url=sublink, verbose=False)
             if added:
                 print(_("Subscribed to %s") % sublink)

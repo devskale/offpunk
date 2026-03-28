@@ -421,6 +421,7 @@ def _fetch_curl(url, verify=True, headers={}, timeout=DEFAULT_TIMEOUT, cookies=N
     # -L : redirect
     # -S : print error to stderr
     # -Z : use parallel request
+    # -z : download only if remote file is newer than the local one
     # --connect-timeout
     # --create-dirs      creates the necessary local directory hierarchy as needed
     # --max-filesize
@@ -443,6 +444,11 @@ def _fetch_curl(url, verify=True, headers={}, timeout=DEFAULT_TIMEOUT, cookies=N
     # Response with non-unicode charset may crash with UnicodeDecodeError when python read the output file.
     cache = get_cache_path(url)
     cmd += [url, "-o", cache]
+    # save the Last-Modified time as the file modification time
+    cmd += ["--remote-time"]
+    # if we already have it, make a conditional request
+    if os.path.isfile(cache):
+        cmd += ["-z", cache]
     cmd += extra_args
     try:
         subprocess.run(cmd, capture_output=True, check=True)
