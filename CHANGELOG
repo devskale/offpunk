@@ -3,6 +3,7 @@
 ## 3.2 - Unreleased
 PACKAGERS: dependency to "chardet" has been replaced by "charset-normalizer"
 PACKAGERS: depenceny to "python-requests" has been replaced by "curl"
+PACKAGERS: "curl" binary is now a recommended dependency
 - output of "version" has been refactored to clarify dependencies
 - "netcache" will now uses the "curl" binary instead of python-requests (by Silica)
 - gopher will now be handled by curl too (by JMCS)

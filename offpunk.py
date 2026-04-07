@@ -1342,6 +1342,8 @@ class GeminiClient(cmd.Cmd):
                                 has(_LESS_RESTORE_POSITION  )
         output += _(" - chafa 1.10+         (display pixelated pictures in page): ") + \
                                             has(CMDS["chafa"])
+        output += _(" - curl                (support for HTTP/HTTPS/GOPHER)     : ") + \
+                                            has(CMDS["curl"])
         output += _(" - file                (better detection of file type)     : ") + \
                                             has(CMDS["file"])
         output += _(" - python-charset-normalizer  (detect text encoding)       : ") + \
@@ -1351,8 +1353,6 @@ class GeminiClient(cmd.Cmd):
         output += _("\nSuggested:\n")
         output += _(" - xdg-open       (automatically open in external handlers): ") + \
                                             has(CMDS["xdg-open"])
-        output += _(" - curl                (support for HTTP/HTTPS)            : ") + \
-                                            has(CMDS["curl"])
         output += _(" - python-feedparser   (support for RSS/ATOM)              : ") + \
                                             has(ansicat.load_FEED())
         output += _(" - python-bs4          (support for HTML)                  : ") + \
