@@ -25,20 +25,6 @@ gettext.bindtextdomain('offpunk', _LOCALE_DIR)
 gettext.textdomain('offpunk')
 _ = gettext.gettext
 
-def load_CHARDET():
-    global chardet
-    _HAS_CHARDET = False
-    try:
-        import charset_normalizer as chardet
-        _HAS_CHARDET = True
-    except ModuleNotFoundError:
-        try:
-            import chardet
-            _HAS_CHARDET = True
-        except ModuleNotFoundError:
-            pass
-    return _HAS_CHARDET
-
 def load_CRYPTOGRAPHY():
     try:
         global x509, default_backend, hashes, serialization, rsa
@@ -484,78 +470,19 @@ def _fetch_http(
 
 def _fetch_gopher(url, timeout=DEFAULT_TIMEOUT, interactive=True, **kwargs):
     parsed = urllib.parse.urlparse(url)
-    host = parsed.hostname
-    port = parsed.port or 70
     if len(parsed.path) >= 2:
         itemtype = parsed.path[1]
-        # this is unreliable on "selectors" that contain "?" for example
-        # (which is perfectly valid)
-        # (urlparse took things after the ? as parsed.query)
-        # we should just get the full selector as is and use it
-        # selector = parsed.path[2:]
-        # so, we get everything after hostname:port, minus the 'itemtype' ([:1])
-        selector = url.split(parsed.netloc, 1)[1][2:]
     else:
         itemtype = "1"
-        selector = ""
-    addresses = socket.getaddrinfo(host, port, family=0, type=socket.SOCK_STREAM)
-    s = socket.create_connection((host, port))
-    for address in addresses:
-        s = socket.socket(address[0], address[1])
-        s.settimeout(timeout)
-        try:
-            s.connect(address[4])
-            break
-        except OSError as e:
-            err = e
-    # gophermap lines can't have a query included.
-    # if there is something in parsed.query, it's because an error
-    # or a rogue "?" character in the selector
-    # if parsed.query:
-    #     request = selector + "\t" + parsed.query
+
     if itemtype == "7":
         if interactive:
             user_input = input("> ")
-            request = selector + "\t" + user_input
+            url = url+'?'+user_input
         else:
             return None, url
-    else:
-        request = selector
-    request += "\r\n"
-    s.sendall(request.encode("UTF-8"))
-    response1 = s.makefile("rb")
-    response = response1.read()
-    # Transcode response into UTF-8
-    # if itemtype in ("0","1","h"):
-    if itemtype not in ("9", "g", "I", "s", ";"):
-        # Try most common encodings
-        for encoding in ("UTF-8", "ISO-8859-1"):
-            try:
-                response = response.decode("UTF-8")
-                break
-            except UnicodeDecodeError:
-                pass
-        else:
-            # try to find encoding
-            if load_CHARDET():
-                detected = chardet.detect(response)
-                response = response.decode(detected["encoding"])
-            else:
-                response = response.decode("UTF-8", errors="replace")
-    if itemtype == "0":
-        mime = "text/gemini"
-    elif itemtype == "1":
-        mime = "text/gopher"
-    elif itemtype == "h":
-        mime = "text/html"
-    elif itemtype in ("9", "g", "I", "s", ";"):
-        mime = None
-    else:
-        # by default, we should consider Gopher
-        mime = "text/gopher"
-    cache = write_body(url, response, mime)
-    return cache, url
 
+    return _fetch_curl(url=url, timeout=timeout)
 
 def _fetch_finger(url, timeout=DEFAULT_TIMEOUT, **kwargs):
     parsed = urllib.parse.urlparse(url)

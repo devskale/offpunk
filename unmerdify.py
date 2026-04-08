@@ -147,9 +147,10 @@ def get_possible_config_file_names_for_host(
     parts = host.split(".")
 
     if len(parts) < 2:
-        raise ValueError(
+        LOGGER.warn(
             f"The host must be of the form `host.com`. It seems that there is no dot in the provided host: {host}"
         )
+        return []
 
     tld = parts.pop()
     domain = parts.pop()

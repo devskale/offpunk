@@ -34,7 +34,7 @@ chardet = ["charset-normalizer"]
 html = ["bs4", "readability-lxml", "lxml"]
 process-title = ["setproctitle"]
 rss = ["feedparser"]
-full = [ "cryptography", "chardet", "bs4", "readability-lxml", "lxml", "setproctitle", "feedparser" ]
+full = [ "cryptography", "charset-normalizer", "bs4", "readability-lxml", "lxml", "setproctitle", "feedparser" ]
 
 [project.urls]
 Homepage = "https://offpunk.net/"
