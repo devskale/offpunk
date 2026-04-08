@@ -154,7 +154,7 @@ def terminal_image(img_file):
     # This code will try chafa first and, if it fails, try timg
     cmds = []
     if CMDS["chafa"]:
-        cmds.append(CMDS["chafa"] + " -C on -d 0 --bg white -w 1")
+        cmds.append(CMDS["chafa"] + " -C on -d 0 --bg white")
     if CMDS["timg"]:
         cmds.append(CMDS["timg"] + " --loops=1 -C")
     image_success = False

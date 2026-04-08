@@ -11,6 +11,7 @@ PACKAGERS: "curl" binary is now a recommended dependency
 - ansicat now uses "charset-normalizer" to detect encoding (if available)
 - Replace "chardet" by "charset-normalizer" (by Anna Cybertailor)
 - Fix list "subscribed" not being autocreated (reported by cosarara)
+- chafa colors were sometimes wrong due to too strong optimization
 - CRASHFIX: "open" would crash if parameter out of range (found by JMCS)
 - CRASHFIX: do not use unmerdify with local files
 - CRASHFIX: open X was crashing on pages without renderer
