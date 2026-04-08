@@ -29,6 +29,15 @@ def load_READABILITY():
         _HAS_READABILITY = False
     return _HAS_READABILITY
 
+def load_CHARSET():
+    global from_path
+    try:
+        from charset_normalizer import from_path
+        _HAS_CHARSET = True
+    except ModuleNotFoundError:
+        _HAS_CHARSET = False
+    return _HAS_CHARSET
+
 def load_HTML():
     try:
         # if bs4 version >= 4.11, we need to silent some xml warnings
@@ -1884,13 +1893,11 @@ def renderer_from_file(path, url=None, theme=None, redirectlist={}, **kwargs):
         url = path
     if os.path.exists(path):
         if mime.startswith("text/") or mime in _FORMAT_RENDERERS:
-            try:
-                from charset_normalizer import from_path
+            if load_CHARSET():
                 content = str(from_path(path).best())
-            except:
+            else:
                 with open(path, errors="ignore") as f:
                     content = f.read()
-                    f.close()
         else:
             content = path
         toreturn = set_renderer(content, url, mime, theme=theme, \
