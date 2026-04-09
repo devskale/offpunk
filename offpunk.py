@@ -1347,7 +1347,7 @@ class GeminiClient(cmd.Cmd):
         output += _(" - file                (better detection of file type)     : ") + \
                                             has(CMDS["file"])
         output += _(" - python-charset-normalizer  (detect text encoding)       : ") + \
-                                            has(netcache.load_CHARDET())
+                                            has(ansicat.load_CHARSET())
         output += _(" - python-setproctitle (change the process name to offpunk): ") + \
                                             has(_HAS_SETPROCTITLE)
         output += _("\nSuggested:\n")
