@@ -1272,8 +1272,8 @@ class GeminiClient(cmd.Cmd):
         Marks are temporary until shutdown (not saved to disk)."""
         line = line.strip()
         if not line:
-            for mark, gi in self.marks.items():
-                print("[%s] %s (%s)" % (mark, gi.name, gi.url))
+            for mark, url in self.marks.items():
+                print("[%s] %s" % (mark,url))
         elif line.isalpha() and len(line) == 1:
             self.marks[line] = self.current_url
         else:
