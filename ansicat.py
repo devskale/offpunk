@@ -370,7 +370,7 @@ class AbstractRenderer:
                 self.opened.remove(color)
 
         def close_all(self):
-            if len(self.colors) > 0:
+            if len(self.opened) > 0:
                 self.last_line += "\x1b[0m"
                 self.opened.clear()
 
