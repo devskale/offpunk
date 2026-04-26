@@ -1893,11 +1893,18 @@ def renderer_from_file(path, url=None, theme=None, redirectlist={}, **kwargs):
         url = path
     if os.path.exists(path):
         if mime.startswith("text/") or mime in _FORMAT_RENDERERS:
-            if load_CHARSET():
-                content = str(from_path(path).best())
-            else:
-                with open(path, errors="ignore") as f:
+            # first, we try to open strict UTF-8
+            try:
+                with open(path, errors="strict") as f:
                     content = f.read()
+            except:
+                #if not utf-8, we try charset
+                if load_CHARSET():
+                    content = str(from_path(path).best())
+                else:
+                #if everything else fails, we ignore errors
+                    with open(path, errors="ignore") as f:
+                        content = f.read()
         else:
             content = path
         toreturn = set_renderer(content, url, mime, theme=theme, \
