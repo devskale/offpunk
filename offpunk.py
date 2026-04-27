@@ -1346,13 +1346,13 @@ class GeminiClient(cmd.Cmd):
                                             has(CMDS["curl"])
         output += _(" - file                (better detection of file type)     : ") + \
                                             has(CMDS["file"])
-        output += _(" - python-charset-normalizer  (detect text encoding)       : ") + \
-                                            has(ansicat.load_CHARSET())
         output += _(" - python-setproctitle (change the process name to offpunk): ") + \
                                             has(_HAS_SETPROCTITLE)
         output += _("\nSuggested:\n")
         output += _(" - xdg-open       (automatically open in external handlers): ") + \
                                             has(CMDS["xdg-open"])
+        output += _(" - python-charset-normalizer  (support non-UTF8 content)   : ") + \
+                                            has(ansicat.load_CHARSET())
         output += _(" - python-feedparser   (support for RSS/ATOM)              : ") + \
                                             has(ansicat.load_FEED())
         output += _(" - python-bs4          (support for HTML)                  : ") + \
