@@ -1,0 +1,23 @@
+# My Offpunk workflow (by Ranja)
+
+## Working offline
+Offpunk, the cli browser, is one of the reasons I enjoy exploring and writing on geminispace the way I do. In the past I often worked offline. Before mobile data plans became affordable enough to not care about data use I would often sit outside with my laptop, working on software projects or writings completely offline. Most of this was email based. Reading and responding to mailinglists, submitting git patches, work on long form texts locally. Emails accumulate in my outbox and once home, all I had to do was to connect to my home (or university) wifi and let my mail client send out all those mails.
+=> gemini://offpunk.net Offpunk
+
+Now I am not working in IT anymore and rarely write code. And I'm not largely involved in anything that still uses mailinglists. And when I go outside to "work", my laptop stays at home and I carry a paper notebook, maybe painting supplies, probably books to read. If it's appropriate in terms of luggage and noise, I even carry along my travel typewriter.
+Now, since I started to explore geminispace I feel thrown back into the joy of offline computing. Not for computing sake but the computer being a usable tool while offline. And I started to use offpunk's offline mode even at home where I have network connectivity in abundance.
+
+## The workflow
+When I decide to dive into geminispace, I start up offpunk, sync it and switch it into offline mode to read. After syncing, the "tour" is populate with new transmissions from my subscribed gemlogs as well as any links I tried to open in my last session that hadn't been cached.
+Going through the "tour", there are texts I might wanna read later or respond to, those are being bookmarked on the "stack" list. It might be an author I don't know yet and I look into the "root page" of their capsule. Maybe it's cached, maybe not. If it isn't, it'll be there next time.
+Then if I feel like it I might go through the "stack" list, read longer articles, write email responses, write a responding transmission, etc. Maybe I'll add the page to my linklist for others to find.
+And at some point I'm out of pages to read, have written what I wanted to write. All I do from there is to run the script that syncs my local copy of my capsule up to my server, maybe notify the antenna aggregator and send out my emails. Done.
+
+## Why offline mode at home?
+It really comes down to self moderation. I have the privilege of having developed a life that doesn't require me to do wage labor, by reducing my financial needs well below the poverty line and to a degree that the social benefits in my country are enough for me to thrive.
+This means I still do "work". I do volunteer work as a social worker, I do community work, I make art, I do care work for my child. And I had to make this shift because capitalism was slowly killing me. But it also means I have an abundance of time at my disposal. And I am highly suceptible to screen addiction. I can spend 18h straight reading into a rabbithole of some special interest of mine and be burned out for days afterwards.
+Limiting myself to offline mode means every endevour on gemini has a defined end. There is a point in my reading, exploring and writing where I am "done for now" and can close my laptop to do other things. And it means when I think about logging back on I know, the longer I wait inbetween, the more rewarding it will be.
+It really is my way of dealing with the "refresh page for dopamine" slot machine mechanism.
+
+
+=> /index.gmi Back to the tutorial
