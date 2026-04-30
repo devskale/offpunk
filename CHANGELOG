@@ -2,6 +2,7 @@
 
 ## 3.2 - Unreleased
 PACKAGERS: dependency to "chardet" has been replaced by "charset-normalizer"
+PACKAGERS: "charset-normalizer" in now a suggested dependency
 PACKAGERS: depenceny to "python-requests" has been replaced by "curl"
 PACKAGERS: "curl" binary is now a recommended dependency
 - output of "version" has been refactored to clarify dependencies
