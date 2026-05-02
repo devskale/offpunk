@@ -13,6 +13,7 @@ PACKAGERS: "curl" binary is now a recommended dependency
 - Replace "chardet" by "charset-normalizer" (by Anna Cybertailor)
 - Fix list "subscribed" not being autocreated (reported by cosarara)
 - chafa colors were sometimes wrong due to too strong optimization
+- in less options, add "-L" to ignore $LESSOPEN and avoid problem (reported by Yalla)
 - CRASHFIX: "open" would crash if parameter out of range (found by JMCS)
 - CRASHFIX: do not use unmerdify with local files
 - CRASHFIX: open X was crashing on pages without renderer
