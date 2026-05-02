@@ -2,7 +2,6 @@
 # Those are by default because they should make sens with offpunk
 
 redirects = {
-    "*reddit.com"  : "teddit.net",
     "*medium.com"  : "scribe.rip",
     }
 
