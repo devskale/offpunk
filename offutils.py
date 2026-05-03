@@ -144,14 +144,15 @@ else:
 # -i : ignore case in search
 # -S : do not wrap long lines. Wrapping is done by offpunk, longlines
 # are there on purpose (such in asciiart)
+# -L : ignore $LESSOPEN to avoid using lesspipe or similar
 # --incsearch : incremental search starting rev581
 less_prompt = "page %%d/%%D- lines %%lb/%%L - %%Pb\\%%"
 if less_version >= 581:
-    less_base = CMDS["less"] + ' --incsearch --save-marks -~ -XRfWiS -P "%s"' % less_prompt
+    less_base = CMDS["less"] + ' --incsearch --save-marks -~ -XRfWiSL -P "%s"' % less_prompt
 elif less_version >= 572:
-    less_base = CMDS["less"] + " --save-marks -XRfMWiS"
+    less_base = CMDS["less"] + " --save-marks -XRfMWiSL"
 else:
-    less_base = CMDS["less"] + " -XRfMWiS"
+    less_base = CMDS["less"] + " -XRfMWiSL"
 CMDS["less"] = less_base + " \"+''\" %s"
 CMDS["cat"] = less_base + " -EF %s"
 
