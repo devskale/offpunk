@@ -493,7 +493,7 @@ def _fetch_finger(url, timeout=DEFAULT_TIMEOUT, **kwargs):
         sock.settimeout(timeout)
         sock.send(query.encode())
         response = sock.makefile("rb").read().decode("UTF-8")
-        cache = write_body(response, "text/plain")
+        cache = write_body(url, response, "text/plain")
     return cache, url
 
 
