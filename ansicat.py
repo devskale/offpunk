@@ -14,7 +14,7 @@ import gettext
 
 import netcache
 import offthemes
-from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg, _LOCALE_DIR, find_root, is_url_blocked, urlify, CMDS
+from offutils import is_local, looks_like_base64, looks_like_url, run, term_width, xdg, _LOCALE_DIR, find_root, is_url_blocked, urlify, CMDS, remove_escape_sequences
 
 gettext.bindtextdomain('offpunk', _LOCALE_DIR)
 gettext.textdomain('offpunk')
@@ -91,6 +91,7 @@ def load_FEED():
         _DO_FEED = False
     return _DO_FEED
 
+RENDER_IMAGE_IN_TABLE = False
 _RENDER_IMAGE = False
 
 # All this code to know if we render image inline or not
@@ -256,7 +257,7 @@ class AbstractRenderer:
             self.theme.update(theme)
 
     def get_theme(self):
-        return self.theme
+        return {k:v for k,v in self.theme.items() if not k.startswith("_")}
 
     def set_redirects(self, redirects):
         self.redirects = redirects
@@ -342,7 +343,8 @@ class AbstractRenderer:
                 self.last_line = ""
 
         def center_line(self):
-            self.last_line_center = True
+            if "disabled_center_line" not in self.options:
+                self.last_line_center = True
 
         def open_theme(self, element):
             if element in self.theme:
@@ -1273,6 +1275,427 @@ class ImageRenderer(AbstractRenderer):
             terminal_image(self.body)
             return True
 
+
+# Converts an HTML table to an ansi table
+# based on https://html.spec.whatwg.org/multipage/tables.html#table-processing-model (numeric comments refer to algorithm steps)
+class HtmlTable(object):
+    def __init__(self, url, **kwargs):
+        self.url = url  # note: needed for any cache referencing (e.g. img)
+        self.row_groups = []
+        self.x_width = 0         # 1.
+        self.y_height = 0        # 2.
+        self.pending_tfoot = []  # 3.
+        self.slots = {}          # 4. (y,x) (note: y,x reversed from algorithm)
+        self.y_current = 0       # 10.
+        self.dg_cells = []       # 11.
+        self.theme = offthemes.default
+        self.table_style = offthemes.table_styles.get(self.theme.get("_table_style", "ascii"))
+        self.options = kwargs
+
+    def _build_rows(self, tr):
+        if self.y_height == self.y_current:   # 1.
+            self.y_height += 1
+            # TODO? assert self.y_current <= self.y_height
+        x_current = 0         # 2.
+        self._do_dg_cells()   # 3.
+        cells = tr.find_all(['th', 'td'], recursive=False)
+        if len(cells) == 0:   # 4.
+            self.y_current += 1
+            return
+        c_celli = 0            # 5.
+        while c_celli < len(cells):     # 19.
+            c_cell = cells[c_celli]     # 5. 18.
+            # 6. Cells
+            while x_current < self.x_width and self.slots.get((self.y_current, x_current)) is not None:
+                x_current += 1
+            if x_current == self.x_width:
+                self.x_width += 1   # 7.
+                # TODO? assert x_current <= self.x_width
+            colspan = 1
+            if c_cell.get("colspan"):   # 8.
+                colspan = c_cell.get("colspan")
+                try:
+                    colspan = int(colspan)
+                    if colspan > 0:
+                        colspan = min(colspan, 1000)
+                    else:
+                        colspan = 1
+                except:
+                    colspan = 1
+            rowspan = 1
+            if c_cell.get("rowspan"):   # 9.
+                rowspan = c_cell.get("rowspan")
+                try:
+                    rowspan = int(rowspan)
+                    if rowspan < 0:
+                        rowspan = 1     # error
+                    elif rowspan > 0:
+                        rowspan = min(rowspan, 65534)
+                    else:
+                        rowspan = 0
+                except:
+                    rowspan = 1
+            cgd = False      # 10.
+            if rowspan == 0:
+                cgd = True
+                rowspan = 1  # 11.
+            if self.x_width < x_current + colspan:
+                self.x_width = x_current + colspan    # 12.
+            if self.y_height < self.y_current + rowspan:
+                self.y_height = self.y_current + rowspan    # 13.
+            # 14.
+            c = {"x": x_current, "y": self.y_current, "w": colspan, "h": rowspan, "name":c_cell.name}
+
+            contents=str(c_cell)  # we want html still
+            contents = contents+"<span></span>"  # add span to force render inside, i.e. avoid bs4 treating as flat, simple string
+            subr = set_renderer(contents, self.url, "text/html")
+            subr.center = False
+            subr.options["disabled_center_line"] = True  # prevent img/link centering
+            # we now set_mode to avoid "readable" (default) otherwise readability would often truncate the cell contents
+            if RENDER_IMAGE_IN_TABLE:   # TODO perhaps expose this option to front-end?
+                subr.set_mode("full")
+            else:
+                subr.set_mode("full_links_only")
+            sb, subr_links = subr.render(contents, add_title=False, startlinks=self.startlinks+len(self.links))
+            self.links.extend(subr_links)   # note: extends caller's links directly
+            if RENDER_IMAGE_IN_TABLE:
+                # extends caller's images directly: but we add the new ones as self.mode to match the caller's mode (so get_images (filtered by mode) will find them)
+                if self.mode not in self.images:
+                    self.images[self.mode] = []
+                for sub_mode in subr.images:    # TODO: review - combining these modes seems wrong... but if caller is using "readable" and we're avoiding "readable" it seems the only way
+                    self.images[self.mode].extend(subr.images[sub_mode])
+            # else avoid caching images in the table if we're not going to use them
+
+            v = sb.split("\n")  # expand into lines once here
+            c["data"] = v
+            for x in range(colspan):
+                for y in range(rowspan):
+                    if self.slots.get((self.y_current + y, x_current + x)) is not None:
+                        # TODO? perhaps continue instead of raising, and log the details
+                        raise Exception(_("Invalid table: overlapping cells"))
+                    self.slots[(self.y_current + y, x_current + x)] = c     # note: y,x
+            # TODO? assign_header_cells()
+            if cgd:
+                self.dg_cells.append({"cell":c, "cell_x":x_current, "width":colspan})   # 15.
+            x_current += colspan    # 16.
+            c_celli += 1    # 18.
+
+        self.y_current += 1 # 17.
+        return
+
+    def _do_dg_cells(self):
+        for i, dg_cell in enumerate(self.dg_cells):
+            for x in range(dg_cell["width"]):
+                if self.slots.get((self.y_current, dg_cell["cell_x"] + x)) is not None:
+                    # TODO? perhaps continue instead of raising, and log the details
+                    raise Exception(_("Invalid table: overlapping cells"))
+                self.slots[(self.y_current, dg_cell["cell_x"] + x)] = dg_cell["cell"]     # note: y,x
+
+    def _end_row_group(self):
+        while self.y_current < self.y_height:
+            self._do_dg_cells()
+            self.y_current += 1
+        self.dg_cells = []
+
+    def _build_row_groups(self, element):
+        y_start = self.y_height  # 1.
+        all_trs = element.find_all('tr', recursive=False)  # i.e. directly below
+        for ri, tr in enumerate(all_trs):   # 2.
+            self._build_rows(tr)
+        if self.y_height > y_start:  # 3.
+            self.row_groups.append((y_start, self.y_height - 1, element.name))
+        self._end_row_group() # 4.
+
+    def _build_from_html_spec(self, element):
+        # ignore captions for now    # 6.
+        all_elements = element.find_all(['colgroup', 'thead', 'tbody', 'tfoot', 'tr'], recursive=False)  # 8. + 12. i.e. directly below table
+        for c_ei, c_e in enumerate(all_elements):   # 7. 12. Rows 17. 18.
+            if c_e.name == "colgroup":  # 9.
+                # ignore
+                continue            # 12.
+            if c_e.name == "tr":    # 13.
+                self._build_rows(c_e)
+                continue
+            self._end_row_group()       # 14.
+            if c_e.name == "tfoot":     # 15.
+                self.pending_tfoot.append(c_e)
+                continue
+            if c_e.name == "thead" or c_e.name == "tbody":  # 16.
+                self._build_row_groups(c_e)
+            # else assert?
+        for c_ei, c_e in enumerate(self.pending_tfoot):     # 19. End
+            self._build_row_groups(c_e)
+        # 20.
+        if False:  # ignore such errors     # TODO perhaps instead, detect and remove the empty row/col slot
+            for y in range(self.y_height):
+                if all(self.slots.get((y, x)) is None for x in range(self.x_width)):
+                    raise Exception(_("Invalid table: empty slot row"))
+            for x in range(self.x_width):
+                if all(self.slots.get((y, x)) is None for y in range(self.y_height)):
+                    raise Exception(_("Invalid table: empty slot column"))
+        return
+
+    # Build a table border line to suit the nearby cells: line_typ must map into a table_style entry
+    # if separator == True (experimental) then it will be a line between cell rows (different from an outer border or title line etc.)
+    # note: currently heuristic-based but could be improved, perhaps using some kind of "9-slice welding-matrix"
+    def _build_table_border_line(self, line_typ, ri, separator=False):
+        if self.table_style[line_typ] == "":
+            return ""   # skip sep entirely, e.g. compact
+        row_parts = []
+        actual_ci = 0
+        left_side = self.table_style[line_typ][0]
+        right_side = self.table_style[line_typ][3]
+        default = {"w":0, "h":0}
+        for ci in range(self.x_width):
+            if self.slots.get((ri, actual_ci)) is None:
+                continue
+
+            colspan = self.slots[(ri, actual_ci)]["w"]
+
+            for sci in range(colspan):
+                if self.slots.get((ri, actual_ci + sci)) is None:
+                    continue
+
+                sh = self.slots.get((ri, actual_ci + sci), default)      # slot here
+                sr = self.slots.get((ri, actual_ci + sci + 1), default)    # slot right
+                sb = self.slots.get((ri + 1, actual_ci + sci), default)    # slot below
+                sd = self.slots.get((ri + 1, actual_ci + sci + 1), default)  # slot diagonal
+                sh_span = sh["h"] > 1 or sh["w"] > 1
+                sr_span = sr["h"] > 1 or sr["w"] > 1
+                sb_span = sb["h"] > 1 or sb["w"] > 1
+                sd_span = sd["h"] > 1 or sd["w"] > 1
+
+                cell_width = self.cell_widths[actual_ci + sci]
+
+                cell_pad = self.table_style[line_typ][1]
+                cell_sep = self.table_style[line_typ][1]
+                cell_char = self.table_style[line_typ][1]
+
+                if separator:
+                    if sh_span:   #case 0
+                        cell_sep = " "
+                        cell_pad = " "
+                        if sb_span:  # TODO refine
+                            cell_char = " "     #TODO? m[1]
+
+                row_parts.append("{cell_pad}{:{align}{size}}{cell_pad}".format(cell_char * cell_width, align="^", size=cell_width, cell_pad=cell_pad * self.table_style["padsize"]))
+
+                if sci < colspan - 1:  # note: -1: we're just inter-span borders here
+                    if line_typ == "t" or line_typ == "b":
+                        pass  # no messing
+                    else:
+                        if sb_span:
+                            if not sd_span:
+                                cell_sep = self.table_style["t"][0]  #case 6b ┌
+                            else:
+                                if not(separator and sh_span) and not sd["w"] > 1 and not sb["w"] > 1:
+                                    if sh_span:
+                                        cell_sep = self.table_style["t"][2]  #case 4c ┬
+                        else:   # not sb_span
+                            if sd_span:
+                                cell_sep = self.table_style["t"][3]  #case 4b ┐
+                            else:
+                                cell_sep = self.table_style["t"][2]  #case 4 ┬
+                    row_parts.append(cell_sep)
+
+            cell_sep = self.table_style[line_typ][2]      #case 1
+
+            if line_typ == "t":
+                pass  # no messing
+            else:
+                if actual_ci == 0:  # only left mods
+                    if separator:
+                        if sh_span:
+                            if sb_span:
+                                left_side = self.table_style["m"][0]      #left side |
+                if actual_ci >= self.x_width - colspan:  # only right mods
+                    if separator:
+                        if sh_span:
+                            if sb_span:
+                                right_side = self.table_style["m"][3]      #right side |
+                else:
+                    # calc right hand border of cell (assuming one follows, else right side added below)
+                    # TODO more refinement needed? especially for combined/connected col and row spans
+                    if sb_span and sd_span:
+                        if ri != 0:
+                            if sr_span:
+                                if not sh_span and sd["w"] > 1:
+                                    cell_sep = self.table_style["b"][3]  #case 5b ┘
+                                else:
+                                    cell_sep = self.table_style["m"][2]  #case 2c |
+                            elif sh_span and sb["w"] > 1:   #sb
+                                cell_sep = self.table_style["b"][0]  #case 2b └
+                            elif sh["h"] > 1 and sb["h"] > 1:
+                                cell_sep = self.table_style["s"][0]  #case 6 left ├
+                            else:
+                                cell_sep = self.table_style["b"][2]  #case 2 ┴
+                        else:
+                            cell_sep = self.table_style["b"][2]  #case 2 ┴
+                    if sb_span and not sd_span and not sr_span:
+                        if separator:
+                            if sh_span:
+                                cell_sep = self.table_style["s"][0]  #case 6 left ├
+                    if not sb_span and sd_span and sr_span:
+                        cell_sep = self.table_style["s"][3]      #case 7 right ┤
+
+            actual_ci += colspan
+            if actual_ci >= self.x_width:
+                break
+
+            row_parts.append(cell_sep)
+
+        row_parts.append(right_side)
+        toreturn = "".join(row_parts)
+        return left_side + toreturn
+
+    # Build an ansi table from an HTML table
+    # note: extends links, extends images
+    def render(self, element, mode, links, images, startlinks=0):
+        if links is None:
+            links = []
+        if images is None:
+            images = {}
+        try:
+            self.mode = mode
+            self.links = links  # i.e. directly extend as we go
+            self.startlinks = startlinks
+            self.images = images  # i.e. directly merge/extend as we go
+
+            self.table_style = offthemes.table_styles.get(self.theme.get("_table_style", "ascii"))
+
+            # build the model from the html
+            self._build_from_html_spec(element)
+
+            # map each ri to an rgi (or None)
+            rgs = [None for ri in range(self.y_height)]
+            for rgi, rg in enumerate(self.row_groups):
+                for i in range(rg[1] + 1 - rg[0]):
+                    rgs[rg[0] + i] = rgi
+
+            # now calculate the maximums and any alignments (done post-build to include any nested content at the correct width)
+            # TODO: iterate over this and word-wrap any long, shallow cells in narrow unspanned columns (this could get complicated/iterative)
+            cell_aligns = {}    # initially store True if all numeric, then set to alignment symbol once we've seen all rows
+            self.cell_widths = {}
+            self.cell_heights = {}
+            for ri in range(self.y_height):
+                rgi =rgs[ri]
+                for ci in range(self.x_width):
+                    # note: for spans we process twice: TODO perhaps ignore some (skip spread)
+
+                    sh = self.slots.get((ri, ci))
+                    if sh is None:
+                        continue
+
+                    colspan = sh["w"]
+
+                    cell_lines = sh["data"]
+
+                    mx = 0
+                    all_numeric = cell_aligns.get((rgi, ci), True)     # default True if empty
+                    if cell_lines:
+                        if len(cell_lines) > self.cell_heights.get(ri, 0):
+                            self.cell_heights[ri] = len(cell_lines)
+                        mx = max([len(remove_escape_sequences(l)) for l in cell_lines])
+
+                        # TODO if some have ., maybe align on floating points (would need to cast as float and add .precf to formatter)
+                        # - maybe better to leave potential floats left-aligned or try to append 0s to even out fractional parts?
+                        all_numeric = all([c.strip().translate({ord(ch): '' for ch in ['.',',','-','+',',','%','$','€','￥','£','₽','฿']}).isnumeric() for c in cell_lines])
+                    # else empty cell
+
+                    # if we span multiple columns, spread content (evenly)
+                    spread = max(1, colspan)
+                    mx, rm = divmod(mx,  spread)
+                    cmx = mx + rm if (sh["x"], sh["y"]) == (ci, ri) else mx
+                    # # note: weak version (forward share only): should really do same for preceding colspans
+                    if cmx >= self.cell_widths.get(ci, 0):  # >= so we always set 1st one
+                        self.cell_widths[ci] = cmx
+
+                    if sh["name"] == "th":
+                        all_numeric = False
+                    cell_aligns[(rgi, ci)] = cell_aligns.get((rgi, ci), True) and all_numeric
+
+            # TODO perhaps set any thead alignments to follow corresponding tbody alignment
+            for ci in cell_aligns:
+                align = self.options.get("table_align", "auto")  # can be: auto < ^ >
+                if align == "auto":
+                    if cell_aligns[ci]:
+                        align = ">"
+                    else:
+                        align = "<"
+                cell_aligns[ci] = align
+
+            # build the table output
+            cell_pad = self.table_style["padsize"]  # this many pad chars on either side of cell contents
+            parts = []  # lines
+            tsep = self._build_table_border_line("t", 0)
+            if tsep:
+                parts.append(tsep)
+            row_group = None
+            for ri in range(self.y_height):
+                tsep = None
+
+                last_row_group = row_group
+                row_group = rgs[ri]
+                if ri != 0 and row_group != last_row_group:  # add section separator
+                    # TODO we can add different separator based on rg[2] (i.e. group name)
+                    tsep = self._build_table_border_line("s", ri-1)   # pass ri-1 to ensure correct bordering
+                    if tsep:
+                        parts.append(tsep)
+
+                row_height = self.cell_heights.get(ri, 0)
+                for li in range(row_height):    # typically 1
+                    row_parts = []
+                    actual_ci = 0
+
+                    for ci in range(self.x_width):
+                        sh = self.slots.get((ri, actual_ci))
+                        if sh is None:
+                            continue
+
+                        # note: rendering line li of each cell in this row, from left-to-right
+                        # note: for spans we process twice: TODO perhaps ignore some
+                        colspan = sh["w"]
+
+                        v = ""  # skipped one way or another
+                        if (sh["x"], sh["y"]) == (actual_ci, ri):
+                            cell_lines = sh["data"]
+                            if cell_lines is not None:
+                                cell_height = len(cell_lines)
+                                vpad = int((row_height - cell_height) * 0.5)
+                                if vpad <= li < cell_height+vpad:
+                                    v = cell_lines[li - vpad]
+                                else:
+                                    v = ""  # missing = vertical padding
+                        # else skipped
+
+                        extra = len(v) - len(remove_escape_sequences(v))    # remove any hidden escaping
+                        cell_width = extra - (2*cell_pad + 1*len("|"))   # remove pads and separator for 1 cell: they will be added on in .format below
+                        for sci in range(colspan):
+                            cell_width += self.cell_widths[actual_ci + sci] + (2*cell_pad + 1*len("|"))    # include cell pads and separator per newly spanned cell
+                        row_parts.append("{cell_pad}{:{align}{size}}{cell_pad}".format(v, align=cell_aligns[(row_group, actual_ci)], size=cell_width, cell_pad=self.table_style["m"][1] * cell_pad))
+                        actual_ci += colspan
+                        if actual_ci >= self.x_width:
+                            break
+
+                    parts.append("{}{}{}".format(self.table_style["m"][0], self.table_style["m"][2].join(row_parts), self.table_style["m"][3]))
+
+                if self.options.get("table_separators", "false").lower() != "false":  # experimental - TODO get working with all styles and add more span tests (perhaps move into table_styles)
+                    if not (ri == self.y_height-1 or rgs[ri+1] != row_group):  # not bottom nor upcoming separator
+                        tsep = self._build_table_border_line("s", ri, separator=True)
+                        if tsep:
+                            parts.append(tsep)
+
+            tsep = self._build_table_border_line("b", self.y_height-1)
+            if tsep:
+                parts.append(tsep)
+
+            render_all = "\n".join(parts)
+        except Exception as err:
+            print(_("Error rendering table"), err)
+            render_all = _("Error rendering table") + "{}".format(err)
+        return render_all
+
+
 class HtmlRenderer(AbstractRenderer):
     def __init__(self, content, url, center=True,redirects={},**kwargs):
         super().__init__(content, url, center=True,redirects={},**kwargs)
@@ -1472,16 +1895,19 @@ class HtmlRenderer(AbstractRenderer):
                 for child in element.children:
                     recursive_render(child, indent=indent)
                 r.endindent()
-            elif element.name in ["tr"]:
-                r.startindent("|", reverse="|")
-                for child in element.children:
-                    recursive_render(child, indent=indent)
-                r.endindent()
+            elif element.name in ["table"]:
+                # stop recursing here via this recursive_render
+                htable = HtmlTable(self.url, **self.options)  # this now handles the recursion
+                render_all = htable.render(element, mode, links, self.images, startlinks=startlinks)   # note: modifies links/self.images
+                #print("DEBUG: table\n" + render_all)
+                r.add_block(render_all)
+                # no more recursing here: dead-end
+            # note: "tr" is now handled within HtmlTable.render (or would drop through below as a default element)
             elif element.name in ["td", "th"]:
-                r.add_text("| ")
+                # note: these are now hit directly from within HtmlTable.render
+                # TODO style th differently from td e.g. bold and centred
                 for child in element.children:
                     recursive_render(child)
-                r.add_text(" |")
             # italics
             elif element.name in ["em", "i"]:
                 r.open_color("italic")

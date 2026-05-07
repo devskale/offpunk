@@ -30,6 +30,49 @@ colors = {
                 "bright_white"   : ["97","39"],
            }
 
+table_styles = {
+        "ascii": {
+                "t" :      "+-++",
+                "s" :      "+-++",
+                "b" :      "+-++",
+                "m" :      "| ||",
+                "padsize": 1, 
+        },
+
+        "unicode": {
+                "t" :      "┌─┬┐",
+                "s" :      "├─┼┤",
+                "b" :      "└─┴┘",
+                "m" :      "│ ││",
+                "padsize": 0, 
+        },
+
+        "unicode_rounded": {
+                "t" :      "╭─┬╮",
+                "s" :      "├─┼┤",
+                "b" :      "╰─┴╯",
+                "m" :      "│ ││",
+                "padsize": 0, 
+        },
+
+        "dots": {
+                "t" :      "....",
+                "s" :      ":.::",
+                "b" :      ":.::",
+                "m" :      ": ::",
+                "padsize": 1, 
+        },
+
+        "compact": {
+                "t" :      "",          # empty means no top row (s and m must not be empty)
+                "s" :      "-- -",
+                "b" :      "",
+                "m" :      "    ",
+                "padsize": 1, 
+        }
+}
+
+
 offpunk1 = {
                 "window_title" :    ["red","bold"],
                 "window_subtitle" : ["red","faint"],
@@ -45,6 +88,8 @@ offpunk1 = {
                 "blockquote" :      ["italic"],
                 "prompt_on" :       ["yellow"],
                 "prompt_off" :      ["green"],
+
+                "_table_style":      "unicode",
              }  
 
 yellow = {
@@ -62,6 +107,8 @@ yellow = {
                 "blockquote" :      ["italic"],
                 "prompt_on" :       ["green","bold"],
                 "prompt_off" :      ["red","bold"],
+
+                "_table_style":      "unicode",
         }
 
 
@@ -80,6 +127,8 @@ cyan =   {
                 "blockquote" :      ["italic"],
                 "prompt_on" :       ["green","bold"],
                 "prompt_off" :      ["blue","bold"],
+
+                "_table_style":      "unicode",
         }
 
 bw =   {
@@ -97,7 +146,12 @@ bw =   {
                 "blockquote" :      ["italic"],
                 "prompt_on" :       ["bold"],
                 "prompt_off" :      ["faint"],
+
+                "_table_style":      "ascii",
         }
+
+_test = offpunk1.copy()
+_test["_table_style"] = "ascii"        # note: used for unit tests
 
 themes = {"offpunk1":offpunk1,"yellow":yellow, "cyan":cyan, "bw": bw}
 default = offpunk1

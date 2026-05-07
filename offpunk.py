@@ -626,12 +626,13 @@ class GeminiClient(cmd.Cmd):
                     self.opencache.cleanup()
                 else:
                     print(_("%s is not a valid preset theme")%words[1])
-            elif element not in offthemes.default.keys():
+            elif element not in offthemes.default.keys() or element.startswith("_"):
                 print(_("%s is not a valid theme element") % element)
                 print(_("Valid theme elements are: "))
                 valid = []
                 for k in offthemes.default:
-                    valid.append(k)
+                    if not k.startswith("_"):
+                        valid.append(k)
                 print(valid)
                 return
             else:
