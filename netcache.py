@@ -387,8 +387,8 @@ def _fetch_curl(url, verify=True, headers={}, timeout=DEFAULT_TIMEOUT, cookies=N
     import http.cookiejar
     use_cookie = cookies is not None and isinstance(cookies, http.cookiejar.MozillaCookieJar)
 
-    def too_large_error(url, length, max_size):
-        err = _("Size of %s is %s Mo\n") % (url, length)
+    def too_large_error(url, max_size):
+        err = _("Size of %s is bigger than the allowed size\n") % (url)
         err += _("Offpunk only download automatically content under %s Mo\n") % (
             max_size / 1000000
         )
@@ -440,7 +440,7 @@ def _fetch_curl(url, verify=True, headers={}, timeout=DEFAULT_TIMEOUT, cookies=N
         subprocess.run(cmd, capture_output=True, check=True)
     except Exception as err:
         if err.returncode == CURL_MAX_FILE_SIZE_EXCEEDED:
-            return too_large_error(url, length, max_size)
+            return too_large_error(url, max_size)
         elif err.returncode == CURL_WRITE_ERROR:
             #There’s a write error so we don’t have any cache, we return none
             return None

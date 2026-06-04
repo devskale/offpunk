@@ -22,6 +22,7 @@ PACKAGERS: "curl" binary is now a recommended dependency
 - CRASHFIX: "mark" crashing without parameters (reported by Greg)
 - BUGFIX: wrong close_all() in ansicat (by Greg Gaughan)
 - BUGFIX: finger protocol was not correctly cached
+- BUGFIX: wrong error when downloading files too big
 - PERF: improve html rendering by loading each page only once in BS4
 
 ## 3.1 - March 1st 2026
