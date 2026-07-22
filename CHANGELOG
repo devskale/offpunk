@@ -1,6 +1,6 @@
 # Offpunk History
 
-## 3.2 - Unreleased
+## 3.2 - July 22nd 2026
 PACKAGERS: dependency to "chardet" has been replaced by "charset-normalizer"
 PACKAGERS: "charset-normalizer" in now a suggested dependency
 PACKAGERS: depenceny to "python-requests" has been replaced by "curl"
