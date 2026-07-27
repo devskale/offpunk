@@ -5,4 +5,3 @@ beautifulsoup4
 readability-lxml
 lxml-html-clean
 setproctitle
-file
