@@ -255,6 +255,8 @@ def get_cache_path(url, add_index=True, include_protocol=True, xdgfolder="cache"
             index = "index.html"
         elif scheme == "finger":
             index = "index.txt"
+        elif scheme == "ftp":
+            index = "_netcache_ftp_index.txt"
         elif scheme == "gopher":
             index = "gophermap"
         else:
@@ -467,6 +469,9 @@ def _fetch_http(
         max_size = None
     return _fetch_curl(url=url, verify=verify, timeout=timeout,
                 cookies=cookiejar, max_size=max_size)
+
+def _fetch_ftp(url, timeout=DEFAULT_TIMEOUT, interactive=True, **kwargs):
+    return _fetch_curl(url=url, timeout=timeout)
 
 def _fetch_gopher(url, timeout=DEFAULT_TIMEOUT, interactive=True, **kwargs):
     parsed = urllib.parse.urlparse(url)
@@ -1069,6 +1074,7 @@ PROTOCOLS = {
     "http": { "port": 80, "fetch": _fetch_http},
     "https": { "port": 443, "fetch": _fetch_http},
     "spartan": { "port": 300, "fetch": _fetch_spartan},
+    "ftp": { "port": 21, "fetch": _fetch_ftp},
 }
 
 default_protocol = "gemini"

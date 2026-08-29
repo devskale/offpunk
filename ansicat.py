@@ -738,6 +738,57 @@ class PlaintextRenderer(AbstractRenderer):
                 r.add_text(line)
         return r.get_final(), links
 
+class FtpRenderer(AbstractRenderer):
+    def get_mime(self):
+        return "text/netcache_ftp_index"
+
+    def get_title(self):
+        return "Ftp listing"
+
+    def render(self, gemtext, width=None, mode=None, startlinks=0):
+        r = self.representation(width, theme=self.theme,options=self.options)
+        links = []
+        r.open_theme("title")
+        r.add_text(self.get_title())
+        r.close_theme("title")
+        for line in gemtext.splitlines():
+            r.newline()
+            if len(line.strip()) == 0:
+                r.newparagraph(force=True)
+            else:
+                #create a link for every line
+                words = line.split()
+                url = self.url + words[-1]
+
+                # hack for links to directories
+                # so far, lines starting with, e.g., 'drwxr-sr-x' and not '-rw-r--r--'
+                if line.startswith('d') and not url.endswith('/'):
+                    url = url + "/"
+
+                linkline = url + " " + words[-1]
+                links.append(linkline)
+                number = len(links) + startlinks
+                towrap = "[%s] " % str(number) + line
+                # If the link point to a page that has been cached less than
+                # 600 seconds after this page, we consider it as a new_link
+                current_modif = netcache.cache_last_modified(self.url)
+                link_modif = netcache.cache_last_modified(url)
+                if (
+                    current_modif
+                    and link_modif
+                    and current_modif - link_modif < 600
+                    and r.open_theme("new_link")
+                ):
+                    theme = "new_link"
+                elif r.open_theme("oneline_link"):
+                    theme = "oneline_link"
+                else:
+                    theme = "link"
+                    r.open_theme("link")
+
+                r.add_text(towrap)
+                r.close_theme(theme)
+        return r.get_final(), links
 
 # Gemtext Rendering Engine
 class GemtextRenderer(AbstractRenderer):
@@ -2238,6 +2289,7 @@ _FORMAT_RENDERERS = {
     "message/rfc822": GemtextRenderer,
     "application/pgp-keys": PlaintextRenderer,
     "application/pgp-signature": PlaintextRenderer,
+    "text/netcache_ftp_index": FtpRenderer,
 }
 
 _CUSTOM_RENDERERS = {
@@ -2252,6 +2304,13 @@ def get_mime(path, url=None):
     # If the file is empty, simply returns it
     elif os.path.exists(path) and os.stat(path).st_size == 0:
         return "text/empty"
+    # nasty hack!
+    elif os.path.exists(path) and path.endswith("_netcache_ftp_index.txt"):
+        with open(path, 'r') as f:
+            for line in f:
+                if "netcache.CurlError" in line:
+                    return "text/gemini"
+        return "text/netcache_ftp_index"
     elif url and url.startswith("gopher://"):
         # special case for gopher
         mime = get_gopher_mime(url)

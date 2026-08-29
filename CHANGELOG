@@ -1,5 +1,8 @@
 # Offpunk History
 
+## 3.3 - Unreleased
+- ftp:// support and ftp-index browsing   (by JMCS)
+
 ## 3.2 - July 22nd 2026
 PACKAGERS: dependency to "chardet" has been replaced by "charset-normalizer"
 PACKAGERS: "charset-normalizer" in now a suggested dependency
