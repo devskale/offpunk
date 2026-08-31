@@ -2,6 +2,7 @@
 
 ## 3.3 - Unreleased
 - ftp:// support and ftp-index browsing   (by JMCS)
+- medium.com redirects changed from scribe.rip to libmedium.batsense.net
 
 ## 3.2 - July 22nd 2026
 PACKAGERS: dependency to "chardet" has been replaced by "charset-normalizer"

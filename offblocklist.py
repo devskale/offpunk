@@ -2,7 +2,7 @@
 # Those are by default because they should make sens with offpunk
 
 redirects = {
-    "*medium.com"  : "scribe.rip",
+    "*medium.com"  : "libmedium.batsense.net",
     }
 
 
