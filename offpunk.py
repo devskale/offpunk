@@ -312,6 +312,16 @@ class GeminiClient(cmd.Cmd):
             allowed = colors
         return [i + " " for i in allowed if i.startswith(text)]
 
+    def complete_go(self, text, line, begidx, endidx):
+        if ("://" in line):
+            cacheroot = xdg()
+            # "gemini://example.com/gemlog" -> "/home/user/.cache/offpunk/gemini/example.com/gemlog"
+            cachepath = cacheroot + '/'.join(line.split()[1].replace("://","/").split('/')[:-1])
+            return [i for i in os.listdir(cachepath) if i.startswith(text) ]
+        else:
+            protocols = [i + "://" for i in netcache.PROTOCOLS]
+            return [i for i in protocols if i.startswith(text)]
+
     def get_renderer(self, url=None):
         # If launched without argument, we return the renderer for the current URL
         if not url:
