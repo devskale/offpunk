@@ -7,10 +7,10 @@ name = "offpunk"
 description = "Offline-First Gemini/Web/Gopher/RSS reader and browser"
 authors = [
     {name = "Solderpunk", email = "solderpunk@sdf.org"},
-    {name = "Lionel Dricot (Ploum)", email = "offpunk2@ploum.eu"},
+    {name = "Lionel Dricot (Ploum)", email = "offpunk3@ploum.eu"},
 ]
 maintainers = [
-    {name = "Lionel Dricot (Ploum)", email = "offpunk2@ploum.eu"},
+    {name = "Lionel Dricot (Ploum)", email = "offpunk3@ploum.eu"},
 ]
 license = "AGPL-3.0-or-later"
 license-files = ["LICENSE"]

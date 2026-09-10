@@ -1,6 +1,7 @@
 # Offpunk History
 
 ## 3.3 - Unreleased
+- IMPORTANT: Contact adress has been changed to offpunk3 on the same domain (because of spam)
 - ftp:// support and ftp-index browsing   (by JMCS)
 - "go" now autocompletes URLs based to what is available in your cache (by JMCS)
 - medium.com redirects changed from scribe.rip to libmedium.batsense.net
