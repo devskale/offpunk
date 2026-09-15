@@ -38,4 +38,6 @@ tasks:
     tar -cvzh . > ../site.tar.gz
 - deploy-html: |
     hut pages publish site.tar.gz -d $site1
+    hut pages publish site.tar.gz -d www.$site1
     hut pages publish site.tar.gz -d $site2
+    hut pages publish site.tar.gz -d www.$site2
