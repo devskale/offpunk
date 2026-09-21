@@ -44,6 +44,7 @@
 
 ## Dependencies
 
+* Offpunk depends on Python 3.9 or newer. The rule of thumb is: support the version of Python 3 provided by Debian oldoldstable.
 * Offpunk should depend on as few dependencies as possible. Any work toward removing a dependency is good work.
 * Dependencies should be optional. Code should run without that dependency.
 * For a dependency to be considered, 4 conditions should be met:
