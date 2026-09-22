@@ -322,6 +322,11 @@ class GeminiClient(cmd.Cmd):
             protocols = [i + "://" for i in netcache.PROTOCOLS]
             return [i for i in protocols if i.startswith(text)]
 
+    def complete_view(self, text: str, line, begidx, endidx):
+        """Completion function for `view` command."""
+        view_arguments = ("full", "normal", "source", "switch")
+        return [arg for arg in view_arguments if arg.startswith(text)]
+
     def get_renderer(self, url=None):
         # If launched without argument, we return the renderer for the current URL
         if not url:
