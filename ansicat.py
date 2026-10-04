@@ -25,7 +25,7 @@ def load_READABILITY():
     try:
         from readability import Document
         _HAS_READABILITY = True
-    except ModuleNotFoundError,ImportError:
+    except (ModuleNotFoundError, ImportError):
         _HAS_READABILITY = False
     return _HAS_READABILITY
 
