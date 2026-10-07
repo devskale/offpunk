@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
 
+import pytest
+
 import offthemes
 from offpunk import GeminiClient
 
@@ -83,3 +85,43 @@ def test_complete_view(mocker: "MockerFixture"):
     ]
     for line, expected_suggestions in test_cases:
         assert gc.complete_view(line, None, None, None) == expected_suggestions
+
+
+class TestDoSet:
+    """Test the `GeminiClient.do_set()` method can configure options."""
+
+    def setup_method(self):
+        self.gc = GeminiClient()
+
+    @pytest.mark.parametrize(
+        ("value", "expected"),
+        [
+            ("true", True),
+            ("True", True),
+            ("TRUE", True),
+            ("false", False),
+            ("False", False),
+            ("FALSE", False),
+        ],
+    )
+    def test_accept_bad_ssl_certificates(
+        self,
+        value: str,
+        expected: bool,
+        mocker: "MockerFixture",
+    ):
+        """
+        Test accept_bad_ssl_certificates accepts different forms of boolean, and is
+        passed to `netcache.fetch` when visiting a page.
+        """
+        self.gc.do_set(f"accept_bad_ssl_certificates {value}")
+        assert self.gc.options["accept_bad_ssl_certificates"] is expected, (
+            f"Setting accept_bad_ssl_certificates to {value!r} "
+            f"did not produce the expected result ({expected!r})."
+        )
+        mock_fetch = mocker.patch("offpunk.netcache.fetch")
+        self.gc.sync_only = True
+        self.gc.do_go("http://localhost")
+        mock_fetch.assert_called_once()
+        assert mock_fetch.call_args.args == ("http://localhost",)
+        assert mock_fetch.call_args.kwargs["accept_bad_ssl_certificates"] is expected

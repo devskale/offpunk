@@ -558,8 +558,10 @@ class GeminiClient(cmd.Cmd):
             elif option == "accept_bad_ssl_certificates":
                 if value.lower() == "false":
                     print(_("Only high security certificates are now accepted"))
+                    value = False
                 elif value.lower() == "true":
                     print(_("Low security SSL certificates are now accepted"))
+                    value = True
                 else:
                     #TRANSLATORS keep accept_bad_ssl_certificates, True, and False
                     print(_("accept_bad_ssl_certificates should be True or False"))
