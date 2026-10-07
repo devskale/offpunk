@@ -185,13 +185,8 @@ class GeminiClient(cmd.Cmd):
         self.offline_only = False
         self.sync_only = sync_only
         self.options = {
-            "debug": False,
-            "beta": False,
-            "timeout": 600,
             "short_timeout": 5,
             "width": 72,
-            "auto_follow_redirects": True,
-            "tls_mode": "tofu",
             "archives_size": 200,
             "history_size": 200,
             "max_size_download": 10,
@@ -551,10 +546,6 @@ class GeminiClient(cmd.Cmd):
                 print(_("Unrecognised option %s") % option)
                 return
             # Validate / convert values
-            elif option == "tls_mode":
-                if value.lower() not in ("ca", "tofu"):
-                    print(_("TLS mode must be `ca` or `tofu`!"))
-                    return
             elif option == "accept_bad_ssl_certificates":
                 if value.lower() == "false":
                     print(_("Only high security certificates are now accepted"))

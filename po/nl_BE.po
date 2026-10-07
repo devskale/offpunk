@@ -397,12 +397,8 @@ msgid "ERROR2: Connection reset!"
 msgstr "FOUT2: Verbinding verbroken!"
 
 #: netcache.py:1163
-msgid ""
-"ERROR3: Connection timed out!\n"
-"    Slow internet connection?  Use 'set timeout' to be more patient."
-msgstr ""
-"FOUT3: Verbinding verlopen!\n"
-"    Trage internetverbinding? Gebruik “set timeout” om geduldiger te zijn."
+msgid "ERROR3: Connection timed out!"
+msgstr "FOUT3: Verbinding verlopen!"
 
 #: netcache.py:1167
 msgid ""

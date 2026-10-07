@@ -1006,9 +1006,6 @@ def _fetch_gemini(
         #        # Never follow cross-protocol redirects without asking
         #        elif new_gi.scheme != gi.scheme:
         #            follow = input("Follow cross-protocol redirect to %s? (y/n) " % new_gi.url)
-        #        # Don't follow *any* redirect without asking if auto-follow is off
-        #        elif not self.options["auto_follow_redirects"]:
-        #            follow = input("Follow redirect to %s? (y/n) " % new_gi.url)
         #        # Otherwise, follow away
         else:
             follow = "yes"
@@ -1162,8 +1159,7 @@ def fetch(
                     print(_("ERROR2: Connection reset!"))
             elif isinstance(err, (TimeoutError, socket.timeout)):
                 if print_error:
-                    print(_("""ERROR3: Connection timed out!
-    Slow internet connection?  Use 'set timeout' to be more patient."""))
+                    print(_("ERROR3: Connection timed out!"))
             elif isinstance(err, FileExistsError):
                 if print_error:
                     print(_("""ERROR5: Trying to create a directory which already exists
