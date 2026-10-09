@@ -337,8 +337,8 @@ def set_error(url, err):
         os.makedirs(cache_dir, exist_ok=True)
         if os.path.isdir(cache_dir):
             with open(cache, "w") as c:
-                c.write(str(datetime.datetime.now()) + "\n")
-                c.write(_("ERROR while caching %s\n\n") % url)
+                c.write(_("ERROR while caching %s\n") % url)
+                c.write("Cache was created on %s"%time.ctime() +"\n\n")
                 c.write("*****\n\n")
                 c.write(str(type(err)) + " = " + str(err))
                 # cache.write("\n" + str(err.with_traceback(None)))
