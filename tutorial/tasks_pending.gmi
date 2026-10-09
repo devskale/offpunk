@@ -8,8 +8,6 @@ If you are interested, please announce yourself on the offpunk-devel mailing lis
 
 => https://todo.sr.ht/~lioploum/offpunk Offpunk tickets on Sourcehut
 
-## cookies are not working anymore with https
-
 
 # New features that are self-contained
 
@@ -71,6 +69,8 @@ When browsing offline, netcache would then check if there’s a codecache which 
 This is an heavy task but there are too many problems with readability. The idea would be to implement our own readability in unmerdify then to remove bs4 dependency by using lxml instead of bs4. Less dependencies, faster loading time, faster rendering.
 
 This requires first netcache-git and ansicat-etree  (see above)
+
+The core of python-readability could be imported into offpunk as a separate class. That way, we would be able to tweak it for our own use and not depends on external libraries, often hard to install for users. In essence, the work is thus managing to put the whole readability into one file (the whole project is around 1000 LOC, not really too much)
 
 
 # Mastodon support
