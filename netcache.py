@@ -1185,7 +1185,8 @@ def fetch(
                     print(traceback.format_exc())
             return cache, newurl
         # We download images contained in the document (from full mode)
-        if not offline and download_image_first and images_mode:
+        if not offline and download_image_first and images_mode and \
+                                                    images_mode.lower() != "none":
             renderer = ansicat.renderer_from_file(path, newurl,redirectlist=redirects,**kwargs)
             if renderer:
                 for image in renderer.get_images(mode=images_mode):
