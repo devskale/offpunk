@@ -457,11 +457,18 @@ def _fetch_http(
     accept_bad_ssl_certificates=False,
     force_large_download=False,
     cookiejar=None,
+    disable_http=False,
     **kwargs,
 ):
-    if not load_HTTP():
-        print(_("HTTP requires curl"))
-        return None
+    has_curl = load_HTTP()
+    if disable_http or not has_curl:
+        advice = ""
+        if not has_curl:
+            advice = "install curl on your system to enable it"
+        else:
+            advice = "use \"set disable_http False\" to enable it"  
+        print("HTTP is currently disabled (%s)"%advice)
+        return None, url
     if not cookiejar:
         cookiejar = get_cookiejar(url)
     verify = not accept_bad_ssl_certificates
@@ -1139,7 +1146,11 @@ def fetch(
                     print(_("%s is not a supported protocol") % scheme)
                 path = None
             elif scheme in PROTOCOLS:
-                path, newurl = PROTOCOLS[scheme]["fetch"](newurl, **kwargs)
+                scheme = PROTOCOLS[scheme]
+                fetch = scheme["fetch"]
+                values = fetch(newurl, **kwargs)
+                path, newurl = values
+                #path, newurl = PROTOCOLS[scheme]["fetch"](newurl, **kwargs)
             else:
                 print("scheme %s not implemented yet" % scheme)
         except UserAbortException:

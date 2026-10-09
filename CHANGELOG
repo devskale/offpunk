@@ -8,6 +8,7 @@
 - medium.com redirects changed from scribe.rip to libmedium.batsense.net
 - "set accept_bad_ssl_certificates false" now correctly disables that option (by Noelle Leigh)
 - FIX: "set images_mode None" should now work for HTTP (reported by Adrian Brstilo)
+- FIX: "--disable-http" is now functional (and a "set" options) (reported by Ranja al-Harisa)
 - CLEANUP: removing unused options (by Noelle Leigh)
 
 ## 3.2 - July 22nd 2026

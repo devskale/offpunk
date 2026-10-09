@@ -8,8 +8,6 @@ If you are interested, please announce yourself on the offpunk-devel mailing lis
 
 => https://todo.sr.ht/~lioploum/offpunk Offpunk tickets on Sourcehut
 
-## -- disable-http is not working
-
 ## cookies are not working anymore with https
 
 

@@ -365,6 +365,8 @@ class GeminiClient(cmd.Cmd):
         params = {}
         if self.options["editor"]:
             params["editor"] = self.options["editor"]
+        if self.options["disable_http"]:
+            params["disable_http"] = self.options["disable_http"]
         params["timeout"] = self.options["short_timeout"]
         if limit_size:
             params["max_size"] = int(self.options["max_size_download"]) * 1000000
@@ -2576,7 +2578,7 @@ def main():
             torun_queue.append("tour")
 
     if args.disable_http:
-        gc.support_http = False
+        gc.options["disable_http"] = True
 
     # Endless interpret loop (except while --sync or --fetch-later)
     if args.fetch_later:
