@@ -212,6 +212,7 @@ class GeminiClient(cmd.Cmd):
             "prompt_off": "OFF",
             "prompt_close": "> ",
             "gemini_images": True,
+            "disable_http": False,
         }
         self.set_prompt("ON")
         self.opencache.redirects = offblocklist.redirects
