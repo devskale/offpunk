@@ -87,6 +87,106 @@ def test_complete_view(mocker: "MockerFixture"):
         assert gc.complete_view(line, None, None, None) == expected_suggestions
 
 
+class TestListAddTop:
+    """Test the behavior of the `GeminiClient.list_add_top()` method."""
+
+    def setup_method(self):
+        self.gc = GeminiClient()
+
+    @pytest.fixture(autouse=True)
+    def install_mocks(self, mocker: "MockerFixture"):
+        # Mocks for controlling what the method reads from the list and checking what it
+        # writes to the list.
+        self.mock_list_read = mocker.MagicMock()
+        self.mock_list_write = mocker.MagicMock()
+
+        def mock_open(file, mode):
+            if mode == "r":
+                return mocker.mock_open(read_data=self.mock_list_read)(file, mode)
+            elif mode == "w":
+                return mocker.mock_open(self.mock_list_write)(file, mode)
+            else:
+                raise TypeError(f"Unhandled open call: open({file!r}, {mode!r})")
+
+        # Mocks to isolate tests from the real file system
+        mocker.patch("offpunk.open", mock_open)
+        mocker.patch.object(self.gc, "list_create")
+        mocker.patch.object(self.gc, "list_path")
+
+        # Mock dynamic values
+        mocker.patch("offpunk.time.ctime", return_value=str(mocker.sentinel.ctime))
+        mocker.patch.object(self.gc, "current_url", str(mocker.sentinel.current_url))
+        mocker.patch.object(
+            self.gc,
+            "get_renderer",
+            return_value=mocker.MagicMock(
+                **{
+                    "get_page_title.return_value": str(
+                        mocker.sentinel.current_url_title
+                    )
+                }
+            ),
+        )
+
+    def test_limit(self, mocker: "MockerFixture"):
+        """
+        Test that the `limit` argument limits the maximum number of entries in the list.
+        """
+        self.mock_list_read = (
+            f"=> {mocker.sentinel.url1} {mocker.sentinel.title1}\n"
+            f"=> {mocker.sentinel.url2} {mocker.sentinel.title2}\n"
+            f"=> {mocker.sentinel.url3} {mocker.sentinel.title3}\n"
+            f"=> {mocker.sentinel.url4} {mocker.sentinel.title4}\n"
+            f"=> {mocker.sentinel.url5} {mocker.sentinel.title5}\n"
+        )
+        self.gc.list_add_top(str(mocker.sentinel.list_name), limit=5)
+
+        # sentinel.url5 has been bumped off the list to make room for the new entry.
+        self.mock_list_write.assert_has_calls(
+            [
+                mocker.call().write("#sentinel.list_name\n"),
+                mocker.call().write(
+                    "=> sentinel.current_url sentinel.current_url_title, "
+                    "added to sentinel.list_name on sentinel.ctime\n"
+                ),
+                mocker.call().write("=> sentinel.url1 sentinel.title1\n"),
+                mocker.call().write("=> sentinel.url2 sentinel.title2\n"),
+                mocker.call().write("=> sentinel.url3 sentinel.title3\n"),
+                mocker.call().write("=> sentinel.url4 sentinel.title4\n"),
+                mocker.call().close(),
+            ]
+        )
+
+    def test_truncate_lines(self, mocker: "MockerFixture"):
+        """
+        Test that the `truncate_lines` argument removes a given number of existing items
+        in the list from the top.
+        """
+        self.mock_list_read = (
+            f"=> {mocker.sentinel.url1} {mocker.sentinel.title1}\n"
+            f"=> {mocker.sentinel.url2} {mocker.sentinel.title2}\n"
+            f"=> {mocker.sentinel.url3} {mocker.sentinel.title3}\n"
+            f"=> {mocker.sentinel.url4} {mocker.sentinel.title4}\n"
+            f"=> {mocker.sentinel.url5} {mocker.sentinel.title5}\n"
+        )
+        self.gc.list_add_top(str(mocker.sentinel.list_name), truncate_lines=2)
+
+        # url1 and url2 have been removed by truncation after the new entry.
+        self.mock_list_write.assert_has_calls(
+            [
+                mocker.call().write("#sentinel.list_name\n"),
+                mocker.call().write(
+                    "=> sentinel.current_url sentinel.current_url_title, "
+                    "added to sentinel.list_name on sentinel.ctime\n"
+                ),
+                mocker.call().write("=> sentinel.url3 sentinel.title3\n"),
+                mocker.call().write("=> sentinel.url4 sentinel.title4\n"),
+                mocker.call().write("=> sentinel.url5 sentinel.title5\n"),
+                mocker.call().close(),
+            ]
+        )
+
+
 class TestDoSet:
     """Test the `GeminiClient.do_set()` method can configure options."""
 

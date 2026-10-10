@@ -1932,7 +1932,7 @@ Use "view XX" where XX is a number to view information about link XX.
         with open(list_path, "w") as l_file:
             l_file.write("#%s\n" % list)
             l_file.write(stri)
-            counter = 0
+            counter = 1
             previous_line = stri
             # Truncating is useful in case we open a new branch
             # after a few back in history
