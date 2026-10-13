@@ -4,19 +4,29 @@ You probably know the Web : a website has an url starting with "https://" and 
 
 Gemini is an alternative network. Instead of website, you have "gemini capsule". Their url starts with "gemini://" and, instead of HTML, the content is written using Gemtext, which is way simpler. This makes Gemini capsules look like simple texts that you can read without all the distraction seen on the web.
 
-You can start reading what’s happening on Gemini using Antenna:
+You can start reading what’s happening on Gemini using some aggregators called Antenna
 
-=> gemini://warmedal.se/~antenna/ Antenna
+=> gemini://warmedal.se/~antenna/ the original Antenna
+=> gemini://antenna.ucant.org/ Antenna (antenna.ucant.org)
+=> gemini://gemini.smallweb.space/satellite-antenna/ Satellite Antenna (gemini.smallweb.space)
+=> gemini://gemini.smallweb.space/antenna/ DSN Antenna (gemini.smallweb.space)
 
-or Cosmos
+or other aggregators:
 
 => gemini://skyjake.fi/~Cosmos/ Cosmos
+=> gemini://gemini.circumlunar.space/capcom/ CAPCOM Geminispace aggregator (gemini.circumlunar.space)
+=> gemini://calcuode.com/gmisub-aggregate.gmi gmisub aggregate (calcuode.com)
+
+There’s also a French-speaking aggregator:
+
+=> gemini://planet-gemini.fr/ Planet Gemini Francophonie - Agrégateur de capsules francophone  (planet-gemini.fr)
 
 Once in one of those aggregator, simply add the links that seem interesting to your tour.
 
 You can also browse the capsule of Offpunk’s contributors:
 
 => gemini://ploum.net/index_en.gmi Ploum.net, the Gemini capsule of Ploum
+=> gemini://tilde.team/~jmcs/gemlog/ jmcs at tilde.team (jmcs)
 
 Offpunk is a Gemini browser first. But, sometimes, you need to browse the Web. As the web is more complex, you will sometimes need to use the "view" feature to better read the content.
 
