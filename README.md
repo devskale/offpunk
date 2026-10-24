@@ -29,7 +29,7 @@ At any point, you can use "help" to get the list of commands and "help command" 
 
 Important news and releases will be announced on the [offpunk-devel mailing list](https://lists.sr.ht/~lioploum/offpunk-devel)
 
-Questions can be asked on [the users mailing](list https://lists.sr.ht/~lioploum/offpunk-users)
+Questions can be asked on the [offpunk-users mailing list](https://lists.sr.ht/~lioploum/offpunk-users)
 
 ## Dependencies
 

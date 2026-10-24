@@ -1,10 +1,23 @@
 # Offpunk History
 
-## 3.2 - Unreleased
+## 3.3 - Unreleased
+- IMPORTANT: Contact adress has been changed to offpunk3 on the same domain (because of spam)
+- IMPORTANT: Bump requirements to python >= 3.9 (by Noelle Leigh)
+- ftp:// support and ftp-index browsing   (by JMCS)
+- "go" now autocompletes URLs based to what is available in your cache (by JMCS)
+- medium.com redirects changed from scribe.rip to libmedium.batsense.net
+- "set accept_bad_ssl_certificates false" now correctly disables that option (by Noelle Leigh)
+- FIX: "set images_mode None" should now work for HTTP (reported by Adrian Brstilo)
+- FIX: "--disable-http" is now functional (and a "set" options) (reported by Ranja al-Harisa)
+- CLEANUP: removing unused options (by Noelle Leigh)
+- FIX: The "history_size" and "archives_size" options now limit the number of entries in their respective lists exactly (by Noelle Leigh)
+
+## 3.2 - July 22nd 2026
 PACKAGERS: dependency to "chardet" has been replaced by "charset-normalizer"
 PACKAGERS: "charset-normalizer" in now a suggested dependency
 PACKAGERS: depenceny to "python-requests" has been replaced by "curl"
 PACKAGERS: "curl" binary is now a recommended dependency
+- HTML table rendering in ansicat (awesome work by Greg Gaughan)
 - output of "version" has been refactored to clarify dependencies
 - "netcache" will now uses the "curl" binary instead of python-requests (by Silica)
 - gopher will now be handled by curl too (by JMCS)

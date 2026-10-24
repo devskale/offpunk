@@ -1007,12 +1007,8 @@ msgid "ERROR2: Connection reset!"
 msgstr "¡ERROR2: Conexión reiniciada!"
 
 #: netcache.py:1159
-msgid ""
-"ERROR3: Connection timed out!\n"
-"    Slow internet connection?  Use 'set timeout' to be more patient."
-msgstr ""
-"¡ERROR3: tiempo de conexión agotado!\n"
-"    Conexión a internet lenta?  Use 'set timeout' para ser más paciente."
+msgid "ERROR3: Connection timed out!"
+msgstr "¡ERROR3: tiempo de conexión agotado!"
 
 #: netcache.py:1163
 msgid ""

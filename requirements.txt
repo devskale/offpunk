@@ -1,8 +1,7 @@
 charset-normalizer
 cryptography
 feedparser
-bs4
+beautifulsoup4
 readability-lxml
 lxml-html-clean
 setproctitle
-file

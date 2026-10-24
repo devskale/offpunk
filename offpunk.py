@@ -4,7 +4,7 @@
 Offline-First Gemini/Web/Gopher/RSS reader and browser
 """
 
-__version__ = "3.1"
+__version__ = "3.2"
 
 # Initial imports and conditional imports {{{
 import argparse
@@ -185,13 +185,8 @@ class GeminiClient(cmd.Cmd):
         self.offline_only = False
         self.sync_only = sync_only
         self.options = {
-            "debug": False,
-            "beta": False,
-            "timeout": 600,
             "short_timeout": 5,
             "width": 72,
-            "auto_follow_redirects": True,
-            "tls_mode": "tofu",
             "archives_size": 200,
             "history_size": 200,
             "max_size_download": 10,
@@ -217,6 +212,7 @@ class GeminiClient(cmd.Cmd):
             "prompt_off": "OFF",
             "prompt_close": "> ",
             "gemini_images": True,
+            "disable_http": False,
         }
         self.set_prompt("ON")
         self.opencache.redirects = offblocklist.redirects
@@ -312,6 +308,21 @@ class GeminiClient(cmd.Cmd):
             allowed = colors
         return [i + " " for i in allowed if i.startswith(text)]
 
+    def complete_go(self, text, line, begidx, endidx):
+        if ("://" in line):
+            cacheroot = xdg()
+            # "gemini://example.com/gemlog" -> "/home/user/.cache/offpunk/gemini/example.com/gemlog"
+            cachepath = cacheroot + '/'.join(line.split()[1].replace("://","/").split('/')[:-1])
+            return [i for i in os.listdir(cachepath) if i.startswith(text) ]
+        else:
+            protocols = [i + "://" for i in netcache.PROTOCOLS]
+            return [i for i in protocols if i.startswith(text)]
+
+    def complete_view(self, text: str, line, begidx, endidx):
+        """Completion function for `view` command."""
+        view_arguments = ("full", "normal", "source", "switch")
+        return [arg for arg in view_arguments if arg.startswith(text)]
+
     def get_renderer(self, url=None):
         # If launched without argument, we return the renderer for the current URL
         if not url:
@@ -355,6 +366,8 @@ class GeminiClient(cmd.Cmd):
         params = {}
         if self.options["editor"]:
             params["editor"] = self.options["editor"]
+        if self.options["disable_http"]:
+            params["disable_http"] = self.options["disable_http"]
         params["timeout"] = self.options["short_timeout"]
         if limit_size:
             params["max_size"] = int(self.options["max_size_download"]) * 1000000
@@ -536,15 +549,13 @@ class GeminiClient(cmd.Cmd):
                 print(_("Unrecognised option %s") % option)
                 return
             # Validate / convert values
-            elif option == "tls_mode":
-                if value.lower() not in ("ca", "tofu"):
-                    print(_("TLS mode must be `ca` or `tofu`!"))
-                    return
             elif option == "accept_bad_ssl_certificates":
                 if value.lower() == "false":
                     print(_("Only high security certificates are now accepted"))
+                    value = False
                 elif value.lower() == "true":
                     print(_("Low security SSL certificates are now accepted"))
+                    value = True
                 else:
                     #TRANSLATORS keep accept_bad_ssl_certificates, True, and False
                     print(_("accept_bad_ssl_certificates should be True or False"))
@@ -626,12 +637,13 @@ class GeminiClient(cmd.Cmd):
                     self.opencache.cleanup()
                 else:
                     print(_("%s is not a valid preset theme")%words[1])
-            elif element not in offthemes.default.keys():
+            elif element not in offthemes.default.keys() or element.startswith("_"):
                 print(_("%s is not a valid theme element") % element)
                 print(_("Valid theme elements are: "))
                 valid = []
                 for k in offthemes.default:
-                    valid.append(k)
+                    if not k.startswith("_"):
+                        valid.append(k)
                 print(valid)
                 return
             else:
@@ -1920,7 +1932,7 @@ Use "view XX" where XX is a number to view information about link XX.
         with open(list_path, "w") as l_file:
             l_file.write("#%s\n" % list)
             l_file.write(stri)
-            counter = 0
+            counter = 1
             previous_line = stri
             # Truncating is useful in case we open a new branch
             # after a few back in history
@@ -2567,7 +2579,7 @@ def main():
             torun_queue.append("tour")
 
     if args.disable_http:
-        gc.support_http = False
+        gc.options["disable_http"] = True
 
     # Endless interpret loop (except while --sync or --fetch-later)
     if args.fetch_later:

@@ -255,6 +255,8 @@ def get_cache_path(url, add_index=True, include_protocol=True, xdgfolder="cache"
             index = "index.html"
         elif scheme == "finger":
             index = "index.txt"
+        elif scheme == "ftp":
+            index = "_netcache_ftp_index.txt"
         elif scheme == "gopher":
             index = "gophermap"
         else:
@@ -335,8 +337,8 @@ def set_error(url, err):
         os.makedirs(cache_dir, exist_ok=True)
         if os.path.isdir(cache_dir):
             with open(cache, "w") as c:
-                c.write(str(datetime.datetime.now()) + "\n")
-                c.write(_("ERROR while caching %s\n\n") % url)
+                c.write(_("ERROR while caching %s\n") % url)
+                c.write("Cache was created on %s"%time.ctime() +"\n\n")
                 c.write("*****\n\n")
                 c.write(str(type(err)) + " = " + str(err))
                 # cache.write("\n" + str(err.with_traceback(None)))
@@ -455,11 +457,18 @@ def _fetch_http(
     accept_bad_ssl_certificates=False,
     force_large_download=False,
     cookiejar=None,
+    disable_http=False,
     **kwargs,
 ):
-    if not load_HTTP():
-        print(_("HTTP requires curl"))
-        return None
+    has_curl = load_HTTP()
+    if disable_http or not has_curl:
+        advice = ""
+        if not has_curl:
+            advice = "install curl on your system to enable it"
+        else:
+            advice = "use \"set disable_http False\" to enable it"  
+        print("HTTP is currently disabled (%s)"%advice)
+        return None, url
     if not cookiejar:
         cookiejar = get_cookiejar(url)
     verify = not accept_bad_ssl_certificates
@@ -467,6 +476,9 @@ def _fetch_http(
         max_size = None
     return _fetch_curl(url=url, verify=verify, timeout=timeout,
                 cookies=cookiejar, max_size=max_size)
+
+def _fetch_ftp(url, timeout=DEFAULT_TIMEOUT, interactive=True, **kwargs):
+    return _fetch_curl(url=url, timeout=timeout)
 
 def _fetch_gopher(url, timeout=DEFAULT_TIMEOUT, interactive=True, **kwargs):
     parsed = urllib.parse.urlparse(url)
@@ -1001,9 +1013,6 @@ def _fetch_gemini(
         #        # Never follow cross-protocol redirects without asking
         #        elif new_gi.scheme != gi.scheme:
         #            follow = input("Follow cross-protocol redirect to %s? (y/n) " % new_gi.url)
-        #        # Don't follow *any* redirect without asking if auto-follow is off
-        #        elif not self.options["auto_follow_redirects"]:
-        #            follow = input("Follow redirect to %s? (y/n) " % new_gi.url)
         #        # Otherwise, follow away
         else:
             follow = "yes"
@@ -1069,6 +1078,7 @@ PROTOCOLS = {
     "http": { "port": 80, "fetch": _fetch_http},
     "https": { "port": 443, "fetch": _fetch_http},
     "spartan": { "port": 300, "fetch": _fetch_spartan},
+    "ftp": { "port": 21, "fetch": _fetch_ftp},
 }
 
 default_protocol = "gemini"
@@ -1136,7 +1146,11 @@ def fetch(
                     print(_("%s is not a supported protocol") % scheme)
                 path = None
             elif scheme in PROTOCOLS:
-                path, newurl = PROTOCOLS[scheme]["fetch"](newurl, **kwargs)
+                scheme = PROTOCOLS[scheme]
+                fetch = scheme["fetch"]
+                values = fetch(newurl, **kwargs)
+                path, newurl = values
+                #path, newurl = PROTOCOLS[scheme]["fetch"](newurl, **kwargs)
             else:
                 print("scheme %s not implemented yet" % scheme)
         except UserAbortException:
@@ -1156,8 +1170,7 @@ def fetch(
                     print(_("ERROR2: Connection reset!"))
             elif isinstance(err, (TimeoutError, socket.timeout)):
                 if print_error:
-                    print(_("""ERROR3: Connection timed out!
-    Slow internet connection?  Use 'set timeout' to be more patient."""))
+                    print(_("ERROR3: Connection timed out!"))
             elif isinstance(err, FileExistsError):
                 if print_error:
                     print(_("""ERROR5: Trying to create a directory which already exists
@@ -1183,7 +1196,8 @@ def fetch(
                     print(traceback.format_exc())
             return cache, newurl
         # We download images contained in the document (from full mode)
-        if not offline and download_image_first and images_mode:
+        if not offline and download_image_first and images_mode and \
+                                                    images_mode.lower() != "none":
             renderer = ansicat.renderer_from_file(path, newurl,redirectlist=redirects,**kwargs)
             if renderer:
                 for image in renderer.get_images(mode=images_mode):

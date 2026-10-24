@@ -9,6 +9,7 @@
 import gettext
 import io
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -33,6 +34,23 @@ _ = gettext.gettext
 
 CACHE_VERSION = 1
 CERT_VERSION = 1
+
+# 7-bit C1 ANSI sequences (based on https://stackoverflow.com/a/14693789/115945)
+ansi_escape = re.compile(r'''
+    \x1b  # ESC
+    (?:   # 7-bit C1 Fe (except CSI)
+        [@-Z\\-_]
+    |     # or [ for CSI, followed by a control sequence
+        \[
+        [0-?]*  # Parameter bytes
+        [ -/]*  # Intermediate bytes
+        [@-~]   # Final byte
+    )
+    | \ufeff    # UTF-16 BOM, which somehow appeared in a wikipedia table (test_render_table_complex5) and caused an alignment issue
+    | \u200b    # more zero-width characters (test_render_table_complex8)
+    | \u200c    # ideally we'd include all {Cf}
+    | \u200d
+''', re.UNICODE | re.VERBOSE)
 
 # In terms of arguments, this can take an input file/string to be passed to
 # stdin, a parameter to do (well-escaped) "%" replacement on the command, a
@@ -629,3 +647,8 @@ def clean_url(url):
         newquery.rstrip("&")
         newurl = urllib.parse.urlunparse(parsed._replace(query=newquery))
     return newurl
+
+# Remove any ansi escape codes so we can get the display length of the string
+def remove_escape_sequences(s):
+    # also removes (some) zero width characters  # todo: better to clean these out elsewhere, since it's probably a problem for other areas
+    return ansi_escape.sub('', s)

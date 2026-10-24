@@ -7,10 +7,10 @@ name = "offpunk"
 description = "Offline-First Gemini/Web/Gopher/RSS reader and browser"
 authors = [
     {name = "Solderpunk", email = "solderpunk@sdf.org"},
-    {name = "Lionel Dricot (Ploum)", email = "offpunk2@ploum.eu"},
+    {name = "Lionel Dricot (Ploum)", email = "offpunk3@ploum.eu"},
 ]
 maintainers = [
-    {name = "Lionel Dricot (Ploum)", email = "offpunk2@ploum.eu"},
+    {name = "Lionel Dricot (Ploum)", email = "offpunk3@ploum.eu"},
 ]
 license = "AGPL-3.0-or-later"
 license-files = ["LICENSE"]
@@ -24,17 +24,17 @@ classifiers = [
     "Topic :: Internet",
 ]
 keywords = ["gemini", "browser"]
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 dynamic = ["version"]
 
 
 [project.optional-dependencies]
 better-tofu = ["cryptography"]
 chardet = ["charset-normalizer"]
-html = ["bs4", "readability-lxml", "lxml"]
+html = ["beautifulsoup4", "readability-lxml", "lxml"]
 process-title = ["setproctitle"]
 rss = ["feedparser"]
-full = [ "cryptography", "charset-normalizer", "bs4", "readability-lxml", "lxml", "setproctitle", "feedparser" ]
+full = [ "cryptography", "charset-normalizer", "beautifulsoup4", "readability-lxml", "lxml", "setproctitle", "feedparser" ]
 
 [project.urls]
 Homepage = "https://offpunk.net/"
