@@ -374,6 +374,8 @@ CURL_WRITE_ERROR = 23
 CURL_BAD_SSL = 60
 # 63: Maximum file size exceeded
 CURL_MAX_FILE_SIZE_EXCEEDED = 63
+CURLE_COULDNT_RESOLVE_HOST = 6
+CURLE_COULDNT_CONNECT = 7
 
 class CurlError(Exception):
     pass
@@ -445,6 +447,14 @@ def _fetch_curl(url, verify=True, headers={}, timeout=DEFAULT_TIMEOUT, cookies=N
             return too_large_error(url, max_size)
         elif err.returncode == CURL_WRITE_ERROR:
             #There’s a write error so we don’t have any cache, we return none
+            return None
+        elif err.returncode in [CURLE_COULDNT_RESOLVE_HOST,CURLE_COULDNT_CONNECT]:
+            #Could not connect thus not any cache available
+            print("Could not connect to %s"%url)
+            return None
+        elif 4 < err.returncode < 20:
+            # Lot of error code withourt any cache
+            print("Curl error %s"%err.returncode)
             return None
         else:
             raise CurlError(err.returncode, err.stderr.decode().strip())
