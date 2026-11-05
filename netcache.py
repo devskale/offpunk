@@ -500,7 +500,7 @@ def _fetch_gopher(url, timeout=DEFAULT_TIMEOUT, interactive=True, **kwargs):
     if itemtype == "7":
         if interactive:
             user_input = input("> ")
-            url = url+'?'+user_input
+            url = url+'?'+urllib.parse.quote(user_input)
         else:
             return None, url
 
