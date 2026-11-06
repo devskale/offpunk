@@ -10,6 +10,7 @@
 - FIX: "set images_mode None" should now work for HTTP (reported by Adrian Brstilo)
 - FIX: "--disable-http" is now functional (and a "set" options) (reported by Ranja al-Harisa)
 - FIX: The "history_size" and "archives_size" options now limit the number of entries in their respective lists exactly (by Noelle Leigh)
+- FIX: searching in gopher is now possible for multiple words (by JMCS)
 - CLEANUP: removing unused options (by Noelle Leigh)
 - Better Curl error handling in netcache.
 
