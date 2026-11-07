@@ -63,6 +63,7 @@ def clipboard_copy(to_copy):
          ["xclip", " -selection clipboard"],
          ["wl-copy", ""],
          ["pbcopy", ""],
+         ["clip", ""],
    ]
 
     for program in programs:
@@ -87,7 +88,8 @@ def clipboard_paste():
          ["xsel", ["-p", "-s", "-b"]],
          ["xclip", ["-o -selection clipboard", "-o -selection primary", "-o -selection secondary"]],
          ["wl-paste", ["", "-p"]],
-         ["pbpaste", [""]]
+         ["pbpaste", [""]],
+         ["powershell", ["-Command Get-Clipboard"]],
     ]
     successes = []
 
@@ -1379,8 +1381,10 @@ class GeminiClient(cmd.Cmd):
                                             has(clip_support)
         output += _(" - wl-clipboard        (Wayland clipboard support)         : ") + \
                                             has(CMDS["wl-copy"])
-        output += _(" - pbcoby              (MacOS clipboard support)           : ") + \
+        output += _(" - pbcopy              (MacOS clipboard support)           : ") + \
                                             has(CMDS["pbcopy"])
+        output += _(" - clip                (Windows clipboard support)         : ") + \
+                                            has(CMDS["clip"])
         output += "\n"
         output += _("ftr_site_config     : ") + str(self.options["ftr_site_config"]) + "\n"
         output += _("Config directory    : ") + xdg("config") + "\n"
@@ -2555,7 +2559,7 @@ def main():
         sys.exit()
     elif args.features:
         gc = GeminiClient(None)
-        gc.do_version(None, None)
+        gc.do_version(None, print_color=True)
         sys.exit()
     else:
         for f in [xdg("config"), xdg("data")]:

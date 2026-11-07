@@ -9,6 +9,7 @@
 import gettext
 import io
 import os
+import pathlib
 import re
 import shlex
 import shutil
@@ -52,6 +53,10 @@ ansi_escape = re.compile(r'''
     | \u200d
 ''', re.UNICODE | re.VERBOSE)
 
+# Enable ANSI sequences on Windows console
+if sys.platform == "win32":
+    os.system("")
+
 # In terms of arguments, this can take an input file/string to be passed to
 # stdin, a parameter to do (well-escaped) "%" replacement on the command, a
 # flag requesting that the output go directly to the stdout, and a list of
@@ -59,6 +64,10 @@ ansi_escape = re.compile(r'''
 # be used to supress output to stderr.
 def run(cmd, *, input=None, parameter=None, direct_output=False, env={}, no_err=False):
     if parameter:
+        # Trying to shlex.quote a Windows path constructed with os.path will break
+        # with \\ directory separators, so try to normalize it to / first.
+        if sys.platform == "win32" and re.match(r"[A-Z]:\\", parameter):
+            parameter = pathlib.PureWindowsPath(parameter).as_posix()
         cmd = cmd % shlex.quote(parameter)
     e = os.environ
     e.update(env)
@@ -109,6 +118,8 @@ CMDS = {
     "wl-paste"   : "wl-paste",
     "pbcopy"     : "pbcopy",
     "pbpaste"    : "pbpaste",
+    "clip"       : "clip",
+    "powershell" : "powershell",
     "curl"       : "curl",
         }
 
@@ -128,6 +139,9 @@ try:
     CMDS["grep"] += " --color=auto"
 except Exception:
     pass
+
+if not CMDS["xdg-open"] and CMDS["powershell"]:
+    CMDS["xdg-open"] = "powershell -Command Start-Process"
 
 # Let’s change our default less and cat commands
 less_version = 0
