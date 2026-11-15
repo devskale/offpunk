@@ -312,6 +312,11 @@ class GeminiClient(cmd.Cmd):
 
     def complete_go(self, text, line, begidx, endidx):
         if ("://" in line):
+            try:
+                import readline
+                readline.set_completer_delims(' \t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>/?')
+            except ImportError:
+                pass
             cacheroot = xdg()
             # "gemini://example.com/gemlog" -> "/home/user/.cache/offpunk/gemini/example.com/gemlog"
             cachepath = cacheroot + '/'.join(line.split()[1].replace("://","/").split('/')[:-1])
