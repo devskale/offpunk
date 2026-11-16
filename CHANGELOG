@@ -14,7 +14,7 @@
 - FIX: searching in gopher is now possible for multiple words (by JMCS)
 - CLEANUP: removing unused options (by Noelle Leigh)
 - Better Curl error handling in netcache.
-- add support for win32 in Git Bash
+- add protocol of a page in its title (by JMCS)
 
 ## 3.2 - July 22nd 2026
 PACKAGERS: dependency to "chardet" has been replaced by "charset-normalizer"
