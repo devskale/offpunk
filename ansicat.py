@@ -580,8 +580,9 @@ class AbstractRenderer:
         if is_local(self.url):
             splitpath = self.url.split("/")
             filename = splitpath[-1]
-            return filename
-        return find_root(self.url,return_value="name")
+            return "local > " + filename
+        protocol = self.url.split("://")[0]
+        return protocol + " > " + find_root(self.url,return_value="name")
 
     # This function return a list of URL which should be downloaded
     # before displaying the page (images in HTML pages, typically)
